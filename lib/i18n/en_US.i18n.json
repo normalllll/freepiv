@@ -1,0 +1,428 @@
+{
+  "app": {
+    "title": "freepiv"
+  },
+  "navigation": {
+    "home": "Home",
+    "search": "Search",
+    "newest": "Newest",
+    "ranking": "Ranking",
+    "me": "Me",
+    "settings": "Settings"
+  },
+  "common": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "send": "Send",
+    "filter": "Filter",
+    "type": "Type",
+    "id": "ID",
+    "error": "Error",
+    "notFound": "Not found",
+    "copy": "Copy $label",
+    "labelValue": "$label: $value",
+    "errorWithCause": "$message: $cause"
+  },
+  "refresh": {
+    "pullToRefresh": "Pull to refresh",
+    "releaseToRefresh": "Release to refresh",
+    "refreshing": "Refreshing",
+    "refreshComplete": "Refresh complete",
+    "refreshFailed": "Refresh failed",
+    "pullToLoadMore": "Pull to load more",
+    "releaseToLoad": "Release to load",
+    "loading": "Loading",
+    "loadComplete": "Load complete",
+    "noMoreItems": "No more items",
+    "loadFailed": "Load failed",
+    "lastUpdated": "Last updated %T"
+  },
+  "toast": {
+    "bookmarkFailed": "Bookmark failed",
+    "followFailed": "Follow failed"
+  },
+  "login": {
+    "title": "Sign in",
+    "notSignedIn": "Not signed in to Pixiv",
+    "signedInAs": "Signed in as $name",
+    "signInToPixiv": "Sign in to Pixiv",
+    "signInAgain": "Sign in again",
+    "openingBrowser": "Opening browser...",
+    "apiNotInitialized": "Pixiv API is not initialized.",
+    "desktopOnly": "System browser sign-in currently supports only Linux, macOS, and Windows.",
+    "openedInBrowser": "Pixiv sign-in opened in the system browser. Return to the app after signing in.",
+    "callbackMissingCode": "Pixiv callback is missing code: $uri",
+    "callbackReceived": "Pixiv callback received. Fetching token.",
+    "browserOpenUnsupported": "System browser opening is not implemented here.",
+    "browserOpenFailed": "$browser failed to open the sign-in link: $output"
+  },
+  "settings": {
+    "theme": {
+      "title": "Theme",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "language": {
+      "title": "Language",
+      "systemDefault": "System default",
+      "enUs": "English (United States)",
+      "zhCn": "Simplified Chinese",
+      "zhTw": "Traditional Chinese",
+      "jaJp": "Japanese"
+    },
+    "images": {
+      "title": "Images",
+      "previewQuality": "Preview quality",
+      "viewerQuality": "Viewer quality",
+      "medium": "Medium",
+      "large": "Large",
+      "original": "Original"
+    },
+    "downloads": {
+      "title": "Downloads",
+      "savePath": "Save path",
+      "chooseFolder": "Choose folder",
+      "dialogTitle": "Download save path",
+      "defaultPath": "Default",
+      "customPath": "Custom",
+      "systemDownloadsFolder": "System Downloads folder",
+      "noFolderSelected": "No folder selected",
+      "directorySet": "Download folder set: $path",
+      "directoryUnavailable": "Download folder is unavailable",
+      "tasksTitle": "Download tasks",
+      "openTasks": "Download tasks",
+      "openTasksSubtitle": "View progress, failures, and saved files",
+      "noTasks": "No download tasks",
+      "noTasksMessage": "Downloaded images will appear here.",
+      "total": "Total",
+      "active": "Active",
+      "saved": "Saved",
+      "failed": "Failed",
+      "downloading": "Downloading",
+      "needsAttention": "Needs attention",
+      "completed": "Completed",
+      "queued": "Queued",
+      "running": "Downloading",
+      "paused": "Paused",
+      "downloaded": "Downloaded",
+      "cancelled": "Cancelled",
+      "savePending": "Waiting to save",
+      "saving": "Saving",
+      "saveFailed": "Save failed",
+      "retrySave": "Retry save",
+      "cancel": "Cancel",
+      "sync": "Sync",
+      "syncFailed": "Download sync failed",
+      "actionFailed": "Download action failed",
+      "expand": "Expand",
+      "collapse": "Collapse"
+    },
+    "account": {
+      "title": "Account",
+      "signedOutSubtitle": "Sign in to show your Pixiv account",
+      "notSignedIn": "Not signed in",
+      "signOut": "Sign out"
+    }
+  },
+  "me": {
+    "openProfile": "Open profile",
+    "following": "My following",
+    "followers": "My followers",
+    "emptyFollowing": "No following users",
+    "emptyFollowers": "No followers",
+    "settings": "Settings",
+    "settingsSubtitle": "Theme, language, images, and downloads"
+  },
+  "home": {
+    "emptyTitle": "No recommendations yet",
+    "emptyMessage": "Pull down to fetch recommendations again.",
+    "rankings": "Rankings",
+    "seeMore": "See more",
+    "recommended": "Recommended",
+    "illustrations": "Illust",
+    "manga": "Manga",
+    "novels": "Novels",
+    "users": "Users"
+  },
+  "ranking": {
+    "emptyTitle": "No ranking works",
+    "emptyMessage": "Pull down to fetch the ranking again.",
+    "types": {
+      "illustrations": "Illust",
+      "manga": "Manga",
+      "novels": "Novels"
+    },
+    "modes": {
+      "day": "Daily",
+      "dayR18": "Daily R-18",
+      "dayMale": "Daily Male",
+      "dayMaleR18": "Daily Male R-18",
+      "dayFemale": "Daily Female",
+      "dayFemaleR18": "Daily Female R-18",
+      "dayAi": "AI-generated",
+      "dayR18Ai": "AI-generated R-18",
+      "week": "Weekly",
+      "weekR18": "Weekly R-18",
+      "weekOriginal": "Weekly Original",
+      "weekRookie": "Weekly Rookie",
+      "month": "Monthly"
+    }
+  },
+  "search": {
+    "placeholder": "Search tags, illust ID, or user ID",
+    "submit": "Search",
+    "trendingTags": "Trending Tags",
+    "emptyTrendingTitle": "No trending tags",
+    "emptyTrendingMessage": "Pull down to load trending tags again.",
+    "noSuggestions": "No suggestions",
+    "filters": {
+      "title": "Search filters",
+      "sort": "Sort",
+      "target": "Target",
+      "date": "Date",
+      "bookmarks": "Bookmarks"
+    },
+    "type": {
+      "illustManga": "Illust & Manga",
+      "novel": "Novel",
+      "user": "User"
+    },
+    "sort": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "popular": "Popular"
+    },
+    "target": {
+      "tags": "Tags",
+      "exactTags": "Exact tags",
+      "titleAndCaption": "Title & caption"
+    },
+    "date": {
+      "any": "Any date",
+      "today": "Today",
+      "days7": "7 days",
+      "month1": "1 month",
+      "months6": "6 months",
+      "year1": "1 year",
+      "custom": "Custom"
+    },
+    "bookmarks": {
+      "any": "Any bookmarks",
+      "atLeast": "$count+ bookmarks"
+    },
+    "direct": {
+      "illust": "Illust: $id",
+      "user": "User: $id",
+      "novel": "Novel: $id"
+    },
+    "empty": {
+      "illustrations": "No illustrations found",
+      "novels": "No novels found",
+      "users": "No users found"
+    }
+  },
+  "user": {
+    "tabs": {
+      "illustrations": "Illustrations",
+      "manga": "Manga",
+      "novels": "Novels",
+      "bookmarks": "Bookmarks",
+      "following": "Following",
+      "profile": "Details"
+    },
+    "stats": {
+      "illustrations": "Illusts",
+      "manga": "Manga",
+      "novels": "Novels",
+      "following": "Following"
+    },
+    "bookmarks": {
+      "illustManga": "Illust & Manga",
+      "novels": "Novels"
+    },
+    "empty": {
+      "illustrations": "No Illusts",
+      "manga": "No manga",
+      "novels": "No novels",
+      "bookmarkIllustrations": "No public illustration or manga bookmarks",
+      "bookmarkNovels": "No public novel bookmarks",
+      "following": "No following users",
+      "profile": "No public profile details"
+    },
+    "profile": {
+      "birthday": "Birthday",
+      "region": "Region",
+      "job": "Job",
+      "webpage": "Website",
+      "twitter": "Twitter",
+      "pawoo": "Pawoo",
+      "openLink": "Open link"
+    },
+    "meta": {
+      "novelChars": "$count chars",
+      "novelPages": "$count pages"
+    },
+    "error": {
+      "missingUser": "User id or user detail is missing."
+    }
+  },
+  "newest": {
+    "audience": {
+      "following": "Following",
+      "mypixiv": "MyPixiv",
+      "everyone": "Everyone"
+    },
+    "workType": {
+      "illustManga": "Illust & Manga",
+      "illust": "Illust",
+      "manga": "Manga",
+      "novel": "Novels",
+      "compactArt": "Art",
+      "compactIllust": "Illust",
+      "compactManga": "Manga",
+      "compactNovel": "Novel"
+    },
+    "followScope": {
+      "title": "Follow Scope",
+      "all": "All follows",
+      "private": "Private follows",
+      "public": "Public follows",
+      "compactAll": "All",
+      "compactPrivate": "Private",
+      "compactPublic": "Public"
+    },
+    "emptyTitle": "No newest works",
+    "compactFilter": "$workType · $scope",
+    "novelChars": "$count chars",
+    "novelPages": "$count pages"
+  },
+  "illust": {
+    "contextMenu": {
+      "download": "Download",
+      "copyImage": "Copy image"
+    },
+    "imageLabels": {
+      "original": "original image",
+      "large": "large image"
+    },
+    "toast": {
+      "downloadStarted": "Downloading image",
+      "downloadComplete": "Download complete: $path",
+      "downloadFailed": "Download failed",
+      "copying": "Copying $label",
+      "copied": "Copied $label",
+      "copiedValue": "Copied $label: $value",
+      "copyFailed": "Failed to copy $label"
+    },
+    "tooltip": {
+      "previousImage": "Previous image",
+      "nextImage": "Next image",
+      "backToDetail": "Back to image detail",
+      "removeBookmark": "Remove bookmark",
+      "addBookmark": "Add bookmark"
+    },
+    "section": {
+      "tags": "Tags",
+      "caption": "Caption",
+      "details": "Details",
+      "creator": "Creator",
+      "recentWorks": "Recent works",
+      "comments": "Comments",
+      "commentsWithCount": "Comments ($count)",
+      "relatedWorks": "Related works"
+    },
+    "metadata": {
+      "type": "Type",
+      "created": "Created"
+    },
+    "badge": {
+      "aiArtwork": "AI Artwork",
+      "original": "Original"
+    },
+    "stats": {
+      "size": "Size",
+      "views": "Views",
+      "bookmarks": "Bookmarks",
+      "pages": "Pages"
+    },
+    "tags": {
+      "none": "No tags",
+      "tag": "tag"
+    },
+    "comments": {
+      "failed": "Failed to load comments",
+      "empty": "No comments yet",
+      "moreAvailable": "More comments available",
+      "hasReplies": "Has replies",
+      "open": "Open comments",
+      "reply": "Reply",
+      "replyingTo": "Replying to $name",
+      "loadReplies": "Load replies",
+      "loadMoreReplies": "Load more replies",
+      "repliesFailed": "Failed to load replies",
+      "sendFailed": "Failed to send comment",
+      "delete": "Delete",
+      "deleteFailed": "Failed to delete comment",
+      "inputHint": "Write a comment",
+      "replyInputHint": "Reply to $name",
+      "emoji": "Emoji",
+      "stamp": "Stamp"
+    },
+    "works": {
+      "failed": "Failed to load works",
+      "empty": "No works to show"
+    },
+    "related": {
+      "failed": "Failed to load related works",
+      "empty": "No related works",
+      "viewMore": "View more related works"
+    }
+  },
+  "novel": {
+    "detail": {
+      "images": "Images",
+      "series": "Series",
+      "content": "Content",
+      "startReading": "Start reading",
+      "totalChars": "$count chars",
+      "paragraphCount": "$count paragraphs",
+      "segmentCount": "$count pages"
+    },
+    "reader": {
+      "title": "Reading",
+      "body": "Body",
+      "chapters": "Chapters",
+      "settings": "Reading settings",
+      "emptyBody": "No body text",
+      "totalChars": "$count chars",
+      "pagePosition": "$current / $total pages",
+      "pageTotal": "$total pages",
+      "currentPage": "Page $page",
+      "readingProgress": "Reading progress",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "display": "Display",
+      "fontSize": "Font size",
+      "lineHeight": "Line height",
+      "noChapterMarkers": "No chapter markers",
+      "close": "Close",
+      "decrease": "Decrease",
+      "increase": "Increase",
+      "shortcutsTitle": "Shortcuts",
+      "shortcutsHelp": "Left/Right or A/D turn pages; Up/Down or W/S scroll"
+    }
+  },
+  "follow": {
+    "tooltipFollow": "Follow user",
+    "tooltipUnfollow": "Unfollow",
+    "followed": "Following",
+    "notFollowed": "Not following"
+  },
+  "richText": {
+    "twitterUser": "Twitter: $username",
+    "illustId": "Illust ID: $id",
+    "userId": "User ID: $id"
+  }
+}

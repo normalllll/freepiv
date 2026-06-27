@@ -1,0 +1,428 @@
+{
+  "app": {
+    "title": "freepiv"
+  },
+  "navigation": {
+    "home": "首頁",
+    "search": "搜尋",
+    "newest": "最新",
+    "ranking": "排行榜",
+    "me": "我的",
+    "settings": "設定"
+  },
+  "common": {
+    "back": "返回",
+    "cancel": "取消",
+    "retry": "重試",
+    "send": "傳送",
+    "filter": "篩選",
+    "type": "類型",
+    "id": "ID",
+    "error": "錯誤",
+    "notFound": "找不到",
+    "copy": "複製$label",
+    "labelValue": "$label：$value",
+    "errorWithCause": "$message：$cause"
+  },
+  "refresh": {
+    "pullToRefresh": "下拉重新整理",
+    "releaseToRefresh": "放開重新整理",
+    "refreshing": "正在重新整理",
+    "refreshComplete": "重新整理完成",
+    "refreshFailed": "重新整理失敗",
+    "pullToLoadMore": "上拉載入更多",
+    "releaseToLoad": "放開載入",
+    "loading": "載入中",
+    "loadComplete": "載入完成",
+    "noMoreItems": "沒有更多內容",
+    "loadFailed": "載入失敗",
+    "lastUpdated": "最後更新 %T"
+  },
+  "toast": {
+    "bookmarkFailed": "收藏失敗",
+    "followFailed": "關注失敗"
+  },
+  "login": {
+    "title": "登入",
+    "notSignedIn": "尚未登入 Pixiv",
+    "signedInAs": "已登入為 $name",
+    "signInToPixiv": "登入 Pixiv",
+    "signInAgain": "重新登入",
+    "openingBrowser": "正在開啟瀏覽器…",
+    "apiNotInitialized": "Pixiv API 尚未初始化。",
+    "desktopOnly": "系統瀏覽器登入目前僅支援 Linux、macOS 與 Windows。",
+    "openedInBrowser": "已在系統瀏覽器開啟 Pixiv 登入。完成登入後請返回應用程式。",
+    "callbackMissingCode": "Pixiv 回呼缺少 code：$uri",
+    "callbackReceived": "已收到 Pixiv 回呼，正在取得權杖。",
+    "browserOpenUnsupported": "目前環境尚未實作系統瀏覽器開啟功能。",
+    "browserOpenFailed": "$browser 無法開啟登入連結：$output"
+  },
+  "settings": {
+    "theme": {
+      "title": "主題",
+      "system": "跟隨系統",
+      "light": "淺色",
+      "dark": "深色"
+    },
+    "language": {
+      "title": "語言",
+      "systemDefault": "跟隨系統",
+      "enUs": "English (United States)",
+      "zhCn": "简体中文",
+      "zhTw": "繁體中文",
+      "jaJp": "日本語"
+    },
+    "images": {
+      "title": "圖片",
+      "previewQuality": "預覽品質",
+      "viewerQuality": "檢視品質",
+      "medium": "中等",
+      "large": "大圖",
+      "original": "原圖"
+    },
+    "downloads": {
+      "title": "下載",
+      "savePath": "儲存路徑",
+      "chooseFolder": "選擇資料夾",
+      "dialogTitle": "下載儲存路徑",
+      "defaultPath": "預設",
+      "customPath": "自訂",
+      "systemDownloadsFolder": "系統下載資料夾",
+      "noFolderSelected": "尚未選擇資料夾",
+      "directorySet": "下載目錄已設定：$path",
+      "directoryUnavailable": "下載目錄不可用",
+      "tasksTitle": "下載任務",
+      "openTasks": "下載任務",
+      "openTasksSubtitle": "檢視進度、失敗項目和已儲存檔案",
+      "noTasks": "尚無下載任務",
+      "noTasksMessage": "下載的圖片會顯示在這裡。",
+      "total": "總數",
+      "active": "進行中",
+      "saved": "已儲存",
+      "failed": "失敗",
+      "downloading": "正在下載",
+      "needsAttention": "需要處理",
+      "completed": "已完成",
+      "queued": "佇列中",
+      "running": "正在下載",
+      "paused": "已暫停",
+      "downloaded": "已下載",
+      "cancelled": "已取消",
+      "savePending": "等待儲存",
+      "saving": "正在儲存",
+      "saveFailed": "儲存失敗",
+      "retrySave": "重試儲存",
+      "cancel": "取消",
+      "sync": "同步",
+      "syncFailed": "下載狀態同步失敗",
+      "actionFailed": "下載操作失敗",
+      "expand": "展開",
+      "collapse": "收合"
+    },
+    "account": {
+      "title": "帳號",
+      "signedOutSubtitle": "登入後顯示 Pixiv 帳號",
+      "notSignedIn": "尚未登入",
+      "signOut": "登出"
+    }
+  },
+  "me": {
+    "openProfile": "開啟個人頁",
+    "following": "我的關注",
+    "followers": "我的粉絲",
+    "emptyFollowing": "尚無關注使用者",
+    "emptyFollowers": "尚無粉絲",
+    "settings": "設定",
+    "settingsSubtitle": "主題、語言、圖片和下載"
+  },
+  "home": {
+    "emptyTitle": "尚無推薦",
+    "emptyMessage": "下拉即可重新取得推薦。",
+    "rankings": "排行榜",
+    "seeMore": "查看更多",
+    "recommended": "推薦",
+    "illustrations": "插畫",
+    "manga": "漫畫",
+    "novels": "小說",
+    "users": "使用者"
+  },
+  "ranking": {
+    "emptyTitle": "暫無排行榜作品",
+    "emptyMessage": "下拉即可重新取得排行榜。",
+    "types": {
+      "illustrations": "插畫",
+      "manga": "漫畫",
+      "novels": "小說"
+    },
+    "modes": {
+      "day": "每日",
+      "dayR18": "每日 R-18",
+      "dayMale": "男性每日",
+      "dayMaleR18": "男性每日 R-18",
+      "dayFemale": "女性每日",
+      "dayFemaleR18": "女性每日 R-18",
+      "dayAi": "AI 生成",
+      "dayR18Ai": "AI 生成 R-18",
+      "week": "每週",
+      "weekR18": "每週 R-18",
+      "weekOriginal": "原創每週",
+      "weekRookie": "新人每週",
+      "month": "每月"
+    }
+  },
+  "search": {
+    "placeholder": "搜尋標籤、作品 ID 或使用者 ID",
+    "submit": "搜尋",
+    "trendingTags": "熱門標籤",
+    "emptyTrendingTitle": "尚無熱門標籤",
+    "emptyTrendingMessage": "下拉即可重新取得熱門標籤。",
+    "noSuggestions": "沒有候選詞",
+    "filters": {
+      "title": "搜尋篩選",
+      "sort": "排序",
+      "target": "目標",
+      "date": "日期",
+      "bookmarks": "收藏數"
+    },
+    "type": {
+      "illustManga": "插畫&漫畫",
+      "novel": "小說",
+      "user": "使用者"
+    },
+    "sort": {
+      "newest": "最新",
+      "oldest": "最舊",
+      "popular": "熱門"
+    },
+    "target": {
+      "tags": "標籤",
+      "exactTags": "精確標籤",
+      "titleAndCaption": "標題與說明"
+    },
+    "date": {
+      "any": "任意日期",
+      "today": "今天",
+      "days7": "7 天",
+      "month1": "1 個月",
+      "months6": "6 個月",
+      "year1": "1 年",
+      "custom": "自訂"
+    },
+    "bookmarks": {
+      "any": "任意收藏數",
+      "atLeast": "$count+ 收藏"
+    },
+    "direct": {
+      "illust": "插畫：$id",
+      "user": "使用者：$id",
+      "novel": "小說：$id"
+    },
+    "empty": {
+      "illustrations": "找不到插畫",
+      "novels": "找不到小說",
+      "users": "找不到使用者"
+    }
+  },
+  "user": {
+    "tabs": {
+      "illustrations": "插畫",
+      "manga": "漫畫",
+      "novels": "小說",
+      "bookmarks": "收藏",
+      "following": "關注",
+      "profile": "詳細資訊"
+    },
+    "stats": {
+      "illustrations": "插畫",
+      "manga": "漫畫",
+      "novels": "小說",
+      "following": "關注"
+    },
+    "bookmarks": {
+      "illustManga": "插畫&漫畫",
+      "novels": "小說"
+    },
+    "empty": {
+      "illustrations": "尚無插畫",
+      "manga": "尚無漫畫",
+      "novels": "尚無小說",
+      "bookmarkIllustrations": "尚無公開插畫或漫畫收藏",
+      "bookmarkNovels": "尚無公開小說收藏",
+      "following": "尚無關注使用者",
+      "profile": "尚無公開詳細資訊"
+    },
+    "profile": {
+      "birthday": "生日",
+      "region": "地區",
+      "job": "職業",
+      "webpage": "主頁",
+      "twitter": "Twitter",
+      "pawoo": "Pawoo",
+      "openLink": "開啟連結"
+    },
+    "meta": {
+      "novelChars": "$count 字",
+      "novelPages": "$count 頁"
+    },
+    "error": {
+      "missingUser": "缺少使用者 ID 或使用者詳細資訊。"
+    }
+  },
+  "newest": {
+    "audience": {
+      "following": "關注",
+      "mypixiv": "好P友",
+      "everyone": "所有人"
+    },
+    "workType": {
+      "illustManga": "插畫&漫畫",
+      "illust": "插畫",
+      "manga": "漫畫",
+      "novel": "小說",
+      "compactArt": "作品",
+      "compactIllust": "插畫",
+      "compactManga": "漫畫",
+      "compactNovel": "小說"
+    },
+    "followScope": {
+      "title": "關注範圍",
+      "all": "全部關注",
+      "private": "私人關注",
+      "public": "公開關注",
+      "compactAll": "全部",
+      "compactPrivate": "私人",
+      "compactPublic": "公開"
+    },
+    "emptyTitle": "尚無最新作品",
+    "compactFilter": "$workType · $scope",
+    "novelChars": "$count 字",
+    "novelPages": "$count 頁"
+  },
+  "illust": {
+    "contextMenu": {
+      "download": "下載",
+      "copyImage": "複製圖像"
+    },
+    "imageLabels": {
+      "original": "原圖",
+      "large": "大圖"
+    },
+    "toast": {
+      "downloadStarted": "開始下載圖片",
+      "downloadComplete": "下載完成：$path",
+      "downloadFailed": "下載失敗",
+      "copying": "正在複製$label",
+      "copied": "已複製$label",
+      "copiedValue": "已複製$label：$value",
+      "copyFailed": "複製$label失敗"
+    },
+    "tooltip": {
+      "previousImage": "上一張圖片",
+      "nextImage": "下一張圖片",
+      "backToDetail": "回到圖片詳細資訊",
+      "removeBookmark": "移除收藏",
+      "addBookmark": "加入收藏"
+    },
+    "section": {
+      "tags": "標籤",
+      "caption": "說明",
+      "details": "詳細資訊",
+      "creator": "作者",
+      "recentWorks": "近期作品",
+      "comments": "留言",
+      "commentsWithCount": "留言（$count）",
+      "relatedWorks": "相似作品"
+    },
+    "metadata": {
+      "type": "類型",
+      "created": "建立時間"
+    },
+    "badge": {
+      "aiArtwork": "AI 作品",
+      "original": "原創"
+    },
+    "stats": {
+      "size": "尺寸",
+      "views": "瀏覽",
+      "bookmarks": "收藏",
+      "pages": "頁數"
+    },
+    "tags": {
+      "none": "沒有標籤",
+      "tag": "標籤"
+    },
+    "comments": {
+      "failed": "留言載入失敗",
+      "empty": "尚無留言",
+      "moreAvailable": "還有更多留言",
+      "hasReplies": "有回覆",
+      "open": "開啟留言",
+      "reply": "回覆",
+      "replyingTo": "正在回覆 $name",
+      "loadReplies": "載入回覆",
+      "loadMoreReplies": "載入更多回覆",
+      "repliesFailed": "回覆載入失敗",
+      "sendFailed": "留言傳送失敗",
+      "delete": "刪除",
+      "deleteFailed": "留言刪除失敗",
+      "inputHint": "寫下留言",
+      "replyInputHint": "回覆 $name",
+      "emoji": "表情",
+      "stamp": "貼圖"
+    },
+    "works": {
+      "failed": "作品載入失敗",
+      "empty": "暫無可顯示作品"
+    },
+    "related": {
+      "failed": "相似作品載入失敗",
+      "empty": "暫無相似作品",
+      "viewMore": "查看更多相似作品"
+    }
+  },
+  "novel": {
+    "detail": {
+      "images": "圖片",
+      "series": "系列",
+      "content": "正文",
+      "startReading": "開始閱讀",
+      "totalChars": "共 $count 字",
+      "paragraphCount": "$count 段",
+      "segmentCount": "$count 頁"
+    },
+    "reader": {
+      "title": "閱讀",
+      "body": "正文",
+      "chapters": "章節",
+      "settings": "閱讀設定",
+      "emptyBody": "正文為空",
+      "totalChars": "共 $count 字",
+      "pagePosition": "$current / $total 頁",
+      "pageTotal": "$total 頁",
+      "currentPage": "第 $page 頁",
+      "readingProgress": "閱讀進度",
+      "previousPage": "上一頁",
+      "nextPage": "下一頁",
+      "display": "顯示",
+      "fontSize": "字號",
+      "lineHeight": "行距",
+      "noChapterMarkers": "沒有章節標記",
+      "close": "關閉",
+      "decrease": "減小",
+      "increase": "增大",
+      "shortcutsTitle": "快捷鍵",
+      "shortcutsHelp": "左右鍵或 A/D 翻頁，上下鍵或 W/S 捲動"
+    }
+  },
+  "follow": {
+    "tooltipFollow": "關注使用者",
+    "tooltipUnfollow": "取消關注",
+    "followed": "已關注",
+    "notFollowed": "未關注"
+  },
+  "richText": {
+    "twitterUser": "Twitter：$username",
+    "illustId": "插畫 ID：$id",
+    "userId": "使用者 ID：$id"
+  }
+}

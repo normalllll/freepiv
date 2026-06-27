@@ -1,0 +1,428 @@
+{
+  "app": {
+    "title": "freepiv"
+  },
+  "navigation": {
+    "home": "首页",
+    "search": "搜索",
+    "newest": "最新",
+    "ranking": "排行榜",
+    "me": "我的",
+    "settings": "设置"
+  },
+  "common": {
+    "back": "返回",
+    "cancel": "取消",
+    "retry": "重试",
+    "send": "发送",
+    "filter": "筛选",
+    "type": "类型",
+    "id": "ID",
+    "error": "错误",
+    "notFound": "未找到",
+    "copy": "复制$label",
+    "labelValue": "$label：$value",
+    "errorWithCause": "$message：$cause"
+  },
+  "refresh": {
+    "pullToRefresh": "下拉刷新",
+    "releaseToRefresh": "松开刷新",
+    "refreshing": "正在刷新",
+    "refreshComplete": "刷新完成",
+    "refreshFailed": "刷新失败",
+    "pullToLoadMore": "上拉加载更多",
+    "releaseToLoad": "松开加载",
+    "loading": "正在加载",
+    "loadComplete": "加载完成",
+    "noMoreItems": "没有更多内容",
+    "loadFailed": "加载失败",
+    "lastUpdated": "最后更新 %T"
+  },
+  "toast": {
+    "bookmarkFailed": "收藏失败",
+    "followFailed": "关注失败"
+  },
+  "login": {
+    "title": "登录",
+    "notSignedIn": "未登录 Pixiv",
+    "signedInAs": "已登录为 $name",
+    "signInToPixiv": "登录 Pixiv",
+    "signInAgain": "重新登录",
+    "openingBrowser": "正在打开浏览器…",
+    "apiNotInitialized": "Pixiv API 尚未初始化。",
+    "desktopOnly": "系统浏览器登录目前仅支持 Linux、macOS 和 Windows。",
+    "openedInBrowser": "已在系统浏览器中打开 Pixiv 登录。完成登录后请返回应用。",
+    "callbackMissingCode": "Pixiv 回调缺少 code：$uri",
+    "callbackReceived": "已收到 Pixiv 回调，正在获取令牌。",
+    "browserOpenUnsupported": "当前环境尚未实现系统浏览器打开功能。",
+    "browserOpenFailed": "$browser 打开登录链接失败：$output"
+  },
+  "settings": {
+    "theme": {
+      "title": "主题",
+      "system": "跟随系统",
+      "light": "浅色",
+      "dark": "深色"
+    },
+    "language": {
+      "title": "语言",
+      "systemDefault": "跟随系统",
+      "enUs": "English (United States)",
+      "zhCn": "简体中文",
+      "zhTw": "繁體中文",
+      "jaJp": "日本語"
+    },
+    "images": {
+      "title": "图片",
+      "previewQuality": "预览质量",
+      "viewerQuality": "查看质量",
+      "medium": "中等",
+      "large": "大图",
+      "original": "原图"
+    },
+    "downloads": {
+      "title": "下载",
+      "savePath": "保存路径",
+      "chooseFolder": "选择文件夹",
+      "dialogTitle": "下载保存路径",
+      "defaultPath": "默认",
+      "customPath": "自定义",
+      "systemDownloadsFolder": "系统下载文件夹",
+      "noFolderSelected": "未选择文件夹",
+      "directorySet": "下载目录已设置：$path",
+      "directoryUnavailable": "下载目录不可用",
+      "tasksTitle": "下载任务",
+      "openTasks": "下载任务",
+      "openTasksSubtitle": "查看进度、失败项和已保存文件",
+      "noTasks": "暂无下载任务",
+      "noTasksMessage": "下载的图片会显示在这里。",
+      "total": "总数",
+      "active": "进行中",
+      "saved": "已保存",
+      "failed": "失败",
+      "downloading": "正在下载",
+      "needsAttention": "需要处理",
+      "completed": "已完成",
+      "queued": "排队中",
+      "running": "正在下载",
+      "paused": "已暂停",
+      "downloaded": "已下载",
+      "cancelled": "已取消",
+      "savePending": "等待保存",
+      "saving": "正在保存",
+      "saveFailed": "保存失败",
+      "retrySave": "重试保存",
+      "cancel": "取消",
+      "sync": "同步",
+      "syncFailed": "下载状态同步失败",
+      "actionFailed": "下载操作失败",
+      "expand": "展开",
+      "collapse": "收起"
+    },
+    "account": {
+      "title": "账号",
+      "signedOutSubtitle": "登录后显示 Pixiv 账号",
+      "notSignedIn": "未登录",
+      "signOut": "退出登录"
+    }
+  },
+  "me": {
+    "openProfile": "打开个人主页",
+    "following": "我的关注",
+    "followers": "我的粉丝",
+    "emptyFollowing": "暂无关注用户",
+    "emptyFollowers": "暂无粉丝",
+    "settings": "设置",
+    "settingsSubtitle": "主题、语言、图片和下载"
+  },
+  "home": {
+    "emptyTitle": "暂无推荐",
+    "emptyMessage": "下拉即可重新获取推荐。",
+    "rankings": "排行榜",
+    "seeMore": "查看更多",
+    "recommended": "推荐",
+    "illustrations": "插画",
+    "manga": "漫画",
+    "novels": "小说",
+    "users": "用户"
+  },
+  "ranking": {
+    "emptyTitle": "暂无排行榜作品",
+    "emptyMessage": "下拉即可重新获取排行榜。",
+    "types": {
+      "illustrations": "插画",
+      "manga": "漫画",
+      "novels": "小说"
+    },
+    "modes": {
+      "day": "每日",
+      "dayR18": "每日 R-18",
+      "dayMale": "男性每日",
+      "dayMaleR18": "男性每日 R-18",
+      "dayFemale": "女性每日",
+      "dayFemaleR18": "女性每日 R-18",
+      "dayAi": "AI 生成",
+      "dayR18Ai": "AI 生成 R-18",
+      "week": "每周",
+      "weekR18": "每周 R-18",
+      "weekOriginal": "原创每周",
+      "weekRookie": "新人每周",
+      "month": "每月"
+    }
+  },
+  "search": {
+    "placeholder": "搜索标签、作品 ID 或用户 ID",
+    "submit": "搜索",
+    "trendingTags": "热门标签",
+    "emptyTrendingTitle": "暂无热门标签",
+    "emptyTrendingMessage": "下拉即可重新获取热门标签。",
+    "noSuggestions": "没有候选词",
+    "filters": {
+      "title": "搜索筛选",
+      "sort": "排序",
+      "target": "目标",
+      "date": "日期",
+      "bookmarks": "收藏数"
+    },
+    "type": {
+      "illustManga": "插画&漫画",
+      "novel": "小说",
+      "user": "用户"
+    },
+    "sort": {
+      "newest": "最新",
+      "oldest": "最旧",
+      "popular": "热门"
+    },
+    "target": {
+      "tags": "标签",
+      "exactTags": "精确标签",
+      "titleAndCaption": "标题与说明"
+    },
+    "date": {
+      "any": "任意日期",
+      "today": "今天",
+      "days7": "7 天",
+      "month1": "1 个月",
+      "months6": "6 个月",
+      "year1": "1 年",
+      "custom": "自定义"
+    },
+    "bookmarks": {
+      "any": "任意收藏数",
+      "atLeast": "$count+ 收藏"
+    },
+    "direct": {
+      "illust": "插画：$id",
+      "user": "用户：$id",
+      "novel": "小说：$id"
+    },
+    "empty": {
+      "illustrations": "没有找到插画",
+      "novels": "没有找到小说",
+      "users": "没有找到用户"
+    }
+  },
+  "user": {
+    "tabs": {
+      "illustrations": "插画",
+      "manga": "漫画",
+      "novels": "小说",
+      "bookmarks": "收藏",
+      "following": "关注",
+      "profile": "详细信息"
+    },
+    "stats": {
+      "illustrations": "插画",
+      "manga": "漫画",
+      "novels": "小说",
+      "following": "关注"
+    },
+    "bookmarks": {
+      "illustManga": "插画&漫画",
+      "novels": "小说"
+    },
+    "empty": {
+      "illustrations": "暂无插画",
+      "manga": "暂无漫画",
+      "novels": "暂无小说",
+      "bookmarkIllustrations": "暂无公开插画或漫画收藏",
+      "bookmarkNovels": "暂无公开小说收藏",
+      "following": "暂无关注用户",
+      "profile": "暂无公开详细信息"
+    },
+    "profile": {
+      "birthday": "生日",
+      "region": "地区",
+      "job": "职业",
+      "webpage": "主页",
+      "twitter": "Twitter",
+      "pawoo": "Pawoo",
+      "openLink": "打开链接"
+    },
+    "meta": {
+      "novelChars": "$count 字",
+      "novelPages": "$count 页"
+    },
+    "error": {
+      "missingUser": "缺少用户 ID 或用户详情。"
+    }
+  },
+  "newest": {
+    "audience": {
+      "following": "关注",
+      "mypixiv": "好P友",
+      "everyone": "所有人"
+    },
+    "workType": {
+      "illustManga": "插画&漫画",
+      "illust": "插画",
+      "manga": "漫画",
+      "novel": "小说",
+      "compactArt": "作品",
+      "compactIllust": "插画",
+      "compactManga": "漫画",
+      "compactNovel": "小说"
+    },
+    "followScope": {
+      "title": "关注范围",
+      "all": "全部关注",
+      "private": "私密关注",
+      "public": "公开关注",
+      "compactAll": "全部",
+      "compactPrivate": "私密",
+      "compactPublic": "公开"
+    },
+    "emptyTitle": "暂无最新作品",
+    "compactFilter": "$workType · $scope",
+    "novelChars": "$count 字",
+    "novelPages": "$count 页"
+  },
+  "illust": {
+    "contextMenu": {
+      "download": "下载",
+      "copyImage": "复制图片"
+    },
+    "imageLabels": {
+      "original": "原图",
+      "large": "大图"
+    },
+    "toast": {
+      "downloadStarted": "开始下载图片",
+      "downloadComplete": "下载完成：$path",
+      "downloadFailed": "下载失败",
+      "copying": "正在复制$label",
+      "copied": "已复制$label",
+      "copiedValue": "已复制$label：$value",
+      "copyFailed": "复制$label失败"
+    },
+    "tooltip": {
+      "previousImage": "上一张图片",
+      "nextImage": "下一张图片",
+      "backToDetail": "回到图片详情",
+      "removeBookmark": "移除收藏",
+      "addBookmark": "添加收藏"
+    },
+    "section": {
+      "tags": "标签",
+      "caption": "说明",
+      "details": "详情",
+      "creator": "作者",
+      "recentWorks": "近期作品",
+      "comments": "评论",
+      "commentsWithCount": "评论（$count）",
+      "relatedWorks": "相似作品"
+    },
+    "metadata": {
+      "type": "类型",
+      "created": "创建时间"
+    },
+    "badge": {
+      "aiArtwork": "AI 作品",
+      "original": "原创"
+    },
+    "stats": {
+      "size": "尺寸",
+      "views": "浏览",
+      "bookmarks": "收藏",
+      "pages": "页数"
+    },
+    "tags": {
+      "none": "没有标签",
+      "tag": "标签"
+    },
+    "comments": {
+      "failed": "评论加载失败",
+      "empty": "暂无评论",
+      "moreAvailable": "还有更多评论",
+      "hasReplies": "有回复",
+      "open": "打开评论",
+      "reply": "回复",
+      "replyingTo": "正在回复 $name",
+      "loadReplies": "加载回复",
+      "loadMoreReplies": "加载更多回复",
+      "repliesFailed": "回复加载失败",
+      "sendFailed": "评论发送失败",
+      "delete": "删除",
+      "deleteFailed": "评论删除失败",
+      "inputHint": "写下评论",
+      "replyInputHint": "回复 $name",
+      "emoji": "表情",
+      "stamp": "贴图"
+    },
+    "works": {
+      "failed": "作品加载失败",
+      "empty": "暂无可显示作品"
+    },
+    "related": {
+      "failed": "相似作品加载失败",
+      "empty": "暂无相似作品",
+      "viewMore": "查看更多相似作品"
+    }
+  },
+  "novel": {
+    "detail": {
+      "images": "图片",
+      "series": "系列",
+      "content": "正文",
+      "startReading": "开始阅读",
+      "totalChars": "共 $count 字",
+      "paragraphCount": "$count 段",
+      "segmentCount": "$count 页"
+    },
+    "reader": {
+      "title": "阅读",
+      "body": "正文",
+      "chapters": "章节",
+      "settings": "阅读设置",
+      "emptyBody": "正文为空",
+      "totalChars": "共 $count 字",
+      "pagePosition": "$current / $total 页",
+      "pageTotal": "$total 页",
+      "currentPage": "第 $page 页",
+      "readingProgress": "阅读进度",
+      "previousPage": "上一页",
+      "nextPage": "下一页",
+      "display": "显示",
+      "fontSize": "字号",
+      "lineHeight": "行距",
+      "noChapterMarkers": "没有章节标记",
+      "close": "关闭",
+      "decrease": "减小",
+      "increase": "增大",
+      "shortcutsTitle": "快捷键",
+      "shortcutsHelp": "左右键或 A/D 翻页，上下键或 W/S 滚动"
+    }
+  },
+  "follow": {
+    "tooltipFollow": "关注用户",
+    "tooltipUnfollow": "取消关注",
+    "followed": "已关注",
+    "notFollowed": "未关注"
+  },
+  "richText": {
+    "twitterUser": "Twitter：$username",
+    "illustId": "插画 ID：$id",
+    "userId": "用户 ID：$id"
+  }
+}

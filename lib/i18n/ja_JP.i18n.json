@@ -1,0 +1,428 @@
+{
+  "app": {
+    "title": "freepiv"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "search": "検索",
+    "newest": "最新",
+    "ranking": "ランキング",
+    "me": "自分",
+    "settings": "設定"
+  },
+  "common": {
+    "back": "戻る",
+    "cancel": "キャンセル",
+    "retry": "再試行",
+    "send": "送信",
+    "filter": "絞り込み",
+    "type": "種類",
+    "id": "ID",
+    "error": "エラー",
+    "notFound": "見つかりません",
+    "copy": "$labelをコピー",
+    "labelValue": "$label：$value",
+    "errorWithCause": "$message：$cause"
+  },
+  "refresh": {
+    "pullToRefresh": "引っ張って更新",
+    "releaseToRefresh": "離して更新",
+    "refreshing": "更新中",
+    "refreshComplete": "更新しました",
+    "refreshFailed": "更新に失敗しました",
+    "pullToLoadMore": "引っ張ってさらに読み込む",
+    "releaseToLoad": "離して読み込む",
+    "loading": "読み込み中",
+    "loadComplete": "読み込みました",
+    "noMoreItems": "これ以上ありません",
+    "loadFailed": "読み込みに失敗しました",
+    "lastUpdated": "最終更新 %T"
+  },
+  "toast": {
+    "bookmarkFailed": "ブックマークに失敗しました",
+    "followFailed": "フォローに失敗しました"
+  },
+  "login": {
+    "title": "ログイン",
+    "notSignedIn": "Pixiv にログインしていません",
+    "signedInAs": "$name としてログイン中",
+    "signInToPixiv": "Pixiv にログイン",
+    "signInAgain": "再ログイン",
+    "openingBrowser": "ブラウザを開いています…",
+    "apiNotInitialized": "Pixiv API が初期化されていません。",
+    "desktopOnly": "システムブラウザでのログインは現在 Linux、macOS、Windows のみ対応しています。",
+    "openedInBrowser": "システムブラウザで Pixiv ログインを開きました。ログイン後にアプリへ戻ってください。",
+    "callbackMissingCode": "Pixiv コールバックに code がありません：$uri",
+    "callbackReceived": "Pixiv コールバックを受信しました。トークンを取得しています。",
+    "browserOpenUnsupported": "この環境ではシステムブラウザを開く処理が実装されていません。",
+    "browserOpenFailed": "$browser でログインリンクを開けませんでした：$output"
+  },
+  "settings": {
+    "theme": {
+      "title": "テーマ",
+      "system": "自動",
+      "light": "ライト",
+      "dark": "ダーク"
+    },
+    "language": {
+      "title": "言語",
+      "systemDefault": "システム設定",
+      "enUs": "English (United States)",
+      "zhCn": "简体中文",
+      "zhTw": "繁體中文",
+      "jaJp": "日本語"
+    },
+    "images": {
+      "title": "画像",
+      "previewQuality": "プレビュー品質",
+      "viewerQuality": "表示品質",
+      "medium": "中",
+      "large": "大",
+      "original": "オリジナル"
+    },
+    "downloads": {
+      "title": "ダウンロード",
+      "savePath": "保存先",
+      "chooseFolder": "フォルダーを選択",
+      "dialogTitle": "ダウンロード保存先",
+      "defaultPath": "既定",
+      "customPath": "カスタム",
+      "systemDownloadsFolder": "システムのダウンロードフォルダー",
+      "noFolderSelected": "フォルダーが選択されていません",
+      "directorySet": "ダウンロード先を設定しました：$path",
+      "directoryUnavailable": "ダウンロード先を使用できません",
+      "tasksTitle": "ダウンロードタスク",
+      "openTasks": "ダウンロードタスク",
+      "openTasksSubtitle": "進捗、失敗、保存済みファイルを確認",
+      "noTasks": "ダウンロードタスクはありません",
+      "noTasksMessage": "ダウンロードした画像がここに表示されます。",
+      "total": "合計",
+      "active": "進行中",
+      "saved": "保存済み",
+      "failed": "失敗",
+      "downloading": "ダウンロード中",
+      "needsAttention": "確認が必要",
+      "completed": "完了",
+      "queued": "待機中",
+      "running": "ダウンロード中",
+      "paused": "一時停止",
+      "downloaded": "ダウンロード済み",
+      "cancelled": "キャンセル済み",
+      "savePending": "保存待ち",
+      "saving": "保存中",
+      "saveFailed": "保存失敗",
+      "retrySave": "保存を再試行",
+      "cancel": "キャンセル",
+      "sync": "同期",
+      "syncFailed": "ダウンロード状態の同期に失敗しました",
+      "actionFailed": "ダウンロード操作に失敗しました",
+      "expand": "展開",
+      "collapse": "折りたたむ"
+    },
+    "account": {
+      "title": "アカウント",
+      "signedOutSubtitle": "ログインすると Pixiv アカウントが表示されます",
+      "notSignedIn": "未ログイン",
+      "signOut": "ログアウト"
+    }
+  },
+  "me": {
+    "openProfile": "プロフィールを開く",
+    "following": "フォロー中",
+    "followers": "フォロワー",
+    "emptyFollowing": "フォロー中のユーザーはいません",
+    "emptyFollowers": "フォロワーはいません",
+    "settings": "設定",
+    "settingsSubtitle": "テーマ、言語、画像、ダウンロード"
+  },
+  "home": {
+    "emptyTitle": "おすすめはまだありません",
+    "emptyMessage": "下に引っ張るとおすすめを再取得できます。",
+    "rankings": "ランキング",
+    "seeMore": "もっと見る",
+    "recommended": "おすすめ",
+    "illustrations": "イラスト",
+    "manga": "マンガ",
+    "novels": "小説",
+    "users": "ユーザー"
+  },
+  "ranking": {
+    "emptyTitle": "ランキング作品はまだありません",
+    "emptyMessage": "下に引っ張るとランキングを再取得できます。",
+    "types": {
+      "illustrations": "イラスト",
+      "manga": "マンガ",
+      "novels": "小説"
+    },
+    "modes": {
+      "day": "デイリー",
+      "dayR18": "デイリー R-18",
+      "dayMale": "男性向けデイリー",
+      "dayMaleR18": "男性向けデイリー R-18",
+      "dayFemale": "女性向けデイリー",
+      "dayFemaleR18": "女性向けデイリー R-18",
+      "dayAi": "AI生成",
+      "dayR18Ai": "AI生成 R-18",
+      "week": "ウィークリー",
+      "weekR18": "ウィークリー R-18",
+      "weekOriginal": "オリジナル",
+      "weekRookie": "ルーキー",
+      "month": "マンスリー"
+    }
+  },
+  "search": {
+    "placeholder": "タグ、作品 ID、ユーザー ID を検索",
+    "submit": "検索",
+    "trendingTags": "人気タグ",
+    "emptyTrendingTitle": "人気タグはありません",
+    "emptyTrendingMessage": "下に引っ張ると人気タグを再取得できます。",
+    "noSuggestions": "候補はありません",
+    "filters": {
+      "title": "検索フィルター",
+      "sort": "並び替え",
+      "target": "対象",
+      "date": "日付",
+      "bookmarks": "ブックマーク数"
+    },
+    "type": {
+      "illustManga": "イラスト・マンガ",
+      "novel": "小説",
+      "user": "ユーザー"
+    },
+    "sort": {
+      "newest": "新しい順",
+      "oldest": "古い順",
+      "popular": "人気順"
+    },
+    "target": {
+      "tags": "タグ",
+      "exactTags": "完全一致タグ",
+      "titleAndCaption": "タイトル・説明文"
+    },
+    "date": {
+      "any": "指定なし",
+      "today": "今日",
+      "days7": "7日",
+      "month1": "1か月",
+      "months6": "6か月",
+      "year1": "1年",
+      "custom": "カスタム"
+    },
+    "bookmarks": {
+      "any": "指定なし",
+      "atLeast": "$count+ ブックマーク"
+    },
+    "direct": {
+      "illust": "イラスト：$id",
+      "user": "ユーザー：$id",
+      "novel": "小説：$id"
+    },
+    "empty": {
+      "illustrations": "イラストは見つかりません",
+      "novels": "小説は見つかりません",
+      "users": "ユーザーは見つかりません"
+    }
+  },
+  "user": {
+    "tabs": {
+      "illustrations": "イラスト",
+      "manga": "マンガ",
+      "novels": "小説",
+      "bookmarks": "ブックマーク",
+      "following": "フォロー",
+      "profile": "詳細"
+    },
+    "stats": {
+      "illustrations": "イラスト",
+      "manga": "マンガ",
+      "novels": "小説",
+      "following": "フォロー"
+    },
+    "bookmarks": {
+      "illustManga": "イラスト・マンガ",
+      "novels": "小説"
+    },
+    "empty": {
+      "illustrations": "イラストはありません",
+      "manga": "マンガはありません",
+      "novels": "小説はありません",
+      "bookmarkIllustrations": "公開イラスト・マンガブックマークはありません",
+      "bookmarkNovels": "公開小説ブックマークはありません",
+      "following": "フォロー中のユーザーはいません",
+      "profile": "公開プロフィール詳細はありません"
+    },
+    "profile": {
+      "birthday": "誕生日",
+      "region": "地域",
+      "job": "職業",
+      "webpage": "Web サイト",
+      "twitter": "Twitter",
+      "pawoo": "Pawoo",
+      "openLink": "リンクを開く"
+    },
+    "meta": {
+      "novelChars": "$count 文字",
+      "novelPages": "$count ページ"
+    },
+    "error": {
+      "missingUser": "ユーザー ID またはユーザー詳細がありません。"
+    }
+  },
+  "newest": {
+    "audience": {
+      "following": "フォロー中",
+      "mypixiv": "マイピク",
+      "everyone": "みんな"
+    },
+    "workType": {
+      "illustManga": "イラスト・マンガ",
+      "illust": "イラスト",
+      "manga": "マンガ",
+      "novel": "小説",
+      "compactArt": "作品",
+      "compactIllust": "イラスト",
+      "compactManga": "マンガ",
+      "compactNovel": "小説"
+    },
+    "followScope": {
+      "title": "フォロー範囲",
+      "all": "すべてのフォロー",
+      "private": "非公開フォロー",
+      "public": "公開フォロー",
+      "compactAll": "すべて",
+      "compactPrivate": "非公開",
+      "compactPublic": "公開"
+    },
+    "emptyTitle": "最新作品はありません",
+    "compactFilter": "$workType · $scope",
+    "novelChars": "$count 文字",
+    "novelPages": "$count ページ"
+  },
+  "illust": {
+    "contextMenu": {
+      "download": "ダウンロード",
+      "copyImage": "画像をコピーする"
+    },
+    "imageLabels": {
+      "original": "オリジナル画像",
+      "large": "大きい画像"
+    },
+    "toast": {
+      "downloadStarted": "画像をダウンロードしています",
+      "downloadComplete": "ダウンロード完了：$path",
+      "downloadFailed": "ダウンロードに失敗しました",
+      "copying": "$labelをコピーしています",
+      "copied": "$labelをコピーしました",
+      "copiedValue": "$labelをコピーしました：$value",
+      "copyFailed": "$labelのコピーに失敗しました"
+    },
+    "tooltip": {
+      "previousImage": "前の画像",
+      "nextImage": "次の画像",
+      "backToDetail": "画像詳細に戻る",
+      "removeBookmark": "ブックマークを解除",
+      "addBookmark": "ブックマークに追加"
+    },
+    "section": {
+      "tags": "タグ",
+      "caption": "キャプション",
+      "details": "詳細",
+      "creator": "作者",
+      "recentWorks": "最近の作品",
+      "comments": "コメント",
+      "commentsWithCount": "コメント（$count）",
+      "relatedWorks": "関連作品"
+    },
+    "metadata": {
+      "type": "種類",
+      "created": "作成日時"
+    },
+    "badge": {
+      "aiArtwork": "AI 作品",
+      "original": "オリジナル"
+    },
+    "stats": {
+      "size": "サイズ",
+      "views": "閲覧",
+      "bookmarks": "ブックマーク",
+      "pages": "ページ"
+    },
+    "tags": {
+      "none": "タグはありません",
+      "tag": "タグ"
+    },
+    "comments": {
+      "failed": "コメントを読み込めませんでした",
+      "empty": "コメントはまだありません",
+      "moreAvailable": "さらにコメントがあります",
+      "hasReplies": "返信があります",
+      "open": "コメントを開く",
+      "reply": "返信",
+      "replyingTo": "$name に返信中",
+      "loadReplies": "返信を読み込む",
+      "loadMoreReplies": "さらに返信を読み込む",
+      "repliesFailed": "返信を読み込めませんでした",
+      "sendFailed": "コメントの送信に失敗しました",
+      "delete": "削除",
+      "deleteFailed": "コメントの削除に失敗しました",
+      "inputHint": "コメントを書く",
+      "replyInputHint": "$name に返信",
+      "emoji": "絵文字",
+      "stamp": "スタンプ"
+    },
+    "works": {
+      "failed": "作品を読み込めませんでした",
+      "empty": "表示できる作品はありません"
+    },
+    "related": {
+      "failed": "関連作品を読み込めませんでした",
+      "empty": "関連作品はありません",
+      "viewMore": "関連作品をもっと見る"
+    }
+  },
+  "novel": {
+    "detail": {
+      "images": "画像",
+      "series": "シリーズ",
+      "content": "本文",
+      "startReading": "読み始める",
+      "totalChars": "全 $count 文字",
+      "paragraphCount": "$count 段落",
+      "segmentCount": "$count ページ"
+    },
+    "reader": {
+      "title": "読書",
+      "body": "本文",
+      "chapters": "章",
+      "settings": "読書設定",
+      "emptyBody": "本文がありません",
+      "totalChars": "全 $count 文字",
+      "pagePosition": "$current / $total ページ",
+      "pageTotal": "$total ページ",
+      "currentPage": "$page ページ目",
+      "readingProgress": "読書進捗",
+      "previousPage": "前のページ",
+      "nextPage": "次のページ",
+      "display": "表示",
+      "fontSize": "文字サイズ",
+      "lineHeight": "行間",
+      "noChapterMarkers": "章マーカーはありません",
+      "close": "閉じる",
+      "decrease": "小さくする",
+      "increase": "大きくする",
+      "shortcutsTitle": "ショートカット",
+      "shortcutsHelp": "左右キーまたは A/D でページ移動、上下キーまたは W/S でスクロール"
+    }
+  },
+  "follow": {
+    "tooltipFollow": "ユーザーをフォロー",
+    "tooltipUnfollow": "フォロー解除",
+    "followed": "フォロー中",
+    "notFollowed": "未フォロー"
+  },
+  "richText": {
+    "twitterUser": "Twitter：$username",
+    "illustId": "イラスト ID：$id",
+    "userId": "ユーザー ID：$id"
+  }
+}
