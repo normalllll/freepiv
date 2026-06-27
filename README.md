@@ -2,7 +2,7 @@
 
 **A cross-platform third-party Pixiv app for Android, iOS, macOS, Windows, and Linux.**
 
-FreePiv provides a smooth, modern, and cross-platform experience for browsing Pixiv content. It is built with Flutter and Rust, aiming to deliver a fast and
+freepiv provides a smooth, modern, and cross-platform experience for browsing Pixiv content. It is built with Flutter and Rust, aiming to deliver a fast and
 responsive Pixiv client across mobile and desktop platforms.
 
 > freepiv is an unofficial third-party app and is not affiliated with or endorsed by Pixiv Inc.
@@ -42,7 +42,7 @@ Visit the [releases page](https://github.com/normalllll/freepiv/releases) for mo
 
 ### Prerequisites
 
-Before building or running FreePiv, install the following dependencies:
+Before building or running freepiv, install the following dependencies:
 
 * [Flutter](https://flutter.dev/docs/get-started/install): A cross-platform UI toolkit.
 * [Rust](https://www.rust-lang.org/tools/install): A performance-oriented systems programming language.
@@ -147,7 +147,7 @@ Contributions are welcome!
 
 ## Disclaimer
 
-FreePiv is an unofficial third-party Pixiv client.
+freepiv is an unofficial third-party Pixiv client.
 
 This project is not affiliated with, sponsored by, or endorsed by Pixiv Inc. Pixiv and related names, logos, and trademarks belong to their respective owners.
 
