@@ -299,7 +299,7 @@ jobs:
            freepiv desktop application built with Flutter.
           EOF
 
-          dpkg-deb --build --root-owner-group "$DEB_DIR" "build/freepiv_amd64.deb"
+          dpkg-deb --build --root-owner-group "$DEB_DIR" "build/linux_amd64.deb"
 
       - name: Package Linux RPM
         run: |
@@ -318,15 +318,15 @@ jobs:
             --depends gtk3 \
             --depends libstdc++ \
             -C "$PACKAGE_ROOT" \
-            -p "build/freepiv_amd64.rpm" \
+            -p "build/linux_amd64.rpm" \
             usr
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           files: |
-            build/freepiv_amd64.deb
-            build/freepiv_amd64.rpm
+            build/linux_amd64.deb
+            build/linux_amd64.rpm
             build/linux-amd64.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}
 
