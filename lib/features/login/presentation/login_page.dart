@@ -2,22 +2,24 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/app_links/app_links.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   UserAccountResult? _account;
   AppLinkCallbackHandle? _appLinkCallbackHandle;
   AppLinkCallbackHandle? _appLinkErrorCallbackHandle;
@@ -141,6 +143,7 @@ class _LoginPageState extends State<LoginPage> {
     final isBusy = _isOpeningLogin || _isCompletingLogin;
     final translations = t;
     final tokens = FreepivThemeTokens.of(context);
+    final proxySettings = ref.watch(proxySettingsProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(translations.login.title)),
@@ -164,6 +167,8 @@ class _LoginPageState extends State<LoginPage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
+                  _LoginProxyNotice(settings: proxySettings, onTap: () => showProxySettingsDialog(context)),
+                  const SizedBox(height: 14),
                   FilledButton(
                     onPressed: isBusy ? null : _openLogin,
                     child: Text(
@@ -188,6 +193,56 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LoginProxyNotice extends StatelessWidget {
+  const _LoginProxyNotice({required this.settings, required this.onTap});
+
+  final AppProxySettings settings;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final translations = context.t;
+    final proxyTranslations = translations.settings.proxy;
+    final tokens = FreepivThemeTokens.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    final active = settings.active;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Color.alphaBlend((active ? tokens.brand : tokens.surfaceTint).withValues(alpha: active ? 0.08 : 0.34), tokens.surfaceRaised),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: active ? tokens.brand.withValues(alpha: 0.20) : tokens.line.withValues(alpha: 0.52)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(active ? Icons.hub : Icons.hub_outlined, color: active ? tokens.brand : colorScheme.onSurfaceVariant, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    translations.login.proxyHint,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant, height: 1.35, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: TextButton.icon(onPressed: onTap, icon: const Icon(Icons.tune), label: Text(proxyTranslations.open)),
+            ),
+          ],
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:freepiv/core/downloads/download_engine.dart';
 import 'package:freepiv/core/downloads/download_file_system.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
+import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/src/rust/api/download.dart';
 import 'package:path/path.dart' as p;
 
@@ -155,8 +156,9 @@ class _RunningDownload {
 
   Future<String> download(String url, String path, {required void Function(int receivedBytes, int? totalBytes) onProgress}) {
     final completer = Completer<String>();
+    final proxy = AppSettings.proxySettings.activeUrl;
     _pathCompleter = completer;
-    subscription = downloadToFile(url: url, path: path).listen(
+    subscription = downloadToFile(url: url, path: path, proxy: proxy).listen(
       (event) {
         if (cancelled) {
           return;

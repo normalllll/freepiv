@@ -55,7 +55,8 @@
     "callbackMissingCode": "Pixiv コールバックに code がありません：$uri",
     "callbackReceived": "Pixiv コールバックを受信しました。トークンを取得しています。",
     "browserOpenUnsupported": "この環境ではシステムブラウザを開く処理が実装されていません。",
-    "browserOpenFailed": "$browser でログインリンクを開けませんでした：$output"
+    "browserOpenFailed": "$browser でログインリンクを開けませんでした：$output",
+    "proxyHint": "ネットワークプロキシを使用している場合は、ログイン前にここでプロキシアドレスを設定してください。"
   },
   "settings": {
     "theme": {
@@ -91,6 +92,8 @@
       "noFolderSelected": "フォルダーが選択されていません",
       "directorySet": "ダウンロード先を設定しました：$path",
       "directoryUnavailable": "ダウンロード先を使用できません",
+      "maxConcurrentDownloads": "最大同時ダウンロード数",
+      "maxConcurrentDownloadsSubtitle": "同時に最大 $count 件をダウンロードします。後続のタスクはキューで待機します。",
       "tasksTitle": "ダウンロードタスク",
       "openTasks": "ダウンロードタスク",
       "openTasksSubtitle": "進捗、失敗、保存済みファイルを確認",
@@ -113,11 +116,44 @@
       "saveFailed": "保存失敗",
       "retrySave": "保存を再試行",
       "cancel": "キャンセル",
+      "deleteTask": "タスクを削除",
       "sync": "同期",
       "syncFailed": "ダウンロード状態の同期に失敗しました",
       "actionFailed": "ダウンロード操作に失敗しました",
       "expand": "展開",
       "collapse": "折りたたむ"
+    },
+    "proxy": {
+      "title": "ネットワークプロキシ",
+      "shortTitle": "プロキシ",
+      "subtitle": "保存後、Pixiv API と画像リクエストは選択したプロキシを使用します。",
+      "open": "プロキシを設定",
+      "enabled": "プロキシを使用",
+      "enabledStatus": "プロキシはオンです",
+      "disabledStatus": "直接接続",
+      "protocol": "プロキシプロトコル",
+      "protocolHttp": "HTTP",
+      "protocolSocks": "SOCKS",
+      "address": "IP アドレス",
+      "addressHint": "127.0.0.1",
+      "port": "ポート",
+      "portHint": "7890",
+      "helper": "IP とポートを分けて入力してください。例: 127.0.0.1 と 7890。",
+      "save": "保存",
+      "saved": "プロキシ設定を保存しました",
+      "required": "オンにする前に IP とポートを入力してください。",
+      "invalid": "有効な IP とポートを入力してください。",
+      "hostRequired": "IP を入力してください。",
+      "portRequired": "ポートを入力してください。",
+      "invalidHost": "有効な IP またはホスト名を入力してください。",
+      "invalidPort": "ポートは 1-65535 の範囲で入力してください。",
+      "loadSystem": "システムプロキシを取得",
+      "systemLoaded": "システムプロキシを取得しました",
+      "systemNotFound": "システムプロキシが見つかりません",
+      "systemUnsupported": "システムプロキシの取得はデスクトップのみ対応です",
+      "systemLoadFailed": "システムプロキシの取得に失敗しました",
+      "entrySubtitleOn": "オン：$url",
+      "entrySubtitleOff": "オフ"
     },
     "account": {
       "title": "アカウント",
@@ -301,6 +337,7 @@
   "illust": {
     "contextMenu": {
       "download": "ダウンロード",
+      "downloadAll": "すべてダウンロード",
       "copyImage": "画像をコピーする"
     },
     "imageLabels": {
@@ -309,6 +346,7 @@
     },
     "toast": {
       "downloadStarted": "画像をダウンロードしています",
+      "downloadAllQueued": "$count 枚の画像をダウンロードキューに追加しました",
       "downloadComplete": "ダウンロード完了：$path",
       "downloadFailed": "ダウンロードに失敗しました",
       "copying": "$labelをコピーしています",

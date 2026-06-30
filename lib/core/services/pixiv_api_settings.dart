@@ -18,5 +18,6 @@ PixivApiConfig buildPixivApiConfig({UserAccountResult? account}) {
     deviceName: PixivApiSettings.deviceName,
     account: account ?? AppSettings.accountSession,
     acceptInvalidCerts: PixivApiSettings.acceptInvalidCerts,
+    proxy: AppSettings.proxySettings.activeUrl,
   );
 }

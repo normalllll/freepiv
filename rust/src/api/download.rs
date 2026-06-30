@@ -1,7 +1,7 @@
-use std::path::PathBuf;
+use crate::frb_generated::StreamSink;
 use flutter_rust_bridge::frb;
 use futures_util::StreamExt;
-use crate::frb_generated::StreamSink;
+use std::path::PathBuf;
 
 #[frb]
 #[derive(Clone, Debug)]
@@ -19,10 +19,10 @@ pub enum FrbDownloadFileEvent {
 
 pub async fn download_to_memory(
     url: String,
+    proxy: Option<String>,
     sink: StreamSink<FrbDownloadBytesEvent>,
 ) -> Result<(), String> {
-    let mut stream = pixiv_rs::download_to_memory(url)
-        .map_err(|e| e.to_string())?;
+    let mut stream = pixiv_rs::download_to_memory(url, proxy).map_err(|e| e.to_string())?;
 
     while let Some(event) = stream.next().await {
         let event = event.map_err(|e| e.to_string())?;
@@ -51,12 +51,12 @@ pub async fn download_to_memory(
 pub async fn download_to_file(
     url: String,
     path: String,
+    proxy: Option<String>,
     sink: StreamSink<FrbDownloadFileEvent>,
 ) -> Result<(), String> {
     let path = PathBuf::from(path);
 
-    let mut stream = pixiv_rs::download_to_file(url, path)
-        .map_err(|e| e.to_string())?;
+    let mut stream = pixiv_rs::download_to_file(url, path, proxy).map_err(|e| e.to_string())?;
 
     while let Some(event) = stream.next().await {
         let event = event.map_err(|e| e.to_string())?;
@@ -68,11 +68,9 @@ pub async fn download_to_file(
                     total: total as u64,
                 })
             }
-            pixiv_rs::DownloadEvent::Done { output } => {
-                sink.add(FrbDownloadFileEvent::Done {
-                    path: output.to_string_lossy().to_string(),
-                })
-            }
+            pixiv_rs::DownloadEvent::Done { output } => sink.add(FrbDownloadFileEvent::Done {
+                path: output.to_string_lossy().to_string(),
+            }),
         };
 
         if send_result.is_err() {

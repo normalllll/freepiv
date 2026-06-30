@@ -156,6 +156,7 @@ class _Translations$login$ja_JP extends Translations$login$en_US {
 	@override String get callbackReceived => 'Pixiv コールバックを受信しました。トークンを取得しています。';
 	@override String get browserOpenUnsupported => 'この環境ではシステムブラウザを開く処理が実装されていません。';
 	@override String browserOpenFailed({required Object browser, required Object output}) => '${browser} でログインリンクを開けませんでした：${output}';
+	@override String get proxyHint => 'ネットワークプロキシを使用している場合は、ログイン前にここでプロキシアドレスを設定してください。';
 }
 
 // Path: settings
@@ -169,6 +170,7 @@ class _Translations$settings$ja_JP extends Translations$settings$en_US {
 	@override late final _Translations$settings$language$ja_JP language = _Translations$settings$language$ja_JP._(_root);
 	@override late final _Translations$settings$images$ja_JP images = _Translations$settings$images$ja_JP._(_root);
 	@override late final _Translations$settings$downloads$ja_JP downloads = _Translations$settings$downloads$ja_JP._(_root);
+	@override late final _Translations$settings$proxy$ja_JP proxy = _Translations$settings$proxy$ja_JP._(_root);
 	@override late final _Translations$settings$account$ja_JP account = _Translations$settings$account$ja_JP._(_root);
 }
 
@@ -391,6 +393,8 @@ class _Translations$settings$downloads$ja_JP extends Translations$settings$downl
 	@override String get noFolderSelected => 'フォルダーが選択されていません';
 	@override String directorySet({required Object path}) => 'ダウンロード先を設定しました：${path}';
 	@override String get directoryUnavailable => 'ダウンロード先を使用できません';
+	@override String get maxConcurrentDownloads => '最大同時ダウンロード数';
+	@override String maxConcurrentDownloadsSubtitle({required Object count}) => '同時に最大 ${count} 件をダウンロードします。後続のタスクはキューで待機します。';
 	@override String get tasksTitle => 'ダウンロードタスク';
 	@override String get openTasks => 'ダウンロードタスク';
 	@override String get openTasksSubtitle => '進捗、失敗、保存済みファイルを確認';
@@ -413,11 +417,51 @@ class _Translations$settings$downloads$ja_JP extends Translations$settings$downl
 	@override String get saveFailed => '保存失敗';
 	@override String get retrySave => '保存を再試行';
 	@override String get cancel => 'キャンセル';
+	@override String get deleteTask => 'タスクを削除';
 	@override String get sync => '同期';
 	@override String get syncFailed => 'ダウンロード状態の同期に失敗しました';
 	@override String get actionFailed => 'ダウンロード操作に失敗しました';
 	@override String get expand => '展開';
 	@override String get collapse => '折りたたむ';
+}
+
+// Path: settings.proxy
+class _Translations$settings$proxy$ja_JP extends Translations$settings$proxy$en_US {
+	_Translations$settings$proxy$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'ネットワークプロキシ';
+	@override String get shortTitle => 'プロキシ';
+	@override String get subtitle => '保存後、Pixiv API と画像リクエストは選択したプロキシを使用します。';
+	@override String get open => 'プロキシを設定';
+	@override String get enabled => 'プロキシを使用';
+	@override String get enabledStatus => 'プロキシはオンです';
+	@override String get disabledStatus => '直接接続';
+	@override String get protocol => 'プロキシプロトコル';
+	@override String get protocolHttp => 'HTTP';
+	@override String get protocolSocks => 'SOCKS';
+	@override String get address => 'IP アドレス';
+	@override String get addressHint => '127.0.0.1';
+	@override String get port => 'ポート';
+	@override String get portHint => '7890';
+	@override String get helper => 'IP とポートを分けて入力してください。例: 127.0.0.1 と 7890。';
+	@override String get save => '保存';
+	@override String get saved => 'プロキシ設定を保存しました';
+	@override String get required => 'オンにする前に IP とポートを入力してください。';
+	@override String get invalid => '有効な IP とポートを入力してください。';
+	@override String get hostRequired => 'IP を入力してください。';
+	@override String get portRequired => 'ポートを入力してください。';
+	@override String get invalidHost => '有効な IP またはホスト名を入力してください。';
+	@override String get invalidPort => 'ポートは 1-65535 の範囲で入力してください。';
+	@override String get loadSystem => 'システムプロキシを取得';
+	@override String get systemLoaded => 'システムプロキシを取得しました';
+	@override String get systemNotFound => 'システムプロキシが見つかりません';
+	@override String get systemUnsupported => 'システムプロキシの取得はデスクトップのみ対応です';
+	@override String get systemLoadFailed => 'システムプロキシの取得に失敗しました';
+	@override String entrySubtitleOn({required Object url}) => 'オン：${url}';
+	@override String get entrySubtitleOff => 'オフ';
 }
 
 // Path: settings.account
@@ -713,6 +757,7 @@ class _Translations$illust$contextMenu$ja_JP extends Translations$illust$context
 
 	// Translations
 	@override String get download => 'ダウンロード';
+	@override String get downloadAll => 'すべてダウンロード';
 	@override String get copyImage => '画像をコピーする';
 }
 
@@ -735,6 +780,7 @@ class _Translations$illust$toast$ja_JP extends Translations$illust$toast$en_US {
 
 	// Translations
 	@override String get downloadStarted => '画像をダウンロードしています';
+	@override String downloadAllQueued({required Object count}) => '${count} 枚の画像をダウンロードキューに追加しました';
 	@override String downloadComplete({required Object path}) => 'ダウンロード完了：${path}';
 	@override String get downloadFailed => 'ダウンロードに失敗しました';
 	@override String copying({required Object label}) => '${label}をコピーしています';
@@ -969,6 +1015,7 @@ extension on TranslationsJaJp {
 			'login.callbackReceived' => 'Pixiv コールバックを受信しました。トークンを取得しています。',
 			'login.browserOpenUnsupported' => 'この環境ではシステムブラウザを開く処理が実装されていません。',
 			'login.browserOpenFailed' => ({required Object browser, required Object output}) => '${browser} でログインリンクを開けませんでした：${output}',
+			'login.proxyHint' => 'ネットワークプロキシを使用している場合は、ログイン前にここでプロキシアドレスを設定してください。',
 			'settings.theme.title' => 'テーマ',
 			'settings.theme.system' => '自動',
 			'settings.theme.light' => 'ライト',
@@ -995,6 +1042,8 @@ extension on TranslationsJaJp {
 			'settings.downloads.noFolderSelected' => 'フォルダーが選択されていません',
 			'settings.downloads.directorySet' => ({required Object path}) => 'ダウンロード先を設定しました：${path}',
 			'settings.downloads.directoryUnavailable' => 'ダウンロード先を使用できません',
+			'settings.downloads.maxConcurrentDownloads' => '最大同時ダウンロード数',
+			'settings.downloads.maxConcurrentDownloadsSubtitle' => ({required Object count}) => '同時に最大 ${count} 件をダウンロードします。後続のタスクはキューで待機します。',
 			'settings.downloads.tasksTitle' => 'ダウンロードタスク',
 			'settings.downloads.openTasks' => 'ダウンロードタスク',
 			'settings.downloads.openTasksSubtitle' => '進捗、失敗、保存済みファイルを確認',
@@ -1017,11 +1066,42 @@ extension on TranslationsJaJp {
 			'settings.downloads.saveFailed' => '保存失敗',
 			'settings.downloads.retrySave' => '保存を再試行',
 			'settings.downloads.cancel' => 'キャンセル',
+			'settings.downloads.deleteTask' => 'タスクを削除',
 			'settings.downloads.sync' => '同期',
 			'settings.downloads.syncFailed' => 'ダウンロード状態の同期に失敗しました',
 			'settings.downloads.actionFailed' => 'ダウンロード操作に失敗しました',
 			'settings.downloads.expand' => '展開',
 			'settings.downloads.collapse' => '折りたたむ',
+			'settings.proxy.title' => 'ネットワークプロキシ',
+			'settings.proxy.shortTitle' => 'プロキシ',
+			'settings.proxy.subtitle' => '保存後、Pixiv API と画像リクエストは選択したプロキシを使用します。',
+			'settings.proxy.open' => 'プロキシを設定',
+			'settings.proxy.enabled' => 'プロキシを使用',
+			'settings.proxy.enabledStatus' => 'プロキシはオンです',
+			'settings.proxy.disabledStatus' => '直接接続',
+			'settings.proxy.protocol' => 'プロキシプロトコル',
+			'settings.proxy.protocolHttp' => 'HTTP',
+			'settings.proxy.protocolSocks' => 'SOCKS',
+			'settings.proxy.address' => 'IP アドレス',
+			'settings.proxy.addressHint' => '127.0.0.1',
+			'settings.proxy.port' => 'ポート',
+			'settings.proxy.portHint' => '7890',
+			'settings.proxy.helper' => 'IP とポートを分けて入力してください。例: 127.0.0.1 と 7890。',
+			'settings.proxy.save' => '保存',
+			'settings.proxy.saved' => 'プロキシ設定を保存しました',
+			'settings.proxy.required' => 'オンにする前に IP とポートを入力してください。',
+			'settings.proxy.invalid' => '有効な IP とポートを入力してください。',
+			'settings.proxy.hostRequired' => 'IP を入力してください。',
+			'settings.proxy.portRequired' => 'ポートを入力してください。',
+			'settings.proxy.invalidHost' => '有効な IP またはホスト名を入力してください。',
+			'settings.proxy.invalidPort' => 'ポートは 1-65535 の範囲で入力してください。',
+			'settings.proxy.loadSystem' => 'システムプロキシを取得',
+			'settings.proxy.systemLoaded' => 'システムプロキシを取得しました',
+			'settings.proxy.systemNotFound' => 'システムプロキシが見つかりません',
+			'settings.proxy.systemUnsupported' => 'システムプロキシの取得はデスクトップのみ対応です',
+			'settings.proxy.systemLoadFailed' => 'システムプロキシの取得に失敗しました',
+			'settings.proxy.entrySubtitleOn' => ({required Object url}) => 'オン：${url}',
+			'settings.proxy.entrySubtitleOff' => 'オフ',
 			'settings.account.title' => 'アカウント',
 			'settings.account.signedOutSubtitle' => 'ログインすると Pixiv アカウントが表示されます',
 			'settings.account.notSignedIn' => '未ログイン',
@@ -1147,10 +1227,12 @@ extension on TranslationsJaJp {
 			'newest.novelChars' => ({required Object count}) => '${count} 文字',
 			'newest.novelPages' => ({required Object count}) => '${count} ページ',
 			'illust.contextMenu.download' => 'ダウンロード',
+			'illust.contextMenu.downloadAll' => 'すべてダウンロード',
 			'illust.contextMenu.copyImage' => '画像をコピーする',
 			'illust.imageLabels.original' => 'オリジナル画像',
 			'illust.imageLabels.large' => '大きい画像',
 			'illust.toast.downloadStarted' => '画像をダウンロードしています',
+			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} 枚の画像をダウンロードキューに追加しました',
 			'illust.toast.downloadComplete' => ({required Object path}) => 'ダウンロード完了：${path}',
 			'illust.toast.downloadFailed' => 'ダウンロードに失敗しました',
 			'illust.toast.copying' => ({required Object label}) => '${label}をコピーしています',

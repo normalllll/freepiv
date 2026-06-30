@@ -380,7 +380,7 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
 
   Future<Uint8List> _downloadBytes(Uri url, {required ValueChanged<double?> onProgress}) async {
     Uint8List? downloadedBytes;
-    await for (final event in downloadToMemory(url: url.toString())) {
+    await for (final event in downloadToMemory(url: url.toString(), proxy: AppSettings.proxySettings.activeUrl)) {
       switch (event) {
         case FrbDownloadBytesEvent_Progress(:final received, :final total):
           onProgress(total > 0 ? (received / total).clamp(0.0, 1.0) : null);

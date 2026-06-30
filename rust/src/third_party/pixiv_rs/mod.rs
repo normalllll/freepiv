@@ -3,7 +3,7 @@ use flutter_rust_bridge::frb;
 use pixiv_rs::api::PixivApi;
 
 #[frb(external)]
-impl PixivApi{
+impl PixivApi {
     #[frb(sync)]
     pub fn new() {}
     #[frb(sync)]
@@ -13,8 +13,10 @@ impl PixivApi{
     pub fn set_account() {}
 
     #[frb(sync)]
+    pub fn set_proxy() {}
+
+    #[frb(sync)]
     pub fn generate_login_url() {}
-    
 }
 
 #[frb(external)]

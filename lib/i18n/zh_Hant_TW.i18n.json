@@ -55,7 +55,8 @@
     "callbackMissingCode": "Pixiv 回呼缺少 code：$uri",
     "callbackReceived": "已收到 Pixiv 回呼，正在取得權杖。",
     "browserOpenUnsupported": "目前環境尚未實作系統瀏覽器開啟功能。",
-    "browserOpenFailed": "$browser 無法開啟登入連結：$output"
+    "browserOpenFailed": "$browser 無法開啟登入連結：$output",
+    "proxyHint": "如果你使用了網路代理，請在此設定代理地址再進行登入。"
   },
   "settings": {
     "theme": {
@@ -91,6 +92,8 @@
       "noFolderSelected": "尚未選擇資料夾",
       "directorySet": "下載目錄已設定：$path",
       "directoryUnavailable": "下載目錄不可用",
+      "maxConcurrentDownloads": "最大同時下載數量",
+      "maxConcurrentDownloadsSubtitle": "目前最多同時下載 $count 個任務，後續任務會排隊等待。",
       "tasksTitle": "下載任務",
       "openTasks": "下載任務",
       "openTasksSubtitle": "檢視進度、失敗項目和已儲存檔案",
@@ -113,11 +116,44 @@
       "saveFailed": "儲存失敗",
       "retrySave": "重試儲存",
       "cancel": "取消",
+      "deleteTask": "刪除任務",
       "sync": "同步",
       "syncFailed": "下載狀態同步失敗",
       "actionFailed": "下載操作失敗",
       "expand": "展開",
       "collapse": "收合"
+    },
+    "proxy": {
+      "title": "網路代理",
+      "shortTitle": "代理",
+      "subtitle": "儲存後 Pixiv API 和圖片請求會使用所選代理。",
+      "open": "設定代理",
+      "enabled": "啟用代理",
+      "enabledStatus": "代理已開啟",
+      "disabledStatus": "直連",
+      "protocol": "代理協定",
+      "protocolHttp": "HTTP",
+      "protocolSocks": "SOCKS",
+      "address": "IP 位址",
+      "addressHint": "127.0.0.1",
+      "port": "連接埠",
+      "portHint": "7890",
+      "helper": "IP 和連接埠分開填寫，例如 127.0.0.1 和 7890。",
+      "save": "儲存",
+      "saved": "代理設定已儲存",
+      "required": "啟用代理前需要填寫 IP 和連接埠。",
+      "invalid": "請輸入有效的 IP 和連接埠。",
+      "hostRequired": "請輸入 IP。",
+      "portRequired": "請輸入連接埠。",
+      "invalidHost": "請輸入有效的 IP 或主機名稱。",
+      "invalidPort": "連接埠範圍為 1-65535。",
+      "loadSystem": "取得系統代理",
+      "systemLoaded": "已取得系統代理",
+      "systemNotFound": "未偵測到系統代理",
+      "systemUnsupported": "僅桌面端支援取得系統代理",
+      "systemLoadFailed": "取得系統代理失敗",
+      "entrySubtitleOn": "已開啟：$url",
+      "entrySubtitleOff": "未開啟"
     },
     "account": {
       "title": "帳號",
@@ -301,6 +337,7 @@
   "illust": {
     "contextMenu": {
       "download": "下載",
+      "downloadAll": "下載全部",
       "copyImage": "複製圖像"
     },
     "imageLabels": {
@@ -309,6 +346,7 @@
     },
     "toast": {
       "downloadStarted": "開始下載圖片",
+      "downloadAllQueued": "已加入下載佇列：$count 張圖片",
       "downloadComplete": "下載完成：$path",
       "downloadFailed": "下載失敗",
       "copying": "正在複製$label",

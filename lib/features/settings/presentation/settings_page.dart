@@ -8,6 +8,7 @@ import 'package:freepiv/app/theme/app_theme.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 
@@ -38,6 +39,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final previewQuality = ref.watch(previewImageQualityProvider);
     final viewerQuality = ref.watch(viewerImageQualityProvider);
     final downloadPathSettings = ref.watch(downloadSavePathSettingsProvider);
+    final proxySettings = ref.watch(proxySettingsProvider);
     final tokens = FreepivThemeTokens.of(context);
     final translations = t;
 
@@ -105,6 +107,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                                       ref.read(viewerImageQualityProvider.notifier).setQuality(quality);
                                     },
                                   ),
+                                  const SizedBox(height: 20),
+                                  const Divider(height: 1),
+                                  const SizedBox(height: 20),
+                                  _ProxySettingsSection(settings: proxySettings, onTap: () => showProxySettingsDialog(context)),
                                   const SizedBox(height: 20),
                                   const Divider(height: 1),
                                   const SizedBox(height: 20),
@@ -296,6 +302,76 @@ class _ViewerQualitySelector extends StatelessWidget {
       ],
       selected: {value},
       onSelectionChanged: (selection) => onChanged(selection.single),
+    );
+  }
+}
+
+class _ProxySettingsSection extends StatelessWidget {
+  const _ProxySettingsSection({required this.settings, required this.onTap});
+
+  final AppProxySettings settings;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final translations = t.settings.proxy;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(translations.title, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 12),
+        _ProxySettingsTile(settings: settings, onTap: onTap),
+      ],
+    );
+  }
+}
+
+class _ProxySettingsTile extends StatelessWidget {
+  const _ProxySettingsTile({required this.settings, required this.onTap});
+
+  final AppProxySettings settings;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = FreepivThemeTokens.of(context);
+    final translations = t.settings.proxy;
+    final active = settings.active;
+
+    return Material(
+      color: Color.alphaBlend((active ? tokens.brand : tokens.surfaceTint).withValues(alpha: active ? 0.08 : 0.30), tokens.surfaceRaised),
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+          child: Row(
+            children: [
+              Icon(active ? Icons.hub : Icons.hub_outlined, color: active ? tokens.brand : colorScheme.onSurfaceVariant),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(translations.open, style: Theme.of(context).textTheme.titleSmall),
+                    const SizedBox(height: 2),
+                    Text(
+                      active ? translations.entrySubtitleOn(url: settings.url!) : translations.entrySubtitleOff,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

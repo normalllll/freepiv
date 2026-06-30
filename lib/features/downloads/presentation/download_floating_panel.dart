@@ -9,9 +9,10 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:go_router/go_router.dart';
 
 class DesktopDownloadDock extends StatefulWidget {
-  const DesktopDownloadDock({required this.railWidth, super.key});
+  const DesktopDownloadDock({required this.railWidth, this.bottomOffset = 16, super.key});
 
   final double railWidth;
+  final double bottomOffset;
 
   @override
   State<DesktopDownloadDock> createState() => _DesktopDownloadDockState();
@@ -20,7 +21,6 @@ class DesktopDownloadDock extends StatefulWidget {
 class _DesktopDownloadDockState extends State<DesktopDownloadDock> {
   static const _panelWidth = 420.0;
   static const _panelHeight = 420.0;
-  static const _bottomOffset = 16.0;
 
   final _sessionStartedAt = DateTime.now();
   final _sessionTaskIds = <String>{};
@@ -48,7 +48,7 @@ class _DesktopDownloadDockState extends State<DesktopDownloadDock> {
           children: [
             Positioned(
               left: 0,
-              bottom: _bottomOffset,
+              bottom: widget.bottomOffset,
               width: widget.railWidth,
               child: Center(
                 child: _DownloadDockButton(summary: summary, expanded: _expanded, onPressed: () => setState(() => _expanded = !_expanded)),
@@ -56,7 +56,7 @@ class _DesktopDownloadDockState extends State<DesktopDownloadDock> {
             ),
             Positioned(
               left: widget.railWidth + 12,
-              bottom: _bottomOffset,
+              bottom: widget.bottomOffset,
               width: _panelWidth,
               height: _panelHeight,
               child: IgnorePointer(

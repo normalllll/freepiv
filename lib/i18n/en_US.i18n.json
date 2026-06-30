@@ -55,7 +55,8 @@
     "callbackMissingCode": "Pixiv callback is missing code: $uri",
     "callbackReceived": "Pixiv callback received. Fetching token.",
     "browserOpenUnsupported": "System browser opening is not implemented here.",
-    "browserOpenFailed": "$browser failed to open the sign-in link: $output"
+    "browserOpenFailed": "$browser failed to open the sign-in link: $output",
+    "proxyHint": "If you use a network proxy, set the proxy address here before signing in."
   },
   "settings": {
     "theme": {
@@ -91,6 +92,8 @@
       "noFolderSelected": "No folder selected",
       "directorySet": "Download folder set: $path",
       "directoryUnavailable": "Download folder is unavailable",
+      "maxConcurrentDownloads": "Maximum simultaneous downloads",
+      "maxConcurrentDownloadsSubtitle": "Up to $count tasks download at once. Later tasks wait in the queue.",
       "tasksTitle": "Download tasks",
       "openTasks": "Download tasks",
       "openTasksSubtitle": "View progress, failures, and saved files",
@@ -113,11 +116,44 @@
       "saveFailed": "Save failed",
       "retrySave": "Retry save",
       "cancel": "Cancel",
+      "deleteTask": "Delete task",
       "sync": "Sync",
       "syncFailed": "Download sync failed",
       "actionFailed": "Download action failed",
       "expand": "Expand",
       "collapse": "Collapse"
+    },
+    "proxy": {
+      "title": "Network proxy",
+      "shortTitle": "Proxy",
+      "subtitle": "Pixiv API and image requests will use the selected proxy after saving.",
+      "open": "Set proxy",
+      "enabled": "Use proxy",
+      "enabledStatus": "Proxy is on",
+      "disabledStatus": "Direct connection",
+      "protocol": "Proxy protocol",
+      "protocolHttp": "HTTP",
+      "protocolSocks": "SOCKS",
+      "address": "IP address",
+      "addressHint": "127.0.0.1",
+      "port": "Port",
+      "portHint": "7890",
+      "helper": "Enter IP and port separately, for example 127.0.0.1 and 7890.",
+      "save": "Save",
+      "saved": "Proxy settings saved",
+      "required": "Enter an IP and port before turning this on.",
+      "invalid": "Enter a valid IP and port.",
+      "hostRequired": "Enter an IP.",
+      "portRequired": "Enter a port.",
+      "invalidHost": "Enter a valid IP or host name.",
+      "invalidPort": "Port must be 1-65535.",
+      "loadSystem": "Get system proxy",
+      "systemLoaded": "System proxy loaded",
+      "systemNotFound": "No system proxy detected",
+      "systemUnsupported": "System proxy detection is available on desktop only",
+      "systemLoadFailed": "Failed to get system proxy",
+      "entrySubtitleOn": "On: $url",
+      "entrySubtitleOff": "Off"
     },
     "account": {
       "title": "Account",
@@ -301,6 +337,7 @@
   "illust": {
     "contextMenu": {
       "download": "Download",
+      "downloadAll": "Download all",
       "copyImage": "Copy image"
     },
     "imageLabels": {
@@ -309,6 +346,7 @@
     },
     "toast": {
       "downloadStarted": "Downloading image",
+      "downloadAllQueued": "$count images added to the download queue",
       "downloadComplete": "Download complete: $path",
       "downloadFailed": "Download failed",
       "copying": "Copying $label",

@@ -37,6 +37,8 @@ abstract class PixivAuth implements RustOpaqueInterface {
       RustLib.instance.api.pixivRsAuthPixivAuthNew(config: config);
 
   Future<UserAccountResult> refreshAuthToken({required String refreshToken});
+
+  Future<void> setProxy({required String proxy});
 }
 
 class PixivAuthConfig {
@@ -44,12 +46,14 @@ class PixivAuthConfig {
   final String language;
   final String deviceName;
   final bool acceptInvalidCerts;
+  final String? proxy;
 
   const PixivAuthConfig({
     required this.targetIp,
     required this.language,
     required this.deviceName,
     required this.acceptInvalidCerts,
+    this.proxy,
   });
 
   // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
@@ -68,7 +72,8 @@ class PixivAuthConfig {
       targetIp.hashCode ^
       language.hashCode ^
       deviceName.hashCode ^
-      acceptInvalidCerts.hashCode;
+      acceptInvalidCerts.hashCode ^
+      proxy.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -78,5 +83,6 @@ class PixivAuthConfig {
           targetIp == other.targetIp &&
           language == other.language &&
           deviceName == other.deviceName &&
-          acceptInvalidCerts == other.acceptInvalidCerts;
+          acceptInvalidCerts == other.acceptInvalidCerts &&
+          proxy == other.proxy;
 }

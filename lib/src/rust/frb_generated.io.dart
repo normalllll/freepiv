@@ -5,6 +5,7 @@
 
 import 'api/download.dart';
 import 'api/image_utils.dart';
+import 'api/proxy.dart';
 import 'api/zip_utils.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -66,6 +67,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   UnzipError
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUnzipError(
+    dynamic raw,
+  );
+
+  @protected
+  PixivApi
+  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+    dynamic raw,
+  );
+
+  @protected
+  PixivAuth
+  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivAuth(
     dynamic raw,
   );
 
@@ -493,6 +506,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   UnzipError
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUnzipError(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PixivApi
+  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PixivAuth
+  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivAuth(
     SseDeserializer deserializer,
   );
 
@@ -994,6 +1019,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUnzipError(
     UnzipError self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+    PixivApi self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivAuth(
+    PixivAuth self,
     SseSerializer serializer,
   );
 

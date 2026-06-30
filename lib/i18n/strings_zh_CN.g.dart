@@ -156,6 +156,7 @@ class Translations$login$zh_CN extends Translations$login$en_US {
 	@override String get callbackReceived => '已收到 Pixiv 回调，正在获取令牌。';
 	@override String get browserOpenUnsupported => '当前环境尚未实现系统浏览器打开功能。';
 	@override String browserOpenFailed({required Object browser, required Object output}) => '${browser} 打开登录链接失败：${output}';
+	@override String get proxyHint => '如果你使用了网路代理请在此设置代理地址再进行登录。';
 }
 
 // Path: settings
@@ -169,6 +170,7 @@ class Translations$settings$zh_CN extends Translations$settings$en_US {
 	@override late final Translations$settings$language$zh_CN language = Translations$settings$language$zh_CN.internal(_root);
 	@override late final Translations$settings$images$zh_CN images = Translations$settings$images$zh_CN.internal(_root);
 	@override late final Translations$settings$downloads$zh_CN downloads = Translations$settings$downloads$zh_CN.internal(_root);
+	@override late final Translations$settings$proxy$zh_CN proxy = Translations$settings$proxy$zh_CN.internal(_root);
 	@override late final Translations$settings$account$zh_CN account = Translations$settings$account$zh_CN.internal(_root);
 }
 
@@ -391,6 +393,8 @@ class Translations$settings$downloads$zh_CN extends Translations$settings$downlo
 	@override String get noFolderSelected => '未选择文件夹';
 	@override String directorySet({required Object path}) => '下载目录已设置：${path}';
 	@override String get directoryUnavailable => '下载目录不可用';
+	@override String get maxConcurrentDownloads => '最大同时下载数量';
+	@override String maxConcurrentDownloadsSubtitle({required Object count}) => '当前最多同时下载 ${count} 个任务，后续任务会排队等待。';
 	@override String get tasksTitle => '下载任务';
 	@override String get openTasks => '下载任务';
 	@override String get openTasksSubtitle => '查看进度、失败项和已保存文件';
@@ -413,11 +417,51 @@ class Translations$settings$downloads$zh_CN extends Translations$settings$downlo
 	@override String get saveFailed => '保存失败';
 	@override String get retrySave => '重试保存';
 	@override String get cancel => '取消';
+	@override String get deleteTask => '删除任务';
 	@override String get sync => '同步';
 	@override String get syncFailed => '下载状态同步失败';
 	@override String get actionFailed => '下载操作失败';
 	@override String get expand => '展开';
 	@override String get collapse => '收起';
+}
+
+// Path: settings.proxy
+class Translations$settings$proxy$zh_CN extends Translations$settings$proxy$en_US {
+	Translations$settings$proxy$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '网络代理';
+	@override String get shortTitle => '代理';
+	@override String get subtitle => '保存后 Pixiv API 和图片请求会使用所选代理。';
+	@override String get open => '设置代理';
+	@override String get enabled => '启用代理';
+	@override String get enabledStatus => '代理已开启';
+	@override String get disabledStatus => '直连';
+	@override String get protocol => '代理协议';
+	@override String get protocolHttp => 'HTTP';
+	@override String get protocolSocks => 'SOCKS';
+	@override String get address => 'IP 地址';
+	@override String get addressHint => '127.0.0.1';
+	@override String get port => '端口号';
+	@override String get portHint => '7890';
+	@override String get helper => 'IP 和端口分开填写，例如 127.0.0.1 和 7890。';
+	@override String get save => '保存';
+	@override String get saved => '代理设置已保存';
+	@override String get required => '启用代理前需要填写 IP 和端口。';
+	@override String get invalid => '请输入有效的 IP 和端口。';
+	@override String get hostRequired => '请输入 IP。';
+	@override String get portRequired => '请输入端口。';
+	@override String get invalidHost => '请输入有效的 IP 或主机名。';
+	@override String get invalidPort => '端口范围为 1-65535。';
+	@override String get loadSystem => '获取系统代理';
+	@override String get systemLoaded => '已获取系统代理';
+	@override String get systemNotFound => '未检测到系统代理';
+	@override String get systemUnsupported => '仅桌面端支持获取系统代理';
+	@override String get systemLoadFailed => '获取系统代理失败';
+	@override String entrySubtitleOn({required Object url}) => '已开启：${url}';
+	@override String get entrySubtitleOff => '未开启';
 }
 
 // Path: settings.account
@@ -713,6 +757,7 @@ class Translations$illust$contextMenu$zh_CN extends Translations$illust$contextM
 
 	// Translations
 	@override String get download => '下载';
+	@override String get downloadAll => '下载全部';
 	@override String get copyImage => '复制图片';
 }
 
@@ -735,6 +780,7 @@ class Translations$illust$toast$zh_CN extends Translations$illust$toast$en_US {
 
 	// Translations
 	@override String get downloadStarted => '开始下载图片';
+	@override String downloadAllQueued({required Object count}) => '已加入下载队列：${count} 张图片';
 	@override String downloadComplete({required Object path}) => '下载完成：${path}';
 	@override String get downloadFailed => '下载失败';
 	@override String copying({required Object label}) => '正在复制${label}';
@@ -969,6 +1015,7 @@ extension on TranslationsZhCn {
 			'login.callbackReceived' => '已收到 Pixiv 回调，正在获取令牌。',
 			'login.browserOpenUnsupported' => '当前环境尚未实现系统浏览器打开功能。',
 			'login.browserOpenFailed' => ({required Object browser, required Object output}) => '${browser} 打开登录链接失败：${output}',
+			'login.proxyHint' => '如果你使用了网路代理请在此设置代理地址再进行登录。',
 			'settings.theme.title' => '主题',
 			'settings.theme.system' => '跟随系统',
 			'settings.theme.light' => '浅色',
@@ -995,6 +1042,8 @@ extension on TranslationsZhCn {
 			'settings.downloads.noFolderSelected' => '未选择文件夹',
 			'settings.downloads.directorySet' => ({required Object path}) => '下载目录已设置：${path}',
 			'settings.downloads.directoryUnavailable' => '下载目录不可用',
+			'settings.downloads.maxConcurrentDownloads' => '最大同时下载数量',
+			'settings.downloads.maxConcurrentDownloadsSubtitle' => ({required Object count}) => '当前最多同时下载 ${count} 个任务，后续任务会排队等待。',
 			'settings.downloads.tasksTitle' => '下载任务',
 			'settings.downloads.openTasks' => '下载任务',
 			'settings.downloads.openTasksSubtitle' => '查看进度、失败项和已保存文件',
@@ -1017,11 +1066,42 @@ extension on TranslationsZhCn {
 			'settings.downloads.saveFailed' => '保存失败',
 			'settings.downloads.retrySave' => '重试保存',
 			'settings.downloads.cancel' => '取消',
+			'settings.downloads.deleteTask' => '删除任务',
 			'settings.downloads.sync' => '同步',
 			'settings.downloads.syncFailed' => '下载状态同步失败',
 			'settings.downloads.actionFailed' => '下载操作失败',
 			'settings.downloads.expand' => '展开',
 			'settings.downloads.collapse' => '收起',
+			'settings.proxy.title' => '网络代理',
+			'settings.proxy.shortTitle' => '代理',
+			'settings.proxy.subtitle' => '保存后 Pixiv API 和图片请求会使用所选代理。',
+			'settings.proxy.open' => '设置代理',
+			'settings.proxy.enabled' => '启用代理',
+			'settings.proxy.enabledStatus' => '代理已开启',
+			'settings.proxy.disabledStatus' => '直连',
+			'settings.proxy.protocol' => '代理协议',
+			'settings.proxy.protocolHttp' => 'HTTP',
+			'settings.proxy.protocolSocks' => 'SOCKS',
+			'settings.proxy.address' => 'IP 地址',
+			'settings.proxy.addressHint' => '127.0.0.1',
+			'settings.proxy.port' => '端口号',
+			'settings.proxy.portHint' => '7890',
+			'settings.proxy.helper' => 'IP 和端口分开填写，例如 127.0.0.1 和 7890。',
+			'settings.proxy.save' => '保存',
+			'settings.proxy.saved' => '代理设置已保存',
+			'settings.proxy.required' => '启用代理前需要填写 IP 和端口。',
+			'settings.proxy.invalid' => '请输入有效的 IP 和端口。',
+			'settings.proxy.hostRequired' => '请输入 IP。',
+			'settings.proxy.portRequired' => '请输入端口。',
+			'settings.proxy.invalidHost' => '请输入有效的 IP 或主机名。',
+			'settings.proxy.invalidPort' => '端口范围为 1-65535。',
+			'settings.proxy.loadSystem' => '获取系统代理',
+			'settings.proxy.systemLoaded' => '已获取系统代理',
+			'settings.proxy.systemNotFound' => '未检测到系统代理',
+			'settings.proxy.systemUnsupported' => '仅桌面端支持获取系统代理',
+			'settings.proxy.systemLoadFailed' => '获取系统代理失败',
+			'settings.proxy.entrySubtitleOn' => ({required Object url}) => '已开启：${url}',
+			'settings.proxy.entrySubtitleOff' => '未开启',
 			'settings.account.title' => '账号',
 			'settings.account.signedOutSubtitle' => '登录后显示 Pixiv 账号',
 			'settings.account.notSignedIn' => '未登录',
@@ -1147,10 +1227,12 @@ extension on TranslationsZhCn {
 			'newest.novelChars' => ({required Object count}) => '${count} 字',
 			'newest.novelPages' => ({required Object count}) => '${count} 页',
 			'illust.contextMenu.download' => '下载',
+			'illust.contextMenu.downloadAll' => '下载全部',
 			'illust.contextMenu.copyImage' => '复制图片',
 			'illust.imageLabels.original' => '原图',
 			'illust.imageLabels.large' => '大图',
 			'illust.toast.downloadStarted' => '开始下载图片',
+			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下载队列：${count} 张图片',
 			'illust.toast.downloadComplete' => ({required Object path}) => '下载完成：${path}',
 			'illust.toast.downloadFailed' => '下载失败',
 			'illust.toast.copying' => ({required Object label}) => '正在复制${label}',

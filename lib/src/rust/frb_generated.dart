@@ -5,6 +5,7 @@
 
 import 'api/download.dart';
 import 'api/image_utils.dart';
+import 'api/proxy.dart';
 import 'api/zip_utils.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -72,7 +73,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0-beta.4';
 
   @override
-  int get rustContentHash => 1203528239;
+  int get rustContentHash => 27025120;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -371,6 +372,11 @@ abstract class RustLibApi extends BaseApi {
     UserAccountResult? account,
   });
 
+  void pixivRsApiPixivApiSetProxy({
+    required PixivApi that,
+    required String proxy,
+  });
+
   Future<String> pixivRsAuthPixivAuthCodeChallenge({required PixivAuth that});
 
   Future<String> pixivRsAuthPixivAuthCodeVerifier({required PixivAuth that});
@@ -397,6 +403,11 @@ abstract class RustLibApi extends BaseApi {
     required String refreshToken,
   });
 
+  Future<void> pixivRsAuthPixivAuthSetProxy({
+    required PixivAuth that,
+    required String proxy,
+  });
+
   Future<BookmarkAddOptions> pixivRsApiBookmarkAddOptionsDefault();
 
   Future<BookmarkTagOptions> pixivRsApiBookmarkTagOptionsDefault();
@@ -406,11 +417,15 @@ abstract class RustLibApi extends BaseApi {
   Stream<FrbDownloadFileEvent> crateApiDownloadDownloadToFile({
     required String url,
     required String path,
+    String? proxy,
   });
 
   Stream<FrbDownloadBytesEvent> crateApiDownloadDownloadToMemory({
     required String url,
+    String? proxy,
   });
+
+  Future<String?> crateApiProxyGetSystemProxy();
 
   Future<bool> pixivRsModelsIllustIsR18({required Illust that});
 
@@ -2675,6 +2690,38 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  void pixivRsApiPixivApiSetProxy({
+    required PixivApi that,
+    required String proxy,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(proxy, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 58)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsApiPixivApiSetProxyConstMeta,
+        argValues: [that, proxy],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsApiPixivApiSetProxyConstMeta => const TaskConstMeta(
+    debugName: "PixivApi_set_proxy",
+    argNames: ["that", "proxy"],
+  );
+
+  @override
   Future<String> pixivRsAuthPixivAuthCodeChallenge({required PixivAuth that}) {
     return handler.executeNormal(
       NormalTask(
@@ -2687,7 +2734,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 58,
+            funcId: 59,
             port: port_,
           );
         },
@@ -2721,7 +2768,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 59,
+            funcId: 60,
             port: port_,
           );
         },
@@ -2758,7 +2805,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 60,
+            funcId: 61,
             port: port_,
           );
         },
@@ -2795,7 +2842,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 61,
+            funcId: 62,
             port: port_,
           );
         },
@@ -2833,7 +2880,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 62,
+            funcId: 63,
             port: port_,
           );
         },
@@ -2864,7 +2911,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 63,
+            funcId: 64,
             port: port_,
           );
         },
@@ -2900,7 +2947,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 64,
+            funcId: 65,
             port: port_,
           );
         },
@@ -2922,6 +2969,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> pixivRsAuthPixivAuthSetProxy({
+    required PixivAuth that,
+    required String proxy,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivAuth(
+            that,
+            serializer,
+          );
+          sse_encode_String(proxy, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 66,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsAuthPixivAuthSetProxyConstMeta,
+        argValues: [that, proxy],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsAuthPixivAuthSetProxyConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivAuth_set_proxy",
+        argNames: ["that", "proxy"],
+      );
+
+  @override
   Future<BookmarkAddOptions> pixivRsApiBookmarkAddOptionsDefault() {
     return handler.executeNormal(
       NormalTask(
@@ -2930,7 +3015,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 66,
+            funcId: 68,
             port: port_,
           );
         },
@@ -2960,7 +3045,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 67,
+            funcId: 69,
             port: port_,
           );
         },
@@ -2990,7 +3075,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 68,
+            funcId: 70,
             port: port_,
           );
         },
@@ -3015,6 +3100,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Stream<FrbDownloadFileEvent> crateApiDownloadDownloadToFile({
     required String url,
     required String path,
+    String? proxy,
   }) {
     final sink = RustStreamSink<FrbDownloadFileEvent>();
     unawaited(
@@ -3024,11 +3110,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             final serializer = SseSerializer(generalizedFrbRustBinding);
             sse_encode_String(url, serializer);
             sse_encode_String(path, serializer);
+            sse_encode_opt_String(proxy, serializer);
             sse_encode_StreamSink_frb_download_file_event_Sse(sink, serializer);
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 69,
+              funcId: 71,
               port: port_,
             );
           },
@@ -3037,7 +3124,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             decodeErrorData: sse_decode_String,
           ),
           constMeta: kCrateApiDownloadDownloadToFileConstMeta,
-          argValues: [url, path, sink],
+          argValues: [url, path, proxy, sink],
           apiImpl: this,
         ),
       ),
@@ -3048,12 +3135,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiDownloadDownloadToFileConstMeta =>
       const TaskConstMeta(
         debugName: "download_to_file",
-        argNames: ["url", "path", "sink"],
+        argNames: ["url", "path", "proxy", "sink"],
       );
 
   @override
   Stream<FrbDownloadBytesEvent> crateApiDownloadDownloadToMemory({
     required String url,
+    String? proxy,
   }) {
     final sink = RustStreamSink<FrbDownloadBytesEvent>();
     unawaited(
@@ -3062,6 +3150,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           callFfi: (port_) {
             final serializer = SseSerializer(generalizedFrbRustBinding);
             sse_encode_String(url, serializer);
+            sse_encode_opt_String(proxy, serializer);
             sse_encode_StreamSink_frb_download_bytes_event_Sse(
               sink,
               serializer,
@@ -3069,7 +3158,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 70,
+              funcId: 72,
               port: port_,
             );
           },
@@ -3078,7 +3167,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             decodeErrorData: sse_decode_String,
           ),
           constMeta: kCrateApiDownloadDownloadToMemoryConstMeta,
-          argValues: [url, sink],
+          argValues: [url, proxy, sink],
           apiImpl: this,
         ),
       ),
@@ -3089,8 +3178,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiDownloadDownloadToMemoryConstMeta =>
       const TaskConstMeta(
         debugName: "download_to_memory",
-        argNames: ["url", "sink"],
+        argNames: ["url", "proxy", "sink"],
       );
+
+  @override
+  Future<String?> crateApiProxyGetSystemProxy() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 73,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_opt_String,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiProxyGetSystemProxyConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiProxyGetSystemProxyConstMeta =>
+      const TaskConstMeta(debugName: "get_system_proxy", argNames: []);
 
   @override
   Future<bool> pixivRsModelsIllustIsR18({required Illust that}) {
@@ -3102,7 +3218,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 71,
+            funcId: 74,
             port: port_,
           );
         },
@@ -3130,7 +3246,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 72,
+            funcId: 75,
             port: port_,
           );
         },
@@ -3160,7 +3276,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 73,
+            funcId: 76,
             port: port_,
           );
         },
@@ -3191,7 +3307,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 74,
+            funcId: 77,
             port: port_,
           );
         },
@@ -3226,7 +3342,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 75,
+            funcId: 78,
             port: port_,
           );
         },
@@ -3260,7 +3376,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 76,
+            funcId: 79,
             port: port_,
           );
         },
@@ -3290,7 +3406,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 77,
+            funcId: 80,
             port: port_,
           );
         },
@@ -3320,7 +3436,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 78,
+            funcId: 81,
             port: port_,
           );
         },
@@ -3353,7 +3469,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 79,
+            funcId: 82,
             port: port_,
           );
         },
@@ -3383,7 +3499,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 80,
+            funcId: 83,
             port: port_,
           );
         },
@@ -3421,7 +3537,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 81,
+            funcId: 84,
             port: port_,
           );
         },
@@ -3470,7 +3586,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 82,
+            funcId: 85,
             port: port_,
           );
         },
@@ -3505,7 +3621,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 83,
+            funcId: 86,
             port: port_,
           );
         },
@@ -3535,7 +3651,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 84,
+            funcId: 87,
             port: port_,
           );
         },
@@ -3570,7 +3686,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 85,
+            funcId: 88,
             port: port_,
           );
         },
@@ -3600,7 +3716,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 86,
+            funcId: 89,
             port: port_,
           );
         },
@@ -3630,7 +3746,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 87,
+            funcId: 90,
             port: port_,
           );
         },
@@ -3658,7 +3774,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 88,
+            funcId: 91,
             port: port_,
           );
         },
@@ -3691,7 +3807,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 89,
+            funcId: 92,
             port: port_,
           );
         },
@@ -3721,7 +3837,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 90,
+            funcId: 93,
             port: port_,
           );
         },
@@ -3752,7 +3868,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 91,
+            funcId: 94,
             port: port_,
           );
         },
@@ -3785,7 +3901,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 92,
+            funcId: 95,
             port: port_,
           );
         },
@@ -3879,6 +3995,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return UnzipErrorImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  PixivApi
+  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PixivApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  PixivAuth
+  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivAuth(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PixivAuthImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -4647,14 +4781,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PixivApiConfig dco_decode_pixiv_api_config(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 5)
-      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return PixivApiConfig(
       deviceName: dco_decode_String(arr[0]),
       targetIp: dco_decode_String(arr[1]),
       language: dco_decode_String(arr[2]),
       account: dco_decode_opt_box_autoadd_user_account_result(arr[3]),
       acceptInvalidCerts: dco_decode_bool(arr[4]),
+      proxy: dco_decode_opt_String(arr[5]),
     );
   }
 
@@ -4662,13 +4797,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PixivAuthConfig dco_decode_pixiv_auth_config(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 4)
-      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
     return PixivAuthConfig(
       targetIp: dco_decode_String(arr[0]),
       language: dco_decode_String(arr[1]),
       deviceName: dco_decode_String(arr[2]),
       acceptInvalidCerts: dco_decode_bool(arr[3]),
+      proxy: dco_decode_opt_String(arr[4]),
     );
   }
 
@@ -5172,6 +5308,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return UnzipErrorImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  PixivApi
+  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return PixivApiImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  PixivAuth
+  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivAuth(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return PixivAuthImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
@@ -6163,12 +6323,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       deserializer,
     );
     var var_acceptInvalidCerts = sse_decode_bool(deserializer);
+    var var_proxy = sse_decode_opt_String(deserializer);
     return PixivApiConfig(
       deviceName: var_deviceName,
       targetIp: var_targetIp,
       language: var_language,
       account: var_account,
       acceptInvalidCerts: var_acceptInvalidCerts,
+      proxy: var_proxy,
     );
   }
 
@@ -6179,11 +6341,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_language = sse_decode_String(deserializer);
     var var_deviceName = sse_decode_String(deserializer);
     var var_acceptInvalidCerts = sse_decode_bool(deserializer);
+    var var_proxy = sse_decode_opt_String(deserializer);
     return PixivAuthConfig(
       targetIp: var_targetIp,
       language: var_language,
       deviceName: var_deviceName,
       acceptInvalidCerts: var_acceptInvalidCerts,
+      proxy: var_proxy,
     );
   }
 
@@ -6749,6 +6913,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
       (self as UnzipErrorImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+    PixivApi self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as PixivApiImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivAuth(
+    PixivAuth self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as PixivAuthImpl).frbInternalSseEncode(move: false),
       serializer,
     );
   }
@@ -7660,6 +7850,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.language, serializer);
     sse_encode_opt_box_autoadd_user_account_result(self.account, serializer);
     sse_encode_bool(self.acceptInvalidCerts, serializer);
+    sse_encode_opt_String(self.proxy, serializer);
   }
 
   @protected
@@ -7672,6 +7863,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.language, serializer);
     sse_encode_String(self.deviceName, serializer);
     sse_encode_bool(self.acceptInvalidCerts, serializer);
+    sse_encode_opt_String(self.proxy, serializer);
   }
 
   @protected
@@ -8425,6 +8617,9 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
 
   void setAccount({UserAccountResult? account}) => RustLib.instance.api
       .pixivRsApiPixivApiSetAccount(that: this, account: account);
+
+  void setProxy({required String proxy}) =>
+      RustLib.instance.api.pixivRsApiPixivApiSetProxy(that: this, proxy: proxy);
 }
 
 @sealed
@@ -8466,6 +8661,9 @@ class PixivAuthImpl extends RustOpaque implements PixivAuth {
         that: this,
         refreshToken: refreshToken,
       );
+
+  Future<void> setProxy({required String proxy}) => RustLib.instance.api
+      .pixivRsAuthPixivAuthSetProxy(that: this, proxy: proxy);
 }
 
 @sealed

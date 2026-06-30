@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:freepiv/core/downloads/downloader.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
@@ -10,6 +13,10 @@ final previewImageQualityProvider = NotifierProvider<PreviewImageQualityNotifier
 final viewerImageQualityProvider = NotifierProvider<ViewerImageQualityNotifier, ViewerImageQuality>(ViewerImageQualityNotifier.new);
 
 final downloadSavePathSettingsProvider = NotifierProvider<DownloadSavePathSettingsNotifier, DownloadSavePathSettings>(DownloadSavePathSettingsNotifier.new);
+
+final maxConcurrentDownloadsProvider = NotifierProvider<MaxConcurrentDownloadsNotifier, int>(MaxConcurrentDownloadsNotifier.new);
+
+final proxySettingsProvider = NotifierProvider<AppProxySettingsNotifier, AppProxySettings>(AppProxySettingsNotifier.new);
 
 Future<void> initializeLocaleSettings() async {
   final localeCode = AppSettings.localeCode;
@@ -66,6 +73,32 @@ class ViewerImageQualityNotifier extends Notifier<ViewerImageQuality> {
   void setQuality(ViewerImageQuality quality) {
     state = quality;
     AppSettings.viewerImageQuality = quality;
+  }
+}
+
+class AppProxySettingsNotifier extends Notifier<AppProxySettings> {
+  @override
+  AppProxySettings build() {
+    return AppSettings.proxySettings;
+  }
+
+  void setProxySettings(AppProxySettings settings) {
+    AppSettings.proxySettings = settings;
+    refreshPixivApiProxy();
+    state = AppSettings.proxySettings;
+  }
+}
+
+class MaxConcurrentDownloadsNotifier extends Notifier<int> {
+  @override
+  int build() {
+    return AppSettings.maxConcurrentDownloads;
+  }
+
+  void setLimit(int limit) {
+    AppSettings.maxConcurrentDownloads = limit;
+    state = AppSettings.maxConcurrentDownloads;
+    unawaited(downloadManager.refreshQueue());
   }
 }
 

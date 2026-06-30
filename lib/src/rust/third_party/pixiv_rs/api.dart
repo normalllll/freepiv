@@ -178,6 +178,8 @@ abstract class PixivApi implements RustOpaqueInterface {
   Future<String> postNovelCommentDelete({required int commentId});
 
   void setAccount({UserAccountResult? account});
+
+  void setProxy({required String proxy});
 }
 
 class BookmarkAddOptions {
@@ -262,6 +264,7 @@ class PixivApiConfig {
   final String language;
   final UserAccountResult? account;
   final bool acceptInvalidCerts;
+  final String? proxy;
 
   const PixivApiConfig({
     required this.deviceName,
@@ -269,6 +272,7 @@ class PixivApiConfig {
     required this.language,
     this.account,
     required this.acceptInvalidCerts,
+    this.proxy,
   });
 
   // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
@@ -292,7 +296,8 @@ class PixivApiConfig {
       targetIp.hashCode ^
       language.hashCode ^
       account.hashCode ^
-      acceptInvalidCerts.hashCode;
+      acceptInvalidCerts.hashCode ^
+      proxy.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -303,7 +308,8 @@ class PixivApiConfig {
           targetIp == other.targetIp &&
           language == other.language &&
           account == other.account &&
-          acceptInvalidCerts == other.acceptInvalidCerts;
+          acceptInvalidCerts == other.acceptInvalidCerts &&
+          proxy == other.proxy;
 }
 
 class SearchOptions {

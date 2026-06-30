@@ -44,7 +44,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0-beta.4";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1203528239;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 27025120;
 
 // Section: executor
 
@@ -3414,6 +3414,55 @@ fn wire__pixiv_rs__api__PixivApi_set_account_impl(
         },
     )
 }
+fn wire__pixiv_rs__api__PixivApi_set_proxy_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_set_proxy",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            let api_proxy = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, true,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
+                        _ => unreachable!(),
+                    }
+                }
+                let mut api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok({
+                    pixiv_rs::api::PixivApi::set_proxy(&mut *api_that_guard, api_proxy);
+                })?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
 fn wire__pixiv_rs__auth__PixivAuth_code_challenge_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -3760,6 +3809,58 @@ fn wire__pixiv_rs__auth__PixivAuth_refresh_auth_token_impl(
         },
     )
 }
+fn wire__pixiv_rs__auth__PixivAuth_set_proxy_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivAuth_set_proxy",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivAuth>,
+            >>::sse_decode(&mut deserializer);
+            let api_proxy = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let mut api_that_guard = None;
+                    let decode_indices_ =
+                        flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                            flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                &api_that, 0, true,
+                            ),
+                        ]);
+                    for i in decode_indices_ {
+                        match i {
+                            0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
+                            _ => unreachable!(),
+                        }
+                    }
+                    let mut api_that_guard = api_that_guard.unwrap();
+                    let output_ok = Result::<_, ()>::Ok({
+                        pixiv_rs::auth::PixivAuth::set_proxy(&mut *api_that_guard, api_proxy);
+                    })?;
+                    Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
 fn wire__pixiv_rs__api__bookmark_add_options_default_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -3883,6 +3984,7 @@ fn wire__crate__api__download__download_to_file_impl(
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_url = <String>::sse_decode(&mut deserializer);
             let api_path = <String>::sse_decode(&mut deserializer);
+            let api_proxy = <Option<String>>::sse_decode(&mut deserializer);
             let api_sink = <StreamSink<
                 crate::api::download::FrbDownloadFileEvent,
                 flutter_rust_bridge::for_generated::SseCodec,
@@ -3891,9 +3993,10 @@ fn wire__crate__api__download__download_to_file_impl(
             move |context| async move {
                 transform_result_sse::<_, String>(
                     (move || async move {
-                        let output_ok =
-                            crate::api::download::download_to_file(api_url, api_path, api_sink)
-                                .await?;
+                        let output_ok = crate::api::download::download_to_file(
+                            api_url, api_path, api_proxy, api_sink,
+                        )
+                        .await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -3925,6 +4028,7 @@ fn wire__crate__api__download__download_to_memory_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_url = <String>::sse_decode(&mut deserializer);
+            let api_proxy = <Option<String>>::sse_decode(&mut deserializer);
             let api_sink = <StreamSink<
                 crate::api::download::FrbDownloadBytesEvent,
                 flutter_rust_bridge::for_generated::SseCodec,
@@ -3934,11 +4038,44 @@ fn wire__crate__api__download__download_to_memory_impl(
                 transform_result_sse::<_, String>(
                     (move || async move {
                         let output_ok =
-                            crate::api::download::download_to_memory(api_url, api_sink).await?;
+                            crate::api::download::download_to_memory(api_url, api_proxy, api_sink)
+                                .await?;
                         Ok(output_ok)
                     })()
                     .await,
                 )
+            }
+        },
+    )
+}
+fn wire__crate__api__proxy__get_system_proxy_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "get_system_proxy",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, String>((move || {
+                    let output_ok = crate::api::proxy::get_system_proxy()?;
+                    Ok(output_ok)
+                })())
             }
         },
     )
@@ -4899,6 +5036,7 @@ const _: fn() = || {
         let _: String = PixivApiConfig.language;
         let _: Option<pixiv_rs::responses::UserAccountResult> = PixivApiConfig.account;
         let _: bool = PixivApiConfig.accept_invalid_certs;
+        let _: Option<String> = PixivApiConfig.proxy;
     }
     {
         let PixivAuthConfig = None::<pixiv_rs::auth::PixivAuthConfig>.unwrap();
@@ -4906,6 +5044,7 @@ const _: fn() = || {
         let _: String = PixivAuthConfig.language;
         let _: String = PixivAuthConfig.device_name;
         let _: bool = PixivAuthConfig.accept_invalid_certs;
+        let _: Option<String> = PixivAuthConfig.proxy;
     }
     {
         let PixivError = None::<pixiv_rs::error::PixivError>.unwrap();
@@ -6086,12 +6225,14 @@ impl SseDecode for pixiv_rs::api::PixivApiConfig {
         let mut var_account =
             <Option<pixiv_rs::responses::UserAccountResult>>::sse_decode(deserializer);
         let mut var_acceptInvalidCerts = <bool>::sse_decode(deserializer);
+        let mut var_proxy = <Option<String>>::sse_decode(deserializer);
         return pixiv_rs::api::PixivApiConfig {
             device_name: var_deviceName,
             target_ip: var_targetIp,
             language: var_language,
             account: var_account,
             accept_invalid_certs: var_acceptInvalidCerts,
+            proxy: var_proxy,
         };
     }
 }
@@ -6103,11 +6244,13 @@ impl SseDecode for pixiv_rs::auth::PixivAuthConfig {
         let mut var_language = <String>::sse_decode(deserializer);
         let mut var_deviceName = <String>::sse_decode(deserializer);
         let mut var_acceptInvalidCerts = <bool>::sse_decode(deserializer);
+        let mut var_proxy = <Option<String>>::sse_decode(deserializer);
         return pixiv_rs::auth::PixivAuthConfig {
             target_ip: var_targetIp,
             language: var_language,
             device_name: var_deviceName,
             accept_invalid_certs: var_acceptInvalidCerts,
+            proxy: var_proxy,
         };
     }
 }
@@ -6970,134 +7113,136 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        58 => {
+        59 => {
             wire__pixiv_rs__auth__PixivAuth_code_challenge_impl(port, ptr, rust_vec_len, data_len)
         }
-        59 => wire__pixiv_rs__auth__PixivAuth_code_verifier_impl(port, ptr, rust_vec_len, data_len),
-        60 => wire__pixiv_rs__auth__PixivAuth_from_parts_impl(port, ptr, rust_vec_len, data_len),
-        61 => wire__pixiv_rs__auth__PixivAuth_generate_login_url_impl(
+        60 => wire__pixiv_rs__auth__PixivAuth_code_verifier_impl(port, ptr, rust_vec_len, data_len),
+        61 => wire__pixiv_rs__auth__PixivAuth_from_parts_impl(port, ptr, rust_vec_len, data_len),
+        62 => wire__pixiv_rs__auth__PixivAuth_generate_login_url_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        62 => wire__pixiv_rs__auth__PixivAuth_init_account_auth_token_impl(
+        63 => wire__pixiv_rs__auth__PixivAuth_init_account_auth_token_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        63 => wire__pixiv_rs__auth__PixivAuth_new_impl(port, ptr, rust_vec_len, data_len),
-        64 => wire__pixiv_rs__auth__PixivAuth_refresh_auth_token_impl(
+        64 => wire__pixiv_rs__auth__PixivAuth_new_impl(port, ptr, rust_vec_len, data_len),
+        65 => wire__pixiv_rs__auth__PixivAuth_refresh_auth_token_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        66 => wire__pixiv_rs__api__bookmark_add_options_default_impl(
+        66 => wire__pixiv_rs__auth__PixivAuth_set_proxy_impl(port, ptr, rust_vec_len, data_len),
+        68 => wire__pixiv_rs__api__bookmark_add_options_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        67 => wire__pixiv_rs__api__bookmark_tag_options_default_impl(
+        69 => wire__pixiv_rs__api__bookmark_tag_options_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        68 => {
+        70 => {
             wire__pixiv_rs__api__comment_add_options_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        69 => wire__crate__api__download__download_to_file_impl(port, ptr, rust_vec_len, data_len),
-        70 => {
+        71 => wire__crate__api__download__download_to_file_impl(port, ptr, rust_vec_len, data_len),
+        72 => {
             wire__crate__api__download__download_to_memory_impl(port, ptr, rust_vec_len, data_len)
         }
-        71 => wire__pixiv_rs__models__illust_is_r18_impl(port, ptr, rust_vec_len, data_len),
-        72 => wire__pixiv_rs__models__illust_is_ugoira_impl(port, ptr, rust_vec_len, data_len),
-        73 => wire__pixiv_rs__enums__illust_ranking_mode_as_pixiv_param_impl(
+        73 => wire__crate__api__proxy__get_system_proxy_impl(port, ptr, rust_vec_len, data_len),
+        74 => wire__pixiv_rs__models__illust_is_r18_impl(port, ptr, rust_vec_len, data_len),
+        75 => wire__pixiv_rs__models__illust_is_ugoira_impl(port, ptr, rust_vec_len, data_len),
+        76 => wire__pixiv_rs__enums__illust_ranking_mode_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        74 => wire__pixiv_rs__enums__illust_type_as_pixiv_param_impl(
+        77 => wire__pixiv_rs__enums__illust_type_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        75 => wire__crate__api__image_utils__image_utils_images_to_gif_impl(
+        78 => wire__crate__api__image_utils__image_utils_images_to_gif_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        76 => wire__pixiv_rs__enums__manga_ranking_mode_as_pixiv_param_impl(
+        79 => wire__pixiv_rs__enums__manga_ranking_mode_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        77 => wire__pixiv_rs__responses__novel_navigation_info_default_impl(
+        80 => wire__pixiv_rs__responses__novel_navigation_info_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        78 => wire__pixiv_rs__responses__novel_navigation_item_default_impl(
+        81 => wire__pixiv_rs__responses__novel_navigation_item_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        79 => wire__pixiv_rs__enums__novel_ranking_mode_as_pixiv_param_impl(
+        82 => wire__pixiv_rs__enums__novel_ranking_mode_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        80 => {
+        83 => {
             wire__pixiv_rs__responses__novel_rating_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        81 => wire__pixiv_rs__api__pixiv_api_config_new_impl(port, ptr, rust_vec_len, data_len),
-        82 => wire__pixiv_rs__auth__pixiv_auth_config_new_impl(port, ptr, rust_vec_len, data_len),
-        83 => {
+        84 => wire__pixiv_rs__api__pixiv_api_config_new_impl(port, ptr, rust_vec_len, data_len),
+        85 => wire__pixiv_rs__auth__pixiv_auth_config_new_impl(port, ptr, rust_vec_len, data_len),
+        86 => {
             wire__pixiv_rs__error__pixiv_error_http_status_impl(port, ptr, rust_vec_len, data_len)
         }
-        84 => wire__pixiv_rs__error__pixiv_error_missing_account_impl(
+        87 => wire__pixiv_rs__error__pixiv_error_missing_account_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        85 => wire__pixiv_rs__error__pixiv_error_new_impl(port, ptr, rust_vec_len, data_len),
-        86 => {
+        88 => wire__pixiv_rs__error__pixiv_error_new_impl(port, ptr, rust_vec_len, data_len),
+        89 => {
             wire__pixiv_rs__enums__restrict_as_pixiv_param_impl(port, ptr, rust_vec_len, data_len)
         }
-        87 => wire__pixiv_rs__api__search_options_default_impl(port, ptr, rust_vec_len, data_len),
-        88 => wire__pixiv_rs__enums__search_sort_as_pixiv_param_impl(
+        90 => wire__pixiv_rs__api__search_options_default_impl(port, ptr, rust_vec_len, data_len),
+        91 => wire__pixiv_rs__enums__search_sort_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        89 => wire__pixiv_rs__enums__search_target_as_pixiv_param_impl(
+        92 => wire__pixiv_rs__enums__search_target_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        90 => wire__pixiv_rs__responses__webview_novel_image_urls_default_impl(
+        93 => wire__pixiv_rs__responses__webview_novel_image_urls_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        91 => {
+        94 => {
             wire__pixiv_rs__enums__work_type_as_pixiv_param_impl(port, ptr, rust_vec_len, data_len)
         }
-        92 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
+        95 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
             port,
             ptr,
             rust_vec_len,
@@ -7119,6 +7264,7 @@ fn pde_ffi_dispatcher_sync_impl(
         2 => wire__pixiv_rs__api__PixivApi_generate_login_url_impl(ptr, rust_vec_len, data_len),
         48 => wire__pixiv_rs__api__PixivApi_new_impl(ptr, rust_vec_len, data_len),
         57 => wire__pixiv_rs__api__PixivApi_set_account_impl(ptr, rust_vec_len, data_len),
+        58 => wire__pixiv_rs__api__PixivApi_set_proxy_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -7902,6 +8048,7 @@ impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::api::PixivApiConfig>
             self.0.language.into_into_dart().into_dart(),
             self.0.account.into_into_dart().into_dart(),
             self.0.accept_invalid_certs.into_into_dart().into_dart(),
+            self.0.proxy.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -7925,6 +8072,7 @@ impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::auth::PixivAuthConfi
             self.0.language.into_into_dart().into_dart(),
             self.0.device_name.into_into_dart().into_dart(),
             self.0.accept_invalid_certs.into_into_dart().into_dart(),
+            self.0.proxy.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -9437,6 +9585,7 @@ impl SseEncode for pixiv_rs::api::PixivApiConfig {
         <String>::sse_encode(self.language, serializer);
         <Option<pixiv_rs::responses::UserAccountResult>>::sse_encode(self.account, serializer);
         <bool>::sse_encode(self.accept_invalid_certs, serializer);
+        <Option<String>>::sse_encode(self.proxy, serializer);
     }
 }
 
@@ -9447,6 +9596,7 @@ impl SseEncode for pixiv_rs::auth::PixivAuthConfig {
         <String>::sse_encode(self.language, serializer);
         <String>::sse_encode(self.device_name, serializer);
         <bool>::sse_encode(self.accept_invalid_certs, serializer);
+        <Option<String>>::sse_encode(self.proxy, serializer);
     }
 }
 

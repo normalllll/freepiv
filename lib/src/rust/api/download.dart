@@ -10,13 +10,23 @@ part 'download.freezed.dart';
 
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `fmt`, `fmt`
 
-Stream<FrbDownloadBytesEvent> downloadToMemory({required String url}) =>
-    RustLib.instance.api.crateApiDownloadDownloadToMemory(url: url);
+Stream<FrbDownloadBytesEvent> downloadToMemory({
+  required String url,
+  String? proxy,
+}) => RustLib.instance.api.crateApiDownloadDownloadToMemory(
+  url: url,
+  proxy: proxy,
+);
 
 Stream<FrbDownloadFileEvent> downloadToFile({
   required String url,
   required String path,
-}) => RustLib.instance.api.crateApiDownloadDownloadToFile(url: url, path: path);
+  String? proxy,
+}) => RustLib.instance.api.crateApiDownloadDownloadToFile(
+  url: url,
+  path: path,
+  proxy: proxy,
+);
 
 @freezed
 sealed class FrbDownloadBytesEvent with _$FrbDownloadBytesEvent {

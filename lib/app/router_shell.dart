@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/features/downloads/presentation/download_floating_panel.dart';
+import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:go_router/go_router.dart';
@@ -92,7 +93,7 @@ class _DesktopShellState extends State<_DesktopShell> {
               Expanded(child: widget.child),
             ],
           ),
-          DesktopDownloadDock(railWidth: _sidebarWidth),
+          DesktopDownloadDock(railWidth: _sidebarWidth, bottomOffset: _DesktopSidebar.downloadDockBottomOffset),
         ],
       ),
     );
@@ -125,6 +126,7 @@ class _DesktopSidebar extends StatelessWidget {
   final Translations translations;
 
   static const _width = 96.0;
+  static const downloadDockBottomOffset = 86.0;
 
   @override
   Widget build(BuildContext context) {
@@ -160,6 +162,14 @@ class _DesktopSidebar extends StatelessWidget {
                       );
                     },
                   ),
+                ),
+                const SizedBox(height: 8),
+                _DesktopNavItem(
+                  label: translations.settings.proxy.shortTitle,
+                  icon: Icons.hub_outlined,
+                  selectedIcon: Icons.hub,
+                  selected: false,
+                  onTap: () => showProxySettingsDialog(context),
                 ),
               ],
             ),

@@ -157,6 +157,7 @@ class Translations$login$en_US {
 	String get callbackReceived => 'Pixiv callback received. Fetching token.';
 	String get browserOpenUnsupported => 'System browser opening is not implemented here.';
 	String browserOpenFailed({required Object browser, required Object output}) => '${browser} failed to open the sign-in link: ${output}';
+	String get proxyHint => 'If you use a network proxy, set the proxy address here before signing in.';
 }
 
 // Path: settings
@@ -170,6 +171,7 @@ class Translations$settings$en_US {
 	late final Translations$settings$language$en_US language = Translations$settings$language$en_US.internal(_root);
 	late final Translations$settings$images$en_US images = Translations$settings$images$en_US.internal(_root);
 	late final Translations$settings$downloads$en_US downloads = Translations$settings$downloads$en_US.internal(_root);
+	late final Translations$settings$proxy$en_US proxy = Translations$settings$proxy$en_US.internal(_root);
 	late final Translations$settings$account$en_US account = Translations$settings$account$en_US.internal(_root);
 }
 
@@ -392,6 +394,8 @@ class Translations$settings$downloads$en_US {
 	String get noFolderSelected => 'No folder selected';
 	String directorySet({required Object path}) => 'Download folder set: ${path}';
 	String get directoryUnavailable => 'Download folder is unavailable';
+	String get maxConcurrentDownloads => 'Maximum simultaneous downloads';
+	String maxConcurrentDownloadsSubtitle({required Object count}) => 'Up to ${count} tasks download at once. Later tasks wait in the queue.';
 	String get tasksTitle => 'Download tasks';
 	String get openTasks => 'Download tasks';
 	String get openTasksSubtitle => 'View progress, failures, and saved files';
@@ -414,11 +418,51 @@ class Translations$settings$downloads$en_US {
 	String get saveFailed => 'Save failed';
 	String get retrySave => 'Retry save';
 	String get cancel => 'Cancel';
+	String get deleteTask => 'Delete task';
 	String get sync => 'Sync';
 	String get syncFailed => 'Download sync failed';
 	String get actionFailed => 'Download action failed';
 	String get expand => 'Expand';
 	String get collapse => 'Collapse';
+}
+
+// Path: settings.proxy
+class Translations$settings$proxy$en_US {
+	Translations$settings$proxy$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Network proxy';
+	String get shortTitle => 'Proxy';
+	String get subtitle => 'Pixiv API and image requests will use the selected proxy after saving.';
+	String get open => 'Set proxy';
+	String get enabled => 'Use proxy';
+	String get enabledStatus => 'Proxy is on';
+	String get disabledStatus => 'Direct connection';
+	String get protocol => 'Proxy protocol';
+	String get protocolHttp => 'HTTP';
+	String get protocolSocks => 'SOCKS';
+	String get address => 'IP address';
+	String get addressHint => '127.0.0.1';
+	String get port => 'Port';
+	String get portHint => '7890';
+	String get helper => 'Enter IP and port separately, for example 127.0.0.1 and 7890.';
+	String get save => 'Save';
+	String get saved => 'Proxy settings saved';
+	String get required => 'Enter an IP and port before turning this on.';
+	String get invalid => 'Enter a valid IP and port.';
+	String get hostRequired => 'Enter an IP.';
+	String get portRequired => 'Enter a port.';
+	String get invalidHost => 'Enter a valid IP or host name.';
+	String get invalidPort => 'Port must be 1-65535.';
+	String get loadSystem => 'Get system proxy';
+	String get systemLoaded => 'System proxy loaded';
+	String get systemNotFound => 'No system proxy detected';
+	String get systemUnsupported => 'System proxy detection is available on desktop only';
+	String get systemLoadFailed => 'Failed to get system proxy';
+	String entrySubtitleOn({required Object url}) => 'On: ${url}';
+	String get entrySubtitleOff => 'Off';
 }
 
 // Path: settings.account
@@ -714,6 +758,7 @@ class Translations$illust$contextMenu$en_US {
 
 	// Translations
 	String get download => 'Download';
+	String get downloadAll => 'Download all';
 	String get copyImage => 'Copy image';
 }
 
@@ -736,6 +781,7 @@ class Translations$illust$toast$en_US {
 
 	// Translations
 	String get downloadStarted => 'Downloading image';
+	String downloadAllQueued({required Object count}) => '${count} images added to the download queue';
 	String downloadComplete({required Object path}) => 'Download complete: ${path}';
 	String get downloadFailed => 'Download failed';
 	String copying({required Object label}) => 'Copying ${label}';
@@ -970,6 +1016,7 @@ extension on Translations {
 			'login.callbackReceived' => 'Pixiv callback received. Fetching token.',
 			'login.browserOpenUnsupported' => 'System browser opening is not implemented here.',
 			'login.browserOpenFailed' => ({required Object browser, required Object output}) => '${browser} failed to open the sign-in link: ${output}',
+			'login.proxyHint' => 'If you use a network proxy, set the proxy address here before signing in.',
 			'settings.theme.title' => 'Theme',
 			'settings.theme.system' => 'System',
 			'settings.theme.light' => 'Light',
@@ -996,6 +1043,8 @@ extension on Translations {
 			'settings.downloads.noFolderSelected' => 'No folder selected',
 			'settings.downloads.directorySet' => ({required Object path}) => 'Download folder set: ${path}',
 			'settings.downloads.directoryUnavailable' => 'Download folder is unavailable',
+			'settings.downloads.maxConcurrentDownloads' => 'Maximum simultaneous downloads',
+			'settings.downloads.maxConcurrentDownloadsSubtitle' => ({required Object count}) => 'Up to ${count} tasks download at once. Later tasks wait in the queue.',
 			'settings.downloads.tasksTitle' => 'Download tasks',
 			'settings.downloads.openTasks' => 'Download tasks',
 			'settings.downloads.openTasksSubtitle' => 'View progress, failures, and saved files',
@@ -1018,11 +1067,42 @@ extension on Translations {
 			'settings.downloads.saveFailed' => 'Save failed',
 			'settings.downloads.retrySave' => 'Retry save',
 			'settings.downloads.cancel' => 'Cancel',
+			'settings.downloads.deleteTask' => 'Delete task',
 			'settings.downloads.sync' => 'Sync',
 			'settings.downloads.syncFailed' => 'Download sync failed',
 			'settings.downloads.actionFailed' => 'Download action failed',
 			'settings.downloads.expand' => 'Expand',
 			'settings.downloads.collapse' => 'Collapse',
+			'settings.proxy.title' => 'Network proxy',
+			'settings.proxy.shortTitle' => 'Proxy',
+			'settings.proxy.subtitle' => 'Pixiv API and image requests will use the selected proxy after saving.',
+			'settings.proxy.open' => 'Set proxy',
+			'settings.proxy.enabled' => 'Use proxy',
+			'settings.proxy.enabledStatus' => 'Proxy is on',
+			'settings.proxy.disabledStatus' => 'Direct connection',
+			'settings.proxy.protocol' => 'Proxy protocol',
+			'settings.proxy.protocolHttp' => 'HTTP',
+			'settings.proxy.protocolSocks' => 'SOCKS',
+			'settings.proxy.address' => 'IP address',
+			'settings.proxy.addressHint' => '127.0.0.1',
+			'settings.proxy.port' => 'Port',
+			'settings.proxy.portHint' => '7890',
+			'settings.proxy.helper' => 'Enter IP and port separately, for example 127.0.0.1 and 7890.',
+			'settings.proxy.save' => 'Save',
+			'settings.proxy.saved' => 'Proxy settings saved',
+			'settings.proxy.required' => 'Enter an IP and port before turning this on.',
+			'settings.proxy.invalid' => 'Enter a valid IP and port.',
+			'settings.proxy.hostRequired' => 'Enter an IP.',
+			'settings.proxy.portRequired' => 'Enter a port.',
+			'settings.proxy.invalidHost' => 'Enter a valid IP or host name.',
+			'settings.proxy.invalidPort' => 'Port must be 1-65535.',
+			'settings.proxy.loadSystem' => 'Get system proxy',
+			'settings.proxy.systemLoaded' => 'System proxy loaded',
+			'settings.proxy.systemNotFound' => 'No system proxy detected',
+			'settings.proxy.systemUnsupported' => 'System proxy detection is available on desktop only',
+			'settings.proxy.systemLoadFailed' => 'Failed to get system proxy',
+			'settings.proxy.entrySubtitleOn' => ({required Object url}) => 'On: ${url}',
+			'settings.proxy.entrySubtitleOff' => 'Off',
 			'settings.account.title' => 'Account',
 			'settings.account.signedOutSubtitle' => 'Sign in to show your Pixiv account',
 			'settings.account.notSignedIn' => 'Not signed in',
@@ -1148,10 +1228,12 @@ extension on Translations {
 			'newest.novelChars' => ({required Object count}) => '${count} chars',
 			'newest.novelPages' => ({required Object count}) => '${count} pages',
 			'illust.contextMenu.download' => 'Download',
+			'illust.contextMenu.downloadAll' => 'Download all',
 			'illust.contextMenu.copyImage' => 'Copy image',
 			'illust.imageLabels.original' => 'original image',
 			'illust.imageLabels.large' => 'large image',
 			'illust.toast.downloadStarted' => 'Downloading image',
+			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} images added to the download queue',
 			'illust.toast.downloadComplete' => ({required Object path}) => 'Download complete: ${path}',
 			'illust.toast.downloadFailed' => 'Download failed',
 			'illust.toast.copying' => ({required Object label}) => 'Copying ${label}',
