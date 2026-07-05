@@ -45,6 +45,8 @@ dependencies:
   url_launcher: ^6.3.2
   drift: ^2.34.0
   sqlite3: ^3.3.3
+  package_info_plus: ^10.2.0
+  device_info_plus: ^13.2.0
 
 
 dev_dependencies:
@@ -66,5 +68,6 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/icon-512.png
     - assets/emojis/
     - assets/stamps/

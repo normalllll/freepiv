@@ -65,6 +65,7 @@ class _MePageState extends State<MePage> {
                                   onTap: () => context.pushNamed(AppRoute.meFollowers.name),
                                 ),
                                 const Spacer(),
+                                _MeAboutEntry(onTap: _openAbout),
                                 const SizedBox(height: 8),
                                 _MeSettingsEntry(onTap: _openSettings),
                               ],
@@ -92,6 +93,10 @@ class _MePageState extends State<MePage> {
 
   void _openSettings() {
     context.pushNamed(AppRoute.settings.name);
+  }
+
+  void _openAbout() {
+    context.pushNamed(AppRoute.about.name);
   }
 }
 
@@ -490,6 +495,28 @@ class _MeSettingsEntry extends StatelessWidget {
         leading: const Icon(Icons.settings_outlined),
         title: Text(translations.me.settings),
         subtitle: Text(translations.me.settingsSubtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+        trailing: const Icon(Icons.chevron_right),
+      ),
+    );
+  }
+}
+
+class _MeAboutEntry extends StatelessWidget {
+  const _MeAboutEntry({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final translations = context.t;
+
+    return EnergeticCard(
+      onTap: onTap,
+      padding: EdgeInsets.zero,
+      child: ListTile(
+        leading: const Icon(Icons.info_outline),
+        title: Text(translations.me.about),
+        subtitle: Text(translations.me.aboutSubtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
         trailing: const Icon(Icons.chevron_right),
       ),
     );

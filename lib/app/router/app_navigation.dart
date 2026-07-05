@@ -42,6 +42,7 @@ String appRouteLabel(Translations translations, AppRoute route) {
     AppRoute.newest => translations.navigation.newest,
     AppRoute.rankingIllust || AppRoute.rankingManga || AppRoute.rankingNovel => translations.navigation.ranking,
     AppRoute.me => translations.navigation.me,
+    AppRoute.about => translations.about.title,
     AppRoute.settings => translations.navigation.settings,
     AppRoute.downloads => translations.settings.downloads.tasksTitle,
     AppRoute.login => translations.login.title,

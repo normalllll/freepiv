@@ -47,6 +47,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$login$ja_JP login = _Translations$login$ja_JP._(_root);
 	@override late final _Translations$settings$ja_JP settings = _Translations$settings$ja_JP._(_root);
 	@override late final _Translations$me$ja_JP me = _Translations$me$ja_JP._(_root);
+	@override late final _Translations$about$ja_JP about = _Translations$about$ja_JP._(_root);
 	@override late final _Translations$home$ja_JP home = _Translations$home$ja_JP._(_root);
 	@override late final _Translations$ranking$ja_JP ranking = _Translations$ranking$ja_JP._(_root);
 	@override late final _Translations$search$ja_JP search = _Translations$search$ja_JP._(_root);
@@ -186,8 +187,44 @@ class _Translations$me$ja_JP extends Translations$me$en_US {
 	@override String get followers => 'フォロワー';
 	@override String get emptyFollowing => 'フォロー中のユーザーはいません';
 	@override String get emptyFollowers => 'フォロワーはいません';
+	@override String get about => 'このアプリについて';
+	@override String get aboutSubtitle => 'バージョン、更新、プロジェクトリンク';
 	@override String get settings => '設定';
 	@override String get settingsSubtitle => 'テーマ、言語、画像、ダウンロード';
+}
+
+// Path: about
+class _Translations$about$ja_JP extends Translations$about$en_US {
+	_Translations$about$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'このアプリについて';
+	@override String get appName => 'freepiv';
+	@override String get subtitle => 'Pixiv コンテンツを閲覧するための軽量クライアントです。現在のバージョン確認、更新チェック、プロジェクトのダウンロードページへの移動ができます。';
+	@override String get project => 'プロジェクト';
+	@override String get projectPage => 'プロジェクトページ';
+	@override String get releasePage => 'リリースページ';
+	@override String get versionInfo => 'バージョン情報';
+	@override String get appVersion => 'アプリバージョン';
+	@override String get latestVersion => '最新バージョン';
+	@override String currentVersion({required Object version, required Object buildNumber}) => '現在のバージョン ${version}+${buildNumber}';
+	@override String get noCachedUpdate => '利用可能な更新はありません';
+	@override String get loading => '読み込み中';
+	@override String get community => 'コミュニティ';
+	@override String get telegram => 'Telegram';
+	@override String get discord => 'Discord';
+	@override String get checkUpdate => '更新を確認';
+	@override String get checkingUpdateShort => '確認中';
+	@override String get checkingUpdate => '更新を確認しています…';
+	@override String get noUpdate => '現在のバージョンは最新です';
+	@override String updateAvailable({required Object version, required Object buildNumber}) => '新しいバージョンがあります: ${version}+${buildNumber}';
+	@override String get checkUpdateFailed => '更新の確認に失敗しました';
+	@override String get downloadPage => 'ダウンロードページ';
+	@override String get downloadAssetUnavailable => 'このプラットフォームに合うダウンロード項目が見つかりません。リリースページを開きます。';
+	@override String get openDownloadFailed => 'ダウンロードページを開けませんでした';
+	@override String get openLinkFailed => 'リンクを開けませんでした';
 }
 
 // Path: home
@@ -1111,8 +1148,35 @@ extension on TranslationsJaJp {
 			'me.followers' => 'フォロワー',
 			'me.emptyFollowing' => 'フォロー中のユーザーはいません',
 			'me.emptyFollowers' => 'フォロワーはいません',
+			'me.about' => 'このアプリについて',
+			'me.aboutSubtitle' => 'バージョン、更新、プロジェクトリンク',
 			'me.settings' => '設定',
 			'me.settingsSubtitle' => 'テーマ、言語、画像、ダウンロード',
+			'about.title' => 'このアプリについて',
+			'about.appName' => 'freepiv',
+			'about.subtitle' => 'Pixiv コンテンツを閲覧するための軽量クライアントです。現在のバージョン確認、更新チェック、プロジェクトのダウンロードページへの移動ができます。',
+			'about.project' => 'プロジェクト',
+			'about.projectPage' => 'プロジェクトページ',
+			'about.releasePage' => 'リリースページ',
+			'about.versionInfo' => 'バージョン情報',
+			'about.appVersion' => 'アプリバージョン',
+			'about.latestVersion' => '最新バージョン',
+			'about.currentVersion' => ({required Object version, required Object buildNumber}) => '現在のバージョン ${version}+${buildNumber}',
+			'about.noCachedUpdate' => '利用可能な更新はありません',
+			'about.loading' => '読み込み中',
+			'about.community' => 'コミュニティ',
+			'about.telegram' => 'Telegram',
+			'about.discord' => 'Discord',
+			'about.checkUpdate' => '更新を確認',
+			'about.checkingUpdateShort' => '確認中',
+			'about.checkingUpdate' => '更新を確認しています…',
+			'about.noUpdate' => '現在のバージョンは最新です',
+			'about.updateAvailable' => ({required Object version, required Object buildNumber}) => '新しいバージョンがあります: ${version}+${buildNumber}',
+			'about.checkUpdateFailed' => '更新の確認に失敗しました',
+			'about.downloadPage' => 'ダウンロードページ',
+			'about.downloadAssetUnavailable' => 'このプラットフォームに合うダウンロード項目が見つかりません。リリースページを開きます。',
+			'about.openDownloadFailed' => 'ダウンロードページを開けませんでした',
+			'about.openLinkFailed' => 'リンクを開けませんでした',
 			'home.emptyTitle' => 'おすすめはまだありません',
 			'home.emptyMessage' => '下に引っ張るとおすすめを再取得できます。',
 			'home.rankings' => 'ランキング',

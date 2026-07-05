@@ -47,6 +47,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$login$zh_CN login = Translations$login$zh_CN.internal(_root);
 	@override late final Translations$settings$zh_CN settings = Translations$settings$zh_CN.internal(_root);
 	@override late final Translations$me$zh_CN me = Translations$me$zh_CN.internal(_root);
+	@override late final Translations$about$zh_CN about = Translations$about$zh_CN.internal(_root);
 	@override late final Translations$home$zh_CN home = Translations$home$zh_CN.internal(_root);
 	@override late final Translations$ranking$zh_CN ranking = Translations$ranking$zh_CN.internal(_root);
 	@override late final Translations$search$zh_CN search = Translations$search$zh_CN.internal(_root);
@@ -186,8 +187,44 @@ class Translations$me$zh_CN extends Translations$me$en_US {
 	@override String get followers => '我的粉丝';
 	@override String get emptyFollowing => '暂无关注用户';
 	@override String get emptyFollowers => '暂无粉丝';
+	@override String get about => '关于';
+	@override String get aboutSubtitle => '版本、更新和项目链接';
 	@override String get settings => '设置';
 	@override String get settingsSubtitle => '主题、语言、图片和下载';
+}
+
+// Path: about
+class Translations$about$zh_CN extends Translations$about$en_US {
+	Translations$about$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '关于';
+	@override String get appName => 'freepiv';
+	@override String get subtitle => '一个用于浏览 Pixiv 内容的轻量客户端。这里可以查看当前版本、检查更新并打开项目下载页面。';
+	@override String get project => '项目';
+	@override String get projectPage => '项目主页';
+	@override String get releasePage => '发布页面';
+	@override String get versionInfo => '版本信息';
+	@override String get appVersion => '应用版本';
+	@override String get latestVersion => '最新版本';
+	@override String currentVersion({required Object version, required Object buildNumber}) => '当前版本 ${version}+${buildNumber}';
+	@override String get noCachedUpdate => '暂无可用更新';
+	@override String get loading => '加载中';
+	@override String get community => '社区';
+	@override String get telegram => 'Telegram';
+	@override String get discord => 'Discord';
+	@override String get checkUpdate => '检查更新';
+	@override String get checkingUpdateShort => '检查中';
+	@override String get checkingUpdate => '正在检查更新…';
+	@override String get noUpdate => '当前已是最新版本';
+	@override String updateAvailable({required Object version, required Object buildNumber}) => '发现新版本 ${version}+${buildNumber}';
+	@override String get checkUpdateFailed => '检查更新失败';
+	@override String get downloadPage => '下载页面';
+	@override String get downloadAssetUnavailable => '未找到适合当前平台的下载项，已打开发布页面。';
+	@override String get openDownloadFailed => '打开下载页面失败';
+	@override String get openLinkFailed => '打开链接失败';
 }
 
 // Path: home
@@ -1111,8 +1148,35 @@ extension on TranslationsZhCn {
 			'me.followers' => '我的粉丝',
 			'me.emptyFollowing' => '暂无关注用户',
 			'me.emptyFollowers' => '暂无粉丝',
+			'me.about' => '关于',
+			'me.aboutSubtitle' => '版本、更新和项目链接',
 			'me.settings' => '设置',
 			'me.settingsSubtitle' => '主题、语言、图片和下载',
+			'about.title' => '关于',
+			'about.appName' => 'freepiv',
+			'about.subtitle' => '一个用于浏览 Pixiv 内容的轻量客户端。这里可以查看当前版本、检查更新并打开项目下载页面。',
+			'about.project' => '项目',
+			'about.projectPage' => '项目主页',
+			'about.releasePage' => '发布页面',
+			'about.versionInfo' => '版本信息',
+			'about.appVersion' => '应用版本',
+			'about.latestVersion' => '最新版本',
+			'about.currentVersion' => ({required Object version, required Object buildNumber}) => '当前版本 ${version}+${buildNumber}',
+			'about.noCachedUpdate' => '暂无可用更新',
+			'about.loading' => '加载中',
+			'about.community' => '社区',
+			'about.telegram' => 'Telegram',
+			'about.discord' => 'Discord',
+			'about.checkUpdate' => '检查更新',
+			'about.checkingUpdateShort' => '检查中',
+			'about.checkingUpdate' => '正在检查更新…',
+			'about.noUpdate' => '当前已是最新版本',
+			'about.updateAvailable' => ({required Object version, required Object buildNumber}) => '发现新版本 ${version}+${buildNumber}',
+			'about.checkUpdateFailed' => '检查更新失败',
+			'about.downloadPage' => '下载页面',
+			'about.downloadAssetUnavailable' => '未找到适合当前平台的下载项，已打开发布页面。',
+			'about.openDownloadFailed' => '打开下载页面失败',
+			'about.openLinkFailed' => '打开链接失败',
 			'home.emptyTitle' => '暂无推荐',
 			'home.emptyMessage' => '下拉即可重新获取推荐。',
 			'home.rankings' => '排行榜',

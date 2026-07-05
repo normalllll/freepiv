@@ -12,6 +12,7 @@ enum AppRoute {
   me('/me'),
   meFollowing('/me/following'),
   meFollowers('/me/followers'),
+  about('/about'),
   settings('/settings'),
   downloads('/downloads'),
   originalImageViewer('/image-viewer'),

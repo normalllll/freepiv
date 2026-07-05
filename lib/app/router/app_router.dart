@@ -59,6 +59,7 @@ class AppRouter {
           GoRoute(path: AppRoute.rankingNovel.path, name: AppRoute.rankingNovel.name, pageBuilder: route_pages.rankingNovelPage),
           GoRoute(path: AppRoute.meFollowing.path, name: AppRoute.meFollowing.name, pageBuilder: route_pages.meFollowingPage),
           GoRoute(path: AppRoute.meFollowers.path, name: AppRoute.meFollowers.name, pageBuilder: route_pages.meFollowersPage),
+          GoRoute(path: AppRoute.about.path, name: AppRoute.about.name, pageBuilder: route_pages.aboutPage),
           GoRoute(path: AppRoute.settings.path, name: AppRoute.settings.name, pageBuilder: route_pages.settingsPage),
           GoRoute(path: AppRoute.originalImageViewer.path, name: AppRoute.originalImageViewer.name, pageBuilder: route_pages.originalImageViewerPage),
           GoRoute(path: AppRoute.illustDetail.path, name: AppRoute.illustDetail.name, pageBuilder: route_pages.illustDetailPage),

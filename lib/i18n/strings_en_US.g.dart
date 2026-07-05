@@ -48,6 +48,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$login$en_US login = Translations$login$en_US.internal(_root);
 	late final Translations$settings$en_US settings = Translations$settings$en_US.internal(_root);
 	late final Translations$me$en_US me = Translations$me$en_US.internal(_root);
+	late final Translations$about$en_US about = Translations$about$en_US.internal(_root);
 	late final Translations$home$en_US home = Translations$home$en_US.internal(_root);
 	late final Translations$ranking$en_US ranking = Translations$ranking$en_US.internal(_root);
 	late final Translations$search$en_US search = Translations$search$en_US.internal(_root);
@@ -187,8 +188,44 @@ class Translations$me$en_US {
 	String get followers => 'My followers';
 	String get emptyFollowing => 'No following users';
 	String get emptyFollowers => 'No followers';
+	String get about => 'About';
+	String get aboutSubtitle => 'Version, updates, and project links';
 	String get settings => 'Settings';
 	String get settingsSubtitle => 'Theme, language, images, and downloads';
+}
+
+// Path: about
+class Translations$about$en_US {
+	Translations$about$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'About';
+	String get appName => 'freepiv';
+	String get subtitle => 'A lightweight client for browsing Pixiv content. Check the current version, look for updates, and open the project download page here.';
+	String get project => 'Project';
+	String get projectPage => 'Project page';
+	String get releasePage => 'Release page';
+	String get versionInfo => 'Version info';
+	String get appVersion => 'App version';
+	String get latestVersion => 'Latest version';
+	String currentVersion({required Object version, required Object buildNumber}) => 'Current version ${version}+${buildNumber}';
+	String get noCachedUpdate => 'No cached update';
+	String get loading => 'Loading';
+	String get community => 'Community';
+	String get telegram => 'Telegram';
+	String get discord => 'Discord';
+	String get checkUpdate => 'Check update';
+	String get checkingUpdateShort => 'Checking';
+	String get checkingUpdate => 'Checking for updates...';
+	String get noUpdate => 'You are on the latest version';
+	String updateAvailable({required Object version, required Object buildNumber}) => 'New version available: ${version}+${buildNumber}';
+	String get checkUpdateFailed => 'Failed to check for updates';
+	String get downloadPage => 'Download page';
+	String get downloadAssetUnavailable => 'No download asset matched this platform. Opening the release page.';
+	String get openDownloadFailed => 'Failed to open the download page';
+	String get openLinkFailed => 'Failed to open link';
 }
 
 // Path: home
@@ -1112,8 +1149,35 @@ extension on Translations {
 			'me.followers' => 'My followers',
 			'me.emptyFollowing' => 'No following users',
 			'me.emptyFollowers' => 'No followers',
+			'me.about' => 'About',
+			'me.aboutSubtitle' => 'Version, updates, and project links',
 			'me.settings' => 'Settings',
 			'me.settingsSubtitle' => 'Theme, language, images, and downloads',
+			'about.title' => 'About',
+			'about.appName' => 'freepiv',
+			'about.subtitle' => 'A lightweight client for browsing Pixiv content. Check the current version, look for updates, and open the project download page here.',
+			'about.project' => 'Project',
+			'about.projectPage' => 'Project page',
+			'about.releasePage' => 'Release page',
+			'about.versionInfo' => 'Version info',
+			'about.appVersion' => 'App version',
+			'about.latestVersion' => 'Latest version',
+			'about.currentVersion' => ({required Object version, required Object buildNumber}) => 'Current version ${version}+${buildNumber}',
+			'about.noCachedUpdate' => 'No cached update',
+			'about.loading' => 'Loading',
+			'about.community' => 'Community',
+			'about.telegram' => 'Telegram',
+			'about.discord' => 'Discord',
+			'about.checkUpdate' => 'Check update',
+			'about.checkingUpdateShort' => 'Checking',
+			'about.checkingUpdate' => 'Checking for updates...',
+			'about.noUpdate' => 'You are on the latest version',
+			'about.updateAvailable' => ({required Object version, required Object buildNumber}) => 'New version available: ${version}+${buildNumber}',
+			'about.checkUpdateFailed' => 'Failed to check for updates',
+			'about.downloadPage' => 'Download page',
+			'about.downloadAssetUnavailable' => 'No download asset matched this platform. Opening the release page.',
+			'about.openDownloadFailed' => 'Failed to open the download page',
+			'about.openLinkFailed' => 'Failed to open link',
 			'home.emptyTitle' => 'No recommendations yet',
 			'home.emptyMessage' => 'Pull down to fetch recommendations again.',
 			'home.rankings' => 'Rankings',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/router/detail_transition_page.dart';
+import 'package:freepiv/features/about/presentation/about_page.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/comments/presentation/work_comments_page.dart';
 import 'package:freepiv/features/downloads/presentation/downloads_page.dart';
@@ -84,6 +85,10 @@ Page<void> meFollowersPage(BuildContext context, GoRouterState state) {
 
 Page<void> settingsPage(BuildContext context, GoRouterState state) {
   return detailTransitionPage(key: state.pageKey, child: const SettingsPage());
+}
+
+Page<void> aboutPage(BuildContext context, GoRouterState state) {
+  return detailTransitionPage(key: state.pageKey, child: const AboutPage());
 }
 
 Page<void> downloadsPage(BuildContext context, GoRouterState state) {

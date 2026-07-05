@@ -47,6 +47,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$login$zh_Hant_TW login = Translations$login$zh_Hant_TW.internal(_root);
 	@override late final Translations$settings$zh_Hant_TW settings = Translations$settings$zh_Hant_TW.internal(_root);
 	@override late final Translations$me$zh_Hant_TW me = Translations$me$zh_Hant_TW.internal(_root);
+	@override late final Translations$about$zh_Hant_TW about = Translations$about$zh_Hant_TW.internal(_root);
 	@override late final Translations$home$zh_Hant_TW home = Translations$home$zh_Hant_TW.internal(_root);
 	@override late final Translations$ranking$zh_Hant_TW ranking = Translations$ranking$zh_Hant_TW.internal(_root);
 	@override late final Translations$search$zh_Hant_TW search = Translations$search$zh_Hant_TW.internal(_root);
@@ -186,8 +187,44 @@ class Translations$me$zh_Hant_TW extends Translations$me$en_US {
 	@override String get followers => '我的粉絲';
 	@override String get emptyFollowing => '尚無關注使用者';
 	@override String get emptyFollowers => '尚無粉絲';
+	@override String get about => '關於';
+	@override String get aboutSubtitle => '版本、更新和專案連結';
 	@override String get settings => '設定';
 	@override String get settingsSubtitle => '主題、語言、圖片和下載';
+}
+
+// Path: about
+class Translations$about$zh_Hant_TW extends Translations$about$en_US {
+	Translations$about$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '關於';
+	@override String get appName => 'freepiv';
+	@override String get subtitle => '用於瀏覽 Pixiv 內容的輕量客戶端。你可以在這裡查看目前版本、檢查更新並開啟專案下載頁面。';
+	@override String get project => '專案';
+	@override String get projectPage => '專案首頁';
+	@override String get releasePage => '發布頁面';
+	@override String get versionInfo => '版本資訊';
+	@override String get appVersion => '應用程式版本';
+	@override String get latestVersion => '最新版本';
+	@override String currentVersion({required Object version, required Object buildNumber}) => '目前版本 ${version}+${buildNumber}';
+	@override String get noCachedUpdate => '暫無可用更新';
+	@override String get loading => '載入中';
+	@override String get community => '社群';
+	@override String get telegram => 'Telegram';
+	@override String get discord => 'Discord';
+	@override String get checkUpdate => '檢查更新';
+	@override String get checkingUpdateShort => '檢查中';
+	@override String get checkingUpdate => '正在檢查更新…';
+	@override String get noUpdate => '目前已是最新版本';
+	@override String updateAvailable({required Object version, required Object buildNumber}) => '發現新版本 ${version}+${buildNumber}';
+	@override String get checkUpdateFailed => '檢查更新失敗';
+	@override String get downloadPage => '下載頁面';
+	@override String get downloadAssetUnavailable => '找不到適合目前平台的下載項目，已開啟發布頁面。';
+	@override String get openDownloadFailed => '開啟下載頁面失敗';
+	@override String get openLinkFailed => '開啟連結失敗';
 }
 
 // Path: home
@@ -1111,8 +1148,35 @@ extension on TranslationsZhHantTw {
 			'me.followers' => '我的粉絲',
 			'me.emptyFollowing' => '尚無關注使用者',
 			'me.emptyFollowers' => '尚無粉絲',
+			'me.about' => '關於',
+			'me.aboutSubtitle' => '版本、更新和專案連結',
 			'me.settings' => '設定',
 			'me.settingsSubtitle' => '主題、語言、圖片和下載',
+			'about.title' => '關於',
+			'about.appName' => 'freepiv',
+			'about.subtitle' => '用於瀏覽 Pixiv 內容的輕量客戶端。你可以在這裡查看目前版本、檢查更新並開啟專案下載頁面。',
+			'about.project' => '專案',
+			'about.projectPage' => '專案首頁',
+			'about.releasePage' => '發布頁面',
+			'about.versionInfo' => '版本資訊',
+			'about.appVersion' => '應用程式版本',
+			'about.latestVersion' => '最新版本',
+			'about.currentVersion' => ({required Object version, required Object buildNumber}) => '目前版本 ${version}+${buildNumber}',
+			'about.noCachedUpdate' => '暫無可用更新',
+			'about.loading' => '載入中',
+			'about.community' => '社群',
+			'about.telegram' => 'Telegram',
+			'about.discord' => 'Discord',
+			'about.checkUpdate' => '檢查更新',
+			'about.checkingUpdateShort' => '檢查中',
+			'about.checkingUpdate' => '正在檢查更新…',
+			'about.noUpdate' => '目前已是最新版本',
+			'about.updateAvailable' => ({required Object version, required Object buildNumber}) => '發現新版本 ${version}+${buildNumber}',
+			'about.checkUpdateFailed' => '檢查更新失敗',
+			'about.downloadPage' => '下載頁面',
+			'about.downloadAssetUnavailable' => '找不到適合目前平台的下載項目，已開啟發布頁面。',
+			'about.openDownloadFailed' => '開啟下載頁面失敗',
+			'about.openLinkFailed' => '開啟連結失敗',
 			'home.emptyTitle' => '尚無推薦',
 			'home.emptyMessage' => '下拉即可重新取得推薦。',
 			'home.rankings' => '排行榜',
