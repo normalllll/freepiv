@@ -111,6 +111,39 @@ Future<void> deleteFileIfExists(File file) async {
   }
 }
 
+Future<File> moveFileWithFallback({required File source, required File destination}) async {
+  if (p.equals(source.path, destination.path)) {
+    return source;
+  }
+
+  await deleteFileIfExists(destination);
+  try {
+    return await source.rename(destination.path);
+  } on FileSystemException catch (renameError) {
+    final staging = File(p.join(destination.parent.path, '.${p.basename(destination.path)}.freepiv-${DateTime.now().microsecondsSinceEpoch}.part'));
+    try {
+      await deleteFileIfExists(staging);
+      final copied = await source.copy(staging.path);
+      await deleteFileIfExists(destination);
+      final saved = await copied.rename(destination.path);
+      try {
+        await source.delete();
+      } catch (_) {
+        // The destination is already saved; temp cleanup should not fail the save.
+      }
+      return saved;
+    } catch (copyError) {
+      if (await staging.exists()) {
+        await staging.delete();
+      }
+      throw DownloadException(
+        'Failed to move file. '
+        'source=${source.path}, destination=${destination.path}, staging=${staging.path}, renameError=$renameError, copyError=$copyError',
+      );
+    }
+  }
+}
+
 Future<DownloadedFile> writeBytesAtomically({required Uint8List bytes, required Directory directory, required String filename}) async {
   await ensureWritableDirectory(directory);
 

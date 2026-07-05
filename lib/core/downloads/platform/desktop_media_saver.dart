@@ -20,26 +20,8 @@ final class DesktopMediaSaver implements MediaSaver {
     }
 
     final destination = File(p.join(destinationDirectory.path, safeDownloadFilename(job.filename)));
-    await deleteFileIfExists(destination);
-    try {
-      final moved = await source.rename(destination.path);
-      return SaveResult(path: moved.path, bytesWritten: file.bytesWritten);
-    } on FileSystemException catch (renameError) {
-      try {
-        final copied = await source.copy(destination.path);
-        try {
-          await source.delete();
-        } catch (_) {
-          // The destination is already saved; temp cleanup should not fail the save.
-        }
-        return SaveResult(path: copied.path, bytesWritten: file.bytesWritten);
-      } catch (copyError) {
-        throw DownloadException(
-          'Failed to move downloaded file to destination. '
-          'source=${source.path}, destination=${destination.path}, renameError=$renameError, copyError=$copyError',
-        );
-      }
-    }
+    final moved = await moveFileWithFallback(source: source, destination: destination);
+    return SaveResult(path: moved.path, bytesWritten: file.bytesWritten);
   }
 
   @override
