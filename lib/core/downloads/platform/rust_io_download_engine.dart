@@ -123,7 +123,7 @@ final class RustIoDownloadEngine implements DownloadEngine {
       final savedTempFile = await downloadedFile.rename(destination.path);
       _events.add(EngineProgressEvent(jobId: job.id, receivedBytes: running.receivedBytes, totalBytes: running.totalBytes, progress: 1));
       _events.add(EngineCompletedEvent(jobId: job.id, localPath: savedTempFile.path, bytesWritten: running.receivedBytes));
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (partialFile != null && await partialFile.exists()) {
         await partialFile.delete();
       }
@@ -134,7 +134,20 @@ final class RustIoDownloadEngine implements DownloadEngine {
       if (running.cancelled) {
         _events.add(EngineCancelledEvent(jobId: job.id));
       } else {
-        _events.add(EngineFailedEvent(jobId: job.id, error: error.toString()));
+        _events.add(
+          EngineFailedEvent(
+            jobId: job.id,
+            error:
+                'Rust download failed.\n'
+                'url=${job.url}\n'
+                'filename=${job.filename}\n'
+                'partialPath=${partialFile?.path ?? '<null>'}\n'
+                'downloadedPath=${downloadedFile?.path ?? '<null>'}\n'
+                'proxy=${AppSettings.proxySettings.activeUrl ?? '<none>'}\n'
+                'error=$error\n'
+                'stackTrace=$stackTrace',
+          ),
+        );
       }
     } finally {
       _running.remove(job.id);

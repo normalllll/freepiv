@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -211,6 +212,18 @@ class _DownloadTaskActions extends StatelessWidget {
               onPressed: () => unawaited(_runAction(() => downloadManager.deleteTask(task.id))),
             ),
           ),
+          if (task.log != null && task.log!.isNotEmpty) ...[
+            SizedBox(height: compact ? 2 : 4),
+            SizedBox.square(
+              dimension: actionSize,
+              child: _SmallActionIcon(
+                key: const ValueKey<String>('log'),
+                tooltip: showTooltips ? 'View log' : null,
+                icon: const Icon(Icons.article_outlined),
+                onPressed: () => _showTaskLog(context, task),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -229,9 +242,9 @@ class _DownloadTaskActions extends StatelessWidget {
     if (task.status == DownloadStatus.downloaded && task.saveState == SaveState.failed) {
       return _SmallActionIcon(
         key: const ValueKey<String>('retry-save'),
-        tooltip: showTooltips ? t.settings.downloads.retrySave : null,
-        icon: const Icon(Icons.save_as_outlined),
-        onPressed: () => unawaited(_runAction(() => downloadManager.retrySave(task.id))),
+        tooltip: showTooltips ? t.common.retry : null,
+        icon: const Icon(Icons.refresh_outlined),
+        onPressed: () => unawaited(_runAction(() => downloadManager.retry(task.id))),
       );
     }
 
@@ -261,6 +274,58 @@ class _DownloadTaskActions extends StatelessWidget {
       AppToast.errorWithCause(t.settings.downloads.actionFailed, error);
     }
   }
+}
+
+void _showTaskLog(BuildContext context, DownloadTaskSnapshot task) {
+  final log = task.log;
+  if (log == null || log.isEmpty) {
+    return;
+  }
+
+  showDialog<void>(
+    context: context,
+    builder: (context) {
+      final colorScheme = Theme.of(context).colorScheme;
+      return AlertDialog(
+        title: Text('Download log', style: Theme.of(context).textTheme.titleMedium),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720, maxHeight: 460),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(12),
+              child: SelectableText(
+                'jobId=${task.id}\n'
+                'illustId=${task.illustId}\n'
+                'pageIndex=${task.pageIndex}\n'
+                'filename=${task.filename}\n'
+                'status=${task.status.name}\n'
+                'saveState=${task.saveState.name}\n'
+                'localPath=${task.localPath ?? '<null>'}\n'
+                'galleryAssetId=${task.galleryAssetId ?? '<null>'}\n\n'
+                '$log',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: log));
+              Navigator.of(context).pop();
+            },
+            child: const Text('Copy'),
+          ),
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Close')),
+        ],
+      );
+    },
+  );
 }
 
 class _SmallActionIcon extends StatelessWidget {

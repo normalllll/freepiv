@@ -770,6 +770,15 @@ class $DownloadStatesTable extends DownloadStates
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _logMeta = const VerificationMeta('log');
+  @override
+  late final GeneratedColumn<String> log = GeneratedColumn<String>(
+    'log',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
   );
@@ -792,6 +801,7 @@ class $DownloadStatesTable extends DownloadStates
     localPath,
     galleryAssetId,
     error,
+    log,
     updatedAt,
   ];
   @override
@@ -872,6 +882,12 @@ class $DownloadStatesTable extends DownloadStates
         error.isAcceptableOrUnknown(data['error']!, _errorMeta),
       );
     }
+    if (data.containsKey('log')) {
+      context.handle(
+        _logMeta,
+        log.isAcceptableOrUnknown(data['log']!, _logMeta),
+      );
+    }
     if (data.containsKey('updated_at')) {
       context.handle(
         _updatedAtMeta,
@@ -925,6 +941,10 @@ class $DownloadStatesTable extends DownloadStates
         DriftSqlType.string,
         data['${effectivePrefix}error'],
       ),
+      log: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}log'],
+      ),
       updatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}updated_at'],
@@ -948,6 +968,7 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
   final String? localPath;
   final String? galleryAssetId;
   final String? error;
+  final String? log;
   final int updatedAt;
   const DownloadState({
     required this.jobId,
@@ -959,6 +980,7 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
     this.localPath,
     this.galleryAssetId,
     this.error,
+    this.log,
     required this.updatedAt,
   });
   @override
@@ -980,6 +1002,9 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
     }
     if (!nullToAbsent || error != null) {
       map['error'] = Variable<String>(error);
+    }
+    if (!nullToAbsent || log != null) {
+      map['log'] = Variable<String>(log);
     }
     map['updated_at'] = Variable<int>(updatedAt);
     return map;
@@ -1004,6 +1029,7 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
       error: error == null && nullToAbsent
           ? const Value.absent()
           : Value(error),
+      log: log == null && nullToAbsent ? const Value.absent() : Value(log),
       updatedAt: Value(updatedAt),
     );
   }
@@ -1023,6 +1049,7 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
       localPath: serializer.fromJson<String?>(json['localPath']),
       galleryAssetId: serializer.fromJson<String?>(json['galleryAssetId']),
       error: serializer.fromJson<String?>(json['error']),
+      log: serializer.fromJson<String?>(json['log']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
     );
   }
@@ -1039,6 +1066,7 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
       'localPath': serializer.toJson<String?>(localPath),
       'galleryAssetId': serializer.toJson<String?>(galleryAssetId),
       'error': serializer.toJson<String?>(error),
+      'log': serializer.toJson<String?>(log),
       'updatedAt': serializer.toJson<int>(updatedAt),
     };
   }
@@ -1053,6 +1081,7 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
     Value<String?> localPath = const Value.absent(),
     Value<String?> galleryAssetId = const Value.absent(),
     Value<String?> error = const Value.absent(),
+    Value<String?> log = const Value.absent(),
     int? updatedAt,
   }) => DownloadState(
     jobId: jobId ?? this.jobId,
@@ -1066,6 +1095,7 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
         ? galleryAssetId.value
         : this.galleryAssetId,
     error: error.present ? error.value : this.error,
+    log: log.present ? log.value : this.log,
     updatedAt: updatedAt ?? this.updatedAt,
   );
   DownloadState copyWithCompanion(DownloadStatesCompanion data) {
@@ -1085,6 +1115,7 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
           ? data.galleryAssetId.value
           : this.galleryAssetId,
       error: data.error.present ? data.error.value : this.error,
+      log: data.log.present ? data.log.value : this.log,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
@@ -1101,6 +1132,7 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
           ..write('localPath: $localPath, ')
           ..write('galleryAssetId: $galleryAssetId, ')
           ..write('error: $error, ')
+          ..write('log: $log, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
@@ -1117,6 +1149,7 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
     localPath,
     galleryAssetId,
     error,
+    log,
     updatedAt,
   );
   @override
@@ -1132,6 +1165,7 @@ class DownloadState extends DataClass implements Insertable<DownloadState> {
           other.localPath == this.localPath &&
           other.galleryAssetId == this.galleryAssetId &&
           other.error == this.error &&
+          other.log == this.log &&
           other.updatedAt == this.updatedAt);
 }
 
@@ -1145,6 +1179,7 @@ class DownloadStatesCompanion extends UpdateCompanion<DownloadState> {
   final Value<String?> localPath;
   final Value<String?> galleryAssetId;
   final Value<String?> error;
+  final Value<String?> log;
   final Value<int> updatedAt;
   final Value<int> rowid;
   const DownloadStatesCompanion({
@@ -1157,6 +1192,7 @@ class DownloadStatesCompanion extends UpdateCompanion<DownloadState> {
     this.localPath = const Value.absent(),
     this.galleryAssetId = const Value.absent(),
     this.error = const Value.absent(),
+    this.log = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1170,6 +1206,7 @@ class DownloadStatesCompanion extends UpdateCompanion<DownloadState> {
     this.localPath = const Value.absent(),
     this.galleryAssetId = const Value.absent(),
     this.error = const Value.absent(),
+    this.log = const Value.absent(),
     required int updatedAt,
     this.rowid = const Value.absent(),
   }) : jobId = Value(jobId),
@@ -1186,6 +1223,7 @@ class DownloadStatesCompanion extends UpdateCompanion<DownloadState> {
     Expression<String>? localPath,
     Expression<String>? galleryAssetId,
     Expression<String>? error,
+    Expression<String>? log,
     Expression<int>? updatedAt,
     Expression<int>? rowid,
   }) {
@@ -1199,6 +1237,7 @@ class DownloadStatesCompanion extends UpdateCompanion<DownloadState> {
       if (localPath != null) 'local_path': localPath,
       if (galleryAssetId != null) 'gallery_asset_id': galleryAssetId,
       if (error != null) 'error': error,
+      if (log != null) 'log': log,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1214,6 +1253,7 @@ class DownloadStatesCompanion extends UpdateCompanion<DownloadState> {
     Value<String?>? localPath,
     Value<String?>? galleryAssetId,
     Value<String?>? error,
+    Value<String?>? log,
     Value<int>? updatedAt,
     Value<int>? rowid,
   }) {
@@ -1227,6 +1267,7 @@ class DownloadStatesCompanion extends UpdateCompanion<DownloadState> {
       localPath: localPath ?? this.localPath,
       galleryAssetId: galleryAssetId ?? this.galleryAssetId,
       error: error ?? this.error,
+      log: log ?? this.log,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -1262,6 +1303,9 @@ class DownloadStatesCompanion extends UpdateCompanion<DownloadState> {
     if (error.present) {
       map['error'] = Variable<String>(error.value);
     }
+    if (log.present) {
+      map['log'] = Variable<String>(log.value);
+    }
     if (updatedAt.present) {
       map['updated_at'] = Variable<int>(updatedAt.value);
     }
@@ -1283,6 +1327,7 @@ class DownloadStatesCompanion extends UpdateCompanion<DownloadState> {
           ..write('localPath: $localPath, ')
           ..write('galleryAssetId: $galleryAssetId, ')
           ..write('error: $error, ')
+          ..write('log: $log, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -1753,6 +1798,7 @@ typedef $$DownloadStatesTableCreateCompanionBuilder =
       Value<String?> localPath,
       Value<String?> galleryAssetId,
       Value<String?> error,
+      Value<String?> log,
       required int updatedAt,
       Value<int> rowid,
     });
@@ -1767,6 +1813,7 @@ typedef $$DownloadStatesTableUpdateCompanionBuilder =
       Value<String?> localPath,
       Value<String?> galleryAssetId,
       Value<String?> error,
+      Value<String?> log,
       Value<int> updatedAt,
       Value<int> rowid,
     });
@@ -1851,6 +1898,11 @@ class $$DownloadStatesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get log => $composableBuilder(
+    column: $table.log,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
@@ -1929,6 +1981,11 @@ class $$DownloadStatesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get log => $composableBuilder(
+    column: $table.log,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
@@ -1997,6 +2054,9 @@ class $$DownloadStatesTableAnnotationComposer
   GeneratedColumn<String> get error =>
       $composableBuilder(column: $table.error, builder: (column) => column);
 
+  GeneratedColumn<String> get log =>
+      $composableBuilder(column: $table.log, builder: (column) => column);
+
   GeneratedColumn<int> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
@@ -2063,6 +2123,7 @@ class $$DownloadStatesTableTableManager
                 Value<String?> localPath = const Value.absent(),
                 Value<String?> galleryAssetId = const Value.absent(),
                 Value<String?> error = const Value.absent(),
+                Value<String?> log = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DownloadStatesCompanion(
@@ -2075,6 +2136,7 @@ class $$DownloadStatesTableTableManager
                 localPath: localPath,
                 galleryAssetId: galleryAssetId,
                 error: error,
+                log: log,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),
@@ -2089,6 +2151,7 @@ class $$DownloadStatesTableTableManager
                 Value<String?> localPath = const Value.absent(),
                 Value<String?> galleryAssetId = const Value.absent(),
                 Value<String?> error = const Value.absent(),
+                Value<String?> log = const Value.absent(),
                 required int updatedAt,
                 Value<int> rowid = const Value.absent(),
               }) => DownloadStatesCompanion.insert(
@@ -2101,6 +2164,7 @@ class $$DownloadStatesTableTableManager
                 localPath: localPath,
                 galleryAssetId: galleryAssetId,
                 error: error,
+                log: log,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),

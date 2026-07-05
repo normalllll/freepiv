@@ -34,6 +34,7 @@ class DownloadStates extends Table {
   TextColumn get localPath => text().nullable()();
   TextColumn get galleryAssetId => text().nullable()();
   TextColumn get error => text().nullable()();
+  TextColumn get log => text().nullable()();
   IntColumn get updatedAt => integer()();
 
   @override
@@ -45,7 +46,7 @@ class DownloadDatabase extends _$DownloadDatabase {
   DownloadDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -53,6 +54,9 @@ class DownloadDatabase extends _$DownloadDatabase {
       onUpgrade: (migrator, from, to) async {
         if (from < 2) {
           await migrator.addColumn(downloadJobs, downloadJobs.pageIndex);
+        }
+        if (from < 3) {
+          await migrator.addColumn(downloadStates, downloadStates.log);
         }
       },
     );

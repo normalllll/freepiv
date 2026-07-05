@@ -20,8 +20,42 @@ String filenameFromUrl(Uri url) {
 }
 
 String safeDownloadFilename(String filename) {
-  final sanitized = filename.replaceAll(RegExp(r'[\\/\x00]'), '_').trim();
-  return sanitized.isEmpty ? fallbackDownloadFilename : sanitized;
+  var sanitized = filename.replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_').trim();
+  sanitized = sanitized.replaceAll(RegExp(r'[. ]+$'), '');
+  if (sanitized.isEmpty) {
+    return fallbackDownloadFilename;
+  }
+
+  final dotIndex = sanitized.indexOf('.');
+  final stem = (dotIndex < 0 ? sanitized : sanitized.substring(0, dotIndex)).toUpperCase();
+  const reservedNames = {
+    'CON',
+    'PRN',
+    'AUX',
+    'NUL',
+    'COM1',
+    'COM2',
+    'COM3',
+    'COM4',
+    'COM5',
+    'COM6',
+    'COM7',
+    'COM8',
+    'COM9',
+    'LPT1',
+    'LPT2',
+    'LPT3',
+    'LPT4',
+    'LPT5',
+    'LPT6',
+    'LPT7',
+    'LPT8',
+    'LPT9',
+  };
+  if (reservedNames.contains(stem)) {
+    sanitized = '_$sanitized';
+  }
+  return sanitized;
 }
 
 Future<String> resolveDesktopDownloadDirectory({String? explicitDirectory}) async {

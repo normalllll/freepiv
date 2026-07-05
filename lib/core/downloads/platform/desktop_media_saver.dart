@@ -24,10 +24,21 @@ final class DesktopMediaSaver implements MediaSaver {
     try {
       final moved = await source.rename(destination.path);
       return SaveResult(path: moved.path, bytesWritten: file.bytesWritten);
-    } on FileSystemException {
-      final copied = await source.copy(destination.path);
-      await source.delete();
-      return SaveResult(path: copied.path, bytesWritten: file.bytesWritten);
+    } on FileSystemException catch (renameError) {
+      try {
+        final copied = await source.copy(destination.path);
+        try {
+          await source.delete();
+        } catch (_) {
+          // The destination is already saved; temp cleanup should not fail the save.
+        }
+        return SaveResult(path: copied.path, bytesWritten: file.bytesWritten);
+      } catch (copyError) {
+        throw DownloadException(
+          'Failed to move downloaded file to destination. '
+          'source=${source.path}, destination=${destination.path}, renameError=$renameError, copyError=$copyError',
+        );
+      }
     }
   }
 

@@ -15,6 +15,8 @@ abstract interface class DownloadStore {
 
   Future<void> updateSaveState(String jobId, SaveState state, {String? localPath, String? galleryAssetId, String? error});
 
+  Future<void> appendLog(String jobId, String message);
+
   Future<void> applyEngineSnapshot(DownloadEngineSnapshot snapshot);
 
   Future<DownloadTaskSnapshot?> getTask(String jobId);
@@ -114,6 +116,18 @@ class DriftDownloadStore implements DownloadStore {
         error: Value(error),
         updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
       ),
+    );
+  }
+
+  @override
+  Future<void> appendLog(String jobId, String message) async {
+    final query = _db.selectOnly(_db.downloadStates)..where(_db.downloadStates.jobId.equals(jobId));
+    query.addColumns([_db.downloadStates.log]);
+    final existing = await query.map((row) => row.read(_db.downloadStates.log)).getSingleOrNull();
+    final entry = '[${DateTime.now().toIso8601String()}] $message';
+    final nextLog = existing == null || existing.isEmpty ? entry : '$existing\n$entry';
+    await (_db.update(_db.downloadStates)..where((table) => table.jobId.equals(jobId))).write(
+      DownloadStatesCompanion(log: Value(nextLog), updatedAt: Value(DateTime.now().millisecondsSinceEpoch)),
     );
   }
 
@@ -256,6 +270,7 @@ class DriftDownloadStore implements DownloadStore {
         s.local_path AS local_path,
         s.gallery_asset_id AS gallery_asset_id,
         s.error AS error,
+        s.log AS log,
         s.updated_at AS updated_at
       FROM download_jobs j
       INNER JOIN download_states s ON s.job_id = j.id
@@ -284,6 +299,7 @@ class DriftDownloadStore implements DownloadStore {
       localPath: row.readNullable<String>('local_path'),
       galleryAssetId: row.readNullable<String>('gallery_asset_id'),
       error: row.readNullable<String>('error'),
+      log: row.readNullable<String>('log'),
       createdAt: DateTime.fromMillisecondsSinceEpoch(row.read<int>('created_at')),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(row.read<int>('updated_at')),
     );

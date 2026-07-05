@@ -14,6 +14,7 @@ class DownloadTaskSnapshot {
     required this.progress,
     required this.localPath,
     required this.error,
+    required this.log,
     required this.createdAt,
     required this.updatedAt,
     this.thumbnailUrl,
@@ -34,6 +35,7 @@ class DownloadTaskSnapshot {
   final String? localPath;
   final String? galleryAssetId;
   final String? error;
+  final String? log;
   final DateTime createdAt;
   final DateTime updatedAt;
 

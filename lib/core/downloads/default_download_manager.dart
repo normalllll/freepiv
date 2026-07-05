@@ -155,7 +155,17 @@ final class DefaultDownloadManager implements DownloadManager {
       final result = await _activeMediaSaver.saveBytes(job: job, bytes: bytes);
       await _activeStore.updateSaveState(job.id, SaveState.saved, localPath: result.path, galleryAssetId: result.galleryAssetId);
       return DownloadedFile(path: result.path, bytesWritten: result.bytesWritten);
-    } catch (error) {
+    } catch (error, stackTrace) {
+      await _activeStore.appendLog(
+        job.id,
+        'Save bytes failed.\n'
+        'sourceUrl=$sourceUrl\n'
+        'bytes=${bytes.lengthInBytes}\n'
+        'filename=${job.filename}\n'
+        'saveTarget=${job.saveTarget.toJson()}\n'
+        'error=$error\n'
+        'stackTrace=$stackTrace',
+      );
       await _activeStore.updateSaveState(job.id, SaveState.failed, error: error.toString());
       throw DownloadException('Failed to save downloaded file', error);
     }
@@ -211,6 +221,20 @@ final class DefaultDownloadManager implements DownloadManager {
     if (job == null) {
       throw DownloadException('Download task does not exist: $jobId');
     }
+
+    final task = await _activeStore.getTask(jobId);
+    if (task?.status == DownloadStatus.downloaded && task?.saveState == SaveState.failed) {
+      final localPath = task?.localPath;
+      if (localPath != null && localPath.isNotEmpty && await File(localPath).exists()) {
+        await _activeStore.appendLog(jobId, 'Retry requested for save failure. Local file exists, retrying save only. path=$localPath');
+        await retrySave(jobId);
+        return;
+      }
+      await _activeStore.appendLog(jobId, 'Retry requested for save failure, but the local file is missing. Re-downloading. path=${localPath ?? '<null>'}');
+    } else {
+      await _activeStore.appendLog(jobId, 'Retry requested. Re-queueing download.');
+    }
+
     await _activeStore.updateSaveState(jobId, SaveState.none);
     await enqueue([job]);
   }
@@ -224,8 +248,13 @@ final class DefaultDownloadManager implements DownloadManager {
     if (snapshot == null || job == null || localPath == null || localPath.isEmpty) {
       throw DownloadException('Download task has no local file to save: $jobId');
     }
+    if (!await File(localPath).exists()) {
+      await _activeStore.appendLog(jobId, 'Save retry could not use local file because it no longer exists. path=$localPath');
+      throw DownloadException('Downloaded local file does not exist: $localPath');
+    }
 
     await _activePermissionGuard.ensureReadyForDownload();
+    await _activeStore.appendLog(jobId, 'Retrying save only. path=$localPath target=${job.saveTarget.toJson()}');
     await _saveCompletedFile(job, DownloadedFile(path: localPath, bytesWritten: snapshot.receivedBytes));
   }
 
@@ -297,6 +326,7 @@ final class DefaultDownloadManager implements DownloadManager {
         }
         await _pumpQueue();
       case EngineFailedEvent():
+        await _activeStore.appendLog(event.jobId, 'Download engine failed.\nerror=${event.error}');
         await _activeStore.updateStatus(event.jobId, DownloadStatus.failed, error: event.error);
         _completeWithError(event.jobId, DownloadException(event.error));
         await _pumpQueue();
@@ -311,6 +341,7 @@ final class DefaultDownloadManager implements DownloadManager {
         await _activeStore.updateSaveState(event.jobId, SaveState.saved, localPath: event.path, galleryAssetId: event.galleryAssetId);
         await _completeWithSnapshot(event.jobId);
       case EngineSaveFailedEvent():
+        await _activeStore.appendLog(event.jobId, 'Native save failed.\nlocalPath=${event.localPath ?? '<null>'}\nerror=${event.error}');
         await _activeStore.updateSaveState(event.jobId, SaveState.failed, localPath: event.localPath, error: event.error);
         _completeWithError(event.jobId, DownloadException(event.error));
     }
@@ -322,7 +353,18 @@ final class DefaultDownloadManager implements DownloadManager {
       final result = await _activeMediaSaver.saveDownloadedFile(job: job, file: file);
       await _activeStore.updateSaveState(job.id, SaveState.saved, localPath: result.path, galleryAssetId: result.galleryAssetId);
       _complete(job.id, DownloadedFile(path: result.path, bytesWritten: result.bytesWritten));
-    } catch (error) {
+    } catch (error, stackTrace) {
+      await _activeStore.appendLog(
+        job.id,
+        'Save downloaded file failed.\n'
+        'sourcePath=${file.path}\n'
+        'sourceExists=${await File(file.path).exists()}\n'
+        'bytesWritten=${file.bytesWritten}\n'
+        'filename=${job.filename}\n'
+        'saveTarget=${job.saveTarget.toJson()}\n'
+        'error=$error\n'
+        'stackTrace=$stackTrace',
+      );
       await _activeStore.updateSaveState(job.id, SaveState.failed, localPath: file.path, error: error.toString());
       _completeWithError(job.id, DownloadException('Failed to save downloaded file', error));
     }
@@ -334,7 +376,16 @@ final class DefaultDownloadManager implements DownloadManager {
       final job = await _jobFor(task.id);
       final localPath = task.localPath;
       if (job == null || localPath == null || localPath.isEmpty) {
+        await _activeStore.appendLog(
+          task.id,
+          'Pending save cannot resume because job or local file path is missing. jobExists=${job != null} path=${localPath ?? '<null>'}',
+        );
         await _activeStore.updateSaveState(task.id, SaveState.failed, error: 'Download task has no local file to save.');
+        continue;
+      }
+      if (!await File(localPath).exists()) {
+        await _activeStore.appendLog(task.id, 'Pending save cannot resume because local file is missing. path=$localPath');
+        await _activeStore.updateSaveState(task.id, SaveState.failed, error: 'Downloaded local file does not exist: $localPath');
         continue;
       }
       await _saveCompletedFile(job, DownloadedFile(path: localPath, bytesWritten: task.receivedBytes));
@@ -374,6 +425,7 @@ final class DefaultDownloadManager implements DownloadManager {
 
       final job = await _jobFor(task.id);
       if (job == null) {
+        await _activeStore.appendLog(task.id, 'Queued task failed because job data is missing.');
         await _activeStore.updateStatus(task.id, DownloadStatus.failed, error: 'Download task has no job data.');
         continue;
       }
@@ -382,7 +434,17 @@ final class DefaultDownloadManager implements DownloadManager {
       try {
         await _activeEngine.start([job]);
         availableSlots -= 1;
-      } catch (error) {
+      } catch (error, stackTrace) {
+        await _activeStore.appendLog(
+          job.id,
+          'Failed to start download.\n'
+          'url=${job.url}\n'
+          'filename=${job.filename}\n'
+          'headers=${job.headers}\n'
+          'saveTarget=${job.saveTarget.toJson()}\n'
+          'error=$error\n'
+          'stackTrace=$stackTrace',
+        );
         await _activeStore.updateStatus(job.id, DownloadStatus.failed, error: error.toString());
         _completeWithError(job.id, DownloadException('Failed to start download', error));
       }
