@@ -57,7 +57,19 @@ class _MobileDownloadFloatingWindowState extends State<MobileDownloadFloatingWin
                   }
 
                   final summary = DownloadSummary.fromTasks(panelTasks);
-                  return Stack(children: [_buildPositionedWindow(context, constraints, summary, panelTasks)]);
+                  return Stack(
+                    children: [
+                      if (_expanded)
+                        Positioned.fill(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => setState(() => _expanded = false),
+                            child: const ColoredBox(color: Colors.transparent),
+                          ),
+                        ),
+                      _buildPositionedWindow(context, constraints, summary, panelTasks),
+                    ],
+                  );
                 },
               );
             },
@@ -409,7 +421,7 @@ class _DownloadFloatingPanelHeader extends StatelessWidget {
               Icon(Icons.drag_indicator_outlined, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: 6),
               Expanded(child: DownloadSummaryView(summary: summary, compact: true)),
-              actions,
+              Padding(padding: const EdgeInsetsDirectional.only(start: 12, bottom: 28), child: actions),
             ],
           ),
         );

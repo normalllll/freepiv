@@ -4,6 +4,7 @@ class DownloadJob {
   DownloadJob({
     required this.id,
     required this.illustId,
+    required this.pageIndex,
     required this.url,
     required this.filename,
     required this.headers,
@@ -15,6 +16,7 @@ class DownloadJob {
 
   factory DownloadJob.create({
     required int illustId,
+    required int pageIndex,
     required Uri url,
     required String filename,
     required SaveTarget saveTarget,
@@ -24,8 +26,9 @@ class DownloadJob {
   }) {
     final now = DateTime.now();
     return DownloadJob(
-      id: _newDownloadJobId(illustId),
+      id: downloadJobId(illustId: illustId, pageIndex: pageIndex),
       illustId: illustId,
+      pageIndex: pageIndex,
       url: url,
       filename: filename,
       headers: headers,
@@ -38,6 +41,7 @@ class DownloadJob {
 
   final String id;
   final int illustId;
+  final int pageIndex;
   final Uri url;
   final String filename;
   final Map<String, String> headers;
@@ -49,6 +53,7 @@ class DownloadJob {
   DownloadJob copyWith({
     String? id,
     int? illustId,
+    int? pageIndex,
     Uri? url,
     String? filename,
     Map<String, String>? headers,
@@ -60,6 +65,7 @@ class DownloadJob {
     return DownloadJob(
       id: id ?? this.id,
       illustId: illustId ?? this.illustId,
+      pageIndex: pageIndex ?? this.pageIndex,
       url: url ?? this.url,
       filename: filename ?? this.filename,
       headers: headers ?? this.headers,
@@ -74,6 +80,7 @@ class DownloadJob {
     return {
       'id': id,
       'illustId': illustId,
+      'pageIndex': pageIndex,
       'url': url.toString(),
       'filename': filename,
       'headers': headers,
@@ -85,7 +92,6 @@ class DownloadJob {
   }
 }
 
-String _newDownloadJobId(int illustId) {
-  final now = DateTime.now().microsecondsSinceEpoch;
-  return 'illust_${illustId}_$now';
+String downloadJobId({required int illustId, required int pageIndex}) {
+  return 'illust_${illustId}_page_$pageIndex';
 }

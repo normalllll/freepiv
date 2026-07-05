@@ -7,10 +7,13 @@ abstract interface class DownloadManager {
 
   Future<void> ensureReadyForDownloads();
 
-  Future<void> enqueue(List<DownloadJob> jobs);
+  Future<int> enqueue(List<DownloadJob> jobs);
+
+  Future<void> refreshQueue();
 
   Future<DownloadedFile> download({
     required int illustId,
+    required int pageIndex,
     required Uri url,
     String? filename,
     Map<String, String> headers,
@@ -20,6 +23,7 @@ abstract interface class DownloadManager {
 
   Future<DownloadedFile> saveBytes({
     required int illustId,
+    required int pageIndex,
     required Uint8List bytes,
     required Uri sourceUrl,
     String? filename,
@@ -32,6 +36,8 @@ abstract interface class DownloadManager {
   Future<void> resume(String jobId);
 
   Future<void> cancel(String jobId);
+
+  Future<void> deleteTask(String jobId);
 
   Future<void> retry(String jobId);
 

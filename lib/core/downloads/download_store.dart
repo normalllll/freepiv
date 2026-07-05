@@ -21,6 +21,8 @@ abstract interface class DownloadStore {
 
   Future<DownloadJob?> getJob(String jobId);
 
+  Future<void> deleteTask(String jobId);
+
   Future<List<DownloadTaskSnapshot>> listTasks({int? illustId, DownloadStatus? status, SaveState? saveState});
 
   Stream<List<DownloadTaskSnapshot>> watchTasks({int? illustId});
@@ -53,6 +55,7 @@ class DriftDownloadStore implements DownloadStore {
             DownloadJobsCompanion(
               id: Value(job.id),
               illustId: Value(job.illustId),
+              pageIndex: Value(job.pageIndex),
               url: Value(job.url.toString()),
               filename: Value(job.filename),
               headersJson: Value(jsonEncode(job.headers)),
@@ -149,6 +152,7 @@ class DriftDownloadStore implements DownloadStore {
     return DownloadJob(
       id: row.id,
       illustId: row.illustId,
+      pageIndex: row.pageIndex,
       url: Uri.parse(row.url),
       filename: row.filename,
       headers: _stringMapFromJson(row.headersJson),
@@ -157,6 +161,11 @@ class DriftDownloadStore implements DownloadStore {
       title: row.title,
       createdAt: DateTime.fromMillisecondsSinceEpoch(row.createdAt),
     );
+  }
+
+  @override
+  Future<void> deleteTask(String jobId) async {
+    await (_db.delete(_db.downloadJobs)..where((table) => table.id.equals(jobId))).go();
   }
 
   @override
@@ -234,6 +243,7 @@ class DriftDownloadStore implements DownloadStore {
       SELECT
         j.id AS id,
         j.illust_id AS illust_id,
+        j.page_index AS page_index,
         j.filename AS filename,
         j.title AS title,
         j.thumbnail_url AS thumbnail_url,
@@ -262,6 +272,7 @@ class DriftDownloadStore implements DownloadStore {
     return DownloadTaskSnapshot(
       id: row.read<String>('id'),
       illustId: row.read<int>('illust_id'),
+      pageIndex: row.read<int>('page_index'),
       title: row.readNullable<String>('title') ?? filename,
       filename: filename,
       thumbnailUrl: row.readNullable<String>('thumbnail_url'),

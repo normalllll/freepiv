@@ -35,8 +35,8 @@ class DownloadSummaryView extends StatelessWidget {
             Text('${(progress * 100).round()}%', style: textTheme.labelLarge),
           ],
         ),
-        const SizedBox(height: 10),
-        LinearProgressIndicator(value: summary.total == 0 ? 0 : progress),
+        const SizedBox(height: 12),
+        _AnimatedRoundedProgressIndicator(value: summary.total == 0 ? 0 : progress, minHeight: compact ? 5 : 6),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -98,69 +98,70 @@ class DownloadTaskTile extends StatelessWidget {
     final localPath = task.localPath;
     final error = task.error;
 
-    final child = Padding(
-      padding: EdgeInsets.symmetric(vertical: compact ? 10 : 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _DownloadThumbnail(url: task.thumbnailUrl, compact: compact),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        task.filename,
-                        maxLines: compact ? 1 : 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: (compact ? textTheme.labelLarge : textTheme.titleSmall)?.copyWith(fontWeight: FontWeight.w700),
+    final child = AnimatedSize(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: compact ? 6 : 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _DownloadThumbnail(url: task.thumbnailUrl, compact: compact),
+            SizedBox(width: compact ? 9 : 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          task.filename,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: (compact ? textTheme.labelLarge : textTheme.titleSmall)?.copyWith(fontWeight: FontWeight.w700),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text('${(progress * 100).round()}%', style: textTheme.labelMedium?.copyWith(color: colorScheme.primary)),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                LinearProgressIndicator(value: task.status == DownloadStatus.running || task.totalBytes != null ? progress : null, minHeight: compact ? 3 : 4),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(status, style: textTheme.labelMedium?.copyWith(color: _statusColor(context, task))),
-                    Text('${context.t.common.id} ${task.illustId}', style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
-                    Text(_bytesLabel(task), style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
-                  ],
-                ),
-                if (!compact && error != null && error.isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    error,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodySmall?.copyWith(color: colorScheme.error),
+                      const SizedBox(width: 8),
+                      Text('${(progress * 100).round()}%', style: textTheme.labelMedium?.copyWith(color: colorScheme.primary)),
+                    ],
                   ),
-                ],
-                if (!compact && localPath != null && localPath.isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    localPath,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  SizedBox(height: compact ? 4 : 6),
+                  _AnimatedRoundedProgressIndicator(
+                    value: task.status == DownloadStatus.running || task.totalBytes != null ? progress : null,
+                    minHeight: compact ? 3 : 5,
+                  ),
+                  SizedBox(height: compact ? 4 : 6),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      _AnimatedStatusLabel(task: task, status: status, compact: compact),
+                      Text('${context.t.common.id} ${task.illustId}', style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+                      Text(_bytesLabel(task), style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+                    ],
+                  ),
+                  _AnimatedTaskDetailText(
+                    visible: !compact && error != null && error.isNotEmpty,
+                    text: error ?? '',
+                    style: textTheme.bodySmall?.copyWith(color: colorScheme.error),
+                    maxLines: 2,
+                  ),
+                  _AnimatedTaskDetailText(
+                    visible: !compact && localPath != null && localPath.isNotEmpty,
+                    text: localPath ?? '',
                     style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          _DownloadTaskActions(task: task, compact: compact, showTooltips: showTooltips),
-        ],
+            SizedBox(width: compact ? 4 : 8),
+            _DownloadTaskActions(task: task, compact: compact, showTooltips: showTooltips),
+          ],
+        ),
       ),
     );
 
@@ -182,43 +183,75 @@ class _DownloadTaskActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final actions = <Widget>[];
+    final actionSize = compact ? 24.0 : 30.0;
+    final primaryAction = _primaryActionFor(task, showTooltips: showTooltips);
 
+    return SizedBox(
+      width: actionSize,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox.square(
+            dimension: actionSize,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 160),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: _fadeScaleTransition,
+              child: primaryAction ?? SizedBox.square(key: const ValueKey<String>('empty-action'), dimension: actionSize),
+            ),
+          ),
+          SizedBox(height: compact ? 2 : 4),
+          SizedBox.square(
+            dimension: actionSize,
+            child: _SmallActionIcon(
+              key: const ValueKey<String>('delete'),
+              tooltip: showTooltips ? t.settings.downloads.deleteTask : null,
+              icon: const Icon(Icons.delete_outline),
+              onPressed: () => unawaited(_runAction(() => downloadManager.deleteTask(task.id))),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget? _primaryActionFor(DownloadTaskSnapshot task, {required bool showTooltips}) {
     if (task.status == DownloadStatus.failed) {
-      actions.add(
-        IconButton(
-          tooltip: showTooltips ? t.common.retry : null,
-          icon: const Icon(Icons.refresh_outlined),
-          onPressed: () => unawaited(_runAction(() => downloadManager.retry(task.id))),
-        ),
+      return _SmallActionIcon(
+        key: const ValueKey<String>('retry'),
+        tooltip: showTooltips ? t.common.retry : null,
+        icon: const Icon(Icons.refresh_outlined),
+        onPressed: () => unawaited(_runAction(() => downloadManager.retry(task.id))),
       );
     }
 
     if (task.status == DownloadStatus.downloaded && task.saveState == SaveState.failed) {
-      actions.add(
-        IconButton(
-          tooltip: showTooltips ? t.settings.downloads.retrySave : null,
-          icon: const Icon(Icons.save_as_outlined),
-          onPressed: () => unawaited(_runAction(() => downloadManager.retrySave(task.id))),
-        ),
+      return _SmallActionIcon(
+        key: const ValueKey<String>('retry-save'),
+        tooltip: showTooltips ? t.settings.downloads.retrySave : null,
+        icon: const Icon(Icons.save_as_outlined),
+        onPressed: () => unawaited(_runAction(() => downloadManager.retrySave(task.id))),
       );
     }
 
     if (task.status == DownloadStatus.running || task.status == DownloadStatus.queued) {
-      actions.add(
-        IconButton(
-          tooltip: showTooltips ? t.settings.downloads.cancel : null,
-          icon: const Icon(Icons.close_outlined),
-          onPressed: () => unawaited(_runAction(() => downloadManager.cancel(task.id))),
-        ),
+      return _SmallActionIcon(
+        key: const ValueKey<String>('cancel'),
+        tooltip: showTooltips ? t.settings.downloads.cancel : null,
+        icon: const Icon(Icons.close_outlined),
+        onPressed: () => unawaited(_runAction(() => downloadManager.cancel(task.id))),
       );
     }
 
-    if (actions.isEmpty) {
-      return SizedBox(width: compact ? 0 : 40);
-    }
+    return null;
+  }
 
-    return Column(mainAxisSize: MainAxisSize.min, children: actions);
+  Widget _fadeScaleTransition(Widget child, Animation<double> animation) {
+    return FadeTransition(
+      opacity: animation,
+      child: ScaleTransition(scale: Tween<double>(begin: 0.92, end: 1).animate(animation), child: child),
+    );
   }
 
   Future<void> _runAction(Future<void> Function() action) async {
@@ -230,6 +263,129 @@ class _DownloadTaskActions extends StatelessWidget {
   }
 }
 
+class _SmallActionIcon extends StatelessWidget {
+  const _SmallActionIcon({required this.icon, required this.onPressed, this.tooltip, super.key});
+
+  final Widget icon;
+  final VoidCallback onPressed;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final child = InkResponse(
+      onTap: onPressed,
+      radius: 15,
+      containedInkWell: false,
+      child: IconTheme.merge(
+        data: IconThemeData(size: 18, color: colorScheme.onSurfaceVariant),
+        child: Center(child: icon),
+      ),
+    );
+
+    final tooltip = this.tooltip;
+    return tooltip == null ? child : Tooltip(message: tooltip, child: child);
+  }
+}
+
+class _AnimatedRoundedProgressIndicator extends StatelessWidget {
+  const _AnimatedRoundedProgressIndicator({required this.value, required this.minHeight});
+
+  final double? value;
+  final double minHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(minHeight / 2);
+
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 180),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        child: value == null
+            ? LinearProgressIndicator(key: const ValueKey<String>('indeterminate'), minHeight: minHeight, borderRadius: borderRadius)
+            : TweenAnimationBuilder<double>(
+                key: const ValueKey<String>('determinate'),
+                tween: Tween<double>(end: value!.clamp(0, 1).toDouble()),
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                builder: (context, animatedValue, child) {
+                  return LinearProgressIndicator(value: animatedValue, minHeight: minHeight, borderRadius: borderRadius);
+                },
+              ),
+      ),
+    );
+  }
+}
+
+class _AnimatedStatusLabel extends StatelessWidget {
+  const _AnimatedStatusLabel({required this.task, required this.status, required this.compact});
+
+  final DownloadTaskSnapshot task;
+  final String status;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: compact ? 52 : 68),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 170),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero).animate(animation),
+              child: child,
+            ),
+          );
+        },
+        child: Text(
+          status,
+          key: ValueKey<String>('${task.status.name}-${task.saveState.name}'),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: _statusColor(context, task)),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedTaskDetailText extends StatelessWidget {
+  const _AnimatedTaskDetailText({required this.visible, required this.text, required this.style, this.maxLines = 1});
+
+  final bool visible;
+  final String text;
+  final TextStyle? style;
+  final int maxLines;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 180),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, animation) {
+        return SizeTransition(
+          sizeFactor: animation,
+          alignment: Alignment.topCenter,
+          child: FadeTransition(opacity: animation, child: child),
+        );
+      },
+      child: visible
+          ? Padding(
+              key: ValueKey<String>(text),
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(text, maxLines: maxLines, overflow: TextOverflow.ellipsis, style: style),
+            )
+          : const SizedBox.shrink(key: ValueKey<String>('empty-detail')),
+    );
+  }
+}
+
 class _DownloadThumbnail extends StatelessWidget {
   const _DownloadThumbnail({required this.url, required this.compact});
 
@@ -238,7 +394,7 @@ class _DownloadThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = compact ? 44.0 : 56.0;
+    final size = compact ? 36.0 : 50.0;
     final url = this.url;
     final colorScheme = Theme.of(context).colorScheme;
 

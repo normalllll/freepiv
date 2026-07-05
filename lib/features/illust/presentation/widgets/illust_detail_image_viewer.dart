@@ -57,7 +57,9 @@ class IllustImagePager extends StatelessWidget {
                   ? UgoiraPageContent(illustId: illustId, previewUrl: image.viewUrl, fallbackDownloadUrl: image.downloadUrl, showContextMenu: showControls)
                   : _ImageContextMenuRegion(
                       illustId: illustId,
+                      pageIndex: index,
                       image: image,
+                      imagePages: imagePages,
                       loadedImages: loadedImages,
                       onTap: onImageTap == null ? null : () => onImageTap!(index),
                       child: imageContent,
@@ -194,10 +196,20 @@ class _PageImageContent extends StatelessWidget {
 }
 
 class _ImageContextMenuRegion extends StatelessWidget {
-  const _ImageContextMenuRegion({required this.illustId, required this.image, required this.loadedImages, required this.child, this.onTap});
+  const _ImageContextMenuRegion({
+    required this.illustId,
+    required this.pageIndex,
+    required this.image,
+    required this.imagePages,
+    required this.loadedImages,
+    required this.child,
+    this.onTap,
+  });
 
   final int illustId;
+  final int pageIndex;
   final IllustPageImage image;
+  final List<IllustPageImage> imagePages;
   final LoadedIllustImages loadedImages;
   final Widget child;
   final VoidCallback? onTap;
@@ -209,13 +221,13 @@ class _ImageContextMenuRegion extends StatelessWidget {
       onTap: onTap,
       onSecondaryTapDown: isDesktopPlatform
           ? (details) {
-              unawaited(_showImageContextMenu(context, details.globalPosition, illustId, image, loadedImages));
+              unawaited(_showImageContextMenu(context, details.globalPosition, illustId, pageIndex, image, imagePages, loadedImages));
             }
           : null,
       onLongPressStart: isDesktopPlatform
           ? null
           : (details) {
-              unawaited(_showImageContextMenu(context, details.globalPosition, illustId, image, loadedImages));
+              unawaited(_showImageContextMenu(context, details.globalPosition, illustId, pageIndex, image, imagePages, loadedImages));
             },
       child: child,
     );
@@ -263,9 +275,17 @@ class _DetailPixivImage extends StatelessWidget {
   }
 }
 
-enum _ImageContextAction { download, copy }
+enum _ImageContextAction { download, downloadAll, copy }
 
-Future<void> _showImageContextMenu(BuildContext context, Offset position, int illustId, IllustPageImage image, LoadedIllustImages loadedImages) async {
+Future<void> _showImageContextMenu(
+  BuildContext context,
+  Offset position,
+  int illustId,
+  int pageIndex,
+  IllustPageImage image,
+  List<IllustPageImage> imagePages,
+  LoadedIllustImages loadedImages,
+) async {
   final overlay = Navigator.of(context).overlay;
   if (overlay == null) {
     return;
@@ -275,7 +295,12 @@ Future<void> _showImageContextMenu(BuildContext context, Offset position, int il
   final translations = t;
   final loadedImageData = loadedImages.get(image.viewUrl);
   final downloadNeedsLoadedData = image.canUseLoadedDataForDownload;
-  final canDownload = !downloadNeedsLoadedData || loadedImageData != null;
+  final alreadyDownloading = await _isImageAlreadyDownloading(illustId, pageIndex);
+  if (!context.mounted) {
+    return;
+  }
+
+  final canDownload = (!downloadNeedsLoadedData || loadedImageData != null) && !alreadyDownloading;
   final action = await showMenu<_ImageContextAction>(
     context: context,
     position: RelativeRect.fromRect(Rect.fromPoints(position, position), Offset.zero & renderBox.size),
@@ -290,6 +315,15 @@ Future<void> _showImageContextMenu(BuildContext context, Offset position, int il
           contentPadding: EdgeInsets.zero,
         ),
       ),
+      if (imagePages.length > 1)
+        PopupMenuItem(
+          value: _ImageContextAction.downloadAll,
+          child: ListTile(
+            leading: const Icon(Icons.download_for_offline_outlined),
+            title: Text(translations.illust.contextMenu.downloadAll),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
       if (isDesktopPlatform)
         PopupMenuItem(
           value: _ImageContextAction.copy,
@@ -297,7 +331,7 @@ Future<void> _showImageContextMenu(BuildContext context, Offset position, int il
           child: ListTile(
             enabled: loadedImageData != null,
             leading: const Icon(Icons.content_copy_outlined),
-            title: Text(context.t.illust.contextMenu.copyImage),
+            title: Text(translations.illust.contextMenu.copyImage),
             contentPadding: EdgeInsets.zero,
           ),
         ),
@@ -306,7 +340,10 @@ Future<void> _showImageContextMenu(BuildContext context, Offset position, int il
 
   switch (action) {
     case _ImageContextAction.download:
-      unawaited(_downloadImage(illustId, image, loadedImages));
+      unawaited(_downloadImage(illustId, pageIndex, image, loadedImages));
+      break;
+    case _ImageContextAction.downloadAll:
+      unawaited(_downloadAllImages(illustId, imagePages));
       break;
     case _ImageContextAction.copy:
       unawaited(_copyLoadedImage(image, loadedImages));
@@ -316,7 +353,7 @@ Future<void> _showImageContextMenu(BuildContext context, Offset position, int il
   }
 }
 
-Future<void> _downloadImage(int illustId, IllustPageImage image, LoadedIllustImages loadedImages) async {
+Future<void> _downloadImage(int illustId, int pageIndex, IllustPageImage image, LoadedIllustImages loadedImages) async {
   try {
     await downloadManager.ensureReadyForDownloads();
     AppToast.info(t.illust.toast.downloadStarted);
@@ -325,15 +362,56 @@ Future<void> _downloadImage(int illustId, IllustPageImage image, LoadedIllustIma
     final file = loadedImageData == null
         ? await downloadManager.download(
             illustId: illustId,
+            pageIndex: pageIndex,
             url: downloadUri,
             headers: const {'Referer': 'https://www.pixiv.net/'},
             thumbnailUrl: image.previewUrl,
           )
-        : await downloadManager.saveBytes(illustId: illustId, bytes: loadedImageData.bytes, sourceUrl: downloadUri, thumbnailUrl: image.previewUrl);
+        : await downloadManager.saveBytes(
+            illustId: illustId,
+            pageIndex: pageIndex,
+            bytes: loadedImageData.bytes,
+            sourceUrl: downloadUri,
+            thumbnailUrl: image.previewUrl,
+          );
     AppToast.success(t.illust.toast.downloadComplete(path: file.path));
   } catch (error) {
     AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
   }
+}
+
+Future<void> _downloadAllImages(int illustId, List<IllustPageImage> imagePages) async {
+  try {
+    await downloadManager.ensureReadyForDownloads();
+    final jobs = [
+      for (var index = 0; index < imagePages.length; index++)
+        DownloadJob.create(
+          illustId: illustId,
+          pageIndex: index,
+          url: Uri.parse(imagePages[index].downloadUrl),
+          filename: filenameFromUrl(Uri.parse(imagePages[index].downloadUrl)),
+          headers: const {'Referer': 'https://www.pixiv.net/'},
+          saveTarget: const SaveTarget.downloadsFolder(),
+          thumbnailUrl: imagePages[index].previewUrl,
+        ),
+    ];
+    final queuedCount = await downloadManager.enqueue(jobs);
+    AppToast.info(t.illust.toast.downloadAllQueued(count: queuedCount));
+  } catch (error) {
+    AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
+  }
+}
+
+Future<bool> _isImageAlreadyDownloading(int illustId, int pageIndex) async {
+  final tasks = await downloadManager.listTasks(illustId: illustId);
+  return tasks.any((task) {
+    return task.pageIndex == pageIndex &&
+        (task.status == DownloadStatus.queued ||
+            task.status == DownloadStatus.running ||
+            task.status == DownloadStatus.paused ||
+            task.saveState == SaveState.pending ||
+            task.saveState == SaveState.saving);
+  });
 }
 
 Future<void> _copyLoadedImage(IllustPageImage image, LoadedIllustImages loadedImages) async {

@@ -39,6 +39,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final previewQuality = ref.watch(previewImageQualityProvider);
     final viewerQuality = ref.watch(viewerImageQualityProvider);
     final downloadPathSettings = ref.watch(downloadSavePathSettingsProvider);
+    final maxConcurrentDownloads = ref.watch(maxConcurrentDownloadsProvider);
     final proxySettings = ref.watch(proxySettingsProvider);
     final tokens = FreepivThemeTokens.of(context);
     final translations = t;
@@ -116,8 +117,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                                   const SizedBox(height: 20),
                                   _DownloadSettingsSection(
                                     settings: downloadPathSettings,
+                                    maxConcurrentDownloads: maxConcurrentDownloads,
                                     onModeChanged: _setDownloadPathMode,
                                     onChooseDirectory: _chooseDownloadDirectory,
+                                    onMaxConcurrentDownloadsChanged: (value) {
+                                      ref.read(maxConcurrentDownloadsProvider.notifier).setLimit(value);
+                                    },
                                   ),
                                 ],
                               ),
@@ -377,11 +382,19 @@ class _ProxySettingsTile extends StatelessWidget {
 }
 
 class _DownloadSettingsSection extends StatelessWidget {
-  const _DownloadSettingsSection({required this.settings, required this.onModeChanged, required this.onChooseDirectory});
+  const _DownloadSettingsSection({
+    required this.settings,
+    required this.maxConcurrentDownloads,
+    required this.onModeChanged,
+    required this.onChooseDirectory,
+    required this.onMaxConcurrentDownloadsChanged,
+  });
 
   final DownloadSavePathSettings settings;
+  final int maxConcurrentDownloads;
   final ValueChanged<DownloadSavePathMode> onModeChanged;
   final VoidCallback onChooseDirectory;
+  final ValueChanged<int> onMaxConcurrentDownloadsChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -410,6 +423,21 @@ class _DownloadSettingsSection extends StatelessWidget {
                   onPressed: onChooseDirectory,
                 )
               : null,
+        ),
+        const SizedBox(height: 16),
+        Text(translations.settings.downloads.maxConcurrentDownloads, style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 4),
+        Text(
+          translations.settings.downloads.maxConcurrentDownloadsSubtitle(count: maxConcurrentDownloads),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
+        Slider(
+          value: maxConcurrentDownloads.toDouble(),
+          min: AppSettings.minConcurrentDownloads.toDouble(),
+          max: AppSettings.maxConcurrentDownloadsLimit.toDouble(),
+          divisions: AppSettings.maxConcurrentDownloadsLimit - AppSettings.minConcurrentDownloads,
+          label: '$maxConcurrentDownloads',
+          onChanged: (value) => onMaxConcurrentDownloadsChanged(value.round()),
         ),
       ],
     );

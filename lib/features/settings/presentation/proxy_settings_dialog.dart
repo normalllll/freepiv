@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
@@ -18,22 +19,29 @@ class ProxySettingsDialog extends ConsumerStatefulWidget {
 }
 
 class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
-  late final TextEditingController _controller;
+  late final TextEditingController _hostController;
+  late final TextEditingController _portController;
   late bool _enabled;
+  late AppProxyProtocol _protocol;
   bool _isFetchingSystemProxy = false;
-  String? _errorText;
+  String? _hostErrorText;
+  String? _portErrorText;
 
   @override
   void initState() {
     super.initState();
     final settings = ref.read(proxySettingsProvider);
+    final url = settings.url;
     _enabled = settings.enabled;
-    _controller = TextEditingController(text: settings.url ?? '');
+    _protocol = url == null ? AppProxyProtocol.http : proxyProtocolFromUrl(url);
+    _hostController = TextEditingController(text: url == null ? '' : proxyHostFromUrl(url));
+    _portController = TextEditingController(text: url == null ? '' : proxyPortFromUrl(url));
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _hostController.dispose();
+    _portController.dispose();
     super.dispose();
   }
 
@@ -42,30 +50,29 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
     final translations = context.t;
     final proxyTranslations = translations.settings.proxy;
     final tokens = FreepivThemeTokens.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
     final media = MediaQuery.of(context);
     final maxHeight = media.size.height - media.viewInsets.bottom - media.padding.vertical - 32;
 
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       backgroundColor: Colors.transparent,
       child: AnimatedPadding(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOutCubic,
         padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 480, maxHeight: maxHeight.clamp(320.0, double.infinity).toDouble()),
+          constraints: BoxConstraints(maxWidth: 560, maxHeight: maxHeight.clamp(360.0, double.infinity).toDouble()),
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: tokens.surfaceRaised,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: tokens.line.withValues(alpha: 0.64)),
-              boxShadow: [BoxShadow(color: tokens.shadow, blurRadius: 28, offset: const Offset(0, 16))],
+              border: Border.all(color: tokens.line.withValues(alpha: 0.42)),
+              boxShadow: [BoxShadow(color: tokens.shadow, blurRadius: 34, offset: const Offset(0, 18))],
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -81,10 +88,7 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
                             children: [
                               Text(proxyTranslations.title, style: Theme.of(context).textTheme.titleLarge),
                               const SizedBox(height: 4),
-                              Text(
-                                proxyTranslations.subtitle,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant, height: 1.35),
-                              ),
+                              Text(proxyTranslations.subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.35)),
                             ],
                           ),
                         ),
@@ -101,31 +105,36 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
                       onChanged: (enabled) {
                         setState(() {
                           _enabled = enabled;
-                          _errorText = null;
+                          _clearErrors();
                         });
                       },
                     ),
                     const SizedBox(height: 14),
-                    _ProxyAddressField(
-                      controller: _controller,
+                    _ProxyProtocolSelector(
+                      protocol: _protocol,
                       enabled: _enabled,
-                      errorText: _errorText,
+                      onChanged: (protocol) {
+                        setState(() {
+                          _protocol = protocol;
+                          _clearErrors();
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _ProxyEndpointFields(
+                      hostController: _hostController,
+                      portController: _portController,
+                      enabled: _enabled,
+                      hostErrorText: _hostErrorText,
+                      portErrorText: _portErrorText,
                       onChanged: (_) {
-                        if (_errorText != null) {
-                          setState(() => _errorText = null);
+                        if (_hostErrorText != null || _portErrorText != null) {
+                          setState(_clearErrors);
                         }
                       },
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _errorText ?? proxyTranslations.helper,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: _errorText == null ? colorScheme.onSurfaceVariant : colorScheme.error,
-                        fontWeight: _errorText == null ? FontWeight.w500 : FontWeight.w700,
-                      ),
-                    ),
                     if (isDesktopPlatform) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Align(
                         alignment: AlignmentDirectional.centerStart,
                         child: OutlinedButton.icon(
@@ -137,7 +146,7 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 22),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -166,7 +175,7 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
 
     setState(() {
       _isFetchingSystemProxy = true;
-      _errorText = null;
+      _clearErrors();
     });
 
     try {
@@ -181,12 +190,18 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
         return;
       }
 
-      _controller
-        ..text = normalizedProxy
-        ..selection = TextSelection.collapsed(offset: normalizedProxy.length);
+      final host = proxyHostFromUrl(normalizedProxy);
+      final port = proxyPortFromUrl(normalizedProxy);
+      _hostController
+        ..text = host
+        ..selection = TextSelection.collapsed(offset: host.length);
+      _portController
+        ..text = port
+        ..selection = TextSelection.collapsed(offset: port.length);
       setState(() {
         _enabled = true;
-        _errorText = null;
+        _protocol = proxyProtocolFromUrl(normalizedProxy);
+        _clearErrors();
       });
       AppToast.success(translations.systemLoaded);
     } catch (error) {
@@ -203,22 +218,52 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
 
   void _save() {
     final translations = t.settings.proxy;
-    final rawUrl = _controller.text.trim();
-    final normalizedUrl = normalizeProxyUrl(rawUrl);
+    final rawHost = _hostController.text.trim();
+    final rawPort = _portController.text.trim();
+    final hasProxyInput = rawHost.isNotEmpty || rawPort.isNotEmpty;
+    String? normalizedUrl;
+    String? hostErrorText;
+    String? portErrorText;
 
-    if (_enabled && rawUrl.isEmpty) {
-      setState(() => _errorText = translations.required);
-      return;
-    }
+    if (_enabled || hasProxyInput) {
+      if (rawHost.isEmpty) {
+        hostErrorText = translations.hostRequired;
+      } else if (!isValidProxyHostInput(rawHost)) {
+        hostErrorText = translations.invalidHost;
+      }
 
-    if (rawUrl.isNotEmpty && normalizedUrl == null) {
-      setState(() => _errorText = translations.invalid);
-      return;
+      if (rawPort.isEmpty) {
+        portErrorText = translations.portRequired;
+      } else if (!isValidProxyPortInput(rawPort)) {
+        portErrorText = translations.invalidPort;
+      }
+
+      if (hostErrorText != null || portErrorText != null) {
+        setState(() {
+          _hostErrorText = hostErrorText;
+          _portErrorText = portErrorText;
+        });
+        return;
+      }
+
+      normalizedUrl = normalizeProxyEndpoint(host: rawHost, port: rawPort, protocol: _protocol);
+      if (normalizedUrl == null) {
+        setState(() {
+          _hostErrorText = translations.invalid;
+          _portErrorText = translations.invalid;
+        });
+        return;
+      }
     }
 
     ref.read(proxySettingsProvider.notifier).setProxySettings(AppProxySettings(enabled: _enabled, url: normalizedUrl));
     AppToast.success(translations.saved);
     Navigator.of(context).pop();
+  }
+
+  void _clearErrors() {
+    _hostErrorText = null;
+    _portErrorText = null;
   }
 }
 
@@ -292,8 +337,102 @@ class _ProxyPowerTile extends StatelessWidget {
   }
 }
 
-class _ProxyAddressField extends StatelessWidget {
-  const _ProxyAddressField({required this.controller, required this.enabled, required this.errorText, required this.onChanged});
+class _ProxyProtocolSelector extends StatelessWidget {
+  const _ProxyProtocolSelector({required this.protocol, required this.enabled, required this.onChanged});
+
+  final AppProxyProtocol protocol;
+  final bool enabled;
+  final ValueChanged<AppProxyProtocol> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final translations = context.t.settings.proxy;
+
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 160),
+      opacity: enabled ? 1 : 0.62,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(translations.protocol, style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<AppProxyProtocol>(
+              selected: {protocol},
+              onSelectionChanged: enabled ? (selected) => onChanged(selected.first) : null,
+              segments: [
+                ButtonSegment(value: AppProxyProtocol.http, icon: const Icon(Icons.public_outlined), label: Text(translations.protocolHttp)),
+                ButtonSegment(value: AppProxyProtocol.socks, icon: const Icon(Icons.route_outlined), label: Text(translations.protocolSocks)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProxyEndpointFields extends StatelessWidget {
+  const _ProxyEndpointFields({
+    required this.hostController,
+    required this.portController,
+    required this.enabled,
+    required this.hostErrorText,
+    required this.portErrorText,
+    required this.onChanged,
+  });
+
+  final TextEditingController hostController;
+  final TextEditingController portController;
+  final bool enabled;
+  final String? hostErrorText;
+  final String? portErrorText;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final translations = context.t.settings.proxy;
+    final colorScheme = Theme.of(context).colorScheme;
+    final hasError = hostErrorText != null || portErrorText != null;
+
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 160),
+      opacity: enabled ? 1 : 0.62,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final hostField = _ProxyHostField(controller: hostController, enabled: enabled, errorText: hostErrorText, onChanged: onChanged);
+              final portField = _ProxyPortField(controller: portController, enabled: enabled, errorText: portErrorText, onChanged: onChanged);
+
+              if (constraints.maxWidth < 420) {
+                return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [hostField, const SizedBox(height: 12), portField]);
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: hostField),
+                  const SizedBox(width: 12),
+                  SizedBox(width: 148, child: portField),
+                ],
+              );
+            },
+          ),
+          if (!hasError) ...[
+            const SizedBox(height: 7),
+            Text(translations.helper, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ProxyHostField extends StatelessWidget {
+  const _ProxyHostField({required this.controller, required this.enabled, required this.errorText, required this.onChanged});
 
   final TextEditingController controller;
   final bool enabled;
@@ -303,52 +442,47 @@ class _ProxyAddressField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final translations = context.t.settings.proxy;
-    final tokens = FreepivThemeTokens.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final hasError = errorText != null;
 
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 160),
-      opacity: enabled ? 1 : 0.68,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Color.alphaBlend(tokens.surfaceTint.withValues(alpha: 0.35), tokens.surfaceRaised),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: hasError ? colorScheme.error : tokens.line.withValues(alpha: 0.72), width: hasError ? 1.3 : 1),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-          child: Row(
-            children: [
-              Icon(Icons.route_outlined, color: hasError ? colorScheme.error : colorScheme.onSurfaceVariant),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      translations.address,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.labelSmall?.copyWith(color: hasError ? colorScheme.error : colorScheme.onSurfaceVariant, fontWeight: FontWeight.w800),
-                    ),
-                    TextField(
-                      controller: controller,
-                      enabled: enabled,
-                      onChanged: onChanged,
-                      keyboardType: TextInputType.url,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => FocusScope.of(context).unfocus(),
-                      decoration: InputDecoration.collapsed(hintText: translations.addressHint),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+    return TextField(
+      controller: controller,
+      enabled: enabled,
+      inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'[:\s]'))],
+      onChanged: onChanged,
+      keyboardType: TextInputType.url,
+      textInputAction: TextInputAction.next,
+      decoration: InputDecoration(
+        labelText: translations.address,
+        hintText: translations.addressHint,
+        errorText: errorText,
+        prefixIcon: const Icon(Icons.dns_outlined),
       ),
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+    );
+  }
+}
+
+class _ProxyPortField extends StatelessWidget {
+  const _ProxyPortField({required this.controller, required this.enabled, required this.errorText, required this.onChanged});
+
+  final TextEditingController controller;
+  final bool enabled;
+  final String? errorText;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final translations = context.t.settings.proxy;
+
+    return TextField(
+      controller: controller,
+      enabled: enabled,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      onChanged: onChanged,
+      keyboardType: TextInputType.number,
+      textInputAction: TextInputAction.done,
+      onSubmitted: (_) => FocusScope.of(context).unfocus(),
+      decoration: InputDecoration(labelText: translations.port, hintText: translations.portHint, errorText: errorText),
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
     );
   }
 }

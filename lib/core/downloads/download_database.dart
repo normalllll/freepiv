@@ -10,6 +10,7 @@ part 'download_database.g.dart';
 class DownloadJobs extends Table {
   TextColumn get id => text()();
   IntColumn get illustId => integer()();
+  IntColumn get pageIndex => integer().withDefault(const Constant(0))();
   TextColumn get url => text()();
   TextColumn get filename => text()();
   TextColumn get headersJson => text().withDefault(const Constant('{}'))();
@@ -44,7 +45,18 @@ class DownloadDatabase extends _$DownloadDatabase {
   DownloadDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onUpgrade: (migrator, from, to) async {
+        if (from < 2) {
+          await migrator.addColumn(downloadJobs, downloadJobs.pageIndex);
+        }
+      },
+    );
+  }
 }
 
 LazyDatabase _openConnection() {

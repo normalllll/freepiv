@@ -12,6 +12,7 @@ import 'package:freepiv/core/downloads/media_saver.dart';
 import 'package:freepiv/core/downloads/platform/desktop_media_saver.dart';
 import 'package:freepiv/core/downloads/platform/native_download_engine.dart';
 import 'package:freepiv/core/downloads/platform/rust_io_download_engine.dart';
+import 'package:freepiv/core/services/app_settings.dart';
 
 final class DefaultDownloadManager implements DownloadManager {
   DownloadStore? _store;
@@ -21,6 +22,8 @@ final class DefaultDownloadManager implements DownloadManager {
   StreamSubscription<DownloadEngineEvent>? _engineSubscription;
   Future<void>? _initializing;
   bool _initialized = false;
+  bool _pumpingQueue = false;
+  bool _queuePumpRequested = false;
   final _jobs = <String, DownloadJob>{};
   final _waiters = <String, Completer<DownloadedFile>>{};
 
@@ -52,32 +55,42 @@ final class DefaultDownloadManager implements DownloadManager {
   }
 
   @override
-  Future<void> enqueue(List<DownloadJob> jobs) async {
+  Future<int> enqueue(List<DownloadJob> jobs) async {
     await _ensureInitialized();
-    final engine = _activeEngine;
     final normalizedJobs = [for (final job in jobs) _normalizeJob(job)];
     if (normalizedJobs.isEmpty) {
-      return;
+      return 0;
     }
     await _activePermissionGuard.ensureReadyForDownload();
+    var enqueued = 0;
     for (final job in normalizedJobs) {
+      final activeTask = await _activeTaskForJob(job);
+      if (activeTask != null) {
+        continue;
+      }
       _jobs[job.id] = job;
       await _activeStore.upsertJob(job);
-      await _activeStore.updateStatus(job.id, DownloadStatus.running);
+      enqueued += 1;
     }
-    try {
-      await engine.start(normalizedJobs);
-    } catch (error) {
-      for (final job in normalizedJobs) {
-        await _activeStore.updateStatus(job.id, DownloadStatus.failed, error: error.toString());
-      }
-      throw DownloadException('Failed to start download', error);
+
+    if (enqueued == 0) {
+      throw const DownloadException('This image is already queued or downloading.');
     }
+
+    await _pumpQueue();
+    return enqueued;
+  }
+
+  @override
+  Future<void> refreshQueue() async {
+    await _ensureInitialized();
+    await _pumpQueue();
   }
 
   @override
   Future<DownloadedFile> download({
     required int illustId,
+    required int pageIndex,
     required Uri url,
     String? filename,
     Map<String, String> headers = const {},
@@ -87,6 +100,7 @@ final class DefaultDownloadManager implements DownloadManager {
     await _ensureInitialized();
     final job = DownloadJob.create(
       illustId: illustId,
+      pageIndex: pageIndex,
       url: url,
       filename: filename ?? filenameFromUrl(url),
       headers: headers,
@@ -108,6 +122,7 @@ final class DefaultDownloadManager implements DownloadManager {
   @override
   Future<DownloadedFile> saveBytes({
     required int illustId,
+    required int pageIndex,
     required Uint8List bytes,
     required Uri sourceUrl,
     String? filename,
@@ -118,12 +133,18 @@ final class DefaultDownloadManager implements DownloadManager {
     await _activePermissionGuard.ensureReadyForDownload();
     final job = DownloadJob.create(
       illustId: illustId,
+      pageIndex: pageIndex,
       url: sourceUrl,
       filename: filename ?? filenameFromUrl(sourceUrl),
       saveTarget: _defaultSaveTarget(),
       title: title,
       thumbnailUrl: thumbnailUrl,
     );
+    final activeTask = await _activeTaskForJob(job);
+    if (activeTask != null) {
+      throw const DownloadException('This image is already queued or downloading.');
+    }
+
     _jobs[job.id] = job;
     await _activeStore.upsertJob(job);
     await _activeStore.updateStatus(job.id, DownloadStatus.running);
@@ -155,7 +176,32 @@ final class DefaultDownloadManager implements DownloadManager {
   @override
   Future<void> cancel(String jobId) async {
     await _ensureInitialized();
+    final task = await _activeStore.getTask(jobId);
+    if (task?.status == DownloadStatus.queued) {
+      await _activeStore.updateStatus(jobId, DownloadStatus.cancelled);
+      _completeWithError(jobId, const DownloadException('Download cancelled'));
+      await _pumpQueue();
+      return;
+    }
     await _activeEngine.cancel(jobId);
+  }
+
+  @override
+  Future<void> deleteTask(String jobId) async {
+    await _ensureInitialized();
+    final task = await _activeStore.getTask(jobId);
+    if (task == null) {
+      return;
+    }
+
+    if (task.status == DownloadStatus.running || task.status == DownloadStatus.paused) {
+      await _activeEngine.cancel(jobId);
+    }
+
+    _jobs.remove(jobId);
+    _completeWithError(jobId, const DownloadException('Download task deleted'));
+    await _activeStore.deleteTask(jobId);
+    await _pumpQueue();
   }
 
   @override
@@ -227,6 +273,7 @@ final class DefaultDownloadManager implements DownloadManager {
     if (!_activeEngine.capabilities.handlesSaving) {
       await _resumePendingSaves();
     }
+    await _pumpQueue();
   }
 
   Future<void> _handleEngineEvent(DownloadEngineEvent event) async {
@@ -248,14 +295,18 @@ final class DefaultDownloadManager implements DownloadManager {
             await _saveCompletedFile(job, DownloadedFile(path: event.localPath, bytesWritten: event.bytesWritten));
           }
         }
+        await _pumpQueue();
       case EngineFailedEvent():
         await _activeStore.updateStatus(event.jobId, DownloadStatus.failed, error: event.error);
         _completeWithError(event.jobId, DownloadException(event.error));
+        await _pumpQueue();
       case EnginePausedEvent():
         await _activeStore.updateStatus(event.jobId, DownloadStatus.paused);
+        await _pumpQueue();
       case EngineCancelledEvent():
         await _activeStore.updateStatus(event.jobId, DownloadStatus.cancelled);
         _completeWithError(event.jobId, const DownloadException('Download cancelled'));
+        await _pumpQueue();
       case EngineSaveCompletedEvent():
         await _activeStore.updateSaveState(event.jobId, SaveState.saved, localPath: event.path, galleryAssetId: event.galleryAssetId);
         await _completeWithSnapshot(event.jobId);
@@ -290,6 +341,54 @@ final class DefaultDownloadManager implements DownloadManager {
     }
   }
 
+  Future<void> _pumpQueue() async {
+    if (_pumpingQueue) {
+      _queuePumpRequested = true;
+      return;
+    }
+
+    _pumpingQueue = true;
+    try {
+      do {
+        _queuePumpRequested = false;
+        await _pumpQueueOnce();
+      } while (_queuePumpRequested);
+    } finally {
+      _pumpingQueue = false;
+    }
+  }
+
+  Future<void> _pumpQueueOnce() async {
+    final runningTasks = await _activeStore.listTasks(status: DownloadStatus.running);
+    var availableSlots = AppSettings.maxConcurrentDownloads - runningTasks.length;
+    if (availableSlots <= 0) {
+      return;
+    }
+
+    final queuedTasks = await _activeStore.listTasks(status: DownloadStatus.queued);
+    queuedTasks.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    for (final task in queuedTasks) {
+      if (availableSlots <= 0) {
+        return;
+      }
+
+      final job = await _jobFor(task.id);
+      if (job == null) {
+        await _activeStore.updateStatus(task.id, DownloadStatus.failed, error: 'Download task has no job data.');
+        continue;
+      }
+
+      await _activeStore.updateStatus(job.id, DownloadStatus.running);
+      try {
+        await _activeEngine.start([job]);
+        availableSlots -= 1;
+      } catch (error) {
+        await _activeStore.updateStatus(job.id, DownloadStatus.failed, error: error.toString());
+        _completeWithError(job.id, DownloadException('Failed to start download', error));
+      }
+    }
+  }
+
   Future<void> _completeWithSnapshot(String jobId) async {
     final waiter = _waiters.remove(jobId);
     if (waiter == null || waiter.isCompleted) {
@@ -321,6 +420,29 @@ final class DefaultDownloadManager implements DownloadManager {
 
   DownloadJob _normalizeJob(DownloadJob job) {
     return job.copyWith(saveTarget: _defaultSaveTarget(job.saveTarget));
+  }
+
+  bool _isActiveDownloadTask(DownloadTaskSnapshot task) {
+    return task.status == DownloadStatus.queued ||
+        task.status == DownloadStatus.running ||
+        task.status == DownloadStatus.paused ||
+        task.saveState == SaveState.pending ||
+        task.saveState == SaveState.saving;
+  }
+
+  Future<DownloadTaskSnapshot?> _activeTaskForJob(DownloadJob job) async {
+    final task = await _activeStore.getTask(job.id);
+    if (task != null && _isActiveDownloadTask(task)) {
+      return task;
+    }
+
+    final illustTasks = await _activeStore.listTasks(illustId: job.illustId);
+    for (final illustTask in illustTasks) {
+      if (illustTask.pageIndex == job.pageIndex && _isActiveDownloadTask(illustTask)) {
+        return illustTask;
+      }
+    }
+    return null;
   }
 
   SaveTarget _defaultSaveTarget([SaveTarget? requested]) {

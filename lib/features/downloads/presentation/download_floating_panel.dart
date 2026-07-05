@@ -46,6 +46,14 @@ class _DesktopDownloadDockState extends State<DesktopDownloadDock> {
 
         return Stack(
           children: [
+            if (_expanded)
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => _expanded = false),
+                  child: const ColoredBox(color: Colors.transparent),
+                ),
+              ),
             Positioned(
               left: 0,
               bottom: widget.bottomOffset,
@@ -204,8 +212,16 @@ class _DownloadDockPanel extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(child: DownloadSummaryView(summary: summary, compact: true)),
-                IconButton(icon: const Icon(Icons.sync_outlined), onPressed: onSync),
-                IconButton(icon: const Icon(Icons.close_outlined), onPressed: onClose),
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 14, bottom: 28),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(icon: const Icon(Icons.sync_outlined), onPressed: onSync),
+                      IconButton(icon: const Icon(Icons.close_outlined), onPressed: onClose),
+                    ],
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 10),

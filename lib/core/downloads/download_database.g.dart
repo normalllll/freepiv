@@ -29,6 +29,18 @@ class $DownloadJobsTable extends DownloadJobs
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _pageIndexMeta = const VerificationMeta(
+    'pageIndex',
+  );
+  @override
+  late final GeneratedColumn<int> pageIndex = GeneratedColumn<int>(
+    'page_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _urlMeta = const VerificationMeta('url');
   @override
   late final GeneratedColumn<String> url = GeneratedColumn<String>(
@@ -119,6 +131,7 @@ class $DownloadJobsTable extends DownloadJobs
   List<GeneratedColumn> get $columns => [
     id,
     illustId,
+    pageIndex,
     url,
     filename,
     headersJson,
@@ -152,6 +165,12 @@ class $DownloadJobsTable extends DownloadJobs
       );
     } else if (isInserting) {
       context.missing(_illustIdMeta);
+    }
+    if (data.containsKey('page_index')) {
+      context.handle(
+        _pageIndexMeta,
+        pageIndex.isAcceptableOrUnknown(data['page_index']!, _pageIndexMeta),
+      );
     }
     if (data.containsKey('url')) {
       context.handle(
@@ -235,6 +254,10 @@ class $DownloadJobsTable extends DownloadJobs
         DriftSqlType.int,
         data['${effectivePrefix}illust_id'],
       )!,
+      pageIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}page_index'],
+      )!,
       url: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}url'],
@@ -279,6 +302,7 @@ class $DownloadJobsTable extends DownloadJobs
 class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   final String id;
   final int illustId;
+  final int pageIndex;
   final String url;
   final String filename;
   final String headersJson;
@@ -290,6 +314,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   const DownloadJob({
     required this.id,
     required this.illustId,
+    required this.pageIndex,
     required this.url,
     required this.filename,
     required this.headersJson,
@@ -304,6 +329,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['illust_id'] = Variable<int>(illustId);
+    map['page_index'] = Variable<int>(pageIndex);
     map['url'] = Variable<String>(url);
     map['filename'] = Variable<String>(filename);
     map['headers_json'] = Variable<String>(headersJson);
@@ -323,6 +349,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     return DownloadJobsCompanion(
       id: Value(id),
       illustId: Value(illustId),
+      pageIndex: Value(pageIndex),
       url: Value(url),
       filename: Value(filename),
       headersJson: Value(headersJson),
@@ -346,6 +373,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     return DownloadJob(
       id: serializer.fromJson<String>(json['id']),
       illustId: serializer.fromJson<int>(json['illustId']),
+      pageIndex: serializer.fromJson<int>(json['pageIndex']),
       url: serializer.fromJson<String>(json['url']),
       filename: serializer.fromJson<String>(json['filename']),
       headersJson: serializer.fromJson<String>(json['headersJson']),
@@ -362,6 +390,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'illustId': serializer.toJson<int>(illustId),
+      'pageIndex': serializer.toJson<int>(pageIndex),
       'url': serializer.toJson<String>(url),
       'filename': serializer.toJson<String>(filename),
       'headersJson': serializer.toJson<String>(headersJson),
@@ -376,6 +405,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   DownloadJob copyWith({
     String? id,
     int? illustId,
+    int? pageIndex,
     String? url,
     String? filename,
     String? headersJson,
@@ -387,6 +417,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   }) => DownloadJob(
     id: id ?? this.id,
     illustId: illustId ?? this.illustId,
+    pageIndex: pageIndex ?? this.pageIndex,
     url: url ?? this.url,
     filename: filename ?? this.filename,
     headersJson: headersJson ?? this.headersJson,
@@ -400,6 +431,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     return DownloadJob(
       id: data.id.present ? data.id.value : this.id,
       illustId: data.illustId.present ? data.illustId.value : this.illustId,
+      pageIndex: data.pageIndex.present ? data.pageIndex.value : this.pageIndex,
       url: data.url.present ? data.url.value : this.url,
       filename: data.filename.present ? data.filename.value : this.filename,
       headersJson: data.headersJson.present
@@ -422,6 +454,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     return (StringBuffer('DownloadJob(')
           ..write('id: $id, ')
           ..write('illustId: $illustId, ')
+          ..write('pageIndex: $pageIndex, ')
           ..write('url: $url, ')
           ..write('filename: $filename, ')
           ..write('headersJson: $headersJson, ')
@@ -438,6 +471,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   int get hashCode => Object.hash(
     id,
     illustId,
+    pageIndex,
     url,
     filename,
     headersJson,
@@ -453,6 +487,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       (other is DownloadJob &&
           other.id == this.id &&
           other.illustId == this.illustId &&
+          other.pageIndex == this.pageIndex &&
           other.url == this.url &&
           other.filename == this.filename &&
           other.headersJson == this.headersJson &&
@@ -466,6 +501,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
 class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   final Value<String> id;
   final Value<int> illustId;
+  final Value<int> pageIndex;
   final Value<String> url;
   final Value<String> filename;
   final Value<String> headersJson;
@@ -478,6 +514,7 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   const DownloadJobsCompanion({
     this.id = const Value.absent(),
     this.illustId = const Value.absent(),
+    this.pageIndex = const Value.absent(),
     this.url = const Value.absent(),
     this.filename = const Value.absent(),
     this.headersJson = const Value.absent(),
@@ -491,6 +528,7 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   DownloadJobsCompanion.insert({
     required String id,
     required int illustId,
+    this.pageIndex = const Value.absent(),
     required String url,
     required String filename,
     this.headersJson = const Value.absent(),
@@ -509,6 +547,7 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   static Insertable<DownloadJob> custom({
     Expression<String>? id,
     Expression<int>? illustId,
+    Expression<int>? pageIndex,
     Expression<String>? url,
     Expression<String>? filename,
     Expression<String>? headersJson,
@@ -522,6 +561,7 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (illustId != null) 'illust_id': illustId,
+      if (pageIndex != null) 'page_index': pageIndex,
       if (url != null) 'url': url,
       if (filename != null) 'filename': filename,
       if (headersJson != null) 'headers_json': headersJson,
@@ -537,6 +577,7 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   DownloadJobsCompanion copyWith({
     Value<String>? id,
     Value<int>? illustId,
+    Value<int>? pageIndex,
     Value<String>? url,
     Value<String>? filename,
     Value<String>? headersJson,
@@ -550,6 +591,7 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     return DownloadJobsCompanion(
       id: id ?? this.id,
       illustId: illustId ?? this.illustId,
+      pageIndex: pageIndex ?? this.pageIndex,
       url: url ?? this.url,
       filename: filename ?? this.filename,
       headersJson: headersJson ?? this.headersJson,
@@ -570,6 +612,9 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     }
     if (illustId.present) {
       map['illust_id'] = Variable<int>(illustId.value);
+    }
+    if (pageIndex.present) {
+      map['page_index'] = Variable<int>(pageIndex.value);
     }
     if (url.present) {
       map['url'] = Variable<String>(url.value);
@@ -606,6 +651,7 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     return (StringBuffer('DownloadJobsCompanion(')
           ..write('id: $id, ')
           ..write('illustId: $illustId, ')
+          ..write('pageIndex: $pageIndex, ')
           ..write('url: $url, ')
           ..write('filename: $filename, ')
           ..write('headersJson: $headersJson, ')
@@ -1273,6 +1319,7 @@ typedef $$DownloadJobsTableCreateCompanionBuilder =
     DownloadJobsCompanion Function({
       required String id,
       required int illustId,
+      Value<int> pageIndex,
       required String url,
       required String filename,
       Value<String> headersJson,
@@ -1287,6 +1334,7 @@ typedef $$DownloadJobsTableUpdateCompanionBuilder =
     DownloadJobsCompanion Function({
       Value<String> id,
       Value<int> illustId,
+      Value<int> pageIndex,
       Value<String> url,
       Value<String> filename,
       Value<String> headersJson,
@@ -1339,6 +1387,11 @@ class $$DownloadJobsTableFilterComposer
 
   ColumnFilters<int> get illustId => $composableBuilder(
     column: $table.illustId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pageIndex => $composableBuilder(
+    column: $table.pageIndex,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1427,6 +1480,11 @@ class $$DownloadJobsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get pageIndex => $composableBuilder(
+    column: $table.pageIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get url => $composableBuilder(
     column: $table.url,
     builder: (column) => ColumnOrderings(column),
@@ -1482,6 +1540,9 @@ class $$DownloadJobsTableAnnotationComposer
 
   GeneratedColumn<int> get illustId =>
       $composableBuilder(column: $table.illustId, builder: (column) => column);
+
+  GeneratedColumn<int> get pageIndex =>
+      $composableBuilder(column: $table.pageIndex, builder: (column) => column);
 
   GeneratedColumn<String> get url =>
       $composableBuilder(column: $table.url, builder: (column) => column);
@@ -1571,6 +1632,7 @@ class $$DownloadJobsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<int> illustId = const Value.absent(),
+                Value<int> pageIndex = const Value.absent(),
                 Value<String> url = const Value.absent(),
                 Value<String> filename = const Value.absent(),
                 Value<String> headersJson = const Value.absent(),
@@ -1583,6 +1645,7 @@ class $$DownloadJobsTableTableManager
               }) => DownloadJobsCompanion(
                 id: id,
                 illustId: illustId,
+                pageIndex: pageIndex,
                 url: url,
                 filename: filename,
                 headersJson: headersJson,
@@ -1597,6 +1660,7 @@ class $$DownloadJobsTableTableManager
               ({
                 required String id,
                 required int illustId,
+                Value<int> pageIndex = const Value.absent(),
                 required String url,
                 required String filename,
                 Value<String> headersJson = const Value.absent(),
@@ -1609,6 +1673,7 @@ class $$DownloadJobsTableTableManager
               }) => DownloadJobsCompanion.insert(
                 id: id,
                 illustId: illustId,
+                pageIndex: pageIndex,
                 url: url,
                 filename: filename,
                 headersJson: headersJson,

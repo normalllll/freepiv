@@ -213,6 +213,7 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
       final zipUri = Uri.parse(zipUrl == null || zipUrl.isEmpty ? widget.fallbackDownloadUrl : zipUrl);
       final file = await downloadManager.saveBytes(
         illustId: widget.illustId,
+        pageIndex: 0,
         bytes: gifBytes,
         sourceUrl: zipUri,
         filename: '${widget.illustId}.gif',

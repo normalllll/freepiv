@@ -169,6 +169,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
       final page = _pages[_pageIndex];
       final file = await downloadManager.saveBytes(
         illustId: widget.args.workId,
+        pageIndex: _pageIndex,
         bytes: loadedImage.bytes,
         sourceUrl: Uri.parse(page.url),
         title: widget.args.title,
