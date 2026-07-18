@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -104,7 +103,7 @@ class UserNovelListBody extends StatelessWidget {
         physics: physics,
         sliverHeader: sliverHeader,
         leadingSlivers: leadingSlivers,
-        child: ErrorContent(message: formatPixivError(lastError), onRetry: () => source.refresh(true)),
+        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 

@@ -255,7 +255,7 @@ class _IllustHomeBody extends StatelessWidget {
       return _SliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent(message: formatPixivError(lastError), onRetry: () => source.refresh(true)),
+        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
@@ -313,7 +313,7 @@ class _NovelHomeBody extends StatelessWidget {
       return _SliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent(message: formatPixivError(lastError), onRetry: () => source.refresh(true)),
+        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
@@ -377,7 +377,7 @@ class _UserHomeBody extends StatelessWidget {
       return _SliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent(message: formatPixivError(lastError), onRetry: () => source.refresh(true)),
+        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 

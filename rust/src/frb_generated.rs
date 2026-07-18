@@ -5052,6 +5052,7 @@ const _: fn() = || {
         let _: String = PixivError.message;
         let _: Option<u16> = PixivError.status;
         let _: Option<String> = PixivError.body;
+        let _: Option<String> = PixivError.url;
     }
     {
         let ProfileImageUrls = None::<pixiv_rs::models::ProfileImageUrls>.unwrap();
@@ -6262,11 +6263,13 @@ impl SseDecode for pixiv_rs::error::PixivError {
         let mut var_message = <String>::sse_decode(deserializer);
         let mut var_status = <Option<u16>>::sse_decode(deserializer);
         let mut var_body = <Option<String>>::sse_decode(deserializer);
+        let mut var_url = <Option<String>>::sse_decode(deserializer);
         return pixiv_rs::error::PixivError {
             kind: var_kind,
             message: var_message,
             status: var_status,
             body: var_body,
+            url: var_url,
         };
     }
 }
@@ -8096,6 +8099,7 @@ impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::error::PixivError> {
             self.0.message.into_into_dart().into_dart(),
             self.0.status.into_into_dart().into_dart(),
             self.0.body.into_into_dart().into_dart(),
+            self.0.url.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -9607,6 +9611,7 @@ impl SseEncode for pixiv_rs::error::PixivError {
         <String>::sse_encode(self.message, serializer);
         <Option<u16>>::sse_encode(self.status, serializer);
         <Option<String>>::sse_encode(self.body, serializer);
+        <Option<String>>::sse_encode(self.url, serializer);
     }
 }
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/error.dart';
 
@@ -29,7 +28,7 @@ class UserErrorBody extends StatelessWidget {
     return UserSliverFillBody(
       physics: physics,
       sliverHeader: sliverHeader,
-      child: ErrorContent(message: formatPixivError(error), onRetry: onRetry),
+      child: ErrorContent.fromError(error: error, onRetry: onRetry),
     );
   }
 }

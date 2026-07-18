@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_creator_section.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_detail_constraints.dart';
@@ -39,7 +38,7 @@ class NovelDetailPage extends ConsumerWidget {
           return const NovelNotFoundPage();
         }
 
-        return ErrorPage(message: formatPixivError(error), onRetry: () => ref.read(provider.notifier).reload());
+        return ErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
     );
   }

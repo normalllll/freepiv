@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/ranking/logic/ranking_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_list_tab.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -493,7 +492,7 @@ class _ImageRankingBody extends StatelessWidget {
       return DataSliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent(message: formatPixivError(lastError), onRetry: () => source.refresh(true)),
+        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
@@ -550,7 +549,7 @@ class _NovelRankingBody extends StatelessWidget {
       return DataSliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent(message: formatPixivError(lastError), onRetry: () => source.refresh(true)),
+        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 

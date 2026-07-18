@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_bookmarks_tab.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_skeleton.dart';
@@ -45,7 +44,7 @@ class UserDetailPage extends ConsumerWidget {
             return UserDetailLoadingSkeleton(shouldUseDesktopShell: shouldUseDesktopShell);
           },
           error: (error, stackTrace) {
-            return ErrorPage(message: formatPixivError(error), onRetry: () => ref.read(userDetailProvider(args).notifier).reload());
+            return ErrorPage.fromError(error: error, onRetry: () => ref.read(userDetailProvider(args).notifier).reload());
           },
         );
       },

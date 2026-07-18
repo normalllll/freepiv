@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
@@ -30,10 +29,7 @@ class SearchTrendingTagsSliver extends ConsumerWidget {
     if (error != null && trendTags.isEmpty) {
       return SliverFillRemaining(
         hasScrollBody: false,
-        child: ErrorContent(
-          message: formatPixivError(error),
-          onRetry: () => unawaited(ref.read(searchTrendingTagsProvider.notifier).reload(keepPreviousData: false)),
-        ),
+        child: ErrorContent.fromError(error: error, onRetry: () => unawaited(ref.read(searchTrendingTagsProvider.notifier).reload(keepPreviousData: false))),
       );
     }
 

@@ -36,7 +36,7 @@ class NovelReaderPage extends ConsumerWidget {
           return const NovelNotFoundPage();
         }
 
-        return ErrorPage(message: formatPixivError(error), onRetry: () => ref.read(provider.notifier).reload());
+        return ErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
     );
   }

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_box.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_header.dart';
@@ -230,7 +229,7 @@ class _IllustResultBody extends StatelessWidget {
       return DataSliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent(message: formatPixivError(lastError), onRetry: () => source.refresh(true)),
+        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
@@ -289,7 +288,7 @@ class _UserResultBody extends StatelessWidget {
       return DataSliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent(message: formatPixivError(lastError), onRetry: () => source.refresh(true)),
+        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 

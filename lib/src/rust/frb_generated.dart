@@ -4812,13 +4812,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PixivError dco_decode_pixiv_error(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 4)
-      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
     return PixivError(
       kind: dco_decode_pixiv_error_kind(arr[0]),
       message: dco_decode_String(arr[1]),
       status: dco_decode_opt_box_autoadd_u_16(arr[2]),
       body: dco_decode_opt_String(arr[3]),
+      url: dco_decode_opt_String(arr[4]),
     );
   }
 
@@ -6358,11 +6359,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_message = sse_decode_String(deserializer);
     var var_status = sse_decode_opt_box_autoadd_u_16(deserializer);
     var var_body = sse_decode_opt_String(deserializer);
+    var var_url = sse_decode_opt_String(deserializer);
     return PixivError(
       kind: var_kind,
       message: var_message,
       status: var_status,
       body: var_body,
+      url: var_url,
     );
   }
 
@@ -7873,6 +7876,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.message, serializer);
     sse_encode_opt_box_autoadd_u_16(self.status, serializer);
     sse_encode_opt_String(self.body, serializer);
+    sse_encode_opt_String(self.url, serializer);
   }
 
   @protected

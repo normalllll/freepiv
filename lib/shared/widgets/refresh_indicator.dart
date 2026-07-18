@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/shared/data/data_list_source.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:pull_to_refresh_notification/pull_to_refresh_notification.dart';
@@ -301,7 +302,11 @@ class DataLoadingMoreIndicator<T> extends StatelessWidget {
       ),
       IndicatorStatus.fullScreenError => SliverFillRemaining(
         hasScrollBody: false,
-        child: ErrorContent(message: source.lastError?.toString() ?? context.t.refresh.loadFailed, onRetry: () => source.refresh(true)),
+        child: ErrorContent(
+          message: source.lastError == null ? context.t.refresh.loadFailed : formatPixivError(source.lastError!),
+          fullUrl: pixivErrorUrl(source.lastError),
+          onRetry: () => source.refresh(true),
+        ),
       ),
       IndicatorStatus.empty => SliverFillRemaining(
         hasScrollBody: false,

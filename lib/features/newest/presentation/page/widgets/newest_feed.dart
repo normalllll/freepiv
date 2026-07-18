@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_list_tab.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -52,7 +51,7 @@ class NewestBody extends StatelessWidget {
         physics: physics,
         sliverHeader: locators.sliverHeader,
         leadingSlivers: [filterSliver],
-        child: ErrorContent(message: formatPixivError(lastError), onRetry: () => source.refresh(true)),
+        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 

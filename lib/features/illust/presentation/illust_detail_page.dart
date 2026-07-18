@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
-import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_image_viewer.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_layout.dart';
@@ -43,7 +42,7 @@ class IllustDetailPage extends ConsumerWidget {
           return const _IllustNotFoundPage();
         }
 
-        return ErrorPage(message: formatPixivError(error), onRetry: () => ref.read(provider.notifier).reload());
+        return ErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
     );
   }

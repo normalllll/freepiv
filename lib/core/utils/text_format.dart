@@ -39,9 +39,40 @@ String plainTextFromHtml(String value) {
 
 String formatPixivError(Object error) {
   if (error is PixivError) {
-    final status = error.status == null ? '' : ' (${error.status})';
-    return '${error.message}$status';
+    final buffer = StringBuffer(error.message);
+
+    final body = error.body;
+    if (body != null && body.trim().isNotEmpty) {
+      buffer
+        ..write('\n\nResponse body:\n')
+        ..write(body);
+    }
+
+    return buffer.toString();
   }
 
   return error.toString();
+}
+
+String? pixivErrorUrl(Object? error) {
+  if (error is PixivError) {
+    final url = error.url;
+    return url == null || url.isEmpty ? null : url;
+  }
+
+  return null;
+}
+
+String formatPixivErrorUrlForDisplay(String url) {
+  try {
+    return Uri.parse(url).replace(queryParameters: const <String, String>{}).toString();
+  } catch (_) {
+    final fragmentIndex = url.indexOf('#');
+    final queryIndex = url.indexOf('?');
+    if (queryIndex < 0 || (fragmentIndex >= 0 && queryIndex > fragmentIndex)) {
+      return url;
+    }
+
+    return '${url.substring(0, queryIndex)}${fragmentIndex >= 0 ? url.substring(fragmentIndex) : ''}';
+  }
 }

@@ -13,12 +13,14 @@ class PixivError implements FrbException {
   final String message;
   final int? status;
   final String? body;
+  final String? url;
 
   const PixivError({
     required this.kind,
     required this.message,
     this.status,
     this.body,
+    this.url,
   });
 
   static Future<PixivError> httpStatus({
@@ -43,7 +45,11 @@ class PixivError implements FrbException {
 
   @override
   int get hashCode =>
-      kind.hashCode ^ message.hashCode ^ status.hashCode ^ body.hashCode;
+      kind.hashCode ^
+      message.hashCode ^
+      status.hashCode ^
+      body.hashCode ^
+      url.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -53,7 +59,8 @@ class PixivError implements FrbException {
           kind == other.kind &&
           message == other.message &&
           status == other.status &&
-          body == other.body;
+          body == other.body &&
+          url == other.url;
 }
 
 enum PixivErrorKind {
