@@ -1,5 +1,6 @@
 #include <flutter/dart_project.h>
 #include <flutter/flutter_view_controller.h>
+#include <flutter_windows.h>
 #include <string>
 #include <windows.h>
 
@@ -10,6 +11,32 @@
 namespace {
 
 constexpr wchar_t kWindowTitle[] = L"freepiv";
+
+Win32Window::Point GetCenteredWindowOrigin(const Win32Window::Size& size) {
+  const POINT primary_monitor_point = {0, 0};
+  const HMONITOR monitor =
+      ::MonitorFromPoint(primary_monitor_point, MONITOR_DEFAULTTOPRIMARY);
+  MONITORINFO monitor_info = {sizeof(MONITORINFO)};
+  if (!::GetMonitorInfo(monitor, &monitor_info)) {
+    return Win32Window::Point(10, 10);
+  }
+
+  const double scale_factor =
+      FlutterDesktopGetDpiForMonitor(monitor) / 96.0;
+  const int window_width = static_cast<int>(size.width * scale_factor);
+  const int window_height = static_cast<int>(size.height * scale_factor);
+  const RECT& work_area = monitor_info.rcWork;
+  const int x = work_area.left +
+                (work_area.right - work_area.left - window_width) / 2;
+  const int y = work_area.top +
+                (work_area.bottom - work_area.top - window_height) / 2;
+  const int visible_x = x < work_area.left ? work_area.left : x;
+  const int visible_y = y < work_area.top ? work_area.top : y;
+
+  return Win32Window::Point(
+      static_cast<unsigned int>(visible_x / scale_factor),
+      static_cast<unsigned int>(visible_y / scale_factor));
+}
 
 bool SendAppLinkToInstance(const std::wstring& title) {
   HWND hwnd = ::FindWindow(L"FLUTTER_RUNNER_WIN32_WINDOW", title.c_str());
@@ -66,8 +93,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
 
   FlutterWindow window(project);
-  Win32Window::Point origin(10, 10);
-  Win32Window::Size size(1280, 720);
+  const Win32Window::Size size(1280, 720);
+  const Win32Window::Point origin = GetCenteredWindowOrigin(size);
   if (!window.Create(kWindowTitle, origin, size)) {
     return EXIT_FAILURE;
   }
