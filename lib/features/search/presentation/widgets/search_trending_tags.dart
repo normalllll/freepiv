@@ -105,7 +105,7 @@ class _TrendingTagCard extends StatelessWidget {
                   '#${trendTag.tag}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w900),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
                 ),
                 if (translatedName != null && translatedName.isNotEmpty) ...[
                   const SizedBox(height: 3),

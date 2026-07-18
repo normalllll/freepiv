@@ -78,7 +78,7 @@ class PixivCommentTile extends StatelessWidget {
                           comment.user.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+                          style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
                         ),
                       ),
                       const SizedBox(width: 8),

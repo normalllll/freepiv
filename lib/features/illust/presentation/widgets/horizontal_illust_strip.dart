@@ -271,7 +271,7 @@ class _TileBadge extends StatelessWidget {
             if (icon != null) ...[Icon(icon, size: 11, color: Colors.white), const SizedBox(width: 3)],
             Text(
               label,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w800, height: 1),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w700, height: 1),
             ),
           ],
         ),

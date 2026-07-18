@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/app/theme/app_system_fonts.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 
@@ -24,17 +25,26 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
 class AppTheme {
   const AppTheme._();
 
-  static ThemeData get light {
-    return _build(tokens: FreepivThemeTokens.light, brightness: Brightness.light);
+  static ThemeData light({required TargetPlatform platform, required Locale locale}) {
+    return _build(tokens: FreepivThemeTokens.light, brightness: Brightness.light, platform: platform, locale: locale);
   }
 
-  static ThemeData get dark {
-    return _build(tokens: FreepivThemeTokens.dark, brightness: Brightness.dark);
+  static ThemeData dark({required TargetPlatform platform, required Locale locale}) {
+    return _build(tokens: FreepivThemeTokens.dark, brightness: Brightness.dark, platform: platform, locale: locale);
   }
 
-  static ThemeData _build({required FreepivThemeTokens tokens, required Brightness brightness}) {
+  static ThemeData _build({required FreepivThemeTokens tokens, required Brightness brightness, required TargetPlatform platform, required Locale locale}) {
     final colorScheme = _colorScheme(tokens: tokens, brightness: brightness);
-    final base = ThemeData(colorScheme: colorScheme, scaffoldBackgroundColor: tokens.surface, useMaterial3: true, extensions: [tokens]);
+    final systemFonts = AppSystemFonts.resolve(platform: platform, locale: locale);
+    final base = ThemeData(
+      platform: platform,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: tokens.surface,
+      fontFamily: systemFonts.family,
+      fontFamilyFallback: systemFonts.fallbacks,
+      useMaterial3: true,
+      extensions: [tokens],
+    );
 
     return _applyTextTheme(base).copyWith(
       splashColor: tokens.brand.withValues(alpha: 0.10),
@@ -49,7 +59,7 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: base.textTheme.titleLarge?.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w800),
+        titleTextStyle: base.textTheme.titleLarge?.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w700),
         shape: Border(bottom: BorderSide(color: tokens.line.withValues(alpha: 0.42))),
       ),
       cardTheme: CardThemeData(
@@ -74,7 +84,7 @@ class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: tokens.brand,
           disabledForegroundColor: colorScheme.onSurfaceVariant.withValues(alpha: 0.38),
-          textStyle: base.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+          textStyle: base.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
@@ -86,7 +96,7 @@ class AppTheme {
           disabledForegroundColor: Colors.white.withValues(alpha: 0.68),
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          textStyle: base.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+          textStyle: base.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
@@ -99,7 +109,7 @@ class AppTheme {
           elevation: 0,
           shadowColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          textStyle: base.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+          textStyle: base.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
@@ -109,7 +119,7 @@ class AppTheme {
           disabledForegroundColor: colorScheme.onSurfaceVariant.withValues(alpha: 0.38),
           side: BorderSide(color: tokens.line),
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
-          textStyle: base.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+          textStyle: base.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
@@ -119,7 +129,7 @@ class AppTheme {
         selectedColor: tokens.brand.withValues(alpha: brightness == Brightness.light ? 0.15 : 0.25),
         disabledColor: tokens.surfaceMuted,
         labelStyle: base.textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
-        secondaryLabelStyle: base.textTheme.labelMedium?.copyWith(color: tokens.brand, fontWeight: FontWeight.w800),
+        secondaryLabelStyle: base.textTheme.labelMedium?.copyWith(color: tokens.brand, fontWeight: FontWeight.w700),
         side: BorderSide(color: tokens.line.withValues(alpha: 0.42)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -167,11 +177,21 @@ class AppTheme {
   static ThemeData _applyTextTheme(ThemeData theme) {
     return theme.copyWith(
       textTheme: theme.textTheme.copyWith(
-        titleLarge: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-        titleMedium: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-        titleSmall: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
-        labelLarge: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+        displayLarge: theme.textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w700),
+        displayMedium: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.w700),
+        displaySmall: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700),
+        headlineLarge: theme.textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w700),
+        headlineMedium: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+        headlineSmall: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+        titleLarge: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        titleMedium: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        titleSmall: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+        bodyLarge: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w400),
+        bodyMedium: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w400),
+        bodySmall: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w400),
+        labelLarge: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
         labelMedium: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+        labelSmall: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -243,7 +263,7 @@ class AppTheme {
   static ButtonStyle _segmentedButtonStyle(FreepivThemeTokens tokens, ColorScheme colorScheme) {
     return ButtonStyle(
       visualDensity: VisualDensity.compact,
-      textStyle: const WidgetStatePropertyAll(TextStyle(fontWeight: FontWeight.w800)),
+      textStyle: const WidgetStatePropertyAll(TextStyle(fontWeight: FontWeight.w700)),
       padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 12, vertical: 9)),
       shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
       side: WidgetStateProperty.resolveWith((states) {

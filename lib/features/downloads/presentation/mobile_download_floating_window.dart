@@ -236,7 +236,7 @@ class _DownloadFloatingButton extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 5),
                         child: Text(
                           badgeLabel,
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.w800),
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),
@@ -351,7 +351,7 @@ class _DownloadFloatingPanelFallback extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 5),
                       child: Text(
                         badgeLabel,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.w800),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),

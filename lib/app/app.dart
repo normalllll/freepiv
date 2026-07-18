@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,18 +28,19 @@ class _FreepivMaterialApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final selectedLocale = ref.watch(appLocaleProvider);
+    final effectiveLocale = selectedLocale?.flutterLocale ?? View.of(context).platformDispatcher.locale;
 
     return MaterialApp.router(
       title: context.t.app.title,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      theme: AppTheme.light(platform: defaultTargetPlatform, locale: effectiveLocale),
+      darkTheme: AppTheme.dark(platform: defaultTargetPlatform, locale: effectiveLocale),
       themeMode: themeMode,
       locale: selectedLocale?.flutterLocale,
       supportedLocales: AppLocaleUtils.supportedLocales,
       localizationsDelegates: const [GlobalMaterialLocalizations.delegate, GlobalWidgetsLocalizations.delegate, GlobalCupertinoLocalizations.delegate],
       routerConfig: AppRouter.router,
       builder: (context, child) {
-        return MobileDownloadFloatingWindow(child: FontWarmUp(child: child ?? const SizedBox.shrink()));
+        return FontWarmUp(child: MobileDownloadFloatingWindow(child: child ?? const SizedBox.shrink()));
       },
     );
   }

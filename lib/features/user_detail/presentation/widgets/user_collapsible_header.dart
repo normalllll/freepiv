@@ -276,7 +276,7 @@ class _ExpandedNameBlock extends StatelessWidget {
           detail.user.name,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w800, height: 1.08),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w700, height: 1.08),
         ),
         const SizedBox(height: 3),
         Text(
@@ -317,7 +317,7 @@ class _CollapsedUserHeader extends StatelessWidget {
                 detail.user.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w800, height: 1.08),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w700, height: 1.08),
               ),
               const SizedBox(height: 2),
               Text(
@@ -409,7 +409,7 @@ class _UserHeaderStat extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(formatCount(value), style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800)),
+            Text(formatCount(value), style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(width: 5),
             Text(label, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant)),
           ],

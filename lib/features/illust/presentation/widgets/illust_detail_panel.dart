@@ -189,7 +189,7 @@ class _StatPill extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w800, height: 1),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700, height: 1),
               ),
             ],
           ),

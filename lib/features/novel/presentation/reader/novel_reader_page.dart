@@ -681,7 +681,7 @@ class _ReaderSegmentView extends StatelessWidget {
     ).textTheme.bodyLarge?.copyWith(color: palette.onBackground, fontSize: fontSize, height: lineHeight, letterSpacing: 0);
     final chapterStyle = Theme.of(
       context,
-    ).textTheme.titleLarge?.copyWith(color: palette.onBackground, fontSize: fontSize + 4, fontWeight: FontWeight.w800, height: 1.35, letterSpacing: 0);
+    ).textTheme.titleLarge?.copyWith(color: palette.onBackground, fontSize: fontSize + 4, fontWeight: FontWeight.w700, height: 1.35, letterSpacing: 0);
 
     return ColoredBox(
       color: palette.background,
@@ -991,7 +991,7 @@ class _ReaderSettingsPanel extends StatelessWidget {
       children: [
         Text(
           t.novel.reader.display,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w800),
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 10),
         _ReaderStepper(
@@ -1056,7 +1056,7 @@ class _ReaderStepper extends StatelessWidget {
               child: Text(
                 value,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w800),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700),
               ),
             ),
             IconButton(icon: const Icon(Icons.add), tooltip: t.novel.reader.increase, color: palette.onBackground, onPressed: onIncrease),
@@ -1088,7 +1088,7 @@ class _ReaderSheetSurface extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w800),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700),
                   ),
                 ),
                 IconButton(

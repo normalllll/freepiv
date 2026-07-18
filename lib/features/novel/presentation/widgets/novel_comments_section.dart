@@ -61,7 +61,7 @@ class _NovelCommentsSectionState extends ConsumerState<NovelCommentsSection> {
                 Icon(Icons.chat_bubble_outline, size: 18, color: colorScheme.onSurfaceVariant),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+                  child: Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
                 ),
                 IconButton(
                   tooltip: translations.illust.comments.open,

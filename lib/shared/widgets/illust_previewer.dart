@@ -158,7 +158,7 @@ class _LabelBadge extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         child: Text(
           label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w800, height: 1),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w700, height: 1),
         ),
       ),
     );
@@ -195,7 +195,7 @@ class _PageCountBadge extends StatelessWidget {
               '$pageCount',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: Colors.white,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 height: 1,
                 shadows: const [Shadow(color: Colors.black, blurRadius: 4)],
               ),

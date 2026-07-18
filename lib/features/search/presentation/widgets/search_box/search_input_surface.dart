@@ -121,7 +121,7 @@ List<HighlightRule> searchHighlightRules(BuildContext context) {
   return [
     HighlightRule(
       pattern: RegExp(r'^\S+$'),
-      style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600),
+      style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w700),
     ),
   ];
 }

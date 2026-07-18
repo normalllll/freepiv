@@ -302,10 +302,9 @@ class _DesktopNavItem extends StatelessWidget {
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: selected ? accentColor : colorScheme.onSurfaceVariant,
-                      fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelSmall?.copyWith(color: selected ? accentColor : colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
                   ),
                 ],
               ),
@@ -396,7 +395,7 @@ class _MobileNavItem extends StatelessWidget {
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       height: 1,
                       color: selected ? accentColor : colorScheme.onSurfaceVariant.withValues(alpha: 0.78),
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],

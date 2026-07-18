@@ -111,7 +111,7 @@ class EnergeticPill extends StatelessWidget {
             Flexible(
               fit: FlexFit.loose,
               child: DefaultTextStyle.merge(
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: foreground, fontWeight: selected ? FontWeight.w800 : FontWeight.w700),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: foreground, fontWeight: FontWeight.w700),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 child: child,

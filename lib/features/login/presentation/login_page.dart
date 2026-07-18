@@ -163,7 +163,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   const SizedBox(height: 12),
                   Text(
                     account == null ? translations.login.notSignedIn : translations.login.signedInAs(name: account.user.name),
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
@@ -232,7 +232,7 @@ class _LoginProxyNotice extends StatelessWidget {
                 Expanded(
                   child: Text(
                     translations.login.proxyHint,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant, height: 1.35, fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant, height: 1.35, fontWeight: FontWeight.w700),
                   ),
                 ),
               ],

@@ -103,7 +103,7 @@ class _UserFollowButtonSurface extends StatelessWidget {
                     isFollowed ? translations.follow.followed : translations.follow.notFollowed,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       color: foreground.withValues(alpha: updating ? 0.68 : 1),
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],

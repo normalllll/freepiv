@@ -188,14 +188,14 @@ class _HtmlRichTextState extends State<HtmlRichText> {
   }
 }
 
-const _strongStyle = TextStyle(fontWeight: FontWeight.bold);
+const _strongStyle = TextStyle(fontWeight: FontWeight.w700);
 
 TextStyle _genericLinkStyle(bool isStrong) {
-  return TextStyle(color: Colors.blue, fontWeight: isStrong ? FontWeight.bold : null);
+  return TextStyle(color: Colors.blue, fontWeight: isStrong ? FontWeight.w700 : null);
 }
 
 TextStyle _knownLinkStyle(bool isStrong) {
-  return TextStyle(color: Colors.pinkAccent, fontWeight: isStrong ? FontWeight.bold : null);
+  return TextStyle(color: Colors.pinkAccent, fontWeight: isStrong ? FontWeight.w700 : null);
 }
 
 Future<void> _openTwitterUser(String username, {String? fallbackUrl}) async {
