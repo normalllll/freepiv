@@ -7,8 +7,9 @@ edition = "2021"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-flutter_rust_bridge = "=2.13.0-beta.4"
-pixiv_rs = { git = "https://github.com/normalllll/pixiv_rs.git", branch = "main" }
+flutter_rust_bridge = "=2.13.0-beta.5"
+#pixiv_rs = { git = "https://github.com/normalllll/pixiv_rs.git", branch = "main" }
+pixiv_rs = { path = "../../pixiv_rs"}
 futures-util = "0.3.32"
 gif = { version = "0.14.2" }
 image = { version = "0.25.10", default-features = false, features = ["gif", "jpeg", "png", "webp"] }
