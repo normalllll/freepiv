@@ -314,9 +314,11 @@
       "bookmarkIllustrations": "尚無公開插畫或漫畫收藏",
       "bookmarkNovels": "尚無公開小說收藏",
       "following": "尚無關注使用者",
+      "comment": "尚無簡介",
       "profile": "尚無公開詳細資訊"
     },
     "profile": {
+      "comment": "簡介",
       "birthday": "生日",
       "region": "地區",
       "job": "職業",

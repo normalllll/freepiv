@@ -8,12 +8,13 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:url_launcher/url_launcher.dart';
 
 class HtmlRichText extends StatefulWidget {
-  const HtmlRichText(this.htmlString, {this.padding, this.overflow = TextOverflow.clip, this.maxLines, this.style, super.key});
+  const HtmlRichText(this.htmlString, {this.padding, this.overflow = TextOverflow.clip, this.maxLines, this.selectable = false, this.style, super.key});
 
   final String htmlString;
   final EdgeInsetsGeometry? padding;
   final TextOverflow overflow;
   final int? maxLines;
+  final bool selectable;
   final TextStyle? style;
 
   @override
@@ -42,7 +43,47 @@ class _HtmlRichTextState extends State<HtmlRichText> {
     return recognizer;
   }
 
-  TextSpan _buildNode(html.Node node, {bool isStrong = false}) {
+  @override
+  Widget build(BuildContext context) {
+    _disposeRecognizers();
+
+    final text = buildHtmlTextSpan(context, widget.htmlString, style: widget.style, tapRecognizer: _tapRecognizer);
+    final richText = widget.selectable
+        ? SelectableText.rich(text, maxLines: widget.maxLines)
+        : RichText(overflow: widget.overflow, maxLines: widget.maxLines, text: text);
+    final padding = widget.padding;
+
+    if (padding == null) {
+      return richText;
+    }
+
+    return Padding(padding: padding, child: richText);
+  }
+}
+
+TextSpan buildHtmlTextSpan(
+  BuildContext context,
+  String htmlString, {
+  TextStyle? style,
+  TapGestureRecognizer Function(GestureTapCallback onTap)? tapRecognizer,
+}) {
+  final document = html_parser.parseFragment(htmlString, generateSpans: true);
+  final colorScheme = Theme.of(context).colorScheme;
+  final builder = _HtmlTextSpanBuilder(context, tapRecognizer: tapRecognizer);
+
+  return TextSpan(
+    style: style ?? Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurface, height: 1.35) ?? TextStyle(color: colorScheme.onSurface),
+    children: [for (final node in document.nodes) builder.buildNode(node)],
+  );
+}
+
+class _HtmlTextSpanBuilder {
+  const _HtmlTextSpanBuilder(this.context, {this.tapRecognizer});
+
+  final BuildContext context;
+  final TapGestureRecognizer Function(GestureTapCallback onTap)? tapRecognizer;
+
+  TextSpan buildNode(html.Node node, {bool isStrong = false}) {
     if (node.nodeType == html.Node.TEXT_NODE) {
       return TextSpan(text: node.text);
     }
@@ -88,7 +129,7 @@ class _HtmlRichTextState extends State<HtmlRichText> {
       return TextSpan(
         text: context.t.richText.twitterUser(username: twitterUsername),
         style: _knownLinkStyle(isStrong),
-        recognizer: _tapRecognizer(() {
+        recognizer: tapRecognizer?.call(() {
           _openTwitterUser(twitterUsername, fallbackUrl: href);
         }),
       );
@@ -99,7 +140,7 @@ class _HtmlRichTextState extends State<HtmlRichText> {
       return TextSpan(
         text: context.t.richText.illustId(id: illustId),
         style: _knownLinkStyle(isStrong),
-        recognizer: _tapRecognizer(() {
+        recognizer: tapRecognizer?.call(() {
           context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': illustId});
         }),
       );
@@ -110,7 +151,7 @@ class _HtmlRichTextState extends State<HtmlRichText> {
       return TextSpan(
         text: 'Novel ID: $novelId',
         style: _knownLinkStyle(isStrong),
-        recognizer: _tapRecognizer(() {
+        recognizer: tapRecognizer?.call(() {
           context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': novelId});
         }),
       );
@@ -121,7 +162,7 @@ class _HtmlRichTextState extends State<HtmlRichText> {
       return TextSpan(
         text: context.t.richText.userId(id: userId),
         style: _knownLinkStyle(isStrong),
-        recognizer: _tapRecognizer(() {
+        recognizer: tapRecognizer?.call(() {
           context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': userId});
         }),
       );
@@ -130,7 +171,7 @@ class _HtmlRichTextState extends State<HtmlRichText> {
     return TextSpan(
       text: text.isEmpty ? href : text,
       style: _genericLinkStyle(isStrong),
-      recognizer: _tapRecognizer(() {
+      recognizer: tapRecognizer?.call(() {
         _openExternalUrl(href);
       }),
     );
@@ -142,7 +183,7 @@ class _HtmlRichTextState extends State<HtmlRichText> {
       return TextSpan(
         text: context.t.richText.twitterUser(username: twitterUsername),
         style: _knownLinkStyle(true),
-        recognizer: _tapRecognizer(() {
+        recognizer: tapRecognizer?.call(() {
           _openTwitterUser(twitterUsername);
         }),
       );
@@ -161,30 +202,7 @@ class _HtmlRichTextState extends State<HtmlRichText> {
   }
 
   List<TextSpan> _buildChildSpans(html.Element node, {required bool isStrong}) {
-    return [for (final child in node.nodes) _buildNode(child, isStrong: isStrong)];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    _disposeRecognizers();
-
-    final document = html_parser.parseFragment(widget.htmlString, generateSpans: true);
-    final colorScheme = Theme.of(context).colorScheme;
-    final text = TextSpan(
-      style:
-          widget.style ??
-          Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurface, height: 1.35) ??
-          TextStyle(color: colorScheme.onSurface),
-      children: [for (final node in document.nodes) _buildNode(node)],
-    );
-    final richText = RichText(overflow: widget.overflow, maxLines: widget.maxLines, text: text);
-    final padding = widget.padding;
-
-    if (padding == null) {
-      return richText;
-    }
-
-    return Padding(padding: padding, child: richText);
+    return [for (final child in node.nodes) buildNode(child, isStrong: isStrong)];
   }
 }
 

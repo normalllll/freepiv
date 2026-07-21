@@ -314,9 +314,11 @@
       "bookmarkIllustrations": "公開イラスト・マンガブックマークはありません",
       "bookmarkNovels": "公開小説ブックマークはありません",
       "following": "フォロー中のユーザーはいません",
+      "comment": "コメントはありません",
       "profile": "公開プロフィール詳細はありません"
     },
     "profile": {
+      "comment": "コメント",
       "birthday": "誕生日",
       "region": "地域",
       "job": "職業",

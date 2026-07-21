@@ -701,6 +701,7 @@ class _Translations$user$empty$ja_JP extends Translations$user$empty$en_US {
 	@override String get bookmarkIllustrations => '公開イラスト・マンガブックマークはありません';
 	@override String get bookmarkNovels => '公開小説ブックマークはありません';
 	@override String get following => 'フォロー中のユーザーはいません';
+	@override String get comment => 'コメントはありません';
 	@override String get profile => '公開プロフィール詳細はありません';
 }
 
@@ -711,6 +712,7 @@ class _Translations$user$profile$ja_JP extends Translations$user$profile$en_US {
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
+	@override String get comment => 'コメント';
 	@override String get birthday => '誕生日';
 	@override String get region => '地域';
 	@override String get job => '職業';
@@ -1257,7 +1259,9 @@ extension on TranslationsJaJp {
 			'user.empty.bookmarkIllustrations' => '公開イラスト・マンガブックマークはありません',
 			'user.empty.bookmarkNovels' => '公開小説ブックマークはありません',
 			'user.empty.following' => 'フォロー中のユーザーはいません',
+			'user.empty.comment' => 'コメントはありません',
 			'user.empty.profile' => '公開プロフィール詳細はありません',
+			'user.profile.comment' => 'コメント',
 			'user.profile.birthday' => '誕生日',
 			'user.profile.region' => '地域',
 			'user.profile.job' => '職業',

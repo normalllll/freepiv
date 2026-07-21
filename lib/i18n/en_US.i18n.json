@@ -314,9 +314,11 @@
       "bookmarkIllustrations": "No public illustration or manga bookmarks",
       "bookmarkNovels": "No public novel bookmarks",
       "following": "No following users",
+      "comment": "No comment",
       "profile": "No public profile details"
     },
     "profile": {
+      "comment": "Comment",
       "birthday": "Birthday",
       "region": "Region",
       "job": "Job",

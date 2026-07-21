@@ -701,6 +701,7 @@ class Translations$user$empty$zh_CN extends Translations$user$empty$en_US {
 	@override String get bookmarkIllustrations => '暂无公开插画或漫画收藏';
 	@override String get bookmarkNovels => '暂无公开小说收藏';
 	@override String get following => '暂无关注用户';
+	@override String get comment => '暂无简介';
 	@override String get profile => '暂无公开详细信息';
 }
 
@@ -711,6 +712,7 @@ class Translations$user$profile$zh_CN extends Translations$user$profile$en_US {
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
+	@override String get comment => '简介';
 	@override String get birthday => '生日';
 	@override String get region => '地区';
 	@override String get job => '职业';
@@ -1257,7 +1259,9 @@ extension on TranslationsZhCn {
 			'user.empty.bookmarkIllustrations' => '暂无公开插画或漫画收藏',
 			'user.empty.bookmarkNovels' => '暂无公开小说收藏',
 			'user.empty.following' => '暂无关注用户',
+			'user.empty.comment' => '暂无简介',
 			'user.empty.profile' => '暂无公开详细信息',
+			'user.profile.comment' => '简介',
 			'user.profile.birthday' => '生日',
 			'user.profile.region' => '地区',
 			'user.profile.job' => '职业',

@@ -16,9 +16,9 @@ class UserDetailLoadingSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final width = mediaQuery.size.width;
-    final compact = width < 620;
+    final layout = UserCollapsibleHeaderLayout.forWidth(width);
     final topPadding = mediaQuery.padding.top;
-    final expandedHeaderHeight = compact ? 338.0 : 362.0;
+    final expandedHeaderHeight = UserCollapsibleHeaderSliver.skeletonExpandedHeightFor(context, width);
     final collapsedHeaderHeight = UserCollapsibleHeaderSliver.collapsedHeightFor(width);
 
     return Scaffold(
@@ -32,7 +32,7 @@ class UserDetailLoadingSkeleton extends StatelessWidget {
                   topPadding: topPadding,
                   expandedHeight: expandedHeaderHeight,
                   collapsedHeight: collapsedHeaderHeight,
-                  compact: compact,
+                  layout: layout,
                   showBackButton: !shouldUseDesktopShell,
                 ),
               ),
@@ -51,14 +51,14 @@ class _SkeletonHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.topPadding,
     required this.expandedHeight,
     required this.collapsedHeight,
-    required this.compact,
+    required this.layout,
     required this.showBackButton,
   });
 
   final double topPadding;
   final double expandedHeight;
   final double collapsedHeight;
-  final bool compact;
+  final UserCollapsibleHeaderLayout layout;
   final bool showBackButton;
 
   @override
@@ -92,7 +92,7 @@ class _SkeletonHeaderDelegate extends SliverPersistentHeaderDelegate {
                     height: expandedHeight,
                     child: Opacity(
                       opacity: expandedOpacity,
-                      child: _ExpandedSkeletonHeader(compact: compact, availableWidth: MediaQuery.sizeOf(context).width),
+                      child: _ExpandedSkeletonHeader(layout: layout),
                     ),
                   ),
                 ),
@@ -110,7 +110,7 @@ class _SkeletonHeaderDelegate extends SliverPersistentHeaderDelegate {
             child: IgnorePointer(
               child: Opacity(
                 opacity: collapsedOpacity,
-                child: _CollapsedSkeletonHeader(compact: compact, showBackButton: showBackButton),
+                child: _CollapsedSkeletonHeader(layout: layout, showBackButton: showBackButton),
               ),
             ),
           ),
@@ -130,49 +130,46 @@ class _SkeletonHeaderDelegate extends SliverPersistentHeaderDelegate {
     return oldDelegate.topPadding != topPadding ||
         oldDelegate.expandedHeight != expandedHeight ||
         oldDelegate.collapsedHeight != collapsedHeight ||
-        oldDelegate.compact != compact ||
+        oldDelegate.layout != layout ||
         oldDelegate.showBackButton != showBackButton;
   }
 }
 
 class _ExpandedSkeletonHeader extends StatelessWidget {
-  const _ExpandedSkeletonHeader({required this.compact, required this.availableWidth});
+  const _ExpandedSkeletonHeader({required this.layout});
 
-  final bool compact;
-  final double availableWidth;
+  final UserCollapsibleHeaderLayout layout;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final contentWidth = math.min(availableWidth, 980.0);
-    final horizontalPadding = math.max(16.0, (availableWidth - contentWidth) / 2 + (compact ? 16 : 20));
-    final backgroundHeight = compact ? 148.0 : 172.0;
-    final avatarSize = compact ? 84.0 : 98.0;
-    final avatarTop = backgroundHeight - avatarSize / 2;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          height: backgroundHeight + 58,
+          height: layout.stackedHeaderHeight,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              Positioned.fill(bottom: 58, child: ColoredBox(color: colorScheme.surfaceContainerHighest)),
-              PositionedDirectional(
-                start: horizontalPadding,
-                top: avatarTop,
-                child: Bone.circle(size: avatarSize),
+              Positioned.fill(
+                bottom: UserCollapsibleHeaderLayout.stackedHeaderExtraHeight,
+                child: ColoredBox(color: colorScheme.surfaceContainerHighest),
               ),
               PositionedDirectional(
-                top: backgroundHeight + 8,
-                start: horizontalPadding + avatarSize + 14,
-                end: horizontalPadding,
+                start: layout.horizontalPadding,
+                top: layout.avatarTop,
+                child: Bone.circle(size: layout.avatarSize),
+              ),
+              PositionedDirectional(
+                top: layout.backgroundHeight + UserCollapsibleHeaderLayout.expandedNameTopOffset,
+                start: layout.horizontalPadding + layout.avatarSize + UserCollapsibleHeaderLayout.expandedNameStartGap,
+                end: layout.horizontalPadding,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: _NameBlockSkeleton(height: compact ? 36 : 42, width: compact ? 168 : 210),
+                      child: _NameBlockSkeleton(height: layout.compact ? 36 : 42, width: layout.compact ? 168 : 210),
                     ),
                     const SizedBox(width: 10),
                     Bone(width: 82, height: 34, borderRadius: BorderRadius.circular(8)),
@@ -183,18 +180,22 @@ class _ExpandedSkeletonHeader extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: EdgeInsets.fromLTRB(horizontalPadding, compact ? 10 : 12, horizontalPadding, 0),
+          padding: EdgeInsets.fromLTRB(layout.horizontalPadding, layout.bodyTopPadding, layout.horizontalPadding, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Bone(width: math.min(availableWidth - horizontalPadding * 2, 520), height: 34, borderRadius: BorderRadius.circular(8)),
-              const SizedBox(height: 12),
+              Bone(
+                width: math.min(layout.bodyContentWidth, 520),
+                height: UserCollapsibleHeaderSliver.placeholderCommentHeightFor(context, layout.availableWidth),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              const SizedBox(height: UserCollapsibleHeaderLayout.commentStatsGap),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
                     for (var index = 0; index < 4; index++) ...[
-                      Bone(width: index == 0 ? 104 : 92, height: 32, borderRadius: BorderRadius.circular(8)),
+                      Bone(width: index == 0 ? 104 : 92, height: UserCollapsibleHeaderSliver.statsHeightFor(context), borderRadius: BorderRadius.circular(8)),
                       if (index != 3) const SizedBox(width: 8),
                     ],
                   ],
@@ -209,14 +210,14 @@ class _ExpandedSkeletonHeader extends StatelessWidget {
 }
 
 class _CollapsedSkeletonHeader extends StatelessWidget {
-  const _CollapsedSkeletonHeader({required this.compact, required this.showBackButton});
+  const _CollapsedSkeletonHeader({required this.layout, required this.showBackButton});
 
-  final bool compact;
+  final UserCollapsibleHeaderLayout layout;
   final bool showBackButton;
 
   @override
   Widget build(BuildContext context) {
-    final start = showBackButton ? (compact ? 64.0 : 70.0) : (compact ? 16.0 : 20.0);
+    final start = layout.collapsedLeadingPadding(showBackButton: showBackButton);
 
     return Row(
       children: [

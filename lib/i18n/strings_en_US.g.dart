@@ -702,6 +702,7 @@ class Translations$user$empty$en_US {
 	String get bookmarkIllustrations => 'No public illustration or manga bookmarks';
 	String get bookmarkNovels => 'No public novel bookmarks';
 	String get following => 'No following users';
+	String get comment => 'No comment';
 	String get profile => 'No public profile details';
 }
 
@@ -712,6 +713,7 @@ class Translations$user$profile$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+	String get comment => 'Comment';
 	String get birthday => 'Birthday';
 	String get region => 'Region';
 	String get job => 'Job';
@@ -1258,7 +1260,9 @@ extension on Translations {
 			'user.empty.bookmarkIllustrations' => 'No public illustration or manga bookmarks',
 			'user.empty.bookmarkNovels' => 'No public novel bookmarks',
 			'user.empty.following' => 'No following users',
+			'user.empty.comment' => 'No comment',
 			'user.empty.profile' => 'No public profile details',
+			'user.profile.comment' => 'Comment',
 			'user.profile.birthday' => 'Birthday',
 			'user.profile.region' => 'Region',
 			'user.profile.job' => 'Job',

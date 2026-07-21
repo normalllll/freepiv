@@ -701,6 +701,7 @@ class Translations$user$empty$zh_Hant_TW extends Translations$user$empty$en_US {
 	@override String get bookmarkIllustrations => '尚無公開插畫或漫畫收藏';
 	@override String get bookmarkNovels => '尚無公開小說收藏';
 	@override String get following => '尚無關注使用者';
+	@override String get comment => '尚無簡介';
 	@override String get profile => '尚無公開詳細資訊';
 }
 
@@ -711,6 +712,7 @@ class Translations$user$profile$zh_Hant_TW extends Translations$user$profile$en_
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
+	@override String get comment => '簡介';
 	@override String get birthday => '生日';
 	@override String get region => '地區';
 	@override String get job => '職業';
@@ -1257,7 +1259,9 @@ extension on TranslationsZhHantTw {
 			'user.empty.bookmarkIllustrations' => '尚無公開插畫或漫畫收藏',
 			'user.empty.bookmarkNovels' => '尚無公開小說收藏',
 			'user.empty.following' => '尚無關注使用者',
+			'user.empty.comment' => '尚無簡介',
 			'user.empty.profile' => '尚無公開詳細資訊',
+			'user.profile.comment' => '簡介',
 			'user.profile.birthday' => '生日',
 			'user.profile.region' => '地區',
 			'user.profile.job' => '職業',
