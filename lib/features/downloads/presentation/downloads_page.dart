@@ -1,6 +1,8 @@
+import 'package:freepiv/shared/widgets/refresh_dots.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
@@ -26,6 +28,7 @@ class DownloadsPage extends StatelessWidget {
             child: Column(
               children: [
                 if (shouldUseDesktopShell) _DownloadsHeader(onSync: _syncDownloads),
+
                 Expanded(child: _DownloadsBody(onSync: _syncDownloads)),
               ],
             ),
@@ -115,7 +118,7 @@ class _DownloadsBody extends StatelessWidget {
           builder: (context, taskSnapshot) {
             final tasks = taskSnapshot.data ?? const <DownloadTaskSnapshot>[];
 
-            return RefreshIndicator(
+            return DotsRefreshIndicator(
               onRefresh: onSync,
               child: ListView(
                 padding: const EdgeInsets.all(16),

@@ -1,7 +1,11 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/features/fanbox/logic.dart';
+import 'fanbox_download_tasks.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
@@ -9,30 +13,30 @@ import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 
-class MobileDownloadFloatingWindow extends StatefulWidget {
+class MobileDownloadFloatingWindow extends ConsumerStatefulWidget {
   const MobileDownloadFloatingWindow({required this.child, super.key});
 
   final Widget child;
 
   @override
-  State<MobileDownloadFloatingWindow> createState() => _MobileDownloadFloatingWindowState();
+  ConsumerState<MobileDownloadFloatingWindow> createState() => _MobileDownloadFloatingWindowState();
 }
 
-class _MobileDownloadFloatingWindowState extends State<MobileDownloadFloatingWindow> {
+class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFloatingWindow> {
   static const _buttonSize = 56.0;
   static const _panelMaxWidth = 380.0;
   static const _panelMaxHeight = 430.0;
   static const _edgePadding = 12.0;
   static const _defaultBottomNavigationReserve = 88.0;
 
-  final _sessionStartedAt = DateTime.now();
-  final _sessionTaskIds = <String>{};
   Offset? _position;
   bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
-    if (isDesktopPlatform) {
+    final fanbox = ref.watch(fanboxDownloadsProvider);
+    final usesDesktopShell = AutoScaffold.usesDesktopShellOf(context);
+    if (usesDesktopShell) {
       return widget.child;
     }
 
@@ -46,17 +50,13 @@ class _MobileDownloadFloatingWindowState extends State<MobileDownloadFloatingWin
                 stream: downloadManager.watchTasks(),
                 builder: (context, snapshot) {
                   final tasks = snapshot.data ?? const <DownloadTaskSnapshot>[];
-                  _rememberSessionTasks(tasks);
 
-                  final panelTasks = [
-                    for (final task in tasks)
-                      if (_sessionTaskIds.contains(task.id)) task,
-                  ];
-                  if (panelTasks.isEmpty) {
+                  final panelTasks = tasks;
+                  if (panelTasks.isEmpty && !fanbox.visible) {
                     return const SizedBox.shrink();
                   }
 
-                  final summary = DownloadSummary.fromTasks(panelTasks);
+                  final summary = combinedDownloadSummary(DownloadSummary.fromTasks(panelTasks), fanbox);
                   return Stack(
                     children: [
                       Positioned.fill(
@@ -136,14 +136,6 @@ class _MobileDownloadFloatingWindowState extends State<MobileDownloadFloatingWin
       final current = _position ?? _defaultPosition(availableSize, windowSize, viewPadding);
       _position = _clampedPosition(current + delta, availableSize, windowSize, viewPadding);
     });
-  }
-
-  void _rememberSessionTasks(List<DownloadTaskSnapshot> tasks) {
-    for (final task in tasks) {
-      if (!task.createdAt.isBefore(_sessionStartedAt) || _isActiveOrNeedsAttention(task)) {
-        _sessionTaskIds.add(task.id);
-      }
-    }
   }
 
   Future<void> _syncDownloads() async {
@@ -341,7 +333,16 @@ class _DownloadFloatingPanel extends StatelessWidget {
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.zero,
-                    child: DownloadTaskList(tasks: tasks, compact: true, showTooltips: false, onTaskTap: onTaskTap),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const AnimatedSize(duration: Duration(milliseconds: 180), alignment: Alignment.topCenter, child: FanboxDownloadTasks()),
+                        if (tasks.isNotEmpty) ...[
+                          const Text('Pixiv'),
+                          DownloadTaskList(tasks: tasks, compact: true, showTooltips: false, onTaskTap: onTaskTap),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -472,13 +473,4 @@ class _DownloadFloatingPanelHeader extends StatelessWidget {
       },
     );
   }
-}
-
-bool _isActiveOrNeedsAttention(DownloadTaskSnapshot task) {
-  return task.status == DownloadStatus.queued ||
-      task.status == DownloadStatus.running ||
-      task.status == DownloadStatus.failed ||
-      task.saveState == SaveState.pending ||
-      task.saveState == SaveState.saving ||
-      task.saveState == SaveState.failed;
 }

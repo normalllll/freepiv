@@ -1,3 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/features/fanbox/logic.dart';
+import 'fanbox_download_tasks.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -8,41 +11,36 @@ import 'package:freepiv/features/downloads/presentation/download_task_widgets.da
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:go_router/go_router.dart';
 
-class DesktopDownloadDock extends StatefulWidget {
+class DesktopDownloadDock extends ConsumerStatefulWidget {
   const DesktopDownloadDock({required this.railWidth, this.bottomOffset = 16, super.key});
 
   final double railWidth;
   final double bottomOffset;
 
   @override
-  State<DesktopDownloadDock> createState() => _DesktopDownloadDockState();
+  ConsumerState<DesktopDownloadDock> createState() => _DesktopDownloadDockState();
 }
 
-class _DesktopDownloadDockState extends State<DesktopDownloadDock> {
+class _DesktopDownloadDockState extends ConsumerState<DesktopDownloadDock> {
   static const _panelWidth = 420.0;
   static const _panelHeight = 420.0;
 
-  final _sessionStartedAt = DateTime.now();
-  final _sessionTaskIds = <String>{};
   bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
+    final fanbox = ref.watch(fanboxDownloadsProvider);
     return StreamBuilder<List<DownloadTaskSnapshot>>(
       stream: downloadManager.watchTasks(),
       builder: (context, snapshot) {
         final tasks = snapshot.data ?? const <DownloadTaskSnapshot>[];
-        _rememberSessionTasks(tasks);
 
-        final panelTasks = [
-          for (final task in tasks)
-            if (_sessionTaskIds.contains(task.id)) task,
-        ];
-        if (panelTasks.isEmpty) {
+        final panelTasks = tasks;
+        if (panelTasks.isEmpty && !fanbox.visible) {
           return const SizedBox.shrink();
         }
 
-        final summary = DownloadSummary.fromTasks(panelTasks);
+        final summary = combinedDownloadSummary(DownloadSummary.fromTasks(panelTasks), fanbox);
 
         return Stack(
           children: [
@@ -101,14 +99,6 @@ class _DesktopDownloadDockState extends State<DesktopDownloadDock> {
         );
       },
     );
-  }
-
-  void _rememberSessionTasks(List<DownloadTaskSnapshot> tasks) {
-    for (final task in tasks) {
-      if (!task.createdAt.isBefore(_sessionStartedAt) || _isActiveOrNeedsAttention(task)) {
-        _sessionTaskIds.add(task.id);
-      }
-    }
   }
 
   Future<void> _syncDownloads() async {
@@ -234,7 +224,13 @@ class _DownloadDockPanel extends StatelessWidget {
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.zero,
-                child: DownloadTaskList(tasks: tasks, compact: true, showTooltips: false, onTaskTap: onTaskTap),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const AnimatedSize(duration: Duration(milliseconds: 180), alignment: Alignment.topCenter, child: FanboxDownloadTasks()),
+                    if (tasks.isNotEmpty) ...[const Text('Pixiv'), DownloadTaskList(tasks: tasks, compact: true, showTooltips: false, onTaskTap: onTaskTap)],
+                  ],
+                ),
               ),
             ),
           ],
@@ -242,13 +238,4 @@ class _DownloadDockPanel extends StatelessWidget {
       ),
     );
   }
-}
-
-bool _isActiveOrNeedsAttention(DownloadTaskSnapshot task) {
-  return task.status == DownloadStatus.queued ||
-      task.status == DownloadStatus.running ||
-      task.status == DownloadStatus.failed ||
-      task.saveState == SaveState.pending ||
-      task.saveState == SaveState.saving ||
-      task.saveState == SaveState.failed;
 }

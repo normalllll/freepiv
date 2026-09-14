@@ -370,7 +370,7 @@ class _AnimatedRoundedProgressIndicator extends StatelessWidget {
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
         child: value == null
-            ? LinearProgressIndicator(key: const ValueKey<String>('indeterminate'), minHeight: minHeight, borderRadius: borderRadius)
+            ? LoadingSkeletonBlock(key: const ValueKey<String>('indeterminate'), width: double.infinity, height: minHeight)
             : TweenAnimationBuilder<double>(
                 key: const ValueKey<String>('determinate'),
                 tween: Tween<double>(end: value!.clamp(0, 1).toDouble()),

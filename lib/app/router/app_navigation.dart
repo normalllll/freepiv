@@ -14,6 +14,7 @@ const appRouteDestinations = <AppRouteDestination>[
   AppRouteDestination(route: AppRoute.home, icon: Icons.auto_awesome_mosaic_outlined, selectedIcon: Icons.auto_awesome_mosaic),
   AppRouteDestination(route: AppRoute.newest, icon: Icons.fiber_new_outlined, selectedIcon: Icons.fiber_new),
   AppRouteDestination(route: AppRoute.search, icon: Icons.search_outlined, selectedIcon: Icons.search),
+  AppRouteDestination(route: AppRoute.fanbox, icon: Icons.article_outlined, selectedIcon: Icons.article),
   AppRouteDestination(route: AppRoute.me, icon: Icons.account_circle_outlined, selectedIcon: Icons.account_circle),
 ];
 
@@ -28,6 +29,7 @@ int? appDestinationIndexForPath(String path) {
 }
 
 bool isPrimaryNavigationPath(String path) {
+  if (path.startsWith('/fanbox/')) return false;
   return appDestinationIndexForPath(path) != null;
 }
 
@@ -40,6 +42,7 @@ String appRouteLabel(Translations translations, AppRoute route) {
     AppRoute.home => translations.navigation.home,
     AppRoute.search || AppRoute.searchIllustResult || AppRoute.searchNovelResult || AppRoute.searchUserResult => translations.navigation.search,
     AppRoute.newest => translations.navigation.newest,
+    AppRoute.fanbox => translations.fanbox.title,
     AppRoute.rankingIllust || AppRoute.rankingManga || AppRoute.rankingNovel => translations.navigation.ranking,
     AppRoute.me => translations.navigation.me,
     AppRoute.about => translations.about.title,
@@ -62,6 +65,7 @@ bool _routeOwnsPath(AppRoute route, String path) {
     AppRoute.home => path == route.path,
     AppRoute.search => path == route.path,
     AppRoute.newest => path == route.path || path.startsWith('${route.path}/'),
+    AppRoute.fanbox => path == route.path || path.startsWith('${route.path}/'),
     AppRoute.me => path == route.path,
     _ => false,
   };

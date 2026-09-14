@@ -1,5 +1,7 @@
 import 'dart:async';
-import 'dart:math' as math;
+import 'package:freepiv/shared/widgets/settings_sections.dart';
+import 'package:freepiv/shared/widgets/form_controls.dart';
+import 'package:freepiv/features/fanbox/account_settings.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -20,18 +22,6 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
-  static const _pagePadding = EdgeInsets.all(16);
-  static const _maxContentWidth = 560.0;
-  static const _contentPadding = EdgeInsets.all(20);
-
-  final _scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
@@ -49,92 +39,102 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         return Scaffold(
           backgroundColor: tokens.surface,
           appBar: shouldUseDesktopShell ? null : AppBar(title: Text(translations.navigation.settings)),
-          body: SafeArea(
-            top: shouldUseDesktopShell,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isPortrait = constraints.maxHeight >= constraints.maxWidth;
-                final isMobilePortrait = !isDesktopPlatform && isPortrait;
-                final maxContentWidth = isMobilePortrait ? double.infinity : _maxContentWidth;
-                final minContentHeight = math.max(0.0, constraints.maxHeight - _pagePadding.vertical);
-
-                return ScrollConfiguration(
-                  behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                  child: Scrollbar(
-                    controller: _scrollController,
-                    child: ListView(
-                      controller: _scrollController,
-                      padding: _pagePadding,
-                      children: [
-                        Align(
-                          alignment: AlignmentDirectional.topCenter,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(maxWidth: maxContentWidth, minHeight: minContentHeight),
-                            child: EnergeticCard(
-                              accentColor: tokens.brand,
-                              padding: _contentPadding,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Text(translations.settings.theme.title, style: Theme.of(context).textTheme.titleMedium),
-                                  const SizedBox(height: 12),
-                                  _ThemeModeSelector(
-                                    value: themeMode,
-                                    onChanged: (mode) {
-                                      ref.read(themeModeProvider.notifier).setThemeMode(mode);
-                                    },
-                                  ),
-                                  const SizedBox(height: 20),
-                                  const Divider(height: 1),
-                                  const SizedBox(height: 20),
-                                  Text(translations.settings.language.title, style: Theme.of(context).textTheme.titleMedium),
-                                  const SizedBox(height: 12),
-                                  _LanguageSelector(
-                                    value: appLocale,
-                                    onChanged: (locale) {
-                                      unawaited(ref.read(appLocaleProvider.notifier).setLocale(locale));
-                                    },
-                                  ),
-                                  const SizedBox(height: 20),
-                                  const Divider(height: 1),
-                                  const SizedBox(height: 20),
-                                  _ImageSettingsSection(
-                                    previewQuality: previewQuality,
-                                    viewerQuality: viewerQuality,
-                                    onPreviewQualityChanged: (quality) {
-                                      ref.read(previewImageQualityProvider.notifier).setQuality(quality);
-                                    },
-                                    onViewerQualityChanged: (quality) {
-                                      ref.read(viewerImageQualityProvider.notifier).setQuality(quality);
-                                    },
-                                  ),
-                                  const SizedBox(height: 20),
-                                  const Divider(height: 1),
-                                  const SizedBox(height: 20),
-                                  _ProxySettingsSection(settings: proxySettings, onTap: () => showProxySettingsDialog(context)),
-                                  const SizedBox(height: 20),
-                                  const Divider(height: 1),
-                                  const SizedBox(height: 20),
-                                  _DownloadSettingsSection(
-                                    settings: downloadPathSettings,
-                                    maxConcurrentDownloads: maxConcurrentDownloads,
-                                    onModeChanged: _setDownloadPathMode,
-                                    onChooseDirectory: _chooseDownloadDirectory,
-                                    onMaxConcurrentDownloadsChanged: (value) {
-                                      ref.read(maxConcurrentDownloadsProvider.notifier).setLimit(value);
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+          body: SettingsSections(
+            labels: [
+              translations.settings.theme.title,
+              translations.settings.language.title,
+              translations.settings.images.title,
+              translations.settings.proxy.title,
+              translations.settings.downloads.title,
+              translations.fanbox.title,
+            ],
+            groups: [
+              [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(translations.settings.theme.title, style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 12),
+                      _ThemeModeSelector(
+                        value: themeMode,
+                        onChanged: (mode) {
+                          ref.read(themeModeProvider.notifier).setThemeMode(mode);
+                        },
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
+                ),
+              ],
+              [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(translations.settings.language.title, style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 12),
+                      _LanguageSelector(
+                        value: appLocale,
+                        onChanged: (locale) {
+                          unawaited(ref.read(appLocaleProvider.notifier).setLocale(locale));
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _ImageSettingsSection(
+                        previewQuality: previewQuality,
+                        viewerQuality: viewerQuality,
+                        onPreviewQualityChanged: (quality) {
+                          ref.read(previewImageQualityProvider.notifier).setQuality(quality);
+                        },
+                        onViewerQualityChanged: (quality) {
+                          ref.read(viewerImageQualityProvider.notifier).setQuality(quality);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [_ProxySettingsSection(settings: proxySettings, onTap: () => showProxySettingsDialog(context))],
+                  ),
+                ),
+              ],
+              [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _DownloadSettingsSection(
+                        settings: downloadPathSettings,
+                        maxConcurrentDownloads: maxConcurrentDownloads,
+                        onModeChanged: _setDownloadPathMode,
+                        onChooseDirectory: _chooseDownloadDirectory,
+                        onMaxConcurrentDownloadsChanged: (value) {
+                          ref.read(maxConcurrentDownloadsProvider.notifier).setLimit(value);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              [const Padding(padding: EdgeInsets.all(16), child: FanboxAccountSettings())],
+            ],
           ),
         );
       },
@@ -214,15 +214,14 @@ class _LanguageSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return DropdownButtonFormField<AppLocale?>(
-      initialValue: value,
-      decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+    return AppSelect<AppLocale?>(
+      value: value,
       items: [
-        DropdownMenuItem(value: null, child: Text(translations.settings.language.systemDefault)),
-        DropdownMenuItem(value: AppLocale.enUs, child: Text(translations.settings.language.enUs)),
-        DropdownMenuItem(value: AppLocale.zhCn, child: Text(translations.settings.language.zhCn)),
-        DropdownMenuItem(value: AppLocale.zhHantTw, child: Text(translations.settings.language.zhTw)),
-        DropdownMenuItem(value: AppLocale.jaJp, child: Text(translations.settings.language.jaJp)),
+        AppSelectItem(value: null, label: translations.settings.language.systemDefault),
+        AppSelectItem(value: AppLocale.enUs, label: translations.settings.language.enUs),
+        AppSelectItem(value: AppLocale.zhCn, label: translations.settings.language.zhCn),
+        AppSelectItem(value: AppLocale.zhHantTw, label: translations.settings.language.zhTw),
+        AppSelectItem(value: AppLocale.jaJp, label: translations.settings.language.jaJp),
       ],
       onChanged: onChanged,
     );

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/features/fanbox/page.dart';
+import 'package:freepiv/features/fanbox/detail.dart';
+import 'package:freepiv/features/fanbox/logic.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/app_route_pages.dart' as route_pages;
 import 'package:freepiv/app/router/navigator_stack_observer.dart';
@@ -49,6 +53,21 @@ class AppRouter {
               StatefulShellBranch(
                 routes: [GoRoute(path: AppRoute.me.path, name: AppRoute.me.name, pageBuilder: route_pages.mePage)],
               ),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoute.fanbox.path,
+                    name: AppRoute.fanbox.name,
+                    builder: (context, state) => FanboxPage(
+                      location: (
+                        section: FanboxSection.values.where((e) => e.name == state.uri.queryParameters['section']).firstOrNull ?? FanboxSection.home,
+                        creatorId: state.uri.queryParameters['creator'] ?? '',
+                        query: state.uri.queryParameters['q'] ?? '',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           GoRoute(path: AppRoute.searchIllustResult.path, name: AppRoute.searchIllustResult.name, pageBuilder: route_pages.searchIllustResultPage),
@@ -68,12 +87,28 @@ class AppRouter {
           GoRoute(path: AppRoute.novelReader.path, name: AppRoute.novelReader.name, pageBuilder: route_pages.novelReaderPage),
           GoRoute(path: AppRoute.novelComments.path, name: AppRoute.novelComments.name, pageBuilder: route_pages.novelCommentsPage),
           GoRoute(path: AppRoute.userDetail.path, name: AppRoute.userDetail.name, pageBuilder: route_pages.userDetailPage),
+          fanboxTagRoute(),
+          GoRoute(
+            path: '/fanbox/post/:postId',
+            builder: (context, state) =>
+                FanboxPostDetailPage(postId: state.pathParameters['postId']!, summary: state.extra is FanboxPost ? state.extra as FanboxPost : null),
+          ),
+          GoRoute(
+            path: '/fanbox/creator/:creatorId',
+            builder: (context, state) => FanboxCreatorDetailPage(
+              creatorId: state.pathParameters['creatorId']!,
+              showPlans: state.uri.queryParameters['plans'] == 'true',
+              summary: state.extra is FanboxCreator ? state.extra as FanboxCreator : null,
+            ),
+          ),
         ],
       ),
     ],
   );
 
   static String? _redirect(BuildContext context, GoRouterState state) {
+    if (state.uri.path == AppRoute.settings.path || state.uri.path == AppRoute.downloads.path) return null;
+    if (state.uri.path == '/fanbox' || state.uri.path.startsWith('/fanbox/')) return null;
     final loggedIn = pixivAccountNotifier.value != null;
     final goingLogin = state.matchedLocation == AppRoute.login.path;
 
