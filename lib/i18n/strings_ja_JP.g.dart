@@ -58,6 +58,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$follow$ja_JP follow = _Translations$follow$ja_JP._(_root);
 	@override late final _Translations$richText$ja_JP richText = _Translations$richText$ja_JP._(_root);
 	@override late final _Translations$fanbox$ja_JP fanbox = _Translations$fanbox$ja_JP._(_root);
+	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
 }
 
 // Path: app
@@ -454,6 +455,33 @@ class _Translations$fanbox$ja_JP extends Translations$fanbox$en_US {
 	@override String get restrictedInfo => '投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。';
 	@override String get noPlans => 'プランがありません';
 	@override String get downloadPreparing => '閲覧可能な投稿を収集中…';
+}
+
+// Path: pixivision
+class _Translations$pixivision$ja_JP extends Translations$pixivision$en_US {
+	_Translations$pixivision$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'pixivision';
+	@override String get searchHint => '記事を検索';
+	@override String get latest => '新着';
+	@override String get ranking => '月間ランキング';
+	@override String get recommended => 'おすすめ';
+	@override String get tags => 'タグ';
+	@override String get allCategories => 'すべてのカテゴリ';
+	@override String get empty => '記事がありません';
+	@override String get requestFailed => '読み込みに失敗しました。再試行してください。';
+	@override String get loadMore => 'もっと見る';
+	@override String get openOriginal => '元の記事を開く';
+	@override String get openFailed => 'リンクを開けません';
+	@override String get translations => '他の言語';
+	@override String get previous => '前の記事';
+	@override String get next => '次の記事';
+	@override String get unsupported => 'このコンテンツは元の記事でご覧いただけます。';
+	@override String userId({required Object id}) => 'User ID: ${id}';
+	@override String userName({required Object name}) => 'ユーザー: ${name}';
 }
 
 // Path: settings.theme
@@ -1549,6 +1577,24 @@ extension on TranslationsJaJp {
 			'fanbox.restrictedInfo' => '投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。',
 			'fanbox.noPlans' => 'プランがありません',
 			'fanbox.downloadPreparing' => '閲覧可能な投稿を収集中…',
+			'pixivision.title' => 'pixivision',
+			'pixivision.searchHint' => '記事を検索',
+			'pixivision.latest' => '新着',
+			'pixivision.ranking' => '月間ランキング',
+			'pixivision.recommended' => 'おすすめ',
+			'pixivision.tags' => 'タグ',
+			'pixivision.allCategories' => 'すべてのカテゴリ',
+			'pixivision.empty' => '記事がありません',
+			'pixivision.requestFailed' => '読み込みに失敗しました。再試行してください。',
+			'pixivision.loadMore' => 'もっと見る',
+			'pixivision.openOriginal' => '元の記事を開く',
+			'pixivision.openFailed' => 'リンクを開けません',
+			'pixivision.translations' => '他の言語',
+			'pixivision.previous' => '前の記事',
+			'pixivision.next' => '次の記事',
+			'pixivision.unsupported' => 'このコンテンツは元の記事でご覧いただけます。',
+			'pixivision.userId' => ({required Object id}) => 'User ID: ${id}',
+			'pixivision.userName' => ({required Object name}) => 'ユーザー: ${name}',
 			_ => null,
 		};
 	}

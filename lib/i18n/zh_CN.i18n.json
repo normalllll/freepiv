@@ -571,5 +571,25 @@
     "restrictedInfo": "文章卡片会保留，正文需要符合金额要求的赞助方案。",
     "noPlans": "暂无可用方案",
     "downloadPreparing": "正在收集有权浏览的文章…"
+  },
+  "pixivision": {
+    "title": "pixivision",
+    "searchHint": "搜索专题文章",
+    "latest": "最新",
+    "ranking": "月榜",
+    "recommended": "推荐",
+    "tags": "标签",
+    "allCategories": "全部分类",
+    "empty": "暂无文章",
+    "requestFailed": "内容加载失败，请重试。",
+    "loadMore": "加载更多",
+    "openOriginal": "查看原文",
+    "openFailed": "无法打开链接",
+    "translations": "其他语言",
+    "previous": "上一篇",
+    "next": "下一篇",
+    "unsupported": "此内容可在原文页面查看。",
+    "userId": "User ID: $id",
+    "userName": "用户: $name"
   }
 }

@@ -58,6 +58,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$follow$zh_Hant_TW follow = Translations$follow$zh_Hant_TW.internal(_root);
 	@override late final Translations$richText$zh_Hant_TW richText = Translations$richText$zh_Hant_TW.internal(_root);
 	@override late final Translations$fanbox$zh_Hant_TW fanbox = Translations$fanbox$zh_Hant_TW.internal(_root);
+	@override late final Translations$pixivision$zh_Hant_TW pixivision = Translations$pixivision$zh_Hant_TW.internal(_root);
 }
 
 // Path: app
@@ -454,6 +455,33 @@ class Translations$fanbox$zh_Hant_TW extends Translations$fanbox$en_US {
 	@override String get restrictedInfo => '文章卡片會保留，內文需要符合金額要求的贊助方案。';
 	@override String get noPlans => '暫無可用方案';
 	@override String get downloadPreparing => '正在收集有權瀏覽的文章…';
+}
+
+// Path: pixivision
+class Translations$pixivision$zh_Hant_TW extends Translations$pixivision$en_US {
+	Translations$pixivision$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'pixivision';
+	@override String get searchHint => '搜尋專題文章';
+	@override String get latest => '最新';
+	@override String get ranking => '月榜';
+	@override String get recommended => '推薦';
+	@override String get tags => '標籤';
+	@override String get allCategories => '全部分類';
+	@override String get empty => '暫無文章';
+	@override String get requestFailed => '內容載入失敗，請重試。';
+	@override String get loadMore => '載入更多';
+	@override String get openOriginal => '查看原文';
+	@override String get openFailed => '無法開啟連結';
+	@override String get translations => '其他語言';
+	@override String get previous => '上一篇';
+	@override String get next => '下一篇';
+	@override String get unsupported => '此內容可在原文頁面查看。';
+	@override String userId({required Object id}) => 'User ID: ${id}';
+	@override String userName({required Object name}) => '使用者: ${name}';
 }
 
 // Path: settings.theme
@@ -1549,6 +1577,24 @@ extension on TranslationsZhHantTw {
 			'fanbox.restrictedInfo' => '文章卡片會保留，內文需要符合金額要求的贊助方案。',
 			'fanbox.noPlans' => '暫無可用方案',
 			'fanbox.downloadPreparing' => '正在收集有權瀏覽的文章…',
+			'pixivision.title' => 'pixivision',
+			'pixivision.searchHint' => '搜尋專題文章',
+			'pixivision.latest' => '最新',
+			'pixivision.ranking' => '月榜',
+			'pixivision.recommended' => '推薦',
+			'pixivision.tags' => '標籤',
+			'pixivision.allCategories' => '全部分類',
+			'pixivision.empty' => '暫無文章',
+			'pixivision.requestFailed' => '內容載入失敗，請重試。',
+			'pixivision.loadMore' => '載入更多',
+			'pixivision.openOriginal' => '查看原文',
+			'pixivision.openFailed' => '無法開啟連結',
+			'pixivision.translations' => '其他語言',
+			'pixivision.previous' => '上一篇',
+			'pixivision.next' => '下一篇',
+			'pixivision.unsupported' => '此內容可在原文頁面查看。',
+			'pixivision.userId' => ({required Object id}) => 'User ID: ${id}',
+			'pixivision.userName' => ({required Object name}) => '使用者: ${name}',
 			_ => null,
 		};
 	}

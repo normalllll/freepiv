@@ -6,6 +6,7 @@ enum AppRoute {
   searchUserResult('/search/user'),
   newest('/newest'),
   fanbox('/fanbox'),
+  pixivision('/pixivision'),
   rankingIllust('/ranking/illust'),
   rankingManga('/ranking/manga'),
   rankingNovel('/ranking/novel'),

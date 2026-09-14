@@ -60,6 +60,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$follow$en_US follow = Translations$follow$en_US.internal(_root);
 	late final Translations$richText$en_US richText = Translations$richText$en_US.internal(_root);
 	late final Translations$fanbox$en_US fanbox = Translations$fanbox$en_US.internal(_root);
+	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
 }
 
 // Path: app
@@ -456,6 +457,33 @@ class Translations$fanbox$en_US {
 	String get restrictedInfo => 'This post remains visible, but its content requires a qualifying support plan.';
 	String get noPlans => 'No available plans';
 	String get downloadPreparing => 'Collecting accessible posts…';
+}
+
+// Path: pixivision
+class Translations$pixivision$en_US {
+	Translations$pixivision$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'pixivision';
+	String get searchHint => 'Search articles';
+	String get latest => 'Latest';
+	String get ranking => 'Monthly ranking';
+	String get recommended => 'Recommended';
+	String get tags => 'Tags';
+	String get allCategories => 'All categories';
+	String get empty => 'No articles found';
+	String get requestFailed => 'Could not load content. Please retry.';
+	String get loadMore => 'Load more';
+	String get openOriginal => 'Open original';
+	String get openFailed => 'Could not open the link';
+	String get translations => 'Languages';
+	String get previous => 'Previous';
+	String get next => 'Next';
+	String get unsupported => 'This content can be viewed on the original page.';
+	String userId({required Object id}) => 'User ID: ${id}';
+	String userName({required Object name}) => 'User: ${name}';
 }
 
 // Path: settings.theme
@@ -1551,6 +1579,24 @@ extension on Translations {
 			'fanbox.restrictedInfo' => 'This post remains visible, but its content requires a qualifying support plan.',
 			'fanbox.noPlans' => 'No available plans',
 			'fanbox.downloadPreparing' => 'Collecting accessible posts…',
+			'pixivision.title' => 'pixivision',
+			'pixivision.searchHint' => 'Search articles',
+			'pixivision.latest' => 'Latest',
+			'pixivision.ranking' => 'Monthly ranking',
+			'pixivision.recommended' => 'Recommended',
+			'pixivision.tags' => 'Tags',
+			'pixivision.allCategories' => 'All categories',
+			'pixivision.empty' => 'No articles found',
+			'pixivision.requestFailed' => 'Could not load content. Please retry.',
+			'pixivision.loadMore' => 'Load more',
+			'pixivision.openOriginal' => 'Open original',
+			'pixivision.openFailed' => 'Could not open the link',
+			'pixivision.translations' => 'Languages',
+			'pixivision.previous' => 'Previous',
+			'pixivision.next' => 'Next',
+			'pixivision.unsupported' => 'This content can be viewed on the original page.',
+			'pixivision.userId' => ({required Object id}) => 'User ID: ${id}',
+			'pixivision.userName' => ({required Object name}) => 'User: ${name}',
 			_ => null,
 		};
 	}

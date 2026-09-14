@@ -1,3 +1,7 @@
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart' show ArticleSummary;
+import 'package:freepiv/features/pixivision/navigation.dart';
+import 'package:freepiv/features/pixivision/page.dart';
+import 'package:freepiv/features/pixivision/detail.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/features/fanbox/page.dart';
 import 'package:freepiv/features/fanbox/detail.dart';
@@ -38,6 +42,15 @@ class AppRouter {
               return navigationShell;
             },
             branches: [
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoute.pixivision.path,
+                    name: AppRoute.pixivision.name,
+                    builder: (context, state) => PixivisionPage(url: state.uri.queryParameters['url']),
+                  ),
+                ],
+              ),
               StatefulShellBranch(
                 routes: [GoRoute(path: AppRoute.home.path, name: AppRoute.home.name, pageBuilder: route_pages.homePage)],
               ),
@@ -87,6 +100,27 @@ class AppRouter {
           GoRoute(path: AppRoute.novelReader.path, name: AppRoute.novelReader.name, pageBuilder: route_pages.novelReaderPage),
           GoRoute(path: AppRoute.novelComments.path, name: AppRoute.novelComments.name, pageBuilder: route_pages.novelCommentsPage),
           GoRoute(path: AppRoute.userDetail.path, name: AppRoute.userDetail.name, pageBuilder: route_pages.userDetailPage),
+          GoRoute(
+            path: '/pixivision/browse',
+            builder: (context, state) => PixivisionPage(url: state.uri.queryParameters['url']),
+          ),
+          GoRoute(
+            path: '/pixivision/article',
+            builder: (context, state) => PixivisionArticlePage(
+              url: validPixivisionUrl(state.uri.queryParameters['url']) ?? 'https://www.pixivision.net/en/',
+              summary: state.extra is ArticleSummary ? state.extra as ArticleSummary : null,
+            ),
+          ),
+          GoRoute(
+            path: '/fanbox/browse',
+            builder: (context, state) => FanboxPage(
+              location: (
+                section: FanboxSection.values.where((item) => item.name == state.uri.queryParameters['section']).firstOrNull ?? FanboxSection.home,
+                creatorId: '',
+                query: state.uri.queryParameters['q'] ?? '',
+              ),
+            ),
+          ),
           fanboxTagRoute(),
           GoRoute(
             path: '/fanbox/post/:postId',
@@ -108,6 +142,7 @@ class AppRouter {
 
   static String? _redirect(BuildContext context, GoRouterState state) {
     if (state.uri.path == AppRoute.settings.path || state.uri.path == AppRoute.downloads.path) return null;
+    if (state.uri.path == '/pixivision' || state.uri.path.startsWith('/pixivision/')) return null;
     if (state.uri.path == '/fanbox' || state.uri.path.startsWith('/fanbox/')) return null;
     final loggedIn = pixivAccountNotifier.value != null;
     final goingLogin = state.matchedLocation == AppRoute.login.path;

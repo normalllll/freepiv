@@ -571,5 +571,25 @@
     "restrictedInfo": "投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。",
     "noPlans": "プランがありません",
     "downloadPreparing": "閲覧可能な投稿を収集中…"
+  },
+  "pixivision": {
+    "title": "pixivision",
+    "searchHint": "記事を検索",
+    "latest": "新着",
+    "ranking": "月間ランキング",
+    "recommended": "おすすめ",
+    "tags": "タグ",
+    "allCategories": "すべてのカテゴリ",
+    "empty": "記事がありません",
+    "requestFailed": "読み込みに失敗しました。再試行してください。",
+    "loadMore": "もっと見る",
+    "openOriginal": "元の記事を開く",
+    "openFailed": "リンクを開けません",
+    "translations": "他の言語",
+    "previous": "前の記事",
+    "next": "次の記事",
+    "unsupported": "このコンテンツは元の記事でご覧いただけます。",
+    "userId": "User ID: $id",
+    "userName": "ユーザー: $name"
   }
 }

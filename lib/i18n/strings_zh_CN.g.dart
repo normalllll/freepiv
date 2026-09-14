@@ -58,6 +58,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$follow$zh_CN follow = Translations$follow$zh_CN.internal(_root);
 	@override late final Translations$richText$zh_CN richText = Translations$richText$zh_CN.internal(_root);
 	@override late final Translations$fanbox$zh_CN fanbox = Translations$fanbox$zh_CN.internal(_root);
+	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
 }
 
 // Path: app
@@ -454,6 +455,33 @@ class Translations$fanbox$zh_CN extends Translations$fanbox$en_US {
 	@override String get restrictedInfo => '文章卡片会保留，正文需要符合金额要求的赞助方案。';
 	@override String get noPlans => '暂无可用方案';
 	@override String get downloadPreparing => '正在收集有权浏览的文章…';
+}
+
+// Path: pixivision
+class Translations$pixivision$zh_CN extends Translations$pixivision$en_US {
+	Translations$pixivision$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'pixivision';
+	@override String get searchHint => '搜索专题文章';
+	@override String get latest => '最新';
+	@override String get ranking => '月榜';
+	@override String get recommended => '推荐';
+	@override String get tags => '标签';
+	@override String get allCategories => '全部分类';
+	@override String get empty => '暂无文章';
+	@override String get requestFailed => '内容加载失败，请重试。';
+	@override String get loadMore => '加载更多';
+	@override String get openOriginal => '查看原文';
+	@override String get openFailed => '无法打开链接';
+	@override String get translations => '其他语言';
+	@override String get previous => '上一篇';
+	@override String get next => '下一篇';
+	@override String get unsupported => '此内容可在原文页面查看。';
+	@override String userId({required Object id}) => 'User ID: ${id}';
+	@override String userName({required Object name}) => '用户: ${name}';
 }
 
 // Path: settings.theme
@@ -1549,6 +1577,24 @@ extension on TranslationsZhCn {
 			'fanbox.restrictedInfo' => '文章卡片会保留，正文需要符合金额要求的赞助方案。',
 			'fanbox.noPlans' => '暂无可用方案',
 			'fanbox.downloadPreparing' => '正在收集有权浏览的文章…',
+			'pixivision.title' => 'pixivision',
+			'pixivision.searchHint' => '搜索专题文章',
+			'pixivision.latest' => '最新',
+			'pixivision.ranking' => '月榜',
+			'pixivision.recommended' => '推荐',
+			'pixivision.tags' => '标签',
+			'pixivision.allCategories' => '全部分类',
+			'pixivision.empty' => '暂无文章',
+			'pixivision.requestFailed' => '内容加载失败，请重试。',
+			'pixivision.loadMore' => '加载更多',
+			'pixivision.openOriginal' => '查看原文',
+			'pixivision.openFailed' => '无法打开链接',
+			'pixivision.translations' => '其他语言',
+			'pixivision.previous' => '上一篇',
+			'pixivision.next' => '下一篇',
+			'pixivision.unsupported' => '此内容可在原文页面查看。',
+			'pixivision.userId' => ({required Object id}) => 'User ID: ${id}',
+			'pixivision.userName' => ({required Object name}) => '用户: ${name}',
 			_ => null,
 		};
 	}

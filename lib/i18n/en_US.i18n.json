@@ -571,5 +571,25 @@
     "restrictedInfo": "This post remains visible, but its content requires a qualifying support plan.",
     "noPlans": "No available plans",
     "downloadPreparing": "Collecting accessible posts…"
+  },
+  "pixivision": {
+    "title": "pixivision",
+    "searchHint": "Search articles",
+    "latest": "Latest",
+    "ranking": "Monthly ranking",
+    "recommended": "Recommended",
+    "tags": "Tags",
+    "allCategories": "All categories",
+    "empty": "No articles found",
+    "requestFailed": "Could not load content. Please retry.",
+    "loadMore": "Load more",
+    "openOriginal": "Open original",
+    "openFailed": "Could not open the link",
+    "translations": "Languages",
+    "previous": "Previous",
+    "next": "Next",
+    "unsupported": "This content can be viewed on the original page.",
+    "userId": "User ID: $id",
+    "userName": "User: $name"
   }
 }
