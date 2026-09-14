@@ -39,6 +39,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsZhCn $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhCn(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$nativeWindow$zh_CN nativeWindow = Translations$nativeWindow$zh_CN.internal(_root);
 	@override late final Translations$discover$zh_CN discover = Translations$discover$zh_CN.internal(_root);
 	@override late final Translations$app$zh_CN app = Translations$app$zh_CN.internal(_root);
 	@override late final Translations$navigation$zh_CN navigation = Translations$navigation$zh_CN.internal(_root);
@@ -60,6 +61,19 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$richText$zh_CN richText = Translations$richText$zh_CN.internal(_root);
 	@override late final Translations$fanbox$zh_CN fanbox = Translations$fanbox$zh_CN.internal(_root);
 	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
+}
+
+// Path: nativeWindow
+class Translations$nativeWindow$zh_CN extends Translations$nativeWindow$en_US {
+	Translations$nativeWindow$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get minimize => '最小化';
+	@override String get maximize => '最大化';
+	@override String get restore => '还原';
+	@override String get close => '关闭';
 }
 
 // Path: discover
@@ -1154,6 +1168,10 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 extension on TranslationsZhCn {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'nativeWindow.minimize' => '最小化',
+			'nativeWindow.maximize' => '最大化',
+			'nativeWindow.restore' => '还原',
+			'nativeWindow.close' => '关闭',
 			'discover.searchHint' => '搜索 Pixiv',
 			'discover.history' => '搜索历史',
 			'discover.viewAll' => '查看全部',

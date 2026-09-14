@@ -41,6 +41,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
+	late final Translations$nativeWindow$en_US nativeWindow = Translations$nativeWindow$en_US.internal(_root);
 	late final Translations$discover$en_US discover = Translations$discover$en_US.internal(_root);
 	late final Translations$app$en_US app = Translations$app$en_US.internal(_root);
 	late final Translations$navigation$en_US navigation = Translations$navigation$en_US.internal(_root);
@@ -62,6 +63,19 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$richText$en_US richText = Translations$richText$en_US.internal(_root);
 	late final Translations$fanbox$en_US fanbox = Translations$fanbox$en_US.internal(_root);
 	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
+}
+
+// Path: nativeWindow
+class Translations$nativeWindow$en_US {
+	Translations$nativeWindow$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get minimize => 'Minimize';
+	String get maximize => 'Maximize';
+	String get restore => 'Restore';
+	String get close => 'Close';
 }
 
 // Path: discover
@@ -1156,6 +1170,10 @@ class Translations$novel$reader$en_US {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'nativeWindow.minimize' => 'Minimize',
+			'nativeWindow.maximize' => 'Maximize',
+			'nativeWindow.restore' => 'Restore',
+			'nativeWindow.close' => 'Close',
 			'discover.searchHint' => 'Search Pixiv',
 			'discover.history' => 'Recent searches',
 			'discover.viewAll' => 'View all',

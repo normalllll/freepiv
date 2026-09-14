@@ -2,6 +2,7 @@
 #include <flutter/flutter_view_controller.h>
 #include <flutter_windows.h>
 #include <string>
+#include <algorithm>
 #include <windows.h>
 
 #include "app_links/app_links_plugin_c_api.h"
@@ -93,7 +94,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
 
   FlutterWindow window(project);
-  const Win32Window::Size size(1280, 720);
+  RECT workArea{};
+  if (!SystemParametersInfoW(SPI_GETWORKAREA, 0, &workArea, 0)) {
+    workArea.right = GetSystemMetrics(SM_CXSCREEN);
+    workArea.bottom = GetSystemMetrics(SM_CYSCREEN);
+  }
+  const double scale = GetDpiForSystem() / 96.0;
+  const Win32Window::Size size(
+      std::min(1280u, static_cast<unsigned int>((workArea.right - workArea.left) / scale)),
+      std::min(900u, static_cast<unsigned int>((workArea.bottom - workArea.top) / scale)));
   const Win32Window::Point origin = GetCenteredWindowOrigin(size);
   if (!window.Create(kWindowTitle, origin, size)) {
     return EXIT_FAILURE;

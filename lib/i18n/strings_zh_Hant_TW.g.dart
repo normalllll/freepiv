@@ -39,6 +39,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	TranslationsZhHantTw $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhHantTw(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$nativeWindow$zh_Hant_TW nativeWindow = Translations$nativeWindow$zh_Hant_TW.internal(_root);
 	@override late final Translations$discover$zh_Hant_TW discover = Translations$discover$zh_Hant_TW.internal(_root);
 	@override late final Translations$app$zh_Hant_TW app = Translations$app$zh_Hant_TW.internal(_root);
 	@override late final Translations$navigation$zh_Hant_TW navigation = Translations$navigation$zh_Hant_TW.internal(_root);
@@ -60,6 +61,19 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$richText$zh_Hant_TW richText = Translations$richText$zh_Hant_TW.internal(_root);
 	@override late final Translations$fanbox$zh_Hant_TW fanbox = Translations$fanbox$zh_Hant_TW.internal(_root);
 	@override late final Translations$pixivision$zh_Hant_TW pixivision = Translations$pixivision$zh_Hant_TW.internal(_root);
+}
+
+// Path: nativeWindow
+class Translations$nativeWindow$zh_Hant_TW extends Translations$nativeWindow$en_US {
+	Translations$nativeWindow$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get minimize => '最小化';
+	@override String get maximize => '最大化';
+	@override String get restore => '還原';
+	@override String get close => '關閉';
 }
 
 // Path: discover
@@ -1154,6 +1168,10 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 extension on TranslationsZhHantTw {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'nativeWindow.minimize' => '最小化',
+			'nativeWindow.maximize' => '最大化',
+			'nativeWindow.restore' => '還原',
+			'nativeWindow.close' => '關閉',
 			'discover.searchHint' => '搜尋 Pixiv',
 			'discover.history' => '搜尋紀錄',
 			'discover.viewAll' => '查看全部',

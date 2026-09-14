@@ -1,3 +1,4 @@
+import 'package:freepiv/app/window/native_window.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -33,6 +34,7 @@ class AppToast {
       title: Text(message),
       autoCloseDuration: duration,
       alignment: Alignment.topCenter,
+      margin: EdgeInsets.only(top: desktopTitleBarInset + 12, left: 12, right: 12),
       dragToClose: true,
       pauseOnHover: true,
     );

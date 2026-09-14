@@ -39,6 +39,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsJaJp $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsJaJp(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final _Translations$nativeWindow$ja_JP nativeWindow = _Translations$nativeWindow$ja_JP._(_root);
 	@override late final _Translations$discover$ja_JP discover = _Translations$discover$ja_JP._(_root);
 	@override late final _Translations$app$ja_JP app = _Translations$app$ja_JP._(_root);
 	@override late final _Translations$navigation$ja_JP navigation = _Translations$navigation$ja_JP._(_root);
@@ -60,6 +61,19 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$richText$ja_JP richText = _Translations$richText$ja_JP._(_root);
 	@override late final _Translations$fanbox$ja_JP fanbox = _Translations$fanbox$ja_JP._(_root);
 	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
+}
+
+// Path: nativeWindow
+class _Translations$nativeWindow$ja_JP extends Translations$nativeWindow$en_US {
+	_Translations$nativeWindow$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get minimize => '最小化';
+	@override String get maximize => '最大化';
+	@override String get restore => '元に戻す';
+	@override String get close => '閉じる';
 }
 
 // Path: discover
@@ -1154,6 +1168,10 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 extension on TranslationsJaJp {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'nativeWindow.minimize' => '最小化',
+			'nativeWindow.maximize' => '最大化',
+			'nativeWindow.restore' => '元に戻す',
+			'nativeWindow.close' => '閉じる',
 			'discover.searchHint' => 'Pixiv を検索',
 			'discover.history' => '検索履歴',
 			'discover.viewAll' => 'すべて見る',

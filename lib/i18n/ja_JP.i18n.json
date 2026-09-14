@@ -1,4 +1,5 @@
 {
+  "nativeWindow": {"minimize":"最小化","maximize":"最大化","restore":"元に戻す","close":"閉じる"},
   "discover": {
     "searchHint": "Pixiv を検索",
     "history": "検索履歴",

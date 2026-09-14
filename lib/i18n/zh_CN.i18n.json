@@ -1,4 +1,5 @@
 {
+  "nativeWindow": {"minimize":"最小化","maximize":"最大化","restore":"还原","close":"关闭"},
   "discover": {
     "searchHint": "搜索 Pixiv",
     "history": "搜索历史",

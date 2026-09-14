@@ -1,3 +1,4 @@
+import 'window/native_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -31,6 +32,7 @@ class _FreepivMaterialApp extends ConsumerWidget {
     final effectiveLocale = selectedLocale?.flutterLocale ?? View.of(context).platformDispatcher.locale;
 
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       title: context.t.app.title,
       theme: AppTheme.light(platform: defaultTargetPlatform, locale: effectiveLocale),
       darkTheme: AppTheme.dark(platform: defaultTargetPlatform, locale: effectiveLocale),
@@ -40,7 +42,15 @@ class _FreepivMaterialApp extends ConsumerWidget {
       localizationsDelegates: const [GlobalMaterialLocalizations.delegate, GlobalWidgetsLocalizations.delegate, GlobalCupertinoLocalizations.delegate],
       routerConfig: AppRouter.router,
       builder: (context, child) {
-        return FontWarmUp(child: MobileDownloadFloatingWindow(child: child ?? const SizedBox.shrink()));
+        final colors = Theme.of(context).colorScheme;
+        return NativeWindowFrame(
+          title: context.t.app.title,
+          leading: Image.asset('assets/icon-512.png', cacheWidth: 96, cacheHeight: 96),
+          background: colors.surface,
+          foreground: colors.onSurfaceVariant,
+          border: colors.outlineVariant,
+          child: FontWarmUp(child: MobileDownloadFloatingWindow(child: child ?? const SizedBox.shrink())),
+        );
       },
     );
   }

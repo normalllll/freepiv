@@ -1,4 +1,5 @@
 {
+  "nativeWindow": {"minimize":"Minimize","maximize":"Maximize","restore":"Restore","close":"Close"},
   "discover": {
     "searchHint": "Search Pixiv",
     "history": "Recent searches",
