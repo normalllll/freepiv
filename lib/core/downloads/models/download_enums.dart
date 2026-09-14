@@ -1,4 +1,4 @@
-enum DownloadEngineType { desktopRust, androidOkHttpForeground, iosUrlSession, unsupported }
+enum DownloadEngineType { desktopRust, androidOkHttpForeground, iosUrlSession, unsupported, mobileRust }
 
 enum DownloadStatus { queued, running, paused, downloaded, failed, cancelled }
 

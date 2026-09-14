@@ -1,5 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/core/media/logic.dart';
+import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
+
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -234,7 +237,7 @@ class _ImageContextMenuRegion extends StatelessWidget {
   }
 }
 
-class _DetailPixivImage extends StatelessWidget {
+class _DetailPixivImage extends ConsumerWidget {
   const _DetailPixivImage({required this.image, required this.fit, required this.loadedImages});
 
   final IllustPageImage image;
@@ -242,14 +245,14 @@ class _DetailPixivImage extends StatelessWidget {
   final LoadedIllustImages loadedImages;
 
   @override
-  Widget build(BuildContext context) {
-    return ExtendedImage.network(
-      image.viewUrl,
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ExtendedImage(
+      image: RustExtendedNetworkImageProvider(
+        request: MediaRequest(url: image.viewUrl),
+        cacheRawData: true,
+        mediaStream: ref.watch(rustMediaTransportProvider).stream,
+      ),
       fit: fit,
-      cache: true,
-      cacheKey: base64Url.encode(image.viewUrl.codeUnits),
-      cacheRawData: true,
-      headers: const {'Referer': 'https://www.pixiv.net/'},
       handleLoadingProgress: true,
       loadStateChanged: (state) {
         return switch (state.extendedImageLoadState) {

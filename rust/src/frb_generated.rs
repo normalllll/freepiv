@@ -46,7 +46,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -949954706;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 173005757;
 
 // Section: executor
 
@@ -8328,6 +8328,55 @@ fn wire__pixiv_rs__pixiv__enums__search_target_as_pixiv_param_impl(
         },
     )
 }
+fn wire__crate__api__media__stream_media_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "stream_media",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_url = <String>::sse_decode(&mut deserializer);
+            let api_proxy = <Option<String>>::sse_decode(&mut deserializer);
+            let api_headers =
+                <std::collections::HashMap<String, String>>::sse_decode(&mut deserializer);
+            let api_sink = <StreamSink<
+                crate::api::media::MediaChunk,
+                flutter_rust_bridge::for_generated::SseCodec,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let output_ok = crate::api::media::stream_media(
+                            api_url,
+                            api_proxy,
+                            api_headers,
+                            api_sink,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__pixiv_rs__pixiv__responses__webview_novel_image_urls_default_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -9440,6 +9489,16 @@ impl SseDecode
         crate::api::download::FrbDownloadFileEvent,
         flutter_rust_bridge::for_generated::SseCodec,
     >
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return StreamSink::deserialize(inner);
+    }
+}
+
+impl SseDecode
+    for StreamSink<crate::api::media::MediaChunk, flutter_rust_bridge::for_generated::SseCodec>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -11043,6 +11102,20 @@ impl SseDecode for pixiv_rs::pixiv::enums::MangaRankingMode {
             4 => pixiv_rs::pixiv::enums::MangaRankingMode::WeekR18,
             5 => pixiv_rs::pixiv::enums::MangaRankingMode::WeekR18G,
             _ => unreachable!("Invalid variant for MangaRankingMode: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::api::media::MediaChunk {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_bytes = <Vec<u8>>::sse_decode(deserializer);
+        let mut var_received = <u64>::sse_decode(deserializer);
+        let mut var_total = <Option<u64>>::sse_decode(deserializer);
+        return crate::api::media::MediaChunk {
+            bytes: var_bytes,
+            received: var_received,
+            total: var_total,
         };
     }
 }
@@ -13034,19 +13107,20 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        163 => wire__pixiv_rs__pixiv__responses__webview_novel_image_urls_default_impl(
+        163 => wire__crate__api__media__stream_media_impl(port, ptr, rust_vec_len, data_len),
+        164 => wire__pixiv_rs__pixiv__responses__webview_novel_image_urls_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        164 => wire__pixiv_rs__pixiv__enums__work_type_as_pixiv_param_impl(
+        165 => wire__pixiv_rs__pixiv__enums__work_type_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        165 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
+        166 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
             port,
             ptr,
             rust_vec_len,
@@ -14632,6 +14706,25 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::enums::MangaR
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::media::MediaChunk {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.bytes.into_into_dart().into_dart(),
+            self.received.into_into_dart().into_dart(),
+            self.total.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::media::MediaChunk {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::media::MediaChunk>
+    for crate::api::media::MediaChunk
+{
+    fn into_into_dart(self) -> crate::api::media::MediaChunk {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::models::MetaPage> {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [self.0.image_urls.into_into_dart().into_dart()].into_dart()
@@ -16161,6 +16254,15 @@ impl SseEncode
     }
 }
 
+impl SseEncode
+    for StreamSink<crate::api::media::MediaChunk, flutter_rust_bridge::for_generated::SseCodec>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        unimplemented!("")
+    }
+}
+
 impl SseEncode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -17346,6 +17448,15 @@ impl SseEncode for pixiv_rs::pixiv::enums::MangaRankingMode {
             },
             serializer,
         );
+    }
+}
+
+impl SseEncode for crate::api::media::MediaChunk {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<u8>>::sse_encode(self.bytes, serializer);
+        <u64>::sse_encode(self.received, serializer);
+        <Option<u64>>::sse_encode(self.total, serializer);
     }
 }
 

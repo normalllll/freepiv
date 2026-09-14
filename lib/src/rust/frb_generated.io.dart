@@ -5,6 +5,7 @@
 
 import 'api/download.dart';
 import 'api/image_utils.dart';
+import 'api/media.dart';
 import 'api/proxy.dart';
 import 'api/zip_utils.dart';
 import 'dart:async';
@@ -196,6 +197,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   RustStreamSink<FrbDownloadFileEvent>
   dco_decode_StreamSink_frb_download_file_event_Sse(dynamic raw);
+
+  @protected
+  RustStreamSink<MediaChunk> dco_decode_StreamSink_media_chunk_Sse(dynamic raw);
 
   @protected
   String dco_decode_String(dynamic raw);
@@ -570,6 +574,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MangaRankingMode dco_decode_manga_ranking_mode(dynamic raw);
+
+  @protected
+  MediaChunk dco_decode_media_chunk(dynamic raw);
 
   @protected
   MetaPage dco_decode_meta_page(dynamic raw);
@@ -969,6 +976,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   RustStreamSink<FrbDownloadFileEvent>
   sse_decode_StreamSink_frb_download_file_event_Sse(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RustStreamSink<MediaChunk> sse_decode_StreamSink_media_chunk_Sse(
     SseDeserializer deserializer,
   );
 
@@ -1430,6 +1442,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MangaRankingMode sse_decode_manga_ranking_mode(SseDeserializer deserializer);
+
+  @protected
+  MediaChunk sse_decode_media_chunk(SseDeserializer deserializer);
 
   @protected
   MetaPage sse_decode_meta_page(SseDeserializer deserializer);
@@ -1897,6 +1912,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_StreamSink_frb_download_file_event_Sse(
     RustStreamSink<FrbDownloadFileEvent> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_StreamSink_media_chunk_Sse(
+    RustStreamSink<MediaChunk> self,
     SseSerializer serializer,
   );
 
@@ -2472,6 +2493,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     MangaRankingMode self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_media_chunk(MediaChunk self, SseSerializer serializer);
 
   @protected
   void sse_encode_meta_page(MetaPage self, SseSerializer serializer);

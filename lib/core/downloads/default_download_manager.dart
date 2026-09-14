@@ -80,6 +80,9 @@ final class DefaultDownloadManager implements DownloadManager {
       _store = DriftDownloadStore.open();
       _ownsStore = true;
     }
+    if (_engine == null && (Platform.isAndroid || Platform.isIOS)) {
+      await _retireNativeDownloads();
+    }
     _engine ??= components.engine;
     _mediaSaver ??= components.mediaSaver;
     _permissionGuard ??= components.permissionGuard;
@@ -95,6 +98,42 @@ final class DefaultDownloadManager implements DownloadManager {
         );
     _initialized = true;
     await sync();
+  }
+
+  Future<void> _retireNativeDownloads() async {
+    final legacy = NativeDownloadEngine(type: Platform.isAndroid ? DownloadEngineType.androidOkHttpForeground : DownloadEngineType.iosUrlSession);
+    await legacy.initialize();
+    try {
+      final snapshots = await legacy.syncActiveTasks();
+      for (final snapshot in snapshots) {
+        await _activeStore.applyEngineSnapshot(snapshot);
+        if (snapshot.status == DownloadStatus.running || snapshot.status == DownloadStatus.paused) {
+          await legacy.cancel(snapshot.jobId);
+          await _activeStore.updateStatus(snapshot.jobId, DownloadStatus.failed, error: 'Download transport changed. Retry to continue with Rust.');
+        }
+      }
+      // Preserve any completion that raced with cancellation before discarding
+      // the legacy snapshot. Pending saves are recovered by sync().
+      bool isPending(DownloadEngineSnapshot snapshot) =>
+          snapshot.saveState == SaveState.saving || snapshot.status == DownloadStatus.running || snapshot.status == DownloadStatus.paused;
+      var finalSnapshots = await legacy.syncActiveTasks();
+      for (var attempt = 0; attempt < 40 && finalSnapshots.any(isPending); attempt++) {
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+        finalSnapshots = await legacy.syncActiveTasks();
+      }
+      if (finalSnapshots.any(isPending)) {
+        throw const DownloadException('Previous downloads are still finishing. Try again shortly.');
+      }
+      for (final snapshot in finalSnapshots) {
+        if (snapshot.saveState == SaveState.saved || snapshot.saveState == SaveState.failed) await _activeStore.applyEngineSnapshot(snapshot);
+      }
+      await legacy.acknowledge({
+        for (final snapshot in finalSnapshots)
+          if (snapshot.saveState != SaveState.saving) snapshot.jobId,
+      });
+    } finally {
+      await legacy.dispose();
+    }
   }
 
   @override
@@ -711,14 +750,14 @@ final class DefaultDownloadManager implements DownloadManager {
 _DownloadComponents _createPlatformComponents() {
   if (Platform.isAndroid) {
     return _DownloadComponents(
-      engine: NativeDownloadEngine(type: DownloadEngineType.androidOkHttpForeground),
+      engine: RustIoDownloadEngine(type: DownloadEngineType.mobileRust),
       mediaSaver: NativeMediaSaver(),
       permissionGuard: const NativeDownloadPermissionGuard(),
     );
   }
   if (Platform.isIOS) {
     return _DownloadComponents(
-      engine: NativeDownloadEngine(type: DownloadEngineType.iosUrlSession),
+      engine: RustIoDownloadEngine(type: DownloadEngineType.mobileRust),
       mediaSaver: NativeMediaSaver(),
       permissionGuard: const NativeDownloadPermissionGuard(),
     );

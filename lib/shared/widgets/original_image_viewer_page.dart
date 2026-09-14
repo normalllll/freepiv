@@ -1,4 +1,7 @@
-import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/core/media/logic.dart';
+import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
+
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -186,17 +189,17 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
   }
 }
 
-class _OriginalImageZoomPage extends StatefulWidget {
+class _OriginalImageZoomPage extends ConsumerStatefulWidget {
   const _OriginalImageZoomPage({required this.page, required this.onLoaded, super.key});
 
   final OriginalImagePage page;
   final ValueChanged<_LoadedOriginalImageData> onLoaded;
 
   @override
-  State<_OriginalImageZoomPage> createState() => _OriginalImageZoomPageState();
+  ConsumerState<_OriginalImageZoomPage> createState() => _OriginalImageZoomPageState();
 }
 
-class _OriginalImageZoomPageState extends State<_OriginalImageZoomPage> {
+class _OriginalImageZoomPageState extends ConsumerState<_OriginalImageZoomPage> {
   bool _notifiedLoaded = false;
 
   @override
@@ -219,13 +222,13 @@ class _OriginalImageZoomPageState extends State<_OriginalImageZoomPage> {
           maxScale: 6,
           boundaryMargin: const EdgeInsets.all(96),
           child: SizedBox.expand(
-            child: ExtendedImage.network(
-              widget.page.url,
+            child: ExtendedImage(
+              image: RustExtendedNetworkImageProvider(
+                request: MediaRequest(url: widget.page.url),
+                cacheRawData: true,
+                mediaStream: ref.watch(rustMediaTransportProvider).stream,
+              ),
               fit: BoxFit.contain,
-              cache: true,
-              cacheKey: base64Url.encode(widget.page.url.codeUnits),
-              cacheRawData: true,
-              headers: const {'Referer': 'https://www.pixiv.net/'},
               handleLoadingProgress: true,
               loadStateChanged: (state) {
                 return switch (state.extendedImageLoadState) {

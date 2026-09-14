@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:freepiv/core/downloads/downloader.dart';
-import 'package:freepiv/core/services/app_proxy_http_overrides.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_api_settings.dart';
 import 'package:freepiv/src/rust/frb_generated.dart';
@@ -20,7 +19,6 @@ Future<void> initializeAppServices() async {
   }
 
   await AppSettings.initialize();
-  applyAppProxySettings(AppSettings.proxySettings);
   await RustLib.init();
   await initializeDownloadManager();
 
@@ -44,7 +42,6 @@ void refreshPixivApiLanguage() {
 }
 
 void refreshPixivApiProxy() {
-  applyAppProxySettings(AppSettings.proxySettings);
   if (!_appServicesInitialized) {
     return;
   }

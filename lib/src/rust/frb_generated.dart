@@ -5,6 +5,7 @@
 
 import 'api/download.dart';
 import 'api/image_utils.dart';
+import 'api/media.dart';
 import 'api/proxy.dart';
 import 'api/zip_utils.dart';
 import 'dart:async';
@@ -75,7 +76,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -949954706;
+  int get rustContentHash => 173005757;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -826,6 +827,12 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> pixivRsPixivEnumsSearchTargetAsPixivParam({
     required SearchTarget that,
+  });
+
+  Stream<MediaChunk> crateApiMediaStreamMedia({
+    required String url,
+    String? proxy,
+    required Map<String, String> headers,
   });
 
   Future<WebviewNovelImageUrls>
@@ -6771,6 +6778,47 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Stream<MediaChunk> crateApiMediaStreamMedia({
+    required String url,
+    String? proxy,
+    required Map<String, String> headers,
+  }) {
+    final sink = RustStreamSink<MediaChunk>();
+    unawaited(
+      handler.executeNormal(
+        NormalTask(
+          callFfi: (port_) {
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            sse_encode_String(url, serializer);
+            sse_encode_opt_String(proxy, serializer);
+            sse_encode_Map_String_String_None(headers, serializer);
+            sse_encode_StreamSink_media_chunk_Sse(sink, serializer);
+            pdeCallFfi(
+              generalizedFrbRustBinding,
+              serializer,
+              funcId: 163,
+              port: port_,
+            );
+          },
+          codec: SseCodec(
+            decodeSuccessData: sse_decode_unit,
+            decodeErrorData: sse_decode_String,
+          ),
+          constMeta: kCrateApiMediaStreamMediaConstMeta,
+          argValues: [url, proxy, headers, sink],
+          apiImpl: this,
+        ),
+      ),
+    );
+    return sink.stream;
+  }
+
+  TaskConstMeta get kCrateApiMediaStreamMediaConstMeta => const TaskConstMeta(
+    debugName: "stream_media",
+    argNames: ["url", "proxy", "headers", "sink"],
+  );
+
+  @override
   Future<WebviewNovelImageUrls>
   pixivRsPixivResponsesWebviewNovelImageUrlsDefault() {
     return handler.executeNormal(
@@ -6780,7 +6828,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 163,
+            funcId: 164,
             port: port_,
           );
         },
@@ -6812,7 +6860,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 164,
+            funcId: 165,
             port: port_,
           );
         },
@@ -6845,7 +6893,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 165,
+            funcId: 166,
             port: port_,
           );
         },
@@ -7145,6 +7193,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   RustStreamSink<FrbDownloadFileEvent>
   dco_decode_StreamSink_frb_download_file_event_Sse(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
+  RustStreamSink<MediaChunk> dco_decode_StreamSink_media_chunk_Sse(
+    dynamic raw,
+  ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     throw UnimplementedError();
   }
@@ -8374,6 +8430,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MediaChunk dco_decode_media_chunk(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return MediaChunk(
+      bytes: dco_decode_list_prim_u_8_strict(arr[0]),
+      received: dco_decode_CastedPrimitive_u_64(arr[1]),
+      total: dco_decode_opt_CastedPrimitive_u_64(arr[2]),
+    );
+  }
+
+  @protected
   MetaPage dco_decode_meta_page(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -9575,6 +9644,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   RustStreamSink<FrbDownloadFileEvent>
   sse_decode_StreamSink_frb_download_file_event_Sse(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    throw UnimplementedError('Unreachable ()');
+  }
+
+  @protected
+  RustStreamSink<MediaChunk> sse_decode_StreamSink_media_chunk_Sse(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -11194,6 +11271,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MediaChunk sse_decode_media_chunk(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_bytes = sse_decode_list_prim_u_8_strict(deserializer);
+    var var_received = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_total = sse_decode_opt_CastedPrimitive_u_64(deserializer);
+    return MediaChunk(
+      bytes: var_bytes,
+      received: var_received,
+      total: var_total,
+    );
+  }
+
+  @protected
   MetaPage sse_decode_meta_page(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_imageUrls = sse_decode_image_urls(deserializer);
@@ -12627,6 +12717,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_StreamSink_media_chunk_Sse(
+    RustStreamSink<MediaChunk> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(
+      self.setupAndSerialize(
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_media_chunk,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+      ),
+      serializer,
+    );
+  }
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
@@ -13949,6 +14056,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_media_chunk(MediaChunk self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_prim_u_8_strict(self.bytes, serializer);
+    sse_encode_CastedPrimitive_u_64(self.received, serializer);
+    sse_encode_opt_CastedPrimitive_u_64(self.total, serializer);
   }
 
   @protected

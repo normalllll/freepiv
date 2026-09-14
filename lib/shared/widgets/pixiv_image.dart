@@ -1,11 +1,13 @@
-import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/core/media/logic.dart';
+import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 
-class PixivImage extends StatelessWidget {
+class PixivImage extends ConsumerWidget {
   const PixivImage({
     required this.url,
     this.fit = BoxFit.cover,
@@ -30,16 +32,15 @@ class PixivImage extends StatelessWidget {
   final WidgetBuilder? errorBuilder;
 
   @override
-  Widget build(BuildContext context) {
-    final image = ExtendedImage.network(
-      url,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final image = ExtendedImage(
+      image: RustExtendedNetworkImageProvider(
+        request: MediaRequest(url: url, headers: headers ?? const {'Referer': 'https://www.pixiv.net/'}, allowDiskCache: cache),
+        mediaStream: ref.watch(rustMediaTransportProvider).stream,
+      ),
       width: width,
       height: height,
       fit: fit,
-      cache: cache,
-      cacheKey: base64Url.encode(url.codeUnits),
-      headers: headers ?? const {'Referer': 'https://www.pixiv.net/'},
-      retries: 0,
       loadStateChanged: (state) {
         return switch (state.extendedImageLoadState) {
           LoadState.loading => placeholder?.call(context) ?? const _PixivImagePlaceholder(),
