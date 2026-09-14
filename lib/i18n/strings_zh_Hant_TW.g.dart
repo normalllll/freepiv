@@ -470,6 +470,21 @@ class Translations$fanbox$zh_Hant_TW extends Translations$fanbox$en_US {
 	@override String get restrictedInfo => '文章卡片會保留，內文需要符合金額要求的贊助方案。';
 	@override String get noPlans => '暫無可用方案';
 	@override String get downloadPreparing => '正在收集有權瀏覽的文章…';
+	@override String get browserLogin => '瀏覽器登入';
+	@override String get manualLogin => '手動填寫 Cookie';
+	@override String get browserHelp => '請在官方頁面完成登入，驗證工作階段成功後會自動關閉登入視窗。';
+	@override String get browserCheck => '我已登入';
+	@override String get browserCheckFailed => '驗證失敗，請選擇「我已登入」重試。';
+	@override String get browserUnavailable => '無法開啟或讀取登入頁面，請重試或手動填寫 Cookie。';
+	@override String get browserProxyUnsupported => '登入瀏覽器無法使用目前的代理。請使用支援的 HTTP/SOCKS5 代理、系統代理，或手動填寫 Cookie。';
+	@override String get browserCleanupFailed => '已登出，但瀏覽器資料未能清理；下次瀏覽器登入前會重新清理。';
+	@override String get browserTimedOut => '登入已逾時，請關閉視窗後重新開始。';
+	@override String get browserBusy => '另一個登入視窗尚未關閉，請稍後重試。';
+	@override String get runtimeTitle => '安裝登入元件';
+	@override String get runtimeMissing => '缺少 WebView2 執行階段或執行階段無法使用，請安裝後重新偵測。';
+	@override String get runtimeInstall => '前往微軟下載 WebView2';
+	@override String get runtimeHelp => '在微軟網站選擇 Evergreen Runtime；線上安裝失敗時可使用獨立安裝程式。其他應用程式功能不受影響。';
+	@override String get runtimeRecheck => '重新偵測';
 }
 
 // Path: pixivision
@@ -1597,6 +1612,21 @@ extension on TranslationsZhHantTw {
 			'fanbox.restrictedInfo' => '文章卡片會保留，內文需要符合金額要求的贊助方案。',
 			'fanbox.noPlans' => '暫無可用方案',
 			'fanbox.downloadPreparing' => '正在收集有權瀏覽的文章…',
+			'fanbox.browserLogin' => '瀏覽器登入',
+			'fanbox.manualLogin' => '手動填寫 Cookie',
+			'fanbox.browserHelp' => '請在官方頁面完成登入，驗證工作階段成功後會自動關閉登入視窗。',
+			'fanbox.browserCheck' => '我已登入',
+			'fanbox.browserCheckFailed' => '驗證失敗，請選擇「我已登入」重試。',
+			'fanbox.browserUnavailable' => '無法開啟或讀取登入頁面，請重試或手動填寫 Cookie。',
+			'fanbox.browserProxyUnsupported' => '登入瀏覽器無法使用目前的代理。請使用支援的 HTTP/SOCKS5 代理、系統代理，或手動填寫 Cookie。',
+			'fanbox.browserCleanupFailed' => '已登出，但瀏覽器資料未能清理；下次瀏覽器登入前會重新清理。',
+			'fanbox.browserTimedOut' => '登入已逾時，請關閉視窗後重新開始。',
+			'fanbox.browserBusy' => '另一個登入視窗尚未關閉，請稍後重試。',
+			'fanbox.runtimeTitle' => '安裝登入元件',
+			'fanbox.runtimeMissing' => '缺少 WebView2 執行階段或執行階段無法使用，請安裝後重新偵測。',
+			'fanbox.runtimeInstall' => '前往微軟下載 WebView2',
+			'fanbox.runtimeHelp' => '在微軟網站選擇 Evergreen Runtime；線上安裝失敗時可使用獨立安裝程式。其他應用程式功能不受影響。',
+			'fanbox.runtimeRecheck' => '重新偵測',
 			'pixivision.title' => 'pixivision',
 			'pixivision.searchHint' => '搜尋專題文章',
 			'pixivision.latest' => '最新',

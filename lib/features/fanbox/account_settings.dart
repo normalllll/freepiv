@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'logic.dart';
-import 'page.dart';
-import 'widgets.dart';
+import 'login_panel.dart';
+import 'login_logic.dart';
 
 class FanboxAccountSettings extends ConsumerWidget {
   const FanboxAccountSettings({super.key});
@@ -57,7 +57,7 @@ class FanboxAccountSettings extends ConsumerWidget {
               ),
           ],
         ),
-        SizedBox(height: 40, child: operation.hasError ? Text(fanboxError(context, operation.error!)) : null),
+        SizedBox(height: 40, child: operation.hasError ? Text(fanboxLoginError(context.t, operation.error!)) : null),
       ],
     );
   }

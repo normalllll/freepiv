@@ -472,6 +472,21 @@ class Translations$fanbox$en_US {
 	String get restrictedInfo => 'This post remains visible, but its content requires a qualifying support plan.';
 	String get noPlans => 'No available plans';
 	String get downloadPreparing => 'Collecting accessible posts…';
+	String get browserLogin => 'Log in with browser';
+	String get manualLogin => 'Enter Cookie manually';
+	String get browserHelp => 'Complete sign-in on the official website. This window closes after your session is verified.';
+	String get browserCheck => 'I am signed in';
+	String get browserCheckFailed => 'Verification failed. Choose “I am signed in” to retry.';
+	String get browserUnavailable => 'Could not open or read the login page. Retry or enter a Cookie manually.';
+	String get browserProxyUnsupported => 'This browser cannot use the configured proxy. Use a supported HTTP/SOCKS5 proxy, a system proxy, or enter a Cookie manually.';
+	String get browserCleanupFailed => 'Signed out, but browser data could not be cleared. Cleanup will be retried before the next browser login.';
+	String get browserTimedOut => 'Login timed out. Close this window and start again.';
+	String get browserBusy => 'Another login window is still closing. Please try again shortly.';
+	String get runtimeTitle => 'Install login component';
+	String get runtimeMissing => 'WebView2 Runtime is missing or unavailable. Install it, then check again.';
+	String get runtimeInstall => 'Get WebView2 from Microsoft';
+	String get runtimeHelp => 'Choose Evergreen Runtime on the Microsoft website. If the online installer fails, use the standalone installer. Other app features remain available.';
+	String get runtimeRecheck => 'Check again';
 }
 
 // Path: pixivision
@@ -1599,6 +1614,21 @@ extension on Translations {
 			'fanbox.restrictedInfo' => 'This post remains visible, but its content requires a qualifying support plan.',
 			'fanbox.noPlans' => 'No available plans',
 			'fanbox.downloadPreparing' => 'Collecting accessible posts…',
+			'fanbox.browserLogin' => 'Log in with browser',
+			'fanbox.manualLogin' => 'Enter Cookie manually',
+			'fanbox.browserHelp' => 'Complete sign-in on the official website. This window closes after your session is verified.',
+			'fanbox.browserCheck' => 'I am signed in',
+			'fanbox.browserCheckFailed' => 'Verification failed. Choose “I am signed in” to retry.',
+			'fanbox.browserUnavailable' => 'Could not open or read the login page. Retry or enter a Cookie manually.',
+			'fanbox.browserProxyUnsupported' => 'This browser cannot use the configured proxy. Use a supported HTTP/SOCKS5 proxy, a system proxy, or enter a Cookie manually.',
+			'fanbox.browserCleanupFailed' => 'Signed out, but browser data could not be cleared. Cleanup will be retried before the next browser login.',
+			'fanbox.browserTimedOut' => 'Login timed out. Close this window and start again.',
+			'fanbox.browserBusy' => 'Another login window is still closing. Please try again shortly.',
+			'fanbox.runtimeTitle' => 'Install login component',
+			'fanbox.runtimeMissing' => 'WebView2 Runtime is missing or unavailable. Install it, then check again.',
+			'fanbox.runtimeInstall' => 'Get WebView2 from Microsoft',
+			'fanbox.runtimeHelp' => 'Choose Evergreen Runtime on the Microsoft website. If the online installer fails, use the standalone installer. Other app features remain available.',
+			'fanbox.runtimeRecheck' => 'Check again',
 			'pixivision.title' => 'pixivision',
 			'pixivision.searchHint' => 'Search articles',
 			'pixivision.latest' => 'Latest',

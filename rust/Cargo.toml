@@ -20,3 +20,10 @@ zip = { version = "9.0.0-pre2" }
 thiserror = "2.0.18"
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+wry = "=0.57.0"
+tao = "=0.37.0"
+muda = "=0.19.3"
+windows = { version = "=0.62.2", features = ["Win32_Foundation", "Win32_System_Com", "Win32_UI_WindowsAndMessaging"] }
+webview2-com = "=0.39.1"

@@ -470,6 +470,21 @@ class _Translations$fanbox$ja_JP extends Translations$fanbox$en_US {
 	@override String get restrictedInfo => '投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。';
 	@override String get noPlans => 'プランがありません';
 	@override String get downloadPreparing => '閲覧可能な投稿を収集中…';
+	@override String get browserLogin => 'ブラウザーでログイン';
+	@override String get manualLogin => 'Cookie を手動で入力';
+	@override String get browserHelp => '公式ページでログインしてください。セッションの確認後、このウィンドウは自動的に閉じます。';
+	@override String get browserCheck => 'ログインしました';
+	@override String get browserCheckFailed => '確認に失敗しました。「ログインしました」で再試行してください。';
+	@override String get browserUnavailable => 'ログインページを開くか読み取ることができません。再試行するか Cookie を手動入力してください。';
+	@override String get browserProxyUnsupported => 'このブラウザーは設定されたプロキシを使用できません。対応する HTTP/SOCKS5 プロキシ、システムプロキシ、または Cookie の手動入力を使用してください。';
+	@override String get browserCleanupFailed => 'ログアウトしましたが、ブラウザーデータを削除できませんでした。次回のログイン前に再試行します。';
+	@override String get browserTimedOut => 'ログインがタイムアウトしました。ウィンドウを閉じてやり直してください。';
+	@override String get browserBusy => '別のログインウィンドウを終了中です。しばらくしてから再試行してください。';
+	@override String get runtimeTitle => 'ログイン用コンポーネントのインストール';
+	@override String get runtimeMissing => 'WebView2 Runtime がないか、利用できません。インストール後、再確認してください。';
+	@override String get runtimeInstall => 'Microsoft から WebView2 を入手';
+	@override String get runtimeHelp => 'Microsoft のサイトで Evergreen Runtime を選択してください。オンラインインストールに失敗した場合はスタンドアロン版を利用できます。他のアプリ機能には影響しません。';
+	@override String get runtimeRecheck => '再確認';
 }
 
 // Path: pixivision
@@ -1597,6 +1612,21 @@ extension on TranslationsJaJp {
 			'fanbox.restrictedInfo' => '投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。',
 			'fanbox.noPlans' => 'プランがありません',
 			'fanbox.downloadPreparing' => '閲覧可能な投稿を収集中…',
+			'fanbox.browserLogin' => 'ブラウザーでログイン',
+			'fanbox.manualLogin' => 'Cookie を手動で入力',
+			'fanbox.browserHelp' => '公式ページでログインしてください。セッションの確認後、このウィンドウは自動的に閉じます。',
+			'fanbox.browserCheck' => 'ログインしました',
+			'fanbox.browserCheckFailed' => '確認に失敗しました。「ログインしました」で再試行してください。',
+			'fanbox.browserUnavailable' => 'ログインページを開くか読み取ることができません。再試行するか Cookie を手動入力してください。',
+			'fanbox.browserProxyUnsupported' => 'このブラウザーは設定されたプロキシを使用できません。対応する HTTP/SOCKS5 プロキシ、システムプロキシ、または Cookie の手動入力を使用してください。',
+			'fanbox.browserCleanupFailed' => 'ログアウトしましたが、ブラウザーデータを削除できませんでした。次回のログイン前に再試行します。',
+			'fanbox.browserTimedOut' => 'ログインがタイムアウトしました。ウィンドウを閉じてやり直してください。',
+			'fanbox.browserBusy' => '別のログインウィンドウを終了中です。しばらくしてから再試行してください。',
+			'fanbox.runtimeTitle' => 'ログイン用コンポーネントのインストール',
+			'fanbox.runtimeMissing' => 'WebView2 Runtime がないか、利用できません。インストール後、再確認してください。',
+			'fanbox.runtimeInstall' => 'Microsoft から WebView2 を入手',
+			'fanbox.runtimeHelp' => 'Microsoft のサイトで Evergreen Runtime を選択してください。オンラインインストールに失敗した場合はスタンドアロン版を利用できます。他のアプリ機能には影響しません。',
+			'fanbox.runtimeRecheck' => '再確認',
 			'pixivision.title' => 'pixivision',
 			'pixivision.searchHint' => '記事を検索',
 			'pixivision.latest' => '新着',

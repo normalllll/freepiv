@@ -27,6 +27,7 @@
 
 // Section: imports
 
+use crate::api::fanbox_login::*;
 use crate::api::image_utils::*;
 use crate::api::zip_utils::*;
 use flutter_rust_bridge::for_generated::byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
@@ -46,7 +47,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 173005757;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -495175897;
 
 // Section: executor
 
@@ -1625,6 +1626,155 @@ fn wire__pixiv_rs__fanbox__FanboxApi_validate_session_impl(
                         let api_that_guard = api_that_guard.unwrap();
                         let output_ok =
                             pixiv_rs::fanbox::FanboxApi::validate_session(&*api_that_guard).await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__fanbox_login__FanboxBrowserLogin_cancel_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "FanboxBrowserLogin_cancel",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxBrowserLogin>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Ok::<_, ()>({
+                    crate::api::fanbox_login::FanboxBrowserLogin::cancel(&*api_that_guard);
+                })?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__fanbox_login__FanboxBrowserLogin_new_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "FanboxBrowserLogin_new",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::fanbox_login::FanboxBrowserLogin::new())?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__fanbox_login__FanboxBrowserLogin_run_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "FanboxBrowserLogin_run",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxBrowserLogin>,
+            >>::sse_decode(&mut deserializer);
+            let api_support_directory = <String>::sse_decode(&mut deserializer);
+            let api_proxy = <Option<String>>::sse_decode(&mut deserializer);
+            let api_language = <String>::sse_decode(&mut deserializer);
+            let api_title = <String>::sse_decode(&mut deserializer);
+            let api_check_label = <String>::sse_decode(&mut deserializer);
+            let api_cancel_label = <String>::sse_decode(&mut deserializer);
+            let api_failed_label = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, crate::api::fanbox_login::FanboxBrowserFailure>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::fanbox_login::FanboxBrowserLogin::run(
+                            &*api_that_guard,
+                            api_support_directory,
+                            api_proxy,
+                            api_language,
+                            api_title,
+                            api_check_label,
+                            api_cancel_label,
+                            api_failed_label,
+                        )
+                        .await?;
                         std::result::Result::Ok(output_ok)
                     })()
                     .await,
@@ -6863,6 +7013,44 @@ fn wire__pixiv_rs__pixivision__category_path_impl(
         },
     )
 }
+fn wire__crate__api__fanbox_login__clear_fanbox_browser_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "clear_fanbox_browser",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_support_directory = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, crate::api::fanbox_login::FanboxBrowserFailure>(
+                    (move || async move {
+                        let output_ok =
+                            crate::api::fanbox_login::clear_fanbox_browser(api_support_directory)
+                                .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__pixiv_rs__pixiv__api__comment_add_options_default_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -7006,6 +7194,39 @@ fn wire__crate__api__download__download_to_memory_impl(
                     })()
                     .await,
                 )
+            }
+        },
+    )
+}
+fn wire__crate__api__fanbox_login__fanbox_browser_available_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "fanbox_browser_available",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok =
+                        Ok::<_, ()>(crate::api::fanbox_login::fanbox_browser_available())?;
+                    std::result::Result::Ok(output_ok)
+                })())
             }
         },
     )
@@ -9298,6 +9519,9 @@ flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
     flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxApi>
 );
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
+    flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxBrowserLogin>
+);
+flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
     flutter_rust_bridge::for_generated::RustAutoOpaqueInner<GifError>
 );
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
@@ -9338,6 +9562,16 @@ impl SseDecode for FanboxApi {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <RustOpaqueMoi<
             flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxApi>,
+        >>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
+    }
+}
+
+impl SseDecode for FanboxBrowserLogin {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <RustOpaqueMoi<
+            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxBrowserLogin>,
         >>::sse_decode(deserializer);
         return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
     }
@@ -9413,6 +9647,16 @@ impl SseDecode
 
 impl SseDecode
     for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxApi>>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <usize>::sse_decode(deserializer);
+        return decode_rust_opaque_moi(inner);
+    }
+}
+
+impl SseDecode
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxBrowserLogin>>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -9939,6 +10183,22 @@ impl SseDecode for pixiv_rs::fanbox::FanboxBlock {
                 unimplemented!("");
             }
         }
+    }
+}
+
+impl SseDecode for crate::api::fanbox_login::FanboxBrowserFailure {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::fanbox_login::FanboxBrowserFailure::RuntimeMissing,
+            1 => crate::api::fanbox_login::FanboxBrowserFailure::Unavailable,
+            2 => crate::api::fanbox_login::FanboxBrowserFailure::Busy,
+            3 => crate::api::fanbox_login::FanboxBrowserFailure::ProxyUnsupported,
+            4 => crate::api::fanbox_login::FanboxBrowserFailure::CleanupFailed,
+            5 => crate::api::fanbox_login::FanboxBrowserFailure::TimedOut,
+            _ => unreachable!("Invalid variant for FanboxBrowserFailure: {}", inner),
+        };
     }
 }
 
@@ -12442,685 +12702,703 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        30 => wire__pixiv_rs__pixiv__api__PixivApi_get_bookmark_tag_page_impl(
+        30 => wire__crate__api__fanbox_login__FanboxBrowserLogin_run_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        31 => wire__pixiv_rs__pixiv__api__PixivApi_get_follow_new_illust_page_impl(
+        33 => wire__pixiv_rs__pixiv__api__PixivApi_get_bookmark_tag_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        32 => wire__pixiv_rs__pixiv__api__PixivApi_get_follow_new_novel_page_impl(
+        34 => wire__pixiv_rs__pixiv__api__PixivApi_get_follow_new_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        33 => wire__pixiv_rs__pixiv__api__PixivApi_get_follower_page_impl(
+        35 => wire__pixiv_rs__pixiv__api__PixivApi_get_follow_new_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        34 => wire__pixiv_rs__pixiv__api__PixivApi_get_following_user_page_impl(
+        36 => wire__pixiv_rs__pixiv__api__PixivApi_get_follower_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        35 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_bookmark_detail_impl(
+        37 => wire__pixiv_rs__pixiv__api__PixivApi_get_following_user_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        36 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_comment_page_impl(
+        38 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_bookmark_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        37 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_comment_reply_page_impl(
+        39 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_comment_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        38 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_detail_impl(
+        40 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_comment_reply_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        39 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_ranking_page_impl(
+        41 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        40 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_ranking_page_on_date_impl(
+        42 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_ranking_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        41 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_related_page_impl(
+        43 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_ranking_page_on_date_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        42 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_series_page_impl(
+        44 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_related_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        43 => wire__pixiv_rs__pixiv__api__PixivApi_get_manga_ranking_page_impl(
+        45 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_series_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        44 => wire__pixiv_rs__pixiv__api__PixivApi_get_manga_ranking_page_on_date_impl(
+        46 => wire__pixiv_rs__pixiv__api__PixivApi_get_manga_ranking_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        45 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_new_illust_page_impl(
+        47 => wire__pixiv_rs__pixiv__api__PixivApi_get_manga_ranking_page_on_date_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        46 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_new_novel_page_impl(
+        48 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_new_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        47 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_user_page_impl(
+        49 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_new_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        48 => wire__pixiv_rs__pixiv__api__PixivApi_get_new_illust_page_impl(
+        50 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_user_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        49 => wire__pixiv_rs__pixiv__api__PixivApi_get_new_novel_page_impl(
+        51 => wire__pixiv_rs__pixiv__api__PixivApi_get_new_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        50 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_bookmark_tag_page_impl(
+        52 => wire__pixiv_rs__pixiv__api__PixivApi_get_new_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        51 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_comment_page_impl(
+        53 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_bookmark_tag_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        52 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_illust_page_impl(
+        54 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_comment_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        53 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_illust_series_page_impl(
+        55 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        54 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_novel_page_impl(
+        56 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_illust_series_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        55 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_novel_series_page_impl(
+        57 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        56 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_search_illust_page_impl(
+        58 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_novel_series_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        57 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_search_novel_page_impl(
+        59 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_search_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        58 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_spotlight_article_page_impl(
+        60 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_search_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        59 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_user_page_impl(
+        61 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_spotlight_article_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        60 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_bookmark_detail_impl(
+        62 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_user_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        61 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_comment_page_impl(
+        63 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_bookmark_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        62 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_comment_reply_page_impl(
+        64 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_comment_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        63 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_detail_impl(
+        65 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_comment_reply_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        64 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_html_impl(
+        66 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        65 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_ranking_page_impl(
+        67 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_html_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        66 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_ranking_page_on_date_impl(
+        68 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_ranking_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        67 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_related_page_impl(
+        69 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_ranking_page_on_date_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        68 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_series_page_impl(
+        70 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_related_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        69 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_illust_page_impl(
+        71 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_series_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        70 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_novel_page_impl(
+        72 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        71 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_user_page_impl(
+        73 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        72 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_autocomplete_impl(
+        74 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_user_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        73 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_illust_page_impl(
+        75 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_autocomplete_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        74 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_illust_page_with_ai_impl(
+        76 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        75 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_novel_page_impl(
+        77 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_illust_page_with_ai_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        76 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_user_page_impl(
+        78 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        77 => wire__pixiv_rs__pixiv__api__PixivApi_get_spotlight_article_page_impl(
+        79 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_user_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        78 => wire__pixiv_rs__pixiv__api__PixivApi_get_trending_tag_list_impl(
+        80 => wire__pixiv_rs__pixiv__api__PixivApi_get_spotlight_article_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        79 => wire__pixiv_rs__pixiv__api__PixivApi_get_ugoira_metadata_impl(
+        81 => wire__pixiv_rs__pixiv__api__PixivApi_get_trending_tag_list_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        80 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_detail_impl(
+        82 => wire__pixiv_rs__pixiv__api__PixivApi_get_ugoira_metadata_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        81 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_bookmark_page_impl(
+        83 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        82 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_bookmark_page_with_options_impl(
+        84 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_bookmark_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        83 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_page_impl(
+        85 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_bookmark_page_with_options_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        84 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_bookmark_page_impl(
+        86 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        85 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_bookmark_page_with_options_impl(
+        87 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_bookmark_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        86 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_page_impl(
+        88 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_bookmark_page_with_options_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        87 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_related_page_impl(
+        89 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        88 => wire__pixiv_rs__pixiv__api__PixivApi_get_webview_novel_impl(
+        90 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_related_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        89 => wire__pixiv_rs__pixiv__api__PixivApi_init_account_auth_token_impl(
+        91 => wire__pixiv_rs__pixiv__api__PixivApi_get_webview_novel_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        91 => wire__pixiv_rs__pixiv__api__PixivApi_post_ai_show_settings_impl(
+        92 => wire__pixiv_rs__pixiv__api__PixivApi_init_account_auth_token_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        92 => wire__pixiv_rs__pixiv__api__PixivApi_post_bookmark_add_impl(
+        94 => wire__pixiv_rs__pixiv__api__PixivApi_post_ai_show_settings_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        93 => wire__pixiv_rs__pixiv__api__PixivApi_post_bookmark_delete_impl(
+        95 => wire__pixiv_rs__pixiv__api__PixivApi_post_bookmark_add_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        94 => wire__pixiv_rs__pixiv__api__PixivApi_post_follow_add_impl(
+        96 => wire__pixiv_rs__pixiv__api__PixivApi_post_bookmark_delete_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        95 => wire__pixiv_rs__pixiv__api__PixivApi_post_follow_delete_impl(
+        97 => wire__pixiv_rs__pixiv__api__PixivApi_post_follow_add_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        96 => wire__pixiv_rs__pixiv__api__PixivApi_post_illust_comment_add_impl(
+        98 => wire__pixiv_rs__pixiv__api__PixivApi_post_follow_delete_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        97 => wire__pixiv_rs__pixiv__api__PixivApi_post_illust_comment_delete_impl(
+        99 => wire__pixiv_rs__pixiv__api__PixivApi_post_illust_comment_add_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        98 => wire__pixiv_rs__pixiv__api__PixivApi_post_novel_comment_add_impl(
+        100 => wire__pixiv_rs__pixiv__api__PixivApi_post_illust_comment_delete_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        99 => wire__pixiv_rs__pixiv__api__PixivApi_post_novel_comment_delete_impl(
+        101 => wire__pixiv_rs__pixiv__api__PixivApi_post_novel_comment_add_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        102 => wire__pixiv_rs__pixiv__auth__PixivAuth_code_challenge_impl(
+        102 => wire__pixiv_rs__pixiv__api__PixivApi_post_novel_comment_delete_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        103 => wire__pixiv_rs__pixiv__auth__PixivAuth_code_verifier_impl(
+        105 => wire__pixiv_rs__pixiv__auth__PixivAuth_code_challenge_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        104 => wire__pixiv_rs__pixiv__auth__PixivAuth_from_parts_impl(
+        106 => wire__pixiv_rs__pixiv__auth__PixivAuth_code_verifier_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        105 => wire__pixiv_rs__pixiv__auth__PixivAuth_generate_login_url_impl(
+        107 => wire__pixiv_rs__pixiv__auth__PixivAuth_from_parts_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        106 => wire__pixiv_rs__pixiv__auth__PixivAuth_init_account_auth_token_impl(
+        108 => wire__pixiv_rs__pixiv__auth__PixivAuth_generate_login_url_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        107 => wire__pixiv_rs__pixiv__auth__PixivAuth_new_impl(port, ptr, rust_vec_len, data_len),
-        108 => wire__pixiv_rs__pixiv__auth__PixivAuth_refresh_auth_token_impl(
+        109 => wire__pixiv_rs__pixiv__auth__PixivAuth_init_account_auth_token_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        109 => {
+        110 => wire__pixiv_rs__pixiv__auth__PixivAuth_new_impl(port, ptr, rust_vec_len, data_len),
+        111 => wire__pixiv_rs__pixiv__auth__PixivAuth_refresh_auth_token_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        112 => {
             wire__pixiv_rs__pixiv__auth__PixivAuth_set_proxy_impl(port, ptr, rust_vec_len, data_len)
         }
-        110 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_impl(
+        113 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        111 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_by_url_impl(
+        114 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_by_url_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        112 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_page_impl(
+        115 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        113 => wire__pixiv_rs__pixivision__PixivisionApi_get_next_article_page_impl(
+        116 => wire__pixiv_rs__pixivision__PixivisionApi_get_next_article_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        114 => wire__pixiv_rs__pixivision__PixivisionApi_get_tag_directory_impl(
+        117 => wire__pixiv_rs__pixivision__PixivisionApi_get_tag_directory_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        115 => {
+        118 => {
             wire__pixiv_rs__pixivision__PixivisionApi_new_impl(port, ptr, rust_vec_len, data_len)
         }
-        117 => wire__pixiv_rs__pixiv__api__bookmark_add_options_default_impl(
+        120 => wire__pixiv_rs__pixiv__api__bookmark_add_options_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        118 => wire__pixiv_rs__pixiv__api__bookmark_page_options_default_impl(
+        121 => wire__pixiv_rs__pixiv__api__bookmark_page_options_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        119 => wire__pixiv_rs__pixiv__api__bookmark_tag_options_default_impl(
+        122 => wire__pixiv_rs__pixiv__api__bookmark_tag_options_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        120 => wire__pixiv_rs__pixivision__category_path_impl(port, ptr, rust_vec_len, data_len),
-        121 => wire__pixiv_rs__pixiv__api__comment_add_options_default_impl(
+        123 => wire__pixiv_rs__pixivision__category_path_impl(port, ptr, rust_vec_len, data_len),
+        124 => wire__crate__api__fanbox_login__clear_fanbox_browser_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        122 => wire__crate__api__download__download_to_file_impl(port, ptr, rust_vec_len, data_len),
-        123 => {
+        125 => wire__pixiv_rs__pixiv__api__comment_add_options_default_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        126 => wire__crate__api__download__download_to_file_impl(port, ptr, rust_vec_len, data_len),
+        127 => {
             wire__crate__api__download__download_to_memory_impl(port, ptr, rust_vec_len, data_len)
         }
-        124 => {
+        128 => wire__crate__api__fanbox_login__fanbox_browser_available_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        129 => {
             wire__pixiv_rs__fanbox__fanbox_comment_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        125 => wire__pixiv_rs__fanbox__fanbox_comment_page_default_impl(
+        130 => wire__pixiv_rs__fanbox__fanbox_comment_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        126 => {
+        131 => {
             wire__pixiv_rs__fanbox__fanbox_creator_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        127 => wire__pixiv_rs__fanbox__fanbox_creator_page_default_impl(
+        132 => wire__pixiv_rs__fanbox__fanbox_creator_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        128 => wire__pixiv_rs__fanbox__fanbox_file_default_impl(port, ptr, rust_vec_len, data_len),
-        129 => wire__pixiv_rs__fanbox__fanbox_image_default_impl(port, ptr, rust_vec_len, data_len),
-        130 => {
+        133 => wire__pixiv_rs__fanbox__fanbox_file_default_impl(port, ptr, rust_vec_len, data_len),
+        134 => wire__pixiv_rs__fanbox__fanbox_image_default_impl(port, ptr, rust_vec_len, data_len),
+        135 => {
             wire__pixiv_rs__fanbox__fanbox_notice_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        131 => wire__pixiv_rs__fanbox__fanbox_notice_page_default_impl(
+        136 => wire__pixiv_rs__fanbox__fanbox_notice_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        132 => wire__pixiv_rs__fanbox__fanbox_plan_default_impl(port, ptr, rust_vec_len, data_len),
-        133 => wire__pixiv_rs__fanbox__fanbox_post_default_impl(port, ptr, rust_vec_len, data_len),
-        134 => {
+        137 => wire__pixiv_rs__fanbox__fanbox_plan_default_impl(port, ptr, rust_vec_len, data_len),
+        138 => wire__pixiv_rs__fanbox__fanbox_post_default_impl(port, ptr, rust_vec_len, data_len),
+        139 => {
             wire__pixiv_rs__fanbox__fanbox_post_page_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        135 => {
+        140 => {
             wire__pixiv_rs__fanbox__fanbox_support_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        136 => wire__pixiv_rs__fanbox__fanbox_tag_default_impl(port, ptr, rust_vec_len, data_len),
-        137 => wire__pixiv_rs__fanbox__fanbox_user_default_impl(port, ptr, rust_vec_len, data_len),
-        138 => wire__crate__api__proxy__get_system_proxy_impl(port, ptr, rust_vec_len, data_len),
-        139 => wire__pixiv_rs__pixiv__models__illust_is_r18_impl(port, ptr, rust_vec_len, data_len),
-        140 => {
+        141 => wire__pixiv_rs__fanbox__fanbox_tag_default_impl(port, ptr, rust_vec_len, data_len),
+        142 => wire__pixiv_rs__fanbox__fanbox_user_default_impl(port, ptr, rust_vec_len, data_len),
+        143 => wire__crate__api__proxy__get_system_proxy_impl(port, ptr, rust_vec_len, data_len),
+        144 => wire__pixiv_rs__pixiv__models__illust_is_r18_impl(port, ptr, rust_vec_len, data_len),
+        145 => {
             wire__pixiv_rs__pixiv__models__illust_is_ugoira_impl(port, ptr, rust_vec_len, data_len)
         }
-        141 => wire__pixiv_rs__pixiv__enums__illust_ranking_mode_as_pixiv_param_impl(
+        146 => wire__pixiv_rs__pixiv__enums__illust_ranking_mode_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        142 => wire__pixiv_rs__pixiv__enums__illust_type_as_pixiv_param_impl(
+        147 => wire__pixiv_rs__pixiv__enums__illust_type_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        143 => wire__crate__api__image_utils__image_utils_images_to_gif_impl(
+        148 => wire__crate__api__image_utils__image_utils_images_to_gif_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        144 => wire__pixiv_rs__pixivision__language_path_impl(port, ptr, rust_vec_len, data_len),
-        145 => wire__pixiv_rs__pixiv__enums__manga_ranking_mode_as_pixiv_param_impl(
+        149 => wire__pixiv_rs__pixivision__language_path_impl(port, ptr, rust_vec_len, data_len),
+        150 => wire__pixiv_rs__pixiv__enums__manga_ranking_mode_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        146 => wire__pixiv_rs__pixiv__responses__novel_navigation_info_default_impl(
+        151 => wire__pixiv_rs__pixiv__responses__novel_navigation_info_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        147 => wire__pixiv_rs__pixiv__responses__novel_navigation_item_default_impl(
+        152 => wire__pixiv_rs__pixiv__responses__novel_navigation_item_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        148 => wire__pixiv_rs__pixiv__enums__novel_ranking_mode_as_pixiv_param_impl(
+        153 => wire__pixiv_rs__pixiv__enums__novel_ranking_mode_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        149 => wire__pixiv_rs__pixiv__responses__novel_rating_default_impl(
+        154 => wire__pixiv_rs__pixiv__responses__novel_rating_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        150 => wire__pixiv_rs__pixivision__parse_article_impl(port, ptr, rust_vec_len, data_len),
-        151 => {
+        155 => wire__pixiv_rs__pixivision__parse_article_impl(port, ptr, rust_vec_len, data_len),
+        156 => {
             wire__pixiv_rs__pixivision__parse_article_page_impl(port, ptr, rust_vec_len, data_len)
         }
-        152 => {
+        157 => {
             wire__pixiv_rs__pixivision__parse_tag_directory_impl(port, ptr, rust_vec_len, data_len)
         }
-        153 => {
+        158 => {
             wire__pixiv_rs__pixiv__api__pixiv_api_config_new_impl(port, ptr, rust_vec_len, data_len)
         }
-        154 => wire__pixiv_rs__pixiv__auth__pixiv_auth_config_new_impl(
+        159 => wire__pixiv_rs__pixiv__auth__pixiv_auth_config_new_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        155 => {
+        160 => {
             wire__pixiv_rs__error__pixiv_error_http_status_impl(port, ptr, rust_vec_len, data_len)
         }
-        156 => wire__pixiv_rs__error__pixiv_error_missing_account_impl(
+        161 => wire__pixiv_rs__error__pixiv_error_missing_account_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        157 => wire__pixiv_rs__error__pixiv_error_new_impl(port, ptr, rust_vec_len, data_len),
-        158 => wire__pixiv_rs__pixivision__pixivision_config_default_impl(
+        162 => wire__pixiv_rs__error__pixiv_error_new_impl(port, ptr, rust_vec_len, data_len),
+        163 => wire__pixiv_rs__pixivision__pixivision_config_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        159 => wire__pixiv_rs__pixiv__enums__restrict_as_pixiv_param_impl(
+        164 => wire__pixiv_rs__pixiv__enums__restrict_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        160 => wire__pixiv_rs__pixiv__api__search_options_default_impl(
+        165 => wire__pixiv_rs__pixiv__api__search_options_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        161 => wire__pixiv_rs__pixiv__enums__search_sort_as_pixiv_param_impl(
+        166 => wire__pixiv_rs__pixiv__enums__search_sort_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        162 => wire__pixiv_rs__pixiv__enums__search_target_as_pixiv_param_impl(
+        167 => wire__pixiv_rs__pixiv__enums__search_target_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        163 => wire__crate__api__media__stream_media_impl(port, ptr, rust_vec_len, data_len),
-        164 => wire__pixiv_rs__pixiv__responses__webview_novel_image_urls_default_impl(
+        168 => wire__crate__api__media__stream_media_impl(port, ptr, rust_vec_len, data_len),
+        169 => wire__pixiv_rs__pixiv__responses__webview_novel_image_urls_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        165 => wire__pixiv_rs__pixiv__enums__work_type_as_pixiv_param_impl(
+        170 => wire__pixiv_rs__pixiv__enums__work_type_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        166 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
+        171 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
             port,
             ptr,
             rust_vec_len,
@@ -13139,15 +13417,23 @@ fn pde_ffi_dispatcher_sync_impl(
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
         22 => wire__pixiv_rs__fanbox__FanboxApi_new_impl(ptr, rust_vec_len, data_len),
-        28 => wire__pixiv_rs__pixiv__api__PixivApi_account_impl(ptr, rust_vec_len, data_len),
-        29 => wire__pixiv_rs__pixiv__api__PixivApi_generate_login_url_impl(
+        28 => wire__crate__api__fanbox_login__FanboxBrowserLogin_cancel_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        90 => wire__pixiv_rs__pixiv__api__PixivApi_new_impl(ptr, rust_vec_len, data_len),
-        100 => wire__pixiv_rs__pixiv__api__PixivApi_set_account_impl(ptr, rust_vec_len, data_len),
-        101 => wire__pixiv_rs__pixiv__api__PixivApi_set_proxy_impl(ptr, rust_vec_len, data_len),
+        29 => {
+            wire__crate__api__fanbox_login__FanboxBrowserLogin_new_impl(ptr, rust_vec_len, data_len)
+        }
+        31 => wire__pixiv_rs__pixiv__api__PixivApi_account_impl(ptr, rust_vec_len, data_len),
+        32 => wire__pixiv_rs__pixiv__api__PixivApi_generate_login_url_impl(
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        93 => wire__pixiv_rs__pixiv__api__PixivApi_new_impl(ptr, rust_vec_len, data_len),
+        103 => wire__pixiv_rs__pixiv__api__PixivApi_set_account_impl(ptr, rust_vec_len, data_len),
+        104 => wire__pixiv_rs__pixiv__api__PixivApi_set_proxy_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -13180,6 +13466,24 @@ impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<
 
 impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<FanboxApi>> for FanboxApi {
     fn into_into_dart(self) -> FrbWrapper<FanboxApi> {
+        self.into()
+    }
+}
+
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<FanboxBrowserLogin> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self.0)
+            .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<FanboxBrowserLogin>
+{
+}
+
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<FanboxBrowserLogin>> for FanboxBrowserLogin {
+    fn into_into_dart(self) -> FrbWrapper<FanboxBrowserLogin> {
         self.into()
     }
 }
@@ -13803,6 +14107,31 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::fanbox::FanboxBlock>
 {
     fn into_into_dart(self) -> FrbWrapper<pixiv_rs::fanbox::FanboxBlock> {
         self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::fanbox_login::FanboxBrowserFailure {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::RuntimeMissing => 0.into_dart(),
+            Self::Unavailable => 1.into_dart(),
+            Self::Busy => 2.into_dart(),
+            Self::ProxyUnsupported => 3.into_dart(),
+            Self::CleanupFailed => 4.into_dart(),
+            Self::TimedOut => 5.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::fanbox_login::FanboxBrowserFailure
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::fanbox_login::FanboxBrowserFailure>
+    for crate::api::fanbox_login::FanboxBrowserFailure
+{
+    fn into_into_dart(self) -> crate::api::fanbox_login::FanboxBrowserFailure {
+        self
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
@@ -16111,6 +16440,13 @@ impl SseEncode for FanboxApi {
     }
 }
 
+impl SseEncode for FanboxBrowserLogin {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxBrowserLogin>>>::sse_encode(flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self), serializer);
+    }
+}
+
 impl SseEncode for GifError {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -16166,6 +16502,17 @@ impl SseEncode
 
 impl SseEncode
     for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxApi>>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        let (ptr, size) = self.sse_encode_raw();
+        <usize>::sse_encode(ptr, serializer);
+        <i32>::sse_encode(size, serializer);
+    }
+}
+
+impl SseEncode
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxBrowserLogin>>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -16573,6 +16920,26 @@ impl SseEncode for pixiv_rs::fanbox::FanboxBlock {
                 unimplemented!("");
             }
         }
+    }
+}
+
+impl SseEncode for crate::api::fanbox_login::FanboxBrowserFailure {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::fanbox_login::FanboxBrowserFailure::RuntimeMissing => 0,
+                crate::api::fanbox_login::FanboxBrowserFailure::Unavailable => 1,
+                crate::api::fanbox_login::FanboxBrowserFailure::Busy => 2,
+                crate::api::fanbox_login::FanboxBrowserFailure::ProxyUnsupported => 3,
+                crate::api::fanbox_login::FanboxBrowserFailure::CleanupFailed => 4,
+                crate::api::fanbox_login::FanboxBrowserFailure::TimedOut => 5,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
     }
 }
 
@@ -18402,6 +18769,7 @@ mod io {
     // Section: imports
 
     use super::*;
+    use crate::api::fanbox_login::*;
     use crate::api::image_utils::*;
     use crate::api::zip_utils::*;
     use flutter_rust_bridge::for_generated::byteorder::{
@@ -18445,6 +18813,20 @@ mod io {
         ptr: *const std::ffi::c_void,
     ) {
         MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxApi>>::decrement_strong_count(ptr as _);
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_freepiv_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxBrowserLogin>>::increment_strong_count(ptr as _);
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_freepiv_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FanboxBrowserLogin>>::decrement_strong_count(ptr as _);
     }
 
     #[unsafe(no_mangle)]

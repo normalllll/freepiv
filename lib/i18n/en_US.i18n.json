@@ -577,7 +577,22 @@
     "unsupportedUrl": "This link cannot be opened.",
     "restrictedInfo": "This post remains visible, but its content requires a qualifying support plan.",
     "noPlans": "No available plans",
-    "downloadPreparing": "Collecting accessible posts…"
+    "downloadPreparing": "Collecting accessible posts…",
+    "browserLogin": "Log in with browser",
+    "manualLogin": "Enter Cookie manually",
+    "browserHelp": "Complete sign-in on the official website. This window closes after your session is verified.",
+    "browserCheck": "I am signed in",
+    "browserCheckFailed": "Verification failed. Choose “I am signed in” to retry.",
+    "browserUnavailable": "Could not open or read the login page. Retry or enter a Cookie manually.",
+    "browserProxyUnsupported": "This browser cannot use the configured proxy. Use a supported HTTP/SOCKS5 proxy, a system proxy, or enter a Cookie manually.",
+    "browserCleanupFailed": "Signed out, but browser data could not be cleared. Cleanup will be retried before the next browser login.",
+    "browserTimedOut": "Login timed out. Close this window and start again.",
+    "browserBusy": "Another login window is still closing. Please try again shortly.",
+    "runtimeTitle": "Install login component",
+    "runtimeMissing": "WebView2 Runtime is missing or unavailable. Install it, then check again.",
+    "runtimeInstall": "Get WebView2 from Microsoft",
+    "runtimeHelp": "Choose Evergreen Runtime on the Microsoft website. If the online installer fails, use the standalone installer. Other app features remain available.",
+    "runtimeRecheck": "Check again"
   },
   "pixivision": {
     "title": "pixivision",

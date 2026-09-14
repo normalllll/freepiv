@@ -577,7 +577,22 @@
     "unsupportedUrl": "無法開啟此連結。",
     "restrictedInfo": "文章卡片會保留，內文需要符合金額要求的贊助方案。",
     "noPlans": "暫無可用方案",
-    "downloadPreparing": "正在收集有權瀏覽的文章…"
+    "downloadPreparing": "正在收集有權瀏覽的文章…",
+    "browserLogin": "瀏覽器登入",
+    "manualLogin": "手動填寫 Cookie",
+    "browserHelp": "請在官方頁面完成登入，驗證工作階段成功後會自動關閉登入視窗。",
+    "browserCheck": "我已登入",
+    "browserCheckFailed": "驗證失敗，請選擇「我已登入」重試。",
+    "browserUnavailable": "無法開啟或讀取登入頁面，請重試或手動填寫 Cookie。",
+    "browserProxyUnsupported": "登入瀏覽器無法使用目前的代理。請使用支援的 HTTP/SOCKS5 代理、系統代理，或手動填寫 Cookie。",
+    "browserCleanupFailed": "已登出，但瀏覽器資料未能清理；下次瀏覽器登入前會重新清理。",
+    "browserTimedOut": "登入已逾時，請關閉視窗後重新開始。",
+    "browserBusy": "另一個登入視窗尚未關閉，請稍後重試。",
+    "runtimeTitle": "安裝登入元件",
+    "runtimeMissing": "缺少 WebView2 執行階段或執行階段無法使用，請安裝後重新偵測。",
+    "runtimeInstall": "前往微軟下載 WebView2",
+    "runtimeHelp": "在微軟網站選擇 Evergreen Runtime；線上安裝失敗時可使用獨立安裝程式。其他應用程式功能不受影響。",
+    "runtimeRecheck": "重新偵測"
   },
   "pixivision": {
     "title": "pixivision",

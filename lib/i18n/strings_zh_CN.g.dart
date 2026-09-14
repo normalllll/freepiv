@@ -470,6 +470,21 @@ class Translations$fanbox$zh_CN extends Translations$fanbox$en_US {
 	@override String get restrictedInfo => '文章卡片会保留，正文需要符合金额要求的赞助方案。';
 	@override String get noPlans => '暂无可用方案';
 	@override String get downloadPreparing => '正在收集有权浏览的文章…';
+	@override String get browserLogin => '浏览器登录';
+	@override String get manualLogin => '手动填写 Cookie';
+	@override String get browserHelp => '请在官方页面完成登录，验证会话成功后会自动关闭登录窗口。';
+	@override String get browserCheck => '我已登录';
+	@override String get browserCheckFailed => '验证失败，请选择“我已登录”重试。';
+	@override String get browserUnavailable => '无法打开或读取登录页面，请重试或手动填写 Cookie。';
+	@override String get browserProxyUnsupported => '登录浏览器无法使用当前代理。请使用支持的 HTTP/SOCKS5 代理、系统代理，或手动填写 Cookie。';
+	@override String get browserCleanupFailed => '已退出，但浏览器数据未能清理；下次浏览器登录前会重新清理。';
+	@override String get browserTimedOut => '登录已超时，请关闭窗口后重新开始。';
+	@override String get browserBusy => '另一个登录窗口尚未关闭，请稍后重试。';
+	@override String get runtimeTitle => '安装登录组件';
+	@override String get runtimeMissing => '缺少 WebView2 运行时或运行时不可用，请安装后重新检测。';
+	@override String get runtimeInstall => '前往微软下载 WebView2';
+	@override String get runtimeHelp => '在微软网站选择 Evergreen Runtime；在线安装失败时可使用独立安装包。其他应用功能不受影响。';
+	@override String get runtimeRecheck => '重新检测';
 }
 
 // Path: pixivision
@@ -1597,6 +1612,21 @@ extension on TranslationsZhCn {
 			'fanbox.restrictedInfo' => '文章卡片会保留，正文需要符合金额要求的赞助方案。',
 			'fanbox.noPlans' => '暂无可用方案',
 			'fanbox.downloadPreparing' => '正在收集有权浏览的文章…',
+			'fanbox.browserLogin' => '浏览器登录',
+			'fanbox.manualLogin' => '手动填写 Cookie',
+			'fanbox.browserHelp' => '请在官方页面完成登录，验证会话成功后会自动关闭登录窗口。',
+			'fanbox.browserCheck' => '我已登录',
+			'fanbox.browserCheckFailed' => '验证失败，请选择“我已登录”重试。',
+			'fanbox.browserUnavailable' => '无法打开或读取登录页面，请重试或手动填写 Cookie。',
+			'fanbox.browserProxyUnsupported' => '登录浏览器无法使用当前代理。请使用支持的 HTTP/SOCKS5 代理、系统代理，或手动填写 Cookie。',
+			'fanbox.browserCleanupFailed' => '已退出，但浏览器数据未能清理；下次浏览器登录前会重新清理。',
+			'fanbox.browserTimedOut' => '登录已超时，请关闭窗口后重新开始。',
+			'fanbox.browserBusy' => '另一个登录窗口尚未关闭，请稍后重试。',
+			'fanbox.runtimeTitle' => '安装登录组件',
+			'fanbox.runtimeMissing' => '缺少 WebView2 运行时或运行时不可用，请安装后重新检测。',
+			'fanbox.runtimeInstall' => '前往微软下载 WebView2',
+			'fanbox.runtimeHelp' => '在微软网站选择 Evergreen Runtime；在线安装失败时可使用独立安装包。其他应用功能不受影响。',
+			'fanbox.runtimeRecheck' => '重新检测',
 			'pixivision.title' => 'pixivision',
 			'pixivision.searchHint' => '搜索专题文章',
 			'pixivision.latest' => '最新',

@@ -1,6 +1,4 @@
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
-import 'dart:convert';
-import 'package:file_picker/file_picker.dart';
+import 'login_panel.dart';
 import 'package:freepiv/shared/widgets/data_refresh_view.dart';
 import 'package:freepiv/shared/widgets/refresh_indicator.dart';
 import 'package:freepiv/shared/widgets/floating_filter_sliver.dart';
@@ -139,86 +137,6 @@ class _FanboxPageState extends ConsumerState<FanboxPage> {
                   ),
                 ],
               ),
-      ),
-    );
-  }
-}
-
-class FanboxLoginPanel extends ConsumerStatefulWidget {
-  const FanboxLoginPanel({this.onSignedIn, super.key});
-  final VoidCallback? onSignedIn;
-  @override
-  ConsumerState<FanboxLoginPanel> createState() => _FanboxLoginPanelState();
-}
-
-class _FanboxLoginPanelState extends ConsumerState<FanboxLoginPanel> {
-  final _cookie = TextEditingController();
-  @override
-  void dispose() {
-    _cookie.clear();
-    _cookie.dispose();
-    super.dispose();
-  }
-
-  Future<void> _login(String value) async {
-    final result = await ref.read(fanboxOperationProvider('login').notifier).run(() => ref.read(fanboxSessionProvider.notifier).signIn(value));
-    if (result && mounted) {
-      _cookie.clear();
-      widget.onSignedIn?.call();
-    }
-  }
-
-  Future<void> _import() async {
-    final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['json', 'txt']);
-    if (result.isEmpty || !mounted) return;
-    final file = result.single;
-    final success = await ref.read(fanboxOperationProvider('login').notifier).run(() async {
-      if (await file.length() > 64 * 1024) throw const FormatException();
-      final bytes = await file.readAsBytes();
-      if (bytes.length > 64 * 1024) throw const FormatException();
-      await ref.read(fanboxSessionProvider.notifier).signIn(utf8.decode(bytes));
-    });
-    if (success && mounted) widget.onSignedIn?.call();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.t.fanbox;
-    final operation = ref.watch(fanboxOperationProvider('login'));
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Icon(Icons.article_outlined, size: 56),
-              const SizedBox(height: 16),
-              Text(t.login, style: Theme.of(context).textTheme.headlineSmall),
-              const SizedBox(height: 12),
-              Text(t.loginHelp),
-              const SizedBox(height: 24),
-              TextField(
-                controller: _cookie,
-                obscureText: true,
-                enableSuggestions: false,
-                autocorrect: false,
-                decoration: InputDecoration(labelText: 'FANBOXSESSID', hintText: t.cookieHint),
-                onSubmitted: operation.isLoading ? null : _login,
-              ),
-              const SizedBox(height: 16),
-              AppButton(label: t.login, loading: operation.isLoading, kind: AppButtonKind.primary, onPressed: () => _login(_cookie.text)),
-              const SizedBox(height: 12),
-              OutlinedButton(onPressed: operation.isLoading ? null : _import, child: Text(t.importSession)),
-              TextButton(onPressed: () => openFanboxLink(context, 'https://www.fanbox.cc/'), child: Text(t.openWebsite)),
-              SizedBox(
-                height: 48,
-                child: operation.hasError ? Text(t.loginFailed, style: TextStyle(color: Theme.of(context).colorScheme.error)) : null,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

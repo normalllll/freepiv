@@ -577,7 +577,22 @@
     "unsupportedUrl": "このリンクは開けません。",
     "restrictedInfo": "投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。",
     "noPlans": "プランがありません",
-    "downloadPreparing": "閲覧可能な投稿を収集中…"
+    "downloadPreparing": "閲覧可能な投稿を収集中…",
+    "browserLogin": "ブラウザーでログイン",
+    "manualLogin": "Cookie を手動で入力",
+    "browserHelp": "公式ページでログインしてください。セッションの確認後、このウィンドウは自動的に閉じます。",
+    "browserCheck": "ログインしました",
+    "browserCheckFailed": "確認に失敗しました。「ログインしました」で再試行してください。",
+    "browserUnavailable": "ログインページを開くか読み取ることができません。再試行するか Cookie を手動入力してください。",
+    "browserProxyUnsupported": "このブラウザーは設定されたプロキシを使用できません。対応する HTTP/SOCKS5 プロキシ、システムプロキシ、または Cookie の手動入力を使用してください。",
+    "browserCleanupFailed": "ログアウトしましたが、ブラウザーデータを削除できませんでした。次回のログイン前に再試行します。",
+    "browserTimedOut": "ログインがタイムアウトしました。ウィンドウを閉じてやり直してください。",
+    "browserBusy": "別のログインウィンドウを終了中です。しばらくしてから再試行してください。",
+    "runtimeTitle": "ログイン用コンポーネントのインストール",
+    "runtimeMissing": "WebView2 Runtime がないか、利用できません。インストール後、再確認してください。",
+    "runtimeInstall": "Microsoft から WebView2 を入手",
+    "runtimeHelp": "Microsoft のサイトで Evergreen Runtime を選択してください。オンラインインストールに失敗した場合はスタンドアロン版を利用できます。他のアプリ機能には影響しません。",
+    "runtimeRecheck": "再確認"
   },
   "pixivision": {
     "title": "pixivision",

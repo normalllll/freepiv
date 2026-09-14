@@ -117,7 +117,7 @@ class FanboxErrorView extends ConsumerWidget {
             if (error is FanboxSignedOut || error is PixivError && (error as PixivError).status == 401)
               TextButton(
                 onPressed: () async {
-                  await ref.read(fanboxSessionProvider.notifier).signOut();
+                  await ref.read(fanboxOperationProvider('account').notifier).run(() => ref.read(fanboxSessionProvider.notifier).signOut());
                   if (context.mounted) context.go('/fanbox');
                 },
                 child: Text(context.t.fanbox.login),

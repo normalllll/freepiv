@@ -4,6 +4,7 @@
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
 import 'api/download.dart';
+import 'api/fanbox_login.dart';
 import 'api/image_utils.dart';
 import 'api/media.dart';
 import 'api/proxy.dart';
@@ -39,6 +40,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApiPtr;
 
   CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_FanboxBrowserLoginPtr => wire
+      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLoginPtr;
+
+  CrossPlatformFinalizerArg
   get rust_arc_decrement_strong_count_GifErrorPtr => wire
       ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGifErrorPtr;
 
@@ -70,6 +75,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   FanboxApi
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    dynamic raw,
+  );
+
+  @protected
+  FanboxBrowserLogin
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
     dynamic raw,
   );
 
@@ -122,6 +133,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  FanboxBrowserLogin
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+    dynamic raw,
+  );
+
+  @protected
   PixivApi
   dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
     dynamic raw,
@@ -157,6 +174,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   FanboxApi
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    dynamic raw,
+  );
+
+  @protected
+  FanboxBrowserLogin
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
     dynamic raw,
   );
 
@@ -350,6 +373,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FanboxBlock dco_decode_fanbox_block(dynamic raw);
+
+  @protected
+  FanboxBrowserFailure dco_decode_fanbox_browser_failure(dynamic raw);
 
   @protected
   FanboxComment dco_decode_fanbox_comment(dynamic raw);
@@ -849,6 +875,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  FanboxBrowserLogin
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   GifError
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGifError(
     SseDeserializer deserializer,
@@ -897,6 +929,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  FanboxBrowserLogin
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   PixivApi
   sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
     SseDeserializer deserializer,
@@ -934,6 +972,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   FanboxApi
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  FanboxBrowserLogin
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
     SseDeserializer deserializer,
   );
 
@@ -1168,6 +1212,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FanboxBlock sse_decode_fanbox_block(SseDeserializer deserializer);
+
+  @protected
+  FanboxBrowserFailure sse_decode_fanbox_browser_failure(
+    SseDeserializer deserializer,
+  );
 
   @protected
   FanboxComment sse_decode_fanbox_comment(SseDeserializer deserializer);
@@ -1767,6 +1816,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+    FanboxBrowserLogin self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGifError(
     GifError self,
     SseSerializer serializer,
@@ -1823,6 +1879,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+    FanboxBrowserLogin self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
   sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
     PixivApi self,
     SseSerializer serializer,
@@ -1865,6 +1928,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
   sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
     FanboxApi self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+    FanboxBrowserLogin self,
     SseSerializer serializer,
   );
 
@@ -2145,6 +2215,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_fanbox_block(FanboxBlock self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_fanbox_browser_failure(
+    FanboxBrowserFailure self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_fanbox_comment(FanboxComment self, SseSerializer serializer);
@@ -2950,6 +3026,40 @@ class RustLibWire implements BaseWire {
       );
   late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi =
       _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApiPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLoginPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_freepiv_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin',
+      );
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin =
+      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLoginPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLoginPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_freepiv_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin',
+      );
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLogin =
+      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxBrowserLoginPtr
           .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   void

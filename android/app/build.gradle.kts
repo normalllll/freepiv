@@ -94,5 +94,6 @@ flutter {
 }
 
 dependencies {
+    implementation("androidx.webkit:webkit:1.15.0")
     implementation("com.squareup.okhttp3:okhttp:5.4.0")
 }

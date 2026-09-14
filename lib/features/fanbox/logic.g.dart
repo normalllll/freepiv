@@ -112,7 +112,7 @@ final class FanboxSessionProvider extends $AsyncNotifierProvider<FanboxSession, 
   FanboxSession create() => FanboxSession();
 }
 
-String _$fanboxSessionHash() => r'1ecef1b5ba2afb2732c1dee2756b68bd0e1f8b3b';
+String _$fanboxSessionHash() => r'ca088872606dbcf24526884f93778e0c0aea770f';
 
 abstract class _$FanboxSession extends $AsyncNotifier<String?> {
   FutureOr<String?> build();

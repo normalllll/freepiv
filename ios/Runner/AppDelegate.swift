@@ -21,5 +21,6 @@ import UIKit
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     FreepivDownloadBridge.shared.register(messenger: engineBridge.applicationRegistrar.messenger())
+    FanboxLoginBridge.register(messenger: engineBridge.applicationRegistrar.messenger())
   }
 }

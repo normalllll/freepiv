@@ -27,6 +27,7 @@ dependencies:
   slang: ^4.16.0
   slang_flutter: ^4.16.0
   app_links: ^7.2.0
+  webview_flutter: ^4.14.1
   hive_ce: ^2.19.3
   hive_ce_flutter: ^2.3.4
   loading_more_list: ^7.1.0

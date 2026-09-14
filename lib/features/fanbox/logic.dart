@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'login_logic.dart';
 
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as p;
@@ -45,7 +46,7 @@ class FanboxSession extends _$FanboxSession {
   @override
   Future<String?> build() async => (await ref.watch(fanboxStoreProvider.future)).get('session');
 
-  Future<void> signIn(String input) async {
+  Future<bool> signIn(String input, {bool Function()? canCommit}) async {
     final revision = ++_revision;
     var session = input.trim();
     if (session.startsWith('{')) {
@@ -57,9 +58,10 @@ class FanboxSession extends _$FanboxSession {
     try {
       await api.validateSession();
       final store = await ref.read(fanboxStoreProvider.future);
-      if (!ref.mounted || revision != _revision) return;
+      if (!ref.mounted || revision != _revision || canCommit?.call() == false) return false;
       await store.put('session', session);
       if (ref.mounted && revision == _revision) state = AsyncData(session);
+      return ref.mounted && revision == _revision;
     } finally {
       api.dispose();
     }
@@ -67,9 +69,11 @@ class FanboxSession extends _$FanboxSession {
 
   Future<void> signOut() async {
     ++_revision;
-    final store = await ref.read(fanboxStoreProvider.future);
-    await store.delete('session');
-    if (ref.mounted) state = const AsyncData(null);
+    await ref.read(fanboxWebLoginProvider.notifier).clearBrowser(() async {
+      final store = await ref.read(fanboxStoreProvider.future);
+      await store.delete('session');
+      if (ref.mounted) state = const AsyncData(null);
+    });
   }
 }
 
