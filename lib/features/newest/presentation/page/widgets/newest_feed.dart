@@ -43,7 +43,7 @@ class NewestBody extends StatelessWidget {
         return NovelListSkeleton(physics: physics, sliverHeader: locators.sliverHeader, leadingSlivers: [filterSliver]);
       }
 
-      return DataLoadingCustomScrollView(physics: physics, slivers: [?locators.sliverHeader, filterSliver, const SliverIllustWaterfallSkeleton()]);
+      return DataLoadingCustomScrollView(physics: physics, slivers: [filterSliver, ?locators.sliverHeader, const SliverIllustWaterfallSkeleton()]);
     }
 
     if (!source.initialized && lastError != null) {
@@ -71,8 +71,8 @@ class NewestBody extends StatelessWidget {
     return DataLoadingCustomScrollView(
       physics: physics,
       slivers: [
-        ?locators.sliverHeader,
         filterSliver,
+        ?locators.sliverHeader,
         SliverDataWaterfallGrid<NewestItem>(
           source: source,
           padding: const EdgeInsets.all(12),
@@ -106,8 +106,8 @@ class NovelListSkeleton extends StatelessWidget {
     return DataLoadingCustomScrollView(
       physics: physics,
       slivers: [
-        ?sliverHeader,
         ...leadingSlivers,
+        ?sliverHeader,
         const SliverPadding(padding: EdgeInsets.all(12), sliver: SliverListSkeleton(itemExtent: 140, itemCount: 8)),
       ],
     );
@@ -127,8 +127,8 @@ class NovelList extends StatelessWidget {
     return DataLoadingCustomScrollView(
       physics: physics,
       slivers: [
-        ?sliverHeader,
         ...leadingSlivers,
+        ?sliverHeader,
         SliverDataList<NewestItem>(
           source: source,
           padding: const EdgeInsets.all(12),

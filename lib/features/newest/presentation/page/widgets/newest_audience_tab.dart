@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/widgets/floating_filter_sliver.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_feed.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_filters.dart';
@@ -39,7 +40,7 @@ class _NewestAudienceTabState extends State<NewestAudienceTab> with AutomaticKee
           NewestFeedView(
             key: ValueKey(key),
             source: widget.state.sourceFor(key),
-            filterSliver: NewestTabFilterSliver(
+            filterSliver: FloatingFilterSliver(
               height: _filterHeight,
               child: NewestTabFilters(
                 audience: widget.audience,
@@ -51,44 +52,6 @@ class _NewestAudienceTabState extends State<NewestAudienceTab> with AutomaticKee
           ),
       ],
     );
-  }
-}
-
-class NewestTabFilterSliver extends StatelessWidget {
-  const NewestTabFilterSliver({required this.height, required this.child, super.key});
-
-  final double height;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverPersistentHeader(
-      floating: true,
-      delegate: FixedSliverHeaderDelegate(height: height, child: child),
-    );
-  }
-}
-
-class FixedSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
-  const FixedSliverHeaderDelegate({required this.height, required this.child});
-
-  final double height;
-  final Widget child;
-
-  @override
-  double get minExtent => height;
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  bool shouldRebuild(FixedSliverHeaderDelegate oldDelegate) {
-    return height != oldDelegate.height || child != oldDelegate.child;
   }
 }
 

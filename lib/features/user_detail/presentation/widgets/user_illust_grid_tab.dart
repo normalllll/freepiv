@@ -95,7 +95,7 @@ class UserIllustGridBody extends StatelessWidget {
     final lastError = source.lastError;
 
     if (!source.initialized && source.refreshing && source.isEmpty) {
-      return DataLoadingCustomScrollView(physics: physics, slivers: [?sliverHeader, ...leadingSlivers, const SliverIllustWaterfallSkeleton()]);
+      return DataLoadingCustomScrollView(physics: physics, slivers: [...leadingSlivers, ?sliverHeader, const SliverIllustWaterfallSkeleton()]);
     }
 
     if (!source.initialized && lastError != null) {
@@ -119,8 +119,8 @@ class UserIllustGridBody extends StatelessWidget {
     return DataLoadingCustomScrollView(
       physics: physics,
       slivers: [
-        ?sliverHeader,
         ...leadingSlivers,
+        ?sliverHeader,
         SliverDataWaterfallGrid<Illust>(
           source: source,
           padding: const EdgeInsets.all(12),

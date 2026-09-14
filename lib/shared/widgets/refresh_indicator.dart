@@ -249,8 +249,8 @@ class DataSliverFillBody extends StatelessWidget {
     return DataLoadingCustomScrollView(
       physics: physics,
       slivers: [
-        ?sliverHeader,
         ...leadingSlivers,
+        ?sliverHeader,
         SliverFillRemaining(hasScrollBody: false, child: child),
       ],
     );

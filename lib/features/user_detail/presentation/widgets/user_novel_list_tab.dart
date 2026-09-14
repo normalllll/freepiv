@@ -90,8 +90,8 @@ class UserNovelListBody extends StatelessWidget {
       return DataLoadingCustomScrollView(
         physics: physics,
         slivers: [
-          ?sliverHeader,
           ...leadingSlivers,
+          ?sliverHeader,
           const SliverPadding(padding: EdgeInsets.all(12), sliver: SliverListSkeleton(itemExtent: 140, itemCount: 8)),
         ],
       );
@@ -118,8 +118,8 @@ class UserNovelListBody extends StatelessWidget {
     return DataLoadingCustomScrollView(
       physics: physics,
       slivers: [
-        ?sliverHeader,
         ...leadingSlivers,
+        ?sliverHeader,
         SliverDataList<Novel>(
           source: source,
           padding: const EdgeInsets.all(12),
