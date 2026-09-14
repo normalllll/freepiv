@@ -2,6 +2,22 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:freepiv/i18n/strings.g.dart';
+
+/// Small action placeholders also keep the original control's occupied space.
+class LoadingSkeletonBlock extends StatelessWidget {
+  const LoadingSkeletonBlock({this.width = 16, this.height = 16, this.radius = 4, super.key});
+  final double width;
+  final double height;
+  final double radius;
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: context.t.refresh.loading,
+    child: Skeletonizer.zone(
+      child: Bone(width: width, height: height, borderRadius: BorderRadius.circular(radius)),
+    ),
+  );
+}
 
 class FullScreenLoadingSkeleton extends StatelessWidget {
   const FullScreenLoadingSkeleton({this.padding = const EdgeInsets.all(12), this.itemPadding = const EdgeInsets.all(8), super.key});
@@ -17,7 +33,8 @@ class FullScreenLoadingSkeleton extends StatelessWidget {
 
     final useGrid = width >= 560;
 
-    final itemCount = useGrid ? math.min(8, math.max(4, (height / 210).ceil() * 2)) : math.min(8, math.max(4, (height / 156).ceil()));
+    final columns = math.max(1, (width - padding.horizontal) ~/ 220);
+    final itemCount = useGrid ? ((height / 257).ceil() + 1) * columns : (height / 156).ceil() + 1;
 
     return Skeletonizer.zone(
       child: Padding(
@@ -44,16 +61,17 @@ class ImageLoadingSkeleton extends StatelessWidget {
 }
 
 class CommentsLoadingSkeleton extends StatelessWidget {
-  const CommentsLoadingSkeleton({this.itemCount = 2, super.key});
+  const CommentsLoadingSkeleton({this.itemCount, super.key});
 
-  final int itemCount;
+  final int? itemCount;
 
   @override
   Widget build(BuildContext context) {
+    final count = itemCount ?? (MediaQuery.sizeOf(context).height / 38).ceil() + 1;
     return Skeletonizer.zone(
       child: Column(
         children: [
-          for (var index = 0; index < itemCount; index++) ...[const _CommentSkeletonTile(), if (index != itemCount - 1) const SizedBox(height: 8)],
+          for (var index = 0; index < count; index++) ...[const _CommentSkeletonTile(), if (index != count - 1) const SizedBox(height: 8)],
         ],
       ),
     );

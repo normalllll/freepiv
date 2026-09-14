@@ -30,11 +30,24 @@ class UserProfileInfoBody extends StatelessWidget {
               top: false,
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (var index = 0; index < entries.length; index++) ...[if (index > 0) const SizedBox(height: 8), _ProfileInfoTile(entry: entries[index])],
-                  ],
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 900),
+                    child: Material(
+                      color: Theme.of(context).colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (var index = 0; index < entries.length; index++) ...[
+                            if (index > 0) const Divider(height: 1),
+                            _ProfileInfoTile(entry: entries[index]),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -85,14 +98,12 @@ class _ProfileInfoTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = entry.url;
 
-    return EnergeticCard(
+    return ListTile(
       onTap: url == null ? null : () => _openUrl(url),
-      child: ListTile(
-        leading: Icon(entry.icon),
-        title: Text(entry.label),
-        subtitle: Text(entry.value),
-        trailing: url == null ? null : IconButton(tooltip: t.user.profile.openLink, icon: const Icon(Icons.open_in_new), onPressed: () => _openUrl(url)),
-      ),
+      leading: Icon(entry.icon),
+      title: Text(entry.label),
+      subtitle: Text(entry.value),
+      trailing: url == null ? null : IconButton(tooltip: t.user.profile.openLink, icon: const Icon(Icons.open_in_new), onPressed: () => _openUrl(url)),
     );
   }
 }

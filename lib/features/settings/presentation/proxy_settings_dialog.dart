@@ -1,3 +1,4 @@
+import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
@@ -140,7 +141,7 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
                         child: OutlinedButton.icon(
                           onPressed: _isFetchingSystemProxy ? null : _loadSystemProxy,
                           icon: _isFetchingSystemProxy
-                              ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                              ? const SizedBox.square(dimension: 16, child: LoadingSkeletonBlock())
                               : const Icon(Icons.travel_explore_outlined),
                           label: Text(proxyTranslations.loadSystem),
                         ),

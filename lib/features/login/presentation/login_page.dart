@@ -147,53 +147,66 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final proxySettings = ref.watch(proxySettingsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(translations.login.title),
-        actions: [TextButton(onPressed: () => context.go('/fanbox'), child: Text(translations.fanbox.title))],
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: EnergeticCard(
-              accentColor: tokens.brand,
-              padding: const EdgeInsets.all(22),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Icon(Icons.auto_awesome, color: tokens.brand, size: 32),
-                  const SizedBox(height: 12),
-                  Text(
-                    account == null ? translations.login.notSignedIn : translations.login.signedInAs(name: account.user.name),
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-                    textAlign: TextAlign.center,
+      appBar: AutoScaffold.usesDesktopShellOf(context)
+          ? null
+          : AppBar(
+              title: Text(translations.login.title),
+              actions: [TextButton(onPressed: () => context.go('/fanbox'), child: Text(translations.fanbox.title))],
+            ),
+      body: SingleChildScrollView(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: EnergeticCard(
+                accentColor: tokens.brand,
+                padding: const EdgeInsets.all(22),
+                child: AnimatedSize(
+                  duration: const Duration(milliseconds: 180),
+                  alignment: Alignment.topCenter,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (AutoScaffold.usesDesktopShellOf(context))
+                        Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: TextButton(onPressed: () => context.go('/fanbox'), child: Text(translations.fanbox.title)),
+                        ),
+                      Icon(Icons.auto_awesome, color: tokens.brand, size: 32),
+                      const SizedBox(height: 12),
+                      Text(
+                        account == null ? translations.login.notSignedIn : translations.login.signedInAs(name: account.user.name),
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      _LoginProxyNotice(settings: proxySettings, onTap: () => showProxySettingsDialog(context)),
+                      const SizedBox(height: 14),
+                      FilledButton(
+                        onPressed: isBusy ? null : _openLogin,
+                        child: Text(
+                          _isOpeningLogin
+                              ? translations.login.openingBrowser
+                              : account == null
+                              ? translations.login.signInToPixiv
+                              : translations.login.signInAgain,
+                        ),
+                      ),
+                      if (_isCompletingLogin) ...[const SizedBox(height: 12), const LoadingSkeletonBlock(width: double.infinity, height: 4)],
+                      if (_status != null) ...[const SizedBox(height: 16), Text(_status!, textAlign: TextAlign.center)],
+                      if (_error != null) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          _error!,
+                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 24),
-                  _LoginProxyNotice(settings: proxySettings, onTap: () => showProxySettingsDialog(context)),
-                  const SizedBox(height: 14),
-                  FilledButton(
-                    onPressed: isBusy ? null : _openLogin,
-                    child: Text(
-                      _isOpeningLogin
-                          ? translations.login.openingBrowser
-                          : account == null
-                          ? translations.login.signInToPixiv
-                          : translations.login.signInAgain,
-                    ),
-                  ),
-                  if (_isCompletingLogin) ...[const SizedBox(height: 12), const LinearProgressIndicator()],
-                  if (_status != null) ...[const SizedBox(height: 16), Text(_status!, textAlign: TextAlign.center)],
-                  if (_error != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      _error!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ],
+                ),
               ),
             ),
           ),

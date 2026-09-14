@@ -33,6 +33,8 @@ class IllustDetailPanel extends StatelessWidget {
     final translations = t;
     final content = [
       Text(illust.title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+      const SizedBox(height: 14),
+      IllustUserPreviewSection(illust: illust, onIllustTap: onIllustTap),
       const SizedBox(height: 8),
       _StatsStrip(illust: illust),
       const SizedBox(height: 10),
@@ -47,8 +49,6 @@ class IllustDetailPanel extends StatelessWidget {
         const SizedBox(height: 6),
         _CaptionBox(caption: illust.caption),
       ],
-      const SizedBox(height: 14),
-      IllustUserPreviewSection(illust: illust, onIllustTap: onIllustTap),
       const SizedBox(height: 14),
       IllustSectionTitle(title: translations.illust.section.details, icon: Icons.info_outline),
       const SizedBox(height: 4),
@@ -66,9 +66,7 @@ class IllustDetailPanel extends StatelessWidget {
     return ColoredBox(
       color: colorScheme.surface,
       child: scrollable
-          ? ExcludeSemantics(
-              child: ListView(padding: const EdgeInsets.fromLTRB(14, 14, 14, 22), children: content),
-            )
+          ? ListView(padding: const EdgeInsets.fromLTRB(14, 14, 14, 22), children: content)
           : Padding(
               padding: const EdgeInsets.fromLTRB(14, 14, 14, 22),
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: content),

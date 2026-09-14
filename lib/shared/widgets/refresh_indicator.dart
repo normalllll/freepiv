@@ -1,3 +1,5 @@
+import 'loading_skeleton/loading_skeleton.dart';
+import 'refresh_dots.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -75,19 +77,10 @@ class _DataPullRefreshHeaderBody extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final indicator = switch (mode) {
-      PullToRefreshIndicatorMode.snap ||
-      PullToRefreshIndicatorMode.refresh => SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2.2, color: colorScheme.primary)),
+      PullToRefreshIndicatorMode.snap || PullToRefreshIndicatorMode.refresh => const RefreshDots(),
       PullToRefreshIndicatorMode.done => Icon(Icons.check_circle_outline, size: 22, color: colorScheme.primary),
       PullToRefreshIndicatorMode.error => Icon(Icons.error_outline, size: 22, color: colorScheme.error),
-      _ => SizedBox.square(
-        dimension: 20,
-        child: CircularProgressIndicator(
-          strokeWidth: 2.2,
-          value: (offset / DataRefreshSliverHeader.reachToRefreshOffset).clamp(0.0, 1.0),
-          color: colorScheme.primary,
-          backgroundColor: colorScheme.surfaceContainerHighest,
-        ),
-      ),
+      _ => const RefreshDots(),
     };
 
     final child = SizedBox(
@@ -280,10 +273,7 @@ class DataLoadingMoreIndicator<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (status) {
       IndicatorStatus.none => const SizedBox.shrink(),
-      IndicatorStatus.loadingMoreBusying => _FooterIndicator(
-        icon: const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2)),
-        label: context.t.refresh.loading,
-      ),
+      IndicatorStatus.loadingMoreBusying => _FooterIndicator(icon: const LoadingSkeletonBlock(width: 18, height: 18), label: context.t.refresh.loading),
       IndicatorStatus.error => _FooterIndicator(
         icon: Icon(Icons.error_outline, size: 20, color: Theme.of(context).colorScheme.error),
         label: context.t.refresh.loadFailed,
@@ -293,13 +283,7 @@ class DataLoadingMoreIndicator<T> extends StatelessWidget {
         icon: Icon(Icons.check, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
         label: context.t.refresh.noMoreItems,
       ),
-      IndicatorStatus.fullScreenBusying => SliverFillRemaining(
-        hasScrollBody: false,
-        child: _FullScreenIndicator(
-          icon: const SizedBox.square(dimension: 28, child: CircularProgressIndicator(strokeWidth: 2.4)),
-          label: context.t.refresh.loading,
-        ),
-      ),
+      IndicatorStatus.fullScreenBusying => const SliverToBoxAdapter(child: FullScreenLoadingSkeleton()),
       IndicatorStatus.fullScreenError => SliverFillRemaining(
         hasScrollBody: false,
         child: ErrorContent(
@@ -337,20 +321,6 @@ class _FooterIndicator extends StatelessWidget {
     }
 
     return InkWell(onTap: onTap, child: child);
-  }
-}
-
-class _FullScreenIndicator extends StatelessWidget {
-  const _FullScreenIndicator({required this.icon, required this.label});
-
-  final Widget icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: _InlineRefreshStatus(icon: icon, label: label),
-    );
   }
 }
 

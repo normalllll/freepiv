@@ -22,14 +22,12 @@ class UserCollapsibleHeaderSliver extends StatelessWidget {
   final bool showBackButton;
 
   static double collapseExtentFor(BuildContext context, double width, UserDetailResult detail) {
-    return expandedHeightFor(context, width, detail) - collapsedHeightFor(width);
+    return expandedHeightFor(context, width, detail) - collapsedHeightFor(width, context);
   }
 
   static double expandedHeightFor(BuildContext context, double width, UserDetailResult detail) {
     final layout = UserCollapsibleHeaderLayout.forWidth(width);
-    final comment = _displayCommentFor(detail.user.comment);
-
-    return layout.expandedHeight(commentHeight: _commentHeightFor(context, comment, layout.bodyContentWidth), statsHeight: statsHeightFor(context));
+    return layout.expandedHeight(commentHeight: placeholderCommentHeightFor(context, width), statsHeight: statsHeightFor(context));
   }
 
   static double skeletonExpandedHeightFor(BuildContext context, double width) {
@@ -38,23 +36,14 @@ class UserCollapsibleHeaderSliver extends StatelessWidget {
     return layout.expandedHeight(commentHeight: placeholderCommentHeightFor(context, width), statsHeight: statsHeightFor(context));
   }
 
-  static double collapsedHeightFor(double width) {
-    return UserCollapsibleHeaderLayout.forWidth(width).collapsedHeight;
+  static double collapsedHeightFor(double width, BuildContext context) {
+    return math.max(UserCollapsibleHeaderLayout.forWidth(width).collapsedHeight, MediaQuery.textScalerOf(context).scale(18) * 1.5 + 20);
   }
 
   static double placeholderCommentHeightFor(BuildContext context, double width) {
     final layout = UserCollapsibleHeaderLayout.forWidth(width);
 
-    return _commentHeightFor(context, t.user.empty.comment, layout.bodyContentWidth);
-  }
-
-  static String _displayCommentFor(String? rawComment) {
-    final comment = rawComment?.trim();
-    if (comment != null && comment.isNotEmpty) {
-      return comment;
-    }
-
-    return t.user.empty.comment;
+    return _commentHeightFor(context, 'Ag\nAg', layout.bodyContentWidth);
   }
 
   static double _commentHeightFor(BuildContext context, String comment, double maxWidth) {
@@ -67,7 +56,7 @@ class UserCollapsibleHeaderSliver extends StatelessWidget {
       maxWidth: maxWidth,
       maxLines: 2,
       ellipsis: '\u2026',
-      textScaler: TextScaler.noScaling,
+      textScaler: MediaQuery.textScalerOf(context),
     );
   }
 
@@ -123,7 +112,7 @@ class UserCollapsibleHeaderSliver extends StatelessWidget {
         detail: detail,
         topPadding: includeTopPadding ? mediaQuery.padding.top : 0,
         expandedHeight: expandedHeightFor(context, width, detail),
-        collapsedHeight: collapsedHeightFor(width),
+        collapsedHeight: collapsedHeightFor(width, context),
         overlapsContent: overlapsContent,
         showBackButton: showBackButton,
       ),
@@ -176,7 +165,7 @@ class UserCollapsibleHeaderLayout {
   double get avatarTop => backgroundHeight - avatarSize / 2;
   double get stackedHeaderHeight => backgroundHeight + stackedHeaderExtraHeight;
   double get bodyContentWidth => math.max(0.0, availableWidth - horizontalPadding * 2);
-  double get collapsedHeight => compact ? 64.0 : 70.0;
+  double get collapsedHeight => compact ? 64.0 : 52.0;
 
   double collapsedLeadingPadding({required bool showBackButton}) {
     if (showBackButton) {
@@ -407,6 +396,7 @@ class _UserCommentPreview extends StatelessWidget {
     final hasComment = plainComment != null && plainComment!.isNotEmpty;
     final preview = SizedBox(
       width: double.infinity,
+      height: UserCollapsibleHeaderSliver.placeholderCommentHeightFor(context, MediaQuery.sizeOf(context).width),
       child: _CommentPreviewText(comment: comment, style: style),
     );
 
@@ -436,23 +426,51 @@ class _CommentPreviewText extends StatelessWidget {
         final originalText = buildHtmlTextSpan(context, comment, style: style);
         final plainText = originalText.toPlainText(includeSemanticsLabels: false, includePlaceholders: false).trimRight();
         final text = _truncateTextSpan(originalText, plainText.length);
-        final textPainter = TextPainter(text: text, maxLines: 2, textDirection: direction, textScaler: TextScaler.noScaling)
+        final textPainter = TextPainter(text: text, maxLines: 2, textDirection: direction, textScaler: MediaQuery.textScalerOf(context))
           ..locale = locale
           ..layout(maxWidth: constraints.maxWidth);
 
         if (!textPainter.didExceedMaxLines) {
-          return RichText(text: text, maxLines: 2, overflow: TextOverflow.clip, textDirection: direction, locale: locale);
+          return RichText(
+            text: text,
+            maxLines: 2,
+            overflow: TextOverflow.clip,
+            textDirection: direction,
+            locale: locale,
+            textScaler: MediaQuery.textScalerOf(context),
+          );
         }
 
-        final truncatedText = _truncateTextSpanToFit(text, plainText, maxWidth: constraints.maxWidth, textDirection: direction, locale: locale);
+        final truncatedText = _truncateTextSpanToFit(
+          text,
+          plainText,
+          maxWidth: constraints.maxWidth,
+          textDirection: direction,
+          locale: locale,
+          textScaler: MediaQuery.textScalerOf(context),
+        );
 
-        return RichText(text: truncatedText, maxLines: 2, overflow: TextOverflow.clip, textDirection: direction, locale: locale);
+        return RichText(
+          text: truncatedText,
+          maxLines: 2,
+          overflow: TextOverflow.clip,
+          textDirection: direction,
+          locale: locale,
+          textScaler: MediaQuery.textScalerOf(context),
+        );
       },
     );
   }
 }
 
-TextSpan _truncateTextSpanToFit(TextSpan text, String plainText, {required double maxWidth, required TextDirection textDirection, required Locale? locale}) {
+TextSpan _truncateTextSpanToFit(
+  TextSpan text,
+  String plainText, {
+  required double maxWidth,
+  required TextDirection textDirection,
+  required Locale? locale,
+  required TextScaler textScaler,
+}) {
   final boundaries = <int>[0];
   var codeUnitOffset = 0;
   for (final rune in plainText.runes) {
@@ -468,7 +486,7 @@ TextSpan _truncateTextSpanToFit(TextSpan text, String plainText, {required doubl
     final middle = low + (high - low) ~/ 2;
     final candidateOffset = _trimTrailingWhitespaceOffset(plainText, boundaries[middle]);
     final candidate = _appendEllipsis(_truncateTextSpan(text, candidateOffset));
-    final painter = TextPainter(text: candidate, maxLines: 2, textDirection: textDirection, textScaler: TextScaler.noScaling)
+    final painter = TextPainter(text: candidate, maxLines: 2, textDirection: textDirection, textScaler: textScaler)
       ..locale = locale
       ..layout(maxWidth: maxWidth);
 

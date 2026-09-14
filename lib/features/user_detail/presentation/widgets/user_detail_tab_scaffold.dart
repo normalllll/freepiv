@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:flutter/rendering.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_collapsible_header.dart';
 import 'package:freepiv/shared/shared.dart';
@@ -42,7 +43,7 @@ class UserDetailTabScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final topPadding = includeTopPadding ? mediaQuery.padding.top : 0.0;
-    final pinnedHeaderExtent = topPadding + UserCollapsibleHeaderSliver.collapsedHeightFor(mediaQuery.size.width) + UserDetailTabBarSliver.height;
+    final pinnedHeaderExtent = topPadding + UserCollapsibleHeaderSliver.collapsedHeightFor(mediaQuery.size.width, context) + UserDetailTabBarSliver.height;
 
     return DataNestedRefreshView(
       onRefresh: onRefresh,
@@ -168,6 +169,26 @@ class _UserTabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     final colorScheme = Theme.of(context).colorScheme;
+
+    if (!AutoScaffold.usesDesktopShellOf(context)) {
+      return Material(
+        color: colorScheme.surface,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: AnimatedBuilder(
+              animation: controller,
+              builder: (context, _) => AppSelect<Object>(
+                value: tabs[controller.index].kind,
+                items: [for (final tab in tabs) AppSelectItem(value: tab.kind, label: tab.label)],
+                onChanged: (kind) => controller.animateTo(tabs.indexWhere((tab) => tab.kind == kind)),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Material(
       color: colorScheme.surface,

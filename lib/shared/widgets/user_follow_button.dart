@@ -1,3 +1,4 @@
+import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
@@ -85,11 +86,7 @@ class _UserFollowButtonSurface extends StatelessWidget {
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 140),
                       child: updating
-                          ? SizedBox.square(
-                              key: const ValueKey('updating'),
-                              dimension: iconSize,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: foreground),
-                            )
+                          ? SizedBox.square(key: const ValueKey('updating'), dimension: iconSize, child: LoadingSkeletonBlock())
                           : Icon(
                               isFollowed ? Icons.person_outlined : Icons.person_add_alt_1_outlined,
                               key: ValueKey(isFollowed),

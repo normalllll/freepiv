@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1115,7 +1116,34 @@ class _ReaderLoadingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return AutoScaffold(
       builder: (context, layout, orientation, shouldUseDesktopShell) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        final desktop = shouldUseDesktopShell;
+        return Scaffold(
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(desktop ? 36 : 22, desktop ? 56 : 30, desktop ? 36 : 22, desktop ? 88 : 68),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: desktop ? 680 : 620),
+                  child: Skeletonizer.zone(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (var paragraph = 0; paragraph < 4; paragraph++) ...[
+                          for (var line = 0; line < 4; line++)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: Bone(height: MediaQuery.textScalerOf(context).scale(18), width: double.infinity),
+                            ),
+                          const SizedBox(height: 18),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
       },
     );
   }

@@ -593,7 +593,7 @@ class _NovelRankingPreviewSection extends StatelessWidget {
     }
 
     final translations = context.t;
-    final width = isDesktopPlatform ? 420.0 : MediaQuery.sizeOf(context).width * 0.86;
+    final width = (MediaQuery.sizeOf(context).width * 0.86).clamp(0.0, 420.0);
 
     return SliverToBoxAdapter(
       child: Padding(
@@ -616,7 +616,7 @@ class _NovelRankingPreviewSection extends StatelessWidget {
               ),
             ),
             SizedBox(
-              height: 180,
+              height: NovelPreviewer.contentHeight(context) + 24,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsetsDirectional.only(end: 16),
@@ -652,7 +652,7 @@ class _NovelRankingPreviewSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = isDesktopPlatform ? 420.0 : MediaQuery.sizeOf(context).width * 0.86;
+    final width = (MediaQuery.sizeOf(context).width * 0.86).clamp(0.0, 420.0);
 
     return SliverToBoxAdapter(
       child: Padding(
@@ -663,7 +663,7 @@ class _NovelRankingPreviewSkeleton extends StatelessWidget {
             children: [
               const _HomeSectionTitleRowSkeleton(),
               SizedBox(
-                height: 180,
+                height: NovelPreviewer.contentHeight(context) + 24,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsetsDirectional.only(end: 16),
@@ -760,35 +760,7 @@ class _NovelPreviewerSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final card = LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth.isFinite && constraints.maxWidth < 300;
-        final coverWidth = compact ? 68.0 : 82.0;
-        final coverHeight = compact ? 96.0 : 116.0;
-        final bookmarkSize = compact ? 34.0 : 40.0;
-        final coverGap = compact ? 8.0 : 12.0;
-        final bookmarkGap = compact ? 6.0 : 8.0;
-
-        return Skeletonizer.zone(
-          child: Card(
-            clipBehavior: Clip.antiAlias,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Bone(width: coverWidth, height: coverHeight, borderRadius: BorderRadius.circular(6)),
-                  SizedBox(width: coverGap),
-                  Expanded(child: _NovelPreviewBodySkeleton(height: coverHeight)),
-                  SizedBox(width: bookmarkGap),
-                  Bone.circle(size: bookmarkSize),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
+    const card = NovelPreviewerSkeleton();
 
     final maxWidth = this.maxWidth;
     if (maxWidth == null) {
@@ -800,55 +772,6 @@ class _NovelPreviewerSkeleton extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: card,
-      ),
-    );
-  }
-}
-
-class _NovelPreviewBodySkeleton extends StatelessWidget {
-  const _NovelPreviewBodySkeleton({required this.height});
-
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Bone.text(width: double.infinity),
-          const SizedBox(height: 7),
-          const FractionallySizedBox(widthFactor: 0.62, child: Bone.text(width: double.infinity)),
-          const SizedBox(height: 12),
-          const Row(
-            children: [
-              Flexible(
-                flex: 4,
-                child: Bone(width: double.infinity, height: 24, borderRadius: BorderRadius.all(Radius.circular(999))),
-              ),
-              SizedBox(width: 5),
-              Flexible(
-                flex: 5,
-                child: Bone(width: double.infinity, height: 24, borderRadius: BorderRadius.all(Radius.circular(999))),
-              ),
-            ],
-          ),
-          const Spacer(),
-          const Row(
-            children: [
-              Flexible(
-                flex: 5,
-                child: Bone(width: double.infinity, height: 22, borderRadius: BorderRadius.all(Radius.circular(6))),
-              ),
-              SizedBox(width: 6),
-              Flexible(
-                flex: 4,
-                child: Bone(width: double.infinity, height: 22, borderRadius: BorderRadius.all(Radius.circular(6))),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

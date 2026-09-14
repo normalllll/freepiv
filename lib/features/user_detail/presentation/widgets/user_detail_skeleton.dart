@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_collapsible_header.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
@@ -14,17 +15,22 @@ class UserDetailLoadingSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return ContentViewport(child: Builder(builder: _buildContent));
+  }
+
+  Widget _buildContent(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final width = mediaQuery.size.width;
     final layout = UserCollapsibleHeaderLayout.forWidth(width);
     final topPadding = mediaQuery.padding.top;
     final expandedHeaderHeight = UserCollapsibleHeaderSliver.skeletonExpandedHeightFor(context, width);
-    final collapsedHeaderHeight = UserCollapsibleHeaderSliver.collapsedHeightFor(width);
+    final collapsedHeaderHeight = UserCollapsibleHeaderSliver.collapsedHeightFor(width, context);
 
     return Scaffold(
       body: ExcludeSemantics(
         child: Skeletonizer.zone(
           child: CustomScrollView(
+            physics: const NeverScrollableScrollPhysics(),
             slivers: [
               SliverPersistentHeader(
                 pinned: true,

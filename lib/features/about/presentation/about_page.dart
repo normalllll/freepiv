@@ -1,3 +1,4 @@
+import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
@@ -256,9 +257,7 @@ class _AboutHero extends StatelessWidget {
               children: [
                 FilledButton.icon(
                   onPressed: checkingUpdate ? null : onCheckUpdate,
-                  icon: checkingUpdate
-                      ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.system_update_alt_outlined),
+                  icon: checkingUpdate ? const SizedBox.square(dimension: 16, child: LoadingSkeletonBlock()) : const Icon(Icons.system_update_alt_outlined),
                   label: Text(checkingUpdate ? translations.checkingUpdateShort : translations.checkUpdate),
                 ),
                 OutlinedButton.icon(onPressed: onOpenDownloadPage, icon: const Icon(Icons.open_in_new_outlined), label: Text(translations.downloadPage)),

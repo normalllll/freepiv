@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/ranking/logic/ranking_logic.dart';
@@ -335,16 +336,21 @@ class _IllustRankingTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return TabBar(
-      controller: controller,
-      isScrollable: true,
-      tabAlignment: TabAlignment.start,
-      dividerColor: Colors.transparent,
-      labelPadding: const EdgeInsets.symmetric(horizontal: 14),
-      onTap: (index) {
-        onModeChanged(_illustRankingModeForIndex(index));
-      },
-      tabs: [for (final mode in IllustRankingMode.values) Tab(text: _rankingModeNameLabel(mode.name, translations))],
+    return Center(
+      child: SizedBox(
+        width: 360,
+        child: AnimatedBuilder(
+          animation: controller,
+          builder: (context, _) => AppSelect<IllustRankingMode>(
+            value: IllustRankingMode.values[controller.index],
+            items: [for (final mode in IllustRankingMode.values) AppSelectItem(value: mode, label: _rankingModeNameLabel(mode.name, translations))],
+            onChanged: (mode) {
+              controller.animateTo(mode.index);
+              onModeChanged(mode);
+            },
+          ),
+        ),
+      ),
     );
   }
 }
@@ -359,16 +365,21 @@ class _MangaRankingTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return TabBar(
-      controller: controller,
-      isScrollable: true,
-      tabAlignment: TabAlignment.start,
-      dividerColor: Colors.transparent,
-      labelPadding: const EdgeInsets.symmetric(horizontal: 14),
-      onTap: (index) {
-        onModeChanged(_mangaRankingModeForIndex(index));
-      },
-      tabs: [for (final mode in MangaRankingMode.values) Tab(text: _rankingModeNameLabel(mode.name, translations))],
+    return Center(
+      child: SizedBox(
+        width: 360,
+        child: AnimatedBuilder(
+          animation: controller,
+          builder: (context, _) => AppSelect<MangaRankingMode>(
+            value: MangaRankingMode.values[controller.index],
+            items: [for (final mode in MangaRankingMode.values) AppSelectItem(value: mode, label: _rankingModeNameLabel(mode.name, translations))],
+            onChanged: (mode) {
+              controller.animateTo(mode.index);
+              onModeChanged(mode);
+            },
+          ),
+        ),
+      ),
     );
   }
 }
@@ -383,16 +394,21 @@ class _NovelRankingTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return TabBar(
-      controller: controller,
-      isScrollable: true,
-      tabAlignment: TabAlignment.start,
-      dividerColor: Colors.transparent,
-      labelPadding: const EdgeInsets.symmetric(horizontal: 14),
-      onTap: (index) {
-        onModeChanged(_novelRankingModeForIndex(index));
-      },
-      tabs: [for (final mode in NovelRankingMode.values) Tab(text: _rankingModeNameLabel(mode.name, translations))],
+    return Center(
+      child: SizedBox(
+        width: 360,
+        child: AnimatedBuilder(
+          animation: controller,
+          builder: (context, _) => AppSelect<NovelRankingMode>(
+            value: NovelRankingMode.values[controller.index],
+            items: [for (final mode in NovelRankingMode.values) AppSelectItem(value: mode, label: _rankingModeNameLabel(mode.name, translations))],
+            onChanged: (mode) {
+              controller.animateTo(mode.index);
+              onModeChanged(mode);
+            },
+          ),
+        ),
+      ),
     );
   }
 }

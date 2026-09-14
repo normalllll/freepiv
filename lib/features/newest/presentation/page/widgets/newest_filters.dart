@@ -30,10 +30,14 @@ class NewestFilterControlsRow extends StatelessWidget {
         Flexible(
           child: NewestWorkTypeSelector(audience: audience, state: state, compact: compact, onChanged: onWorkTypeChanged),
         ),
-        if (hasFollowScope) ...[
-          const SizedBox(width: 8),
-          NewestFollowScopePopupButton(state: state, compact: compact, onFollowScopeChanged: onFollowScopeChanged),
-        ],
+        const SizedBox(width: 8),
+        Visibility(
+          visible: hasFollowScope,
+          maintainSize: true,
+          maintainAnimation: true,
+          maintainState: true,
+          child: NewestFollowScopePopupButton(state: state, compact: compact, onFollowScopeChanged: onFollowScopeChanged),
+        ),
       ],
     );
 

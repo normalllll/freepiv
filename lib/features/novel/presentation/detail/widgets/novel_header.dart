@@ -84,7 +84,16 @@ class NovelHeaderInfo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(novel.title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(novel.title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+            ),
+            const SizedBox(width: 12),
+            IllustBookmarkButton(illustId: novel.id, initialIsBookmarked: novel.isBookmarked, isNovel: true),
+          ],
+        ),
         const SizedBox(height: 6),
         Text(novel.user.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: 14),

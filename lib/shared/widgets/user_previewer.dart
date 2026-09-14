@@ -12,7 +12,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 class UserPreviewer extends StatelessWidget {
   const UserPreviewer({required this.userPreview, this.scrollIllustPreviews = true, super.key});
 
-  static const desktopMaxWidth = 768.0;
+  static const desktopMaxWidth = 900.0;
 
   final UserPreview userPreview;
   final bool scrollIllustPreviews;
@@ -60,10 +60,8 @@ class UserPreviewer extends StatelessWidget {
               UserFollowButton(userId: user.id, initialIsFollowed: user.isFollowed),
             ],
           ),
-          if (userPreview.illusts.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            _UserPreviewIllustList(illusts: userPreview.illusts, scrollable: scrollIllustPreviews),
-          ],
+          const SizedBox(height: 12),
+          _UserPreviewIllustList(illusts: userPreview.illusts, scrollable: scrollIllustPreviews),
         ],
       ),
     );
@@ -192,6 +190,12 @@ class _UserPreviewIllustList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final previewIllusts = illusts.take(_maxItemCount).toList();
+    if (previewIllusts.isEmpty) {
+      return const SizedBox(
+        height: _thumbSize,
+        child: Center(child: Icon(Icons.image_not_supported_outlined)),
+      );
+    }
 
     if (scrollable) {
       return SizedBox(

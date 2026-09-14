@@ -4,6 +4,12 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:loading_more_list/loading_more_list.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
+
+String _diagnosticEndpoint(String? value) {
+  final uri = value == null ? null : Uri.tryParse(value);
+  return uri == null ? 'unknown' : '${uri.scheme}://${uri.host}${uri.path}';
+}
 
 abstract class DataListSource<T> extends LoadingMoreBase<T> implements Listenable {
   bool _initialized = false;
@@ -101,7 +107,11 @@ abstract class DataListSource<T> extends LoadingMoreBase<T> implements Listenabl
       }
 
       _lastError = e;
-      log(isLoadMoreAction ? 'Failed to load more data list.' : 'Failed to refresh data list.', error: e, stackTrace: s);
+      final diagnostic = switch (e) {
+        PixivError(:final kind, :final status, :final url) => '${kind.name} HTTP=${status ?? "unknown"} endpoint=${_diagnosticEndpoint(url)}',
+        _ => e.runtimeType.toString(),
+      };
+      log('$runtimeType: ${isLoadMoreAction ? "pagination" : "refresh"} failed. $diagnostic', stackTrace: s);
       return false;
     }
   }

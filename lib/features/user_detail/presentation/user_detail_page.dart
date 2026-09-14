@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_bookmarks_tab.dart';
@@ -63,7 +64,7 @@ class UserDetailContent extends StatefulWidget {
 }
 
 class _UserDetailContentState extends State<UserDetailContent> with SingleTickerProviderStateMixin {
-  late final List<UserDetailTabItem> _tabs;
+  List<UserDetailTabItem> get _tabs => _tabsFor(widget.detail, t);
   late final TabController _tabController;
   late final Map<Object, GlobalKey> _tabKeys;
 
@@ -73,7 +74,6 @@ class _UserDetailContentState extends State<UserDetailContent> with SingleTicker
   void initState() {
     super.initState();
 
-    _tabs = _tabsFor(widget.detail, t);
     _tabKeys = {for (final tab in _tabs) tab.kind: GlobalKey(debugLabel: 'user-detail-tab-${tab.kind}')};
 
     _tabController = TabController(length: _tabs.length, vsync: this, animationDuration: Duration.zero);
@@ -101,27 +101,29 @@ class _UserDetailContentState extends State<UserDetailContent> with SingleTicker
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: UserDetailTabScaffold(
-        detail: widget.detail,
-        tabs: _tabs,
-        tabController: _tabController,
-        storageKey: 'content',
-        includeTopPadding: true,
-        showBackButton: !widget.shouldUseDesktopShell,
-        onRefresh: _refreshCurrentTab,
-        builder: (context, physics, locators) {
-          return LazyIndexedStack(
-            index: _currentIndex,
-            sizing: StackFit.expand,
-            children: [
-              for (final tab in _tabs)
-                KeyedSubtree(
-                  key: PageStorageKey<String>('user-detail-active-tab-${widget.detail.user.id}-${tab.kind}'),
-                  child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
-                ),
-            ],
-          );
-        },
+      body: ContentViewport(
+        child: UserDetailTabScaffold(
+          detail: widget.detail,
+          tabs: _tabs,
+          tabController: _tabController,
+          storageKey: 'content',
+          includeTopPadding: true,
+          showBackButton: !widget.shouldUseDesktopShell,
+          onRefresh: _refreshCurrentTab,
+          builder: (context, physics, locators) {
+            return LazyIndexedStack(
+              index: _currentIndex,
+              sizing: StackFit.expand,
+              children: [
+                for (final tab in _tabs)
+                  KeyedSubtree(
+                    key: PageStorageKey<String>('user-detail-active-tab-${widget.detail.user.id}-${tab.kind}'),
+                    child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -155,14 +157,11 @@ class _UserDetailContentState extends State<UserDetailContent> with SingleTicker
 }
 
 List<UserDetailTabItem> _tabsFor(UserDetailResult detail, Translations translations) {
-  final profile = detail.profile;
-
   return [
-    if (profile.totalIllusts > 0) UserDetailTabItem(kind: UserContentTabKind.illust, icon: Icons.image_outlined, label: translations.user.tabs.illustrations),
-    if (profile.totalManga > 0) UserDetailTabItem(kind: UserContentTabKind.manga, icon: Icons.auto_stories_outlined, label: translations.user.tabs.manga),
-    if (profile.totalNovels > 0) UserDetailTabItem(kind: UserContentTabKind.novel, icon: Icons.menu_book_outlined, label: translations.user.tabs.novels),
-    if (profile.totalIllustBookmarksPublic > 0)
-      UserDetailTabItem(kind: UserContentTabKind.bookmarks, icon: Icons.bookmarks_outlined, label: translations.user.tabs.bookmarks),
+    UserDetailTabItem(kind: UserContentTabKind.illust, icon: Icons.image_outlined, label: translations.user.tabs.illustrations),
+    UserDetailTabItem(kind: UserContentTabKind.manga, icon: Icons.auto_stories_outlined, label: translations.user.tabs.manga),
+    UserDetailTabItem(kind: UserContentTabKind.novel, icon: Icons.menu_book_outlined, label: translations.user.tabs.novels),
+    UserDetailTabItem(kind: UserContentTabKind.bookmarks, icon: Icons.bookmarks_outlined, label: translations.user.tabs.bookmarks),
     UserDetailTabItem(kind: UserContentTabKind.following, icon: Icons.people_outline, label: translations.user.tabs.following),
     UserDetailTabItem(kind: UserContentTabKind.profile, icon: Icons.info_outline, label: translations.user.tabs.profile),
   ];

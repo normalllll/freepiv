@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/features/downloads/presentation/download_floating_panel.dart';
@@ -90,7 +91,7 @@ class _DesktopShellState extends State<_DesktopShell> {
                   translations: translations,
                 ),
               ),
-              Expanded(child: widget.child),
+              Expanded(child: ContentViewport(child: widget.child)),
             ],
           ),
           DesktopDownloadDock(railWidth: _sidebarWidth, bottomOffset: _DesktopSidebar.downloadDockBottomOffset),

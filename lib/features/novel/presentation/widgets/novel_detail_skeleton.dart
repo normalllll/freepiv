@@ -14,13 +14,14 @@ class NovelDetailSkeletonPage extends StatelessWidget {
             bottom: false,
             child: CustomScrollView(
               slivers: [
-                SliverAppBar(
-                  pinned: true,
-                  automaticallyImplyLeading: !shouldUseDesktopShell,
-                  leading: shouldUseDesktopShell ? const SizedBox.shrink() : null,
-                  leadingWidth: shouldUseDesktopShell ? 64 : null,
-                  title: const _TitleSkeleton(),
-                ),
+                if (!shouldUseDesktopShell)
+                  SliverAppBar(
+                    pinned: true,
+                    automaticallyImplyLeading: !shouldUseDesktopShell,
+                    leading: shouldUseDesktopShell ? const SizedBox.shrink() : null,
+                    leadingWidth: shouldUseDesktopShell ? 64 : null,
+                    title: const _TitleSkeleton(),
+                  ),
                 const SliverToBoxAdapter(child: _HeaderSkeleton()),
                 const SliverToBoxAdapter(child: _ReaderSkeleton()),
                 const SliverToBoxAdapter(child: _BottomSkeleton()),

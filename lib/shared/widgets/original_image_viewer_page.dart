@@ -72,26 +72,28 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
 
         return Scaffold(
           backgroundColor: backgroundColor,
-          appBar: AppBar(
-            automaticallyImplyLeading: !shouldUseDesktopShell,
-            backgroundColor: colorScheme.surface,
-            foregroundColor: colorScheme.onSurface,
-            title: Text('${_pageIndex + 1}/$pageCount'),
-            actions: [
-              Padding(
-                padding: const EdgeInsetsDirectional.only(end: 8),
-                child: TextButton.icon(
-                  onPressed: canDownload ? _downloadCurrentImage : null,
-                  icon: const Icon(Icons.download_outlined),
-                  label: Text(t.illust.contextMenu.download),
-                  style: TextButton.styleFrom(
-                    foregroundColor: colorScheme.primary,
-                    disabledForegroundColor: colorScheme.onSurfaceVariant.withValues(alpha: 0.48),
-                  ),
+          appBar: (shouldUseDesktopShell)
+              ? null
+              : AppBar(
+                  automaticallyImplyLeading: !shouldUseDesktopShell,
+                  backgroundColor: colorScheme.surface,
+                  foregroundColor: colorScheme.onSurface,
+                  title: Text('${_pageIndex + 1}/$pageCount'),
+                  actions: [
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(end: 8),
+                      child: TextButton.icon(
+                        onPressed: canDownload ? _downloadCurrentImage : null,
+                        icon: const Icon(Icons.download_outlined),
+                        label: Text(t.illust.contextMenu.download),
+                        style: TextButton.styleFrom(
+                          foregroundColor: colorScheme.primary,
+                          disabledForegroundColor: colorScheme.onSurfaceVariant.withValues(alpha: 0.48),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
           body: SafeArea(
             top: false,
             child: ColoredBox(
@@ -118,6 +120,30 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
                       );
                     },
                   ),
+                  if (shouldUseDesktopShell)
+                    PositionedDirectional(
+                      top: 12,
+                      end: 12,
+                      child: Material(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('${_pageIndex + 1}/$pageCount'),
+                              const SizedBox(width: 16),
+                              IconButton(
+                                tooltip: t.illust.contextMenu.download,
+                                onPressed: canDownload ? _downloadCurrentImage : null,
+                                icon: const Icon(Icons.download_outlined),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   if (shouldUseDesktopShell && pageCount > 1) ...[
                     PositionedDirectional(
                       start: 24,

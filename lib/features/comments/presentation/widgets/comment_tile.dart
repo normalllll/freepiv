@@ -170,7 +170,7 @@ class _CommentActions extends StatelessWidget {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints.tightFor(width: 34, height: 34),
             icon: isDeleting
-                ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox.square(dimension: 16, child: LoadingSkeletonBlock())
                 : Icon(Icons.delete_outline, size: 18, color: colorScheme.error),
           ),
         if (hasReplies) Icon(Icons.mode_comment_outlined, size: 16, color: colorScheme.primary),
@@ -228,7 +228,7 @@ class _CommentRepliesSectionState extends State<CommentRepliesSection> {
 
         if (!source.initialized && source.refreshing && source.isEmpty) {
           return const _RepliesStatus(
-            icon: SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            icon: SizedBox.square(dimension: 16, child: LoadingSkeletonBlock()),
             label: '',
           );
         }
@@ -267,7 +267,7 @@ class _CommentRepliesSectionState extends State<CommentRepliesSection> {
               const Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: _RepliesStatus(
-                  icon: SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                  icon: SizedBox.square(dimension: 16, child: LoadingSkeletonBlock()),
                   label: '',
                 ),
               )

@@ -86,21 +86,14 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
               builder: (context, child) {
                 return DataLoadingCustomScrollView(
                   slivers: [
-                    SliverAppBar(
-                      pinned: true,
-                      automaticallyImplyLeading: !shouldUseDesktopShell,
-                      leading: shouldUseDesktopShell ? const SizedBox.shrink() : null,
-                      leadingWidth: shouldUseDesktopShell ? 64 : null,
-                      title: Text(_novel.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      actions: [
-                        Padding(
-                          padding: const EdgeInsetsDirectional.only(end: 8),
-                          child: Center(
-                            child: IllustBookmarkButton(illustId: _novel.id, initialIsBookmarked: _novel.isBookmarked, isNovel: true),
-                          ),
-                        ),
-                      ],
-                    ),
+                    if (!shouldUseDesktopShell)
+                      SliverAppBar(
+                        pinned: true,
+                        automaticallyImplyLeading: !shouldUseDesktopShell,
+                        leading: shouldUseDesktopShell ? const SizedBox.shrink() : null,
+                        leadingWidth: shouldUseDesktopShell ? 64 : null,
+                        title: Text(_novel.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ),
                     SliverToBoxAdapter(
                       child: NovelHeader(novel: _novel, webviewNovel: _webviewNovel),
                     ),

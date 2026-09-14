@@ -64,7 +64,7 @@ class _MePageState extends State<MePage> {
                                   enabled: account != null,
                                   onTap: () => context.pushNamed(AppRoute.meFollowers.name),
                                 ),
-                                const Spacer(),
+                                const SizedBox(height: 24),
                                 _MeAboutEntry(onTap: _openAbout),
                                 const SizedBox(height: 8),
                                 _MeSettingsEntry(onTap: _openSettings),
@@ -159,34 +159,26 @@ class _MeUserListPageState extends State<MeUserListPage> {
           appBar: shouldUseDesktopShell ? null : AppBar(title: Text(title)),
           body: SafeArea(
             top: shouldUseDesktopShell,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: UserPreviewer.desktopMaxWidth),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: source == null
-                      ? EmptyContent(
-                          icon: Icons.account_circle_outlined,
-                          title: translations.settings.account.notSignedIn,
-                          message: translations.settings.account.signedOutSubtitle,
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            if (shouldUseDesktopShell) ...[
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(4, 18, 4, 10),
-                                child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-                              ),
-                            ],
-                            Expanded(
-                              child: _MeUserListPane(source: source, emptyIcon: emptyIcon, emptyTitle: emptyTitle),
-                            ),
-                          ],
+            child: source == null
+                ? EmptyContent(
+                    icon: Icons.account_circle_outlined,
+                    title: translations.settings.account.notSignedIn,
+                    message: translations.settings.account.signedOutSubtitle,
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (shouldUseDesktopShell) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 18, 4, 10),
+                          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
                         ),
-                ),
-              ),
-            ),
+                      ],
+                      Expanded(
+                        child: _MeUserListPane(source: source, emptyIcon: emptyIcon, emptyTitle: emptyTitle),
+                      ),
+                    ],
+                  ),
           ),
         );
       },
@@ -454,7 +446,7 @@ class _MeUserListPaneState extends State<_MeUserListPane> {
                 ?locators.sliverHeader,
                 SliverDataList<UserPreview>(
                   source: source,
-                  padding: const EdgeInsets.only(top: 12),
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
                   itemBuilder: (context, userPreview, index) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),

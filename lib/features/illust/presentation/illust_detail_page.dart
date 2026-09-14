@@ -84,11 +84,10 @@ class _IllustDetailContentState extends ConsumerState<IllustDetailContent> {
     final viewerQuality = ref.watch(viewerImageQualityProvider);
     final relatedSource = ref.watch(illustRelatedWorksProvider(widget.illust.id));
     final imagePages = illustPageImages(widget.illust, viewerQuality);
-    final useDesktopLayout = MediaQuery.sizeOf(context).width >= 900;
-    final showRelatedOverlay = _showRelatedWorks && useDesktopLayout;
 
     return AutoScaffold(
       builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool shouldUseDesktopShell) {
+        final showRelatedOverlay = _showRelatedWorks && shouldUseDesktopShell;
         return Scaffold(
           body: Stack(
             clipBehavior: Clip.hardEdge,
@@ -142,7 +141,7 @@ class _IllustDetailContentState extends ConsumerState<IllustDetailContent> {
                 ),
             ],
           ),
-          floatingActionButton: useDesktopLayout || showRelatedOverlay
+          floatingActionButton: shouldUseDesktopShell || showRelatedOverlay
               ? null
               : IllustBookmarkButton(illustId: widget.illust.id, initialIsBookmarked: widget.illust.isBookmarked, floating: true),
         );

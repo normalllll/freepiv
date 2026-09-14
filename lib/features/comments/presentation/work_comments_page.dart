@@ -170,18 +170,24 @@ class _DesktopCommentsScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _maxContentWidth),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _DesktopCommentsHeader(title: title),
-                Expanded(child: child),
-                ?inputBar,
-              ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+                child: _DesktopCommentsHeader(title: title),
+              ),
             ),
-          ),
+            Expanded(child: child),
+            if (inputBar case final input?)
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+                  child: input,
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -292,6 +298,7 @@ class _CommentsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lastError = source.lastError;
+    final horizontalInset = (MediaQuery.sizeOf(context).width - 840).clamp(0.0, double.infinity) / 2 + 16;
 
     if (!source.initialized && source.refreshing && source.isEmpty) {
       return DataLoadingCustomScrollView(
@@ -299,7 +306,7 @@ class _CommentsBody extends StatelessWidget {
         slivers: [
           ?locators.sliverHeader,
           SliverPadding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.symmetric(horizontal: horizontalInset, vertical: 16),
             sliver: SliverToBoxAdapter(child: CommentsLoadingSkeleton(itemCount: 6)),
           ),
         ],
@@ -328,7 +335,7 @@ class _CommentsBody extends StatelessWidget {
         ?locators.sliverHeader,
         SliverDataList<Comment>(
           source: source,
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          padding: EdgeInsets.fromLTRB(horizontalInset, 12, horizontalInset, 24),
           itemBuilder: (context, comment, index) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),

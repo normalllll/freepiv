@@ -9,7 +9,6 @@ import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 class UserNovelListTabBody extends ConsumerStatefulWidget {
   const UserNovelListTabBody({required this.detail, required this.physics, this.sliverHeader, super.key});
@@ -167,34 +166,7 @@ class SliverListSkeleton extends StatelessWidget {
           return const SizedBox(height: 8);
         }
 
-        return Skeletonizer.zone(
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: SizedBox(
-                height: itemExtent - 24,
-                child: Row(
-                  children: [
-                    Bone(width: 72, height: itemExtent - 30, borderRadius: BorderRadius.circular(6)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Bone.text(width: double.infinity),
-                          const SizedBox(height: 10),
-                          const Bone.text(width: 130),
-                          const Spacer(),
-                          Bone.text(width: 180),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
+        return const NovelPreviewerSkeleton();
       },
     );
   }

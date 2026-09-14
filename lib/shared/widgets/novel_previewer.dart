@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/energetic_card.dart';
@@ -7,11 +8,13 @@ import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class NovelPreviewer extends StatelessWidget {
-  const NovelPreviewer({required this.novel, this.onTap, this.maxWidth, super.key});
+  const NovelPreviewer({required this.novel, this.onTap, this.maxWidth = 900, super.key});
 
   final Novel novel;
   final VoidCallback? onTap;
   final double? maxWidth;
+
+  static double contentHeight(BuildContext context) => 156 * MediaQuery.textScalerOf(context).scale(14) / 14;
 
   @override
   Widget build(BuildContext context) {
@@ -20,15 +23,18 @@ class NovelPreviewer extends StatelessWidget {
       accentColor: accent,
       onTap: onTap,
       padding: const EdgeInsets.all(12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          NovelCoverImage(url: novel.imageUrls.medium, width: 82, height: 116),
-          const SizedBox(width: 12),
-          Expanded(child: _NovelPreviewBody(novel: novel)),
-          const SizedBox(width: 8),
-          IllustBookmarkButton(illustId: novel.id, initialIsBookmarked: novel.isBookmarked, isNovel: true),
-        ],
+      child: SizedBox(
+        height: contentHeight(context),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            NovelCoverImage(url: novel.imageUrls.medium, width: 82, height: 116),
+            const SizedBox(width: 12),
+            Expanded(child: _NovelPreviewBody(novel: novel)),
+            const SizedBox(width: 8),
+            IllustBookmarkButton(illustId: novel.id, initialIsBookmarked: novel.isBookmarked, isNovel: true),
+          ],
+        ),
       ),
     );
 
@@ -45,6 +51,46 @@ class NovelPreviewer extends StatelessWidget {
       ),
     );
   }
+}
+
+class NovelPreviewerSkeleton extends StatelessWidget {
+  const NovelPreviewerSkeleton({super.key});
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: Alignment.topCenter,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 900),
+      child: Skeletonizer.zone(
+        child: EnergeticCard(
+          padding: const EdgeInsets.all(12),
+          child: SizedBox(
+            height: NovelPreviewer.contentHeight(context),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Bone(width: 82, height: 116, borderRadius: BorderRadius.circular(6)),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Bone.text(width: double.infinity),
+                      SizedBox(height: 12),
+                      Bone.text(width: 120),
+                      SizedBox(height: 12),
+                      Bone.text(width: 160),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Bone.square(size: 40),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class NovelCoverImage extends StatelessWidget {
@@ -130,14 +176,16 @@ class _NovelPreviewBody extends StatelessWidget {
           const SizedBox(height: 7),
           _NovelPreviewTags(tags: novel.tags),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 4,
-            children: [
-              _MetaPill(text: translations.user.meta.novelChars(count: novel.textLength)),
-              if (novel.pageCount > 1) _MetaPill(text: translations.user.meta.novelPages(count: novel.pageCount)),
-              if (novel.xRestrict > 0) const _MetaPill(text: 'R-18'),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              spacing: 6,
+              children: [
+                _MetaPill(text: translations.user.meta.novelChars(count: novel.textLength)),
+                if (novel.pageCount > 1) _MetaPill(text: translations.user.meta.novelPages(count: novel.pageCount)),
+                if (novel.xRestrict > 0) const _MetaPill(text: 'R-18'),
+              ],
+            ),
           ),
         ],
       ),
@@ -153,7 +201,7 @@ class _NovelPreviewTags extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (tags.isEmpty) {
-      return const SizedBox.shrink();
+      return const SizedBox(height: 24);
     }
 
     final visibleTags = tags.take(4).toList(growable: false);

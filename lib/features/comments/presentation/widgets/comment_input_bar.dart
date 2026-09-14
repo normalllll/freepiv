@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/widgets/interaction_controls.dart';
 import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -61,82 +62,78 @@ class _CommentInputBarState extends State<CommentInputBar> {
       color: colorScheme.surface,
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (replyingTo != null)
-              _ReplyHeader(
-                label: translations.replyingTo(name: replyingTo.user.name),
-                onCancel: widget.onCancelReply,
-              ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  IconButton(
-                    tooltip: translations.emoji,
-                    onPressed: _submitting || widget.assets.emojis.isEmpty ? null : () => _togglePanel(_CommentInputPanel.emoji),
-                    icon: Icon(_panel == _CommentInputPanel.emoji ? Icons.emoji_emotions : Icons.emoji_emotions_outlined),
-                    color: _panel == _CommentInputPanel.emoji ? colorScheme.primary : null,
-                  ),
-                  IconButton(
-                    tooltip: translations.stamp,
-                    onPressed: _submitting || hasText || widget.assets.stamps.isEmpty ? null : () => _togglePanel(_CommentInputPanel.stamp),
-                    icon: Icon(_panel == _CommentInputPanel.stamp ? Icons.image : Icons.image_outlined),
-                    color: _panel == _CommentInputPanel.stamp ? colorScheme.primary : null,
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      focusNode: _focusNode,
-                      minLines: 1,
-                      maxLines: 5,
-                      keyboardType: TextInputType.multiline,
-                      textInputAction: TextInputAction.newline,
-                      enabled: !_submitting,
-                      decoration: InputDecoration(
-                        hintText: replyingTo == null ? translations.inputHint : translations.replyInputHint(name: replyingTo.user.name),
-                        isDense: true,
-                        filled: true,
-                        fillColor: colorScheme.surfaceContainerHighest,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          alignment: Alignment.topCenter,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (replyingTo != null)
+                _ReplyHeader(
+                  label: translations.replyingTo(name: replyingTo.user.name),
+                  onCancel: widget.onCancelReply,
+                ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      tooltip: translations.emoji,
+                      onPressed: _submitting || widget.assets.emojis.isEmpty ? null : () => _togglePanel(_CommentInputPanel.emoji),
+                      icon: Icon(_panel == _CommentInputPanel.emoji ? Icons.emoji_emotions : Icons.emoji_emotions_outlined),
+                      color: _panel == _CommentInputPanel.emoji ? colorScheme.primary : null,
+                    ),
+                    IconButton(
+                      tooltip: translations.stamp,
+                      onPressed: _submitting || hasText || widget.assets.stamps.isEmpty ? null : () => _togglePanel(_CommentInputPanel.stamp),
+                      icon: Icon(_panel == _CommentInputPanel.stamp ? Icons.image : Icons.image_outlined),
+                      color: _panel == _CommentInputPanel.stamp ? colorScheme.primary : null,
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        focusNode: _focusNode,
+                        minLines: 1,
+                        maxLines: 5,
+                        keyboardType: TextInputType.multiline,
+                        textInputAction: TextInputAction.newline,
+                        enabled: !_submitting,
+                        decoration: InputDecoration(
+                          hintText: replyingTo == null ? translations.inputHint : translations.replyInputHint(name: replyingTo.user.name),
+                          isDense: true,
+                          filled: true,
+                          fillColor: colorScheme.surfaceContainerHighest,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  FilledButton(
-                    onPressed: _submitting || !hasText ? null : _submitText,
-                    style: FilledButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      minimumSize: const Size(0, 42),
-                    ),
-                    child: _submitting ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2)) : Text(context.t.common.send),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    AppButton(label: context.t.common.send, loading: _submitting, kind: AppButtonKind.primary, onPressed: hasText ? _submitText : null),
+                  ],
+                ),
               ),
-            ),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 180),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeOutCubic,
-              child: switch (_panel) {
-                _CommentInputPanel.none => const SizedBox.shrink(),
-                _CommentInputPanel.emoji => SizedBox(
-                  key: const ValueKey<String>('emoji-panel'),
-                  height: panelHeight,
-                  child: _EmojiGrid(assets: widget.assets.emojis, onSelected: _insertEmoji),
-                ),
-                _CommentInputPanel.stamp => SizedBox(
-                  key: const ValueKey<String>('stamp-panel'),
-                  height: panelHeight,
-                  child: _StampGrid(assets: widget.assets.stamps, onSelected: _submitStamp),
-                ),
-              },
-            ),
-          ],
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeOutCubic,
+                child: switch (_panel) {
+                  _CommentInputPanel.none => const SizedBox.shrink(),
+                  _CommentInputPanel.emoji => SizedBox(
+                    key: const ValueKey<String>('emoji-panel'),
+                    height: panelHeight,
+                    child: _EmojiGrid(assets: widget.assets.emojis, onSelected: _insertEmoji),
+                  ),
+                  _CommentInputPanel.stamp => SizedBox(
+                    key: const ValueKey<String>('stamp-panel'),
+                    height: panelHeight,
+                    child: _StampGrid(assets: widget.assets.stamps, onSelected: _submitStamp),
+                  ),
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

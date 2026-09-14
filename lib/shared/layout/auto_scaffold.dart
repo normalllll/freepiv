@@ -11,6 +11,9 @@ class AutoScaffold extends StatelessWidget {
   final double tabletBreakpoint;
   final double desktopBreakpoint;
 
+  static bool usesDesktopShellOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_ShellLayout>()?.desktop ?? _shouldUseDesktopShell(MediaQuery.sizeOf(context));
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -23,8 +26,19 @@ class AutoScaffold extends StatelessWidget {
       desktopBreakpoint: desktopBreakpoint,
     );
 
-    return builder(context, layout, orientation, _shouldUseDesktopShell(layout));
+    final desktop = usesDesktopShellOf(context);
+    return _ShellLayout(desktop: desktop, child: builder(context, layout, orientation, desktop));
   }
+}
+
+// Descendants use the window's navigation mode even after ContentViewport
+// subtracts the sidebar or a detail pane constrains the available content width.
+class _ShellLayout extends InheritedWidget {
+  const _ShellLayout({required this.desktop, required super.child});
+  final bool desktop;
+
+  @override
+  bool updateShouldNotify(_ShellLayout oldWidget) => desktop != oldWidget.desktop;
 }
 
 enum AutoScaffoldSizeClass { compact, medium, expanded, large }
@@ -62,8 +76,8 @@ class AutoScaffoldLayout {
   bool get isLarge => sizeClass == AutoScaffoldSizeClass.large;
 }
 
-bool _shouldUseDesktopShell(AutoScaffoldLayout layout) {
-  if (layout.shortestSide < 600) {
+bool _shouldUseDesktopShell(Size layout) {
+  if (!isDesktopPlatform && layout.shortestSide < 600) {
     return false;
   }
 
