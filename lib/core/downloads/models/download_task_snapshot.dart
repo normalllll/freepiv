@@ -39,6 +39,10 @@ class DownloadTaskSnapshot {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  bool get isCompleted => status == DownloadStatus.downloaded && saveState == SaveState.saved;
+
+  bool get needsRetry => status == DownloadStatus.failed || (status == DownloadStatus.downloaded && saveState == SaveState.failed);
+
   bool get isTerminal {
     return status == DownloadStatus.downloaded || status == DownloadStatus.failed || status == DownloadStatus.cancelled;
   }

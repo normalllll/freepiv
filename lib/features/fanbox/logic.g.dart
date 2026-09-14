@@ -671,7 +671,7 @@ final class FanboxDownloadsProvider extends $NotifierProvider<FanboxDownloads, F
   }
 }
 
-String _$fanboxDownloadsHash() => r'32ba2ad760e64a90db8b13b53dd7c8a0bf879e42';
+String _$fanboxDownloadsHash() => r'39f80abcbac73a866be52068c17d2c7c573439fe';
 
 abstract class _$FanboxDownloads extends $Notifier<FanboxDownloadProgress> {
   FanboxDownloadProgress build();

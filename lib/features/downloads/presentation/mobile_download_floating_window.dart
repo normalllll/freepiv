@@ -1,3 +1,4 @@
+import 'download_bulk_actions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'fanbox_download_tasks.dart';
@@ -8,10 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/app_router.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
-import 'package:freepiv/i18n/strings.g.dart';
 
 class MobileDownloadFloatingWindow extends ConsumerStatefulWidget {
   const MobileDownloadFloatingWindow({required this.child, super.key});
@@ -31,6 +30,7 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
 
   Offset? _position;
   bool _expanded = false;
+  late final _tasks = downloadManager.watchTasks();
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
           child: LayoutBuilder(
             builder: (context, constraints) {
               return StreamBuilder<List<DownloadTaskSnapshot>>(
-                stream: downloadManager.watchTasks(),
+                stream: _tasks,
                 builder: (context, snapshot) {
                   final tasks = snapshot.data ?? const <DownloadTaskSnapshot>[];
 
@@ -105,7 +105,6 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
         onDragDelta: (delta) => _moveBy(delta, constraints.biggest, windowSize, viewPadding),
         onToggleExpanded: () => setState(() => _expanded = !_expanded),
         onClose: () => setState(() => _expanded = false),
-        onSync: () => unawaited(_syncDownloads()),
         onTaskTap: _openTask,
       ),
     );
@@ -138,14 +137,6 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
     });
   }
 
-  Future<void> _syncDownloads() async {
-    try {
-      await downloadManager.sync();
-    } catch (error) {
-      AppToast.errorWithCause(t.settings.downloads.syncFailed, error);
-    }
-  }
-
   void _openTask(DownloadTaskSnapshot task) {
     setState(() => _expanded = false);
     unawaited(AppRouter.router.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': task.illustId.toString()}));
@@ -160,7 +151,6 @@ class _DraggableDownloadWindow extends StatelessWidget {
     required this.onDragDelta,
     required this.onToggleExpanded,
     required this.onClose,
-    required this.onSync,
     required this.onTaskTap,
   });
 
@@ -170,7 +160,6 @@ class _DraggableDownloadWindow extends StatelessWidget {
   final ValueChanged<Offset> onDragDelta;
   final VoidCallback onToggleExpanded;
   final VoidCallback onClose;
-  final VoidCallback onSync;
   final ValueChanged<DownloadTaskSnapshot> onTaskTap;
 
   @override
@@ -189,7 +178,12 @@ class _DraggableDownloadWindow extends StatelessWidget {
                 alignment: Alignment.bottomRight,
                 duration: const Duration(milliseconds: 260),
                 curve: Curves.easeOutBack,
-                child: _DownloadFloatingPanel(summary: summary, tasks: tasks, onDragDelta: onDragDelta, onClose: onClose, onSync: onSync, onTaskTap: onTaskTap),
+                child: RepaintBoundary(
+                  child: TickerMode(
+                    enabled: expanded,
+                    child: _DownloadFloatingPanel(summary: summary, tasks: tasks, onDragDelta: onDragDelta, onClose: onClose, onTaskTap: onTaskTap),
+                  ),
+                ),
               ),
             ),
           ),
@@ -288,20 +282,12 @@ class _DownloadFloatingButton extends StatelessWidget {
 }
 
 class _DownloadFloatingPanel extends StatelessWidget {
-  const _DownloadFloatingPanel({
-    required this.summary,
-    required this.tasks,
-    required this.onDragDelta,
-    required this.onClose,
-    required this.onSync,
-    required this.onTaskTap,
-  });
+  const _DownloadFloatingPanel({required this.summary, required this.tasks, required this.onDragDelta, required this.onClose, required this.onTaskTap});
 
   final DownloadSummary summary;
   final List<DownloadTaskSnapshot> tasks;
   final ValueChanged<Offset> onDragDelta;
   final VoidCallback onClose;
-  final VoidCallback onSync;
   final ValueChanged<DownloadTaskSnapshot> onTaskTap;
 
   @override
@@ -327,7 +313,7 @@ class _DownloadFloatingPanel extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _DownloadFloatingPanelHeader(summary: summary, onDragDelta: onDragDelta, onSync: onSync, onClose: onClose),
+                _DownloadFloatingPanelHeader(summary: summary, onDragDelta: onDragDelta, onClose: onClose),
                 const SizedBox(height: 8),
                 const Divider(height: 1),
                 Expanded(
@@ -360,7 +346,6 @@ class _DownloadFloatingPanelFallback extends StatelessWidget {
   final DownloadSummary summary;
   final ValueChanged<Offset> onDragDelta;
   final VoidCallback onClose;
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -411,13 +396,12 @@ class _DownloadFloatingPanelFallback extends StatelessWidget {
 }
 
 class _DownloadFloatingPanelHeader extends StatelessWidget {
-  const _DownloadFloatingPanelHeader({required this.summary, required this.onDragDelta, required this.onSync, required this.onClose});
+  const _DownloadFloatingPanelHeader({required this.summary, required this.onDragDelta, required this.onClose});
 
   final DownloadSummary summary;
   final ValueChanged<Offset> onDragDelta;
-  final VoidCallback onSync;
-  final VoidCallback onClose;
 
+  final VoidCallback onClose;
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -427,12 +411,12 @@ class _DownloadFloatingPanelHeader extends StatelessWidget {
         final actions = Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(icon: const Icon(Icons.sync_outlined), onPressed: onSync),
+            const DownloadBulkActions(),
             IconButton(icon: const Icon(Icons.close_outlined), onPressed: onClose),
           ],
         );
 
-        if (constraints.maxWidth < 240) {
+        if (constraints.maxWidth < 360) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

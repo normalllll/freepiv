@@ -87,6 +87,11 @@ final class DefaultDownloadManager implements DownloadManager {
     _mediaSaver ??= components.mediaSaver;
     _permissionGuard ??= components.permissionGuard;
     await _activeEngine.initialize();
+    // Remove only records completed in an earlier session, before queue recovery
+    // can finish any of this session's pending work. Saved files are untouched.
+    for (final task in await _activeStore.listTasks()) {
+      if (task.isCompleted) await _activeStore.deleteTask(task.id);
+    }
     _engineSubscription = _activeEngine.events
         .asyncMap(_handleEngineEvent)
         .listen(

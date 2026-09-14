@@ -128,6 +128,8 @@
       "cancel": "キャンセル",
       "deleteTask": "タスクを削除",
       "sync": "同期",
+      "retryFailed": "失敗したタスクをすべて再試行",
+      "clearCompleted": "完了したタスクを消去",
       "syncFailed": "ダウンロード状態の同期に失敗しました",
       "actionFailed": "ダウンロード操作に失敗しました",
       "expand": "展開",

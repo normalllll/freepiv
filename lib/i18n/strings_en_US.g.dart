@@ -602,6 +602,8 @@ class Translations$settings$downloads$en_US {
 	String get cancel => 'Cancel';
 	String get deleteTask => 'Delete task';
 	String get sync => 'Sync';
+	String get retryFailed => 'Retry all failed tasks';
+	String get clearCompleted => 'Clear completed tasks';
 	String get syncFailed => 'Download sync failed';
 	String get actionFailed => 'Download action failed';
 	String get expand => 'Expand';
@@ -1261,6 +1263,8 @@ extension on Translations {
 			'settings.downloads.cancel' => 'Cancel',
 			'settings.downloads.deleteTask' => 'Delete task',
 			'settings.downloads.sync' => 'Sync',
+			'settings.downloads.retryFailed' => 'Retry all failed tasks',
+			'settings.downloads.clearCompleted' => 'Clear completed tasks',
 			'settings.downloads.syncFailed' => 'Download sync failed',
 			'settings.downloads.actionFailed' => 'Download action failed',
 			'settings.downloads.expand' => 'Expand',

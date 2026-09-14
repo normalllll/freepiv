@@ -1,14 +1,13 @@
+import 'dart:math' as math;
+import 'download_bulk_actions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'fanbox_download_tasks.dart';
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
-import 'package:freepiv/i18n/strings.g.dart';
 import 'package:go_router/go_router.dart';
 
 class DesktopDownloadDock extends ConsumerStatefulWidget {
@@ -26,87 +25,91 @@ class _DesktopDownloadDockState extends ConsumerState<DesktopDownloadDock> {
   static const _panelHeight = 420.0;
 
   bool _expanded = false;
+  late final _tasks = downloadManager.watchTasks();
 
   @override
   Widget build(BuildContext context) {
     final fanbox = ref.watch(fanboxDownloadsProvider);
-    return StreamBuilder<List<DownloadTaskSnapshot>>(
-      stream: downloadManager.watchTasks(),
-      builder: (context, snapshot) {
-        final tasks = snapshot.data ?? const <DownloadTaskSnapshot>[];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final panelWidth = math.min(_panelWidth, math.max(0.0, constraints.maxWidth - widget.railWidth - 24));
+        final panelHeight = math.min(_panelHeight, math.max(0.0, constraints.maxHeight - widget.bottomOffset - 12));
+        return StreamBuilder<List<DownloadTaskSnapshot>>(
+          stream: _tasks,
+          builder: (context, snapshot) {
+            final tasks = snapshot.data ?? const <DownloadTaskSnapshot>[];
 
-        final panelTasks = tasks;
-        if (panelTasks.isEmpty && !fanbox.visible) {
-          return const SizedBox.shrink();
-        }
+            final panelTasks = tasks;
+            if (panelTasks.isEmpty && !fanbox.visible) {
+              return const SizedBox.shrink();
+            }
 
-        final summary = combinedDownloadSummary(DownloadSummary.fromTasks(panelTasks), fanbox);
+            final summary = combinedDownloadSummary(DownloadSummary.fromTasks(panelTasks), fanbox);
 
-        return Stack(
-          children: [
-            Positioned.fill(
-              key: const ValueKey<String>('desktop-download-dismiss-layer'),
-              child: IgnorePointer(
-                ignoring: !_expanded,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => setState(() => _expanded = false),
-                  child: const ColoredBox(color: Colors.transparent),
-                ),
-              ),
-            ),
-            Positioned(
-              key: const ValueKey<String>('desktop-download-button'),
-              left: 0,
-              bottom: widget.bottomOffset,
-              width: widget.railWidth,
-              child: Center(
-                child: _DownloadDockButton(summary: summary, expanded: _expanded, onPressed: () => setState(() => _expanded = !_expanded)),
-              ),
-            ),
-            Positioned(
-              key: const ValueKey<String>('desktop-download-panel'),
-              left: widget.railWidth + 12,
-              bottom: widget.bottomOffset,
-              width: _panelWidth,
-              height: _panelHeight,
-              child: IgnorePointer(
-                ignoring: !_expanded,
-                child: AnimatedOpacity(
-                  opacity: _expanded ? 1 : 0,
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOutCubic,
-                  child: AnimatedScale(
-                    scale: _expanded ? 1 : 0.96,
-                    alignment: Alignment.bottomLeft,
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    child: _DownloadDockPanel(
-                      summary: summary,
-                      tasks: panelTasks,
-                      onClose: () => setState(() => _expanded = false),
-                      onSync: () => unawaited(_syncDownloads()),
-                      onTaskTap: (task) {
-                        setState(() => _expanded = false);
-                        context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': task.illustId.toString()});
-                      },
+            return Stack(
+              children: [
+                Positioned.fill(
+                  key: const ValueKey<String>('desktop-download-dismiss-layer'),
+                  child: IgnorePointer(
+                    ignoring: !_expanded,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => setState(() => _expanded = false),
+                      child: const ColoredBox(color: Colors.transparent),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ],
+                Positioned(
+                  key: const ValueKey<String>('desktop-download-button'),
+                  left: 0,
+                  bottom: widget.bottomOffset,
+                  width: widget.railWidth,
+                  child: Center(
+                    child: _DownloadDockButton(summary: summary, expanded: _expanded, onPressed: () => setState(() => _expanded = !_expanded)),
+                  ),
+                ),
+                if (panelWidth >= 220 && panelHeight >= 220)
+                  Positioned(
+                    key: const ValueKey<String>('desktop-download-panel'),
+                    left: widget.railWidth + 12,
+                    bottom: widget.bottomOffset,
+                    width: panelWidth,
+                    height: panelHeight,
+                    child: IgnorePointer(
+                      ignoring: !_expanded,
+                      child: AnimatedOpacity(
+                        opacity: _expanded ? 1 : 0,
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutCubic,
+                        child: AnimatedScale(
+                          scale: _expanded ? 1 : 0.96,
+                          alignment: Alignment.bottomLeft,
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutCubic,
+                          child: RepaintBoundary(
+                            child: TickerMode(
+                              enabled: _expanded,
+                              child: _DownloadDockPanel(
+                                summary: summary,
+                                tasks: panelTasks,
+                                onClose: () => setState(() => _expanded = false),
+                                onTaskTap: (task) {
+                                  setState(() => _expanded = false);
+                                  context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': task.illustId.toString()});
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         );
       },
     );
-  }
-
-  Future<void> _syncDownloads() async {
-    try {
-      await downloadManager.sync();
-    } catch (error) {
-      AppToast.errorWithCause(t.settings.downloads.syncFailed, error);
-    }
   }
 }
 
@@ -177,12 +180,11 @@ class _DownloadDockButton extends StatelessWidget {
 }
 
 class _DownloadDockPanel extends StatelessWidget {
-  const _DownloadDockPanel({required this.summary, required this.tasks, required this.onClose, required this.onSync, required this.onTaskTap});
+  const _DownloadDockPanel({required this.summary, required this.tasks, required this.onClose, required this.onTaskTap});
 
   final DownloadSummary summary;
   final List<DownloadTaskSnapshot> tasks;
   final VoidCallback onClose;
-  final VoidCallback onSync;
   final ValueChanged<DownloadTaskSnapshot> onTaskTap;
 
   @override
@@ -203,21 +205,35 @@ class _DownloadDockPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: DownloadSummaryView(summary: summary, compact: true)),
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 14, bottom: 28),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final actions = Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const DownloadBulkActions(),
+                    IconButton(icon: const Icon(Icons.close_outlined), onPressed: onClose),
+                  ],
+                );
+                final summaryView = DownloadSummaryView(summary: summary, compact: true);
+                if (constraints.maxWidth < 360) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      IconButton(icon: const Icon(Icons.sync_outlined), onPressed: onSync),
-                      IconButton(icon: const Icon(Icons.close_outlined), onPressed: onClose),
+                      Align(alignment: AlignmentDirectional.centerEnd, child: actions),
+                      const SizedBox(height: 8),
+                      summaryView,
                     ],
-                  ),
-                ),
-              ],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: summaryView),
+                    const SizedBox(width: 12),
+                    actions,
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 10),
             const Divider(height: 1),

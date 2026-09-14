@@ -600,6 +600,8 @@ class Translations$settings$downloads$zh_CN extends Translations$settings$downlo
 	@override String get cancel => '取消';
 	@override String get deleteTask => '删除任务';
 	@override String get sync => '同步';
+	@override String get retryFailed => '重试所有失败任务';
+	@override String get clearCompleted => '清空已完成任务';
 	@override String get syncFailed => '下载状态同步失败';
 	@override String get actionFailed => '下载操作失败';
 	@override String get expand => '展开';
@@ -1259,6 +1261,8 @@ extension on TranslationsZhCn {
 			'settings.downloads.cancel' => '取消',
 			'settings.downloads.deleteTask' => '删除任务',
 			'settings.downloads.sync' => '同步',
+			'settings.downloads.retryFailed' => '重试所有失败任务',
+			'settings.downloads.clearCompleted' => '清空已完成任务',
 			'settings.downloads.syncFailed' => '下载状态同步失败',
 			'settings.downloads.actionFailed' => '下载操作失败',
 			'settings.downloads.expand' => '展开',

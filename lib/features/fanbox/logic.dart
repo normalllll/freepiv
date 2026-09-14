@@ -356,6 +356,12 @@ class FanboxDownloads extends _$FanboxDownloads {
     if (request != null) await downloadPosts(directory: request.directory, post: request.post, creatorId: request.creatorId, media: request.media);
   }
 
+  void clearCompleted() {
+    if (state.running || state.error != null || state.cancelled || state.completed != state.total) return;
+    _lastRequest = null;
+    state = const FanboxDownloadProgress();
+  }
+
   Future<void> downloadPosts({required String directory, FanboxPost? post, String? creatorId, List<({String url, String filename})> media = const []}) async {
     if (state.running) return;
     _lastRequest = (directory: directory, post: post, creatorId: creatorId, media: List.unmodifiable(media));

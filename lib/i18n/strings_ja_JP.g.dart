@@ -600,6 +600,8 @@ class _Translations$settings$downloads$ja_JP extends Translations$settings$downl
 	@override String get cancel => 'キャンセル';
 	@override String get deleteTask => 'タスクを削除';
 	@override String get sync => '同期';
+	@override String get retryFailed => '失敗したタスクをすべて再試行';
+	@override String get clearCompleted => '完了したタスクを消去';
 	@override String get syncFailed => 'ダウンロード状態の同期に失敗しました';
 	@override String get actionFailed => 'ダウンロード操作に失敗しました';
 	@override String get expand => '展開';
@@ -1259,6 +1261,8 @@ extension on TranslationsJaJp {
 			'settings.downloads.cancel' => 'キャンセル',
 			'settings.downloads.deleteTask' => 'タスクを削除',
 			'settings.downloads.sync' => '同期',
+			'settings.downloads.retryFailed' => '失敗したタスクをすべて再試行',
+			'settings.downloads.clearCompleted' => '完了したタスクを消去',
 			'settings.downloads.syncFailed' => 'ダウンロード状態の同期に失敗しました',
 			'settings.downloads.actionFailed' => 'ダウンロード操作に失敗しました',
 			'settings.downloads.expand' => '展開',

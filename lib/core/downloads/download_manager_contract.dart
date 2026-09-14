@@ -57,3 +57,23 @@ abstract interface class DownloadManager {
 
   Future<void> dispose();
 }
+
+extension DownloadManagerBatchActions on DownloadManager {
+  Future<void> retryFailed() => _applyToTasks((task) => task.needsRetry, retry);
+
+  Future<void> clearCompleted() => _applyToTasks((task) => task.isCompleted, deleteTask);
+
+  Future<void> _applyToTasks(bool Function(DownloadTaskSnapshot) matches, Future<void> Function(String) action) async {
+    Object? firstError;
+    StackTrace? firstStack;
+    for (final task in (await listTasks()).where(matches)) {
+      try {
+        await action(task.id);
+      } catch (error, stack) {
+        firstError ??= error;
+        firstStack ??= stack;
+      }
+    }
+    if (firstError != null) Error.throwWithStackTrace(firstError, firstStack!);
+  }
+}

@@ -128,6 +128,8 @@
       "cancel": "Cancel",
       "deleteTask": "Delete task",
       "sync": "Sync",
+      "retryFailed": "Retry all failed tasks",
+      "clearCompleted": "Clear completed tasks",
       "syncFailed": "Download sync failed",
       "actionFailed": "Download action failed",
       "expand": "Expand",

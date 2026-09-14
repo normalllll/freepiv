@@ -128,6 +128,8 @@
       "cancel": "取消",
       "deleteTask": "刪除任務",
       "sync": "同步",
+      "retryFailed": "重試所有失敗任務",
+      "clearCompleted": "清空已完成任務",
       "syncFailed": "下載狀態同步失敗",
       "actionFailed": "下載操作失敗",
       "expand": "展開",

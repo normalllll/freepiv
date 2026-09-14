@@ -600,6 +600,8 @@ class Translations$settings$downloads$zh_Hant_TW extends Translations$settings$d
 	@override String get cancel => '取消';
 	@override String get deleteTask => '刪除任務';
 	@override String get sync => '同步';
+	@override String get retryFailed => '重試所有失敗任務';
+	@override String get clearCompleted => '清空已完成任務';
 	@override String get syncFailed => '下載狀態同步失敗';
 	@override String get actionFailed => '下載操作失敗';
 	@override String get expand => '展開';
@@ -1259,6 +1261,8 @@ extension on TranslationsZhHantTw {
 			'settings.downloads.cancel' => '取消',
 			'settings.downloads.deleteTask' => '刪除任務',
 			'settings.downloads.sync' => '同步',
+			'settings.downloads.retryFailed' => '重試所有失敗任務',
+			'settings.downloads.clearCompleted' => '清空已完成任務',
 			'settings.downloads.syncFailed' => '下載狀態同步失敗',
 			'settings.downloads.actionFailed' => '下載操作失敗',
 			'settings.downloads.expand' => '展開',
