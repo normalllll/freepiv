@@ -73,6 +73,30 @@ class $DownloadJobsTable extends DownloadJobs
     requiredDuringInsert: false,
     defaultValue: const Constant('{}'),
   );
+  static const VerificationMeta _networkOptionsJsonMeta =
+      const VerificationMeta('networkOptionsJson');
+  @override
+  late final GeneratedColumn<String> networkOptionsJson =
+      GeneratedColumn<String>(
+        'network_options_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('{}'),
+      );
+  static const VerificationMeta _validationJsonMeta = const VerificationMeta(
+    'validationJson',
+  );
+  @override
+  late final GeneratedColumn<String> validationJson = GeneratedColumn<String>(
+    'validation_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
   static const VerificationMeta _saveTargetJsonMeta = const VerificationMeta(
     'saveTargetJson',
   );
@@ -135,6 +159,8 @@ class $DownloadJobsTable extends DownloadJobs
     url,
     filename,
     headersJson,
+    networkOptionsJson,
+    validationJson,
     saveTargetJson,
     thumbnailUrl,
     title,
@@ -194,6 +220,24 @@ class $DownloadJobsTable extends DownloadJobs
         headersJson.isAcceptableOrUnknown(
           data['headers_json']!,
           _headersJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('network_options_json')) {
+      context.handle(
+        _networkOptionsJsonMeta,
+        networkOptionsJson.isAcceptableOrUnknown(
+          data['network_options_json']!,
+          _networkOptionsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('validation_json')) {
+      context.handle(
+        _validationJsonMeta,
+        validationJson.isAcceptableOrUnknown(
+          data['validation_json']!,
+          _validationJsonMeta,
         ),
       );
     }
@@ -270,6 +314,14 @@ class $DownloadJobsTable extends DownloadJobs
         DriftSqlType.string,
         data['${effectivePrefix}headers_json'],
       )!,
+      networkOptionsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}network_options_json'],
+      )!,
+      validationJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}validation_json'],
+      )!,
       saveTargetJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}save_target_json'],
@@ -306,6 +358,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   final String url;
   final String filename;
   final String headersJson;
+  final String networkOptionsJson;
+  final String validationJson;
   final String saveTargetJson;
   final String? thumbnailUrl;
   final String? title;
@@ -318,6 +372,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     required this.url,
     required this.filename,
     required this.headersJson,
+    required this.networkOptionsJson,
+    required this.validationJson,
     required this.saveTargetJson,
     this.thumbnailUrl,
     this.title,
@@ -333,6 +389,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     map['url'] = Variable<String>(url);
     map['filename'] = Variable<String>(filename);
     map['headers_json'] = Variable<String>(headersJson);
+    map['network_options_json'] = Variable<String>(networkOptionsJson);
+    map['validation_json'] = Variable<String>(validationJson);
     map['save_target_json'] = Variable<String>(saveTargetJson);
     if (!nullToAbsent || thumbnailUrl != null) {
       map['thumbnail_url'] = Variable<String>(thumbnailUrl);
@@ -353,6 +411,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       url: Value(url),
       filename: Value(filename),
       headersJson: Value(headersJson),
+      networkOptionsJson: Value(networkOptionsJson),
+      validationJson: Value(validationJson),
       saveTargetJson: Value(saveTargetJson),
       thumbnailUrl: thumbnailUrl == null && nullToAbsent
           ? const Value.absent()
@@ -377,6 +437,10 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       url: serializer.fromJson<String>(json['url']),
       filename: serializer.fromJson<String>(json['filename']),
       headersJson: serializer.fromJson<String>(json['headersJson']),
+      networkOptionsJson: serializer.fromJson<String>(
+        json['networkOptionsJson'],
+      ),
+      validationJson: serializer.fromJson<String>(json['validationJson']),
       saveTargetJson: serializer.fromJson<String>(json['saveTargetJson']),
       thumbnailUrl: serializer.fromJson<String?>(json['thumbnailUrl']),
       title: serializer.fromJson<String?>(json['title']),
@@ -394,6 +458,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       'url': serializer.toJson<String>(url),
       'filename': serializer.toJson<String>(filename),
       'headersJson': serializer.toJson<String>(headersJson),
+      'networkOptionsJson': serializer.toJson<String>(networkOptionsJson),
+      'validationJson': serializer.toJson<String>(validationJson),
       'saveTargetJson': serializer.toJson<String>(saveTargetJson),
       'thumbnailUrl': serializer.toJson<String?>(thumbnailUrl),
       'title': serializer.toJson<String?>(title),
@@ -409,6 +475,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     String? url,
     String? filename,
     String? headersJson,
+    String? networkOptionsJson,
+    String? validationJson,
     String? saveTargetJson,
     Value<String?> thumbnailUrl = const Value.absent(),
     Value<String?> title = const Value.absent(),
@@ -421,6 +489,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     url: url ?? this.url,
     filename: filename ?? this.filename,
     headersJson: headersJson ?? this.headersJson,
+    networkOptionsJson: networkOptionsJson ?? this.networkOptionsJson,
+    validationJson: validationJson ?? this.validationJson,
     saveTargetJson: saveTargetJson ?? this.saveTargetJson,
     thumbnailUrl: thumbnailUrl.present ? thumbnailUrl.value : this.thumbnailUrl,
     title: title.present ? title.value : this.title,
@@ -437,6 +507,12 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       headersJson: data.headersJson.present
           ? data.headersJson.value
           : this.headersJson,
+      networkOptionsJson: data.networkOptionsJson.present
+          ? data.networkOptionsJson.value
+          : this.networkOptionsJson,
+      validationJson: data.validationJson.present
+          ? data.validationJson.value
+          : this.validationJson,
       saveTargetJson: data.saveTargetJson.present
           ? data.saveTargetJson.value
           : this.saveTargetJson,
@@ -458,6 +534,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
           ..write('url: $url, ')
           ..write('filename: $filename, ')
           ..write('headersJson: $headersJson, ')
+          ..write('networkOptionsJson: $networkOptionsJson, ')
+          ..write('validationJson: $validationJson, ')
           ..write('saveTargetJson: $saveTargetJson, ')
           ..write('thumbnailUrl: $thumbnailUrl, ')
           ..write('title: $title, ')
@@ -475,6 +553,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     url,
     filename,
     headersJson,
+    networkOptionsJson,
+    validationJson,
     saveTargetJson,
     thumbnailUrl,
     title,
@@ -491,6 +571,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
           other.url == this.url &&
           other.filename == this.filename &&
           other.headersJson == this.headersJson &&
+          other.networkOptionsJson == this.networkOptionsJson &&
+          other.validationJson == this.validationJson &&
           other.saveTargetJson == this.saveTargetJson &&
           other.thumbnailUrl == this.thumbnailUrl &&
           other.title == this.title &&
@@ -505,6 +587,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   final Value<String> url;
   final Value<String> filename;
   final Value<String> headersJson;
+  final Value<String> networkOptionsJson;
+  final Value<String> validationJson;
   final Value<String> saveTargetJson;
   final Value<String?> thumbnailUrl;
   final Value<String?> title;
@@ -518,6 +602,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     this.url = const Value.absent(),
     this.filename = const Value.absent(),
     this.headersJson = const Value.absent(),
+    this.networkOptionsJson = const Value.absent(),
+    this.validationJson = const Value.absent(),
     this.saveTargetJson = const Value.absent(),
     this.thumbnailUrl = const Value.absent(),
     this.title = const Value.absent(),
@@ -532,6 +618,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     required String url,
     required String filename,
     this.headersJson = const Value.absent(),
+    this.networkOptionsJson = const Value.absent(),
+    this.validationJson = const Value.absent(),
     this.saveTargetJson = const Value.absent(),
     this.thumbnailUrl = const Value.absent(),
     this.title = const Value.absent(),
@@ -551,6 +639,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     Expression<String>? url,
     Expression<String>? filename,
     Expression<String>? headersJson,
+    Expression<String>? networkOptionsJson,
+    Expression<String>? validationJson,
     Expression<String>? saveTargetJson,
     Expression<String>? thumbnailUrl,
     Expression<String>? title,
@@ -565,6 +655,9 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
       if (url != null) 'url': url,
       if (filename != null) 'filename': filename,
       if (headersJson != null) 'headers_json': headersJson,
+      if (networkOptionsJson != null)
+        'network_options_json': networkOptionsJson,
+      if (validationJson != null) 'validation_json': validationJson,
       if (saveTargetJson != null) 'save_target_json': saveTargetJson,
       if (thumbnailUrl != null) 'thumbnail_url': thumbnailUrl,
       if (title != null) 'title': title,
@@ -581,6 +674,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     Value<String>? url,
     Value<String>? filename,
     Value<String>? headersJson,
+    Value<String>? networkOptionsJson,
+    Value<String>? validationJson,
     Value<String>? saveTargetJson,
     Value<String?>? thumbnailUrl,
     Value<String?>? title,
@@ -595,6 +690,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
       url: url ?? this.url,
       filename: filename ?? this.filename,
       headersJson: headersJson ?? this.headersJson,
+      networkOptionsJson: networkOptionsJson ?? this.networkOptionsJson,
+      validationJson: validationJson ?? this.validationJson,
       saveTargetJson: saveTargetJson ?? this.saveTargetJson,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       title: title ?? this.title,
@@ -624,6 +721,12 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     }
     if (headersJson.present) {
       map['headers_json'] = Variable<String>(headersJson.value);
+    }
+    if (networkOptionsJson.present) {
+      map['network_options_json'] = Variable<String>(networkOptionsJson.value);
+    }
+    if (validationJson.present) {
+      map['validation_json'] = Variable<String>(validationJson.value);
     }
     if (saveTargetJson.present) {
       map['save_target_json'] = Variable<String>(saveTargetJson.value);
@@ -655,6 +758,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
           ..write('url: $url, ')
           ..write('filename: $filename, ')
           ..write('headersJson: $headersJson, ')
+          ..write('networkOptionsJson: $networkOptionsJson, ')
+          ..write('validationJson: $validationJson, ')
           ..write('saveTargetJson: $saveTargetJson, ')
           ..write('thumbnailUrl: $thumbnailUrl, ')
           ..write('title: $title, ')
@@ -1368,6 +1473,8 @@ typedef $$DownloadJobsTableCreateCompanionBuilder =
       required String url,
       required String filename,
       Value<String> headersJson,
+      Value<String> networkOptionsJson,
+      Value<String> validationJson,
       Value<String> saveTargetJson,
       Value<String?> thumbnailUrl,
       Value<String?> title,
@@ -1383,6 +1490,8 @@ typedef $$DownloadJobsTableUpdateCompanionBuilder =
       Value<String> url,
       Value<String> filename,
       Value<String> headersJson,
+      Value<String> networkOptionsJson,
+      Value<String> validationJson,
       Value<String> saveTargetJson,
       Value<String?> thumbnailUrl,
       Value<String?> title,
@@ -1452,6 +1561,16 @@ class $$DownloadJobsTableFilterComposer
 
   ColumnFilters<String> get headersJson => $composableBuilder(
     column: $table.headersJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get networkOptionsJson => $composableBuilder(
+    column: $table.networkOptionsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get validationJson => $composableBuilder(
+    column: $table.validationJson,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1545,6 +1664,16 @@ class $$DownloadJobsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get networkOptionsJson => $composableBuilder(
+    column: $table.networkOptionsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get validationJson => $composableBuilder(
+    column: $table.validationJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get saveTargetJson => $composableBuilder(
     column: $table.saveTargetJson,
     builder: (column) => ColumnOrderings(column),
@@ -1597,6 +1726,16 @@ class $$DownloadJobsTableAnnotationComposer
 
   GeneratedColumn<String> get headersJson => $composableBuilder(
     column: $table.headersJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get networkOptionsJson => $composableBuilder(
+    column: $table.networkOptionsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get validationJson => $composableBuilder(
+    column: $table.validationJson,
     builder: (column) => column,
   );
 
@@ -1681,6 +1820,8 @@ class $$DownloadJobsTableTableManager
                 Value<String> url = const Value.absent(),
                 Value<String> filename = const Value.absent(),
                 Value<String> headersJson = const Value.absent(),
+                Value<String> networkOptionsJson = const Value.absent(),
+                Value<String> validationJson = const Value.absent(),
                 Value<String> saveTargetJson = const Value.absent(),
                 Value<String?> thumbnailUrl = const Value.absent(),
                 Value<String?> title = const Value.absent(),
@@ -1694,6 +1835,8 @@ class $$DownloadJobsTableTableManager
                 url: url,
                 filename: filename,
                 headersJson: headersJson,
+                networkOptionsJson: networkOptionsJson,
+                validationJson: validationJson,
                 saveTargetJson: saveTargetJson,
                 thumbnailUrl: thumbnailUrl,
                 title: title,
@@ -1709,6 +1852,8 @@ class $$DownloadJobsTableTableManager
                 required String url,
                 required String filename,
                 Value<String> headersJson = const Value.absent(),
+                Value<String> networkOptionsJson = const Value.absent(),
+                Value<String> validationJson = const Value.absent(),
                 Value<String> saveTargetJson = const Value.absent(),
                 Value<String?> thumbnailUrl = const Value.absent(),
                 Value<String?> title = const Value.absent(),
@@ -1722,6 +1867,8 @@ class $$DownloadJobsTableTableManager
                 url: url,
                 filename: filename,
                 headersJson: headersJson,
+                networkOptionsJson: networkOptionsJson,
+                validationJson: validationJson,
                 saveTargetJson: saveTargetJson,
                 thumbnailUrl: thumbnailUrl,
                 title: title,

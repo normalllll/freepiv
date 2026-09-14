@@ -3,12 +3,27 @@ import 'dart:async';
 import 'download_models.dart';
 
 class DownloadCapabilities {
-  const DownloadCapabilities({required this.supportsBackground, required this.supportsCancel, required this.supportsPauseResume, required this.handlesSaving});
+  const DownloadCapabilities({
+    required this.supportsBackground,
+    required this.supportsCancel,
+    required this.supportsPauseResume,
+    required this.handlesSaving,
+    required this.supportsHeaders,
+    required this.supportsProxy,
+    required this.supportsHostOverride,
+    required this.supportsCertificateBypass,
+    required this.supportsValidation,
+  });
 
   final bool supportsBackground;
   final bool supportsCancel;
   final bool supportsPauseResume;
   final bool handlesSaving;
+  final bool supportsHeaders;
+  final bool supportsProxy;
+  final bool supportsHostOverride;
+  final bool supportsCertificateBypass;
+  final bool supportsValidation;
 }
 
 abstract interface class DownloadEngine {
@@ -29,6 +44,12 @@ abstract interface class DownloadEngine {
   Future<void> cancel(String jobId);
 
   Future<List<DownloadEngineSnapshot>> syncActiveTasks();
+
+  /// Releases terminal snapshots retained by a background engine after their
+  /// state has been durably recorded by the manager.
+  Future<void> acknowledge(Set<String> jobIds);
+
+  Future<void> dispose();
 }
 
 class DownloadEngineSnapshot {

@@ -7,7 +7,7 @@ import Foundation
 
 import app_links
 import device_info_plus
-import file_picker
+import file_picker_darwin
 import package_info_plus
 import pasteboard
 import url_launcher_macos

@@ -36,6 +36,8 @@ abstract interface class DownloadStore {
   Future<List<DownloadTaskSnapshot>> listPendingSaveTasks();
 
   Future<List<DownloadTaskSnapshot>> listRecoverableTasks();
+
+  Future<void> close();
 }
 
 class DriftDownloadStore implements DownloadStore {
@@ -46,6 +48,9 @@ class DriftDownloadStore implements DownloadStore {
   }
 
   final DownloadDatabase _db;
+
+  @override
+  Future<void> close() => _db.close();
 
   @override
   Future<void> upsertJob(DownloadJob job) async {
@@ -60,7 +65,9 @@ class DriftDownloadStore implements DownloadStore {
               pageIndex: Value(job.pageIndex),
               url: Value(job.url.toString()),
               filename: Value(job.filename),
-              headersJson: Value(jsonEncode(job.headers)),
+              headersJson: Value(jsonEncode(job.networkOptions.headers)),
+              networkOptionsJson: Value(jsonEncode(job.networkOptions.toJson())),
+              validationJson: Value(jsonEncode(job.validation.toJson())),
               saveTargetJson: Value(jsonEncode(job.saveTarget.toJson())),
               thumbnailUrl: Value(job.thumbnailUrl),
               title: Value(job.title),
@@ -121,14 +128,24 @@ class DriftDownloadStore implements DownloadStore {
 
   @override
   Future<void> appendLog(String jobId, String message) async {
-    final query = _db.selectOnly(_db.downloadStates)..where(_db.downloadStates.jobId.equals(jobId));
-    query.addColumns([_db.downloadStates.log]);
-    final existing = await query.map((row) => row.read(_db.downloadStates.log)).getSingleOrNull();
-    final entry = '[${DateTime.now().toIso8601String()}] $message';
-    final nextLog = existing == null || existing.isEmpty ? entry : '$existing\n$entry';
-    await (_db.update(_db.downloadStates)..where((table) => table.jobId.equals(jobId))).write(
-      DownloadStatesCompanion(log: Value(nextLog), updatedAt: Value(DateTime.now().millisecondsSinceEpoch)),
-    );
+    await _db.transaction(() async {
+      final query = _db.selectOnly(_db.downloadStates)..where(_db.downloadStates.jobId.equals(jobId));
+      query.addColumns([_db.downloadStates.log]);
+      final existing = await query.map((row) => row.read(_db.downloadStates.log)).getSingleOrNull();
+      final entry = '[${DateTime.now().toIso8601String()}] $message';
+      var nextLog = existing == null || existing.isEmpty ? entry : '$existing\n$entry';
+      const maxLogCharacters = 64 * 1024;
+      if (nextLog.length > maxLogCharacters) {
+        nextLog = nextLog.substring(nextLog.length - maxLogCharacters);
+        final firstNewline = nextLog.indexOf('\n');
+        if (firstNewline >= 0) {
+          nextLog = nextLog.substring(firstNewline + 1);
+        }
+      }
+      await (_db.update(_db.downloadStates)..where((table) => table.jobId.equals(jobId))).write(
+        DownloadStatesCompanion(log: Value(nextLog), updatedAt: Value(DateTime.now().millisecondsSinceEpoch)),
+      );
+    });
   }
 
   @override
@@ -169,7 +186,8 @@ class DriftDownloadStore implements DownloadStore {
       pageIndex: row.pageIndex,
       url: Uri.parse(row.url),
       filename: row.filename,
-      headers: _stringMapFromJson(row.headersJson),
+      networkOptions: _networkOptionsFromJson(row.networkOptionsJson, legacyHeadersJson: row.headersJson),
+      validation: DownloadValidationOptions.fromJson(_objectMapFromJson(row.validationJson)),
       saveTarget: SaveTarget.fromJson(_objectMapFromJson(row.saveTargetJson)),
       thumbnailUrl: row.thumbnailUrl,
       title: row.title,
@@ -205,7 +223,7 @@ class DriftDownloadStore implements DownloadStore {
 
   @override
   Future<List<DownloadTaskSnapshot>> listPendingSaveTasks() async {
-    final rows = await _selectSnapshots(status: DownloadStatus.downloaded, saveState: SaveState.pending).get();
+    final rows = await _selectSnapshots(status: DownloadStatus.downloaded, saveStates: const [SaveState.pending, SaveState.saving]).get();
     return rows.map(_snapshotFromRow).toList(growable: false);
   }
 
@@ -329,4 +347,12 @@ Map<String, Object?> _objectMapFromJson(String source) {
     return const {};
   }
   return decoded.map((key, value) => MapEntry(key.toString(), value));
+}
+
+DownloadNetworkOptions _networkOptionsFromJson(String source, {required String legacyHeadersJson}) {
+  final json = _objectMapFromJson(source);
+  if (json.isNotEmpty) {
+    return DownloadNetworkOptions.fromJson(json);
+  }
+  return DownloadNetworkOptions(headers: _stringMapFromJson(legacyHeadersJson));
 }

@@ -9,17 +9,29 @@ import 'package:freepiv/core/downloads/media_saver.dart';
 import 'package:path/path.dart' as p;
 
 final class NativeDownloadEngine implements DownloadEngine {
-  NativeDownloadEngine({required this.type});
+  NativeDownloadEngine({required this.type, this.channelNamespace = 'freepiv'});
 
-  static const _methodChannel = MethodChannel('freepiv/download_engine');
-  static const _eventChannel = EventChannel('freepiv/download_engine/events');
+  final String channelNamespace;
+
+  late final _methodChannel = MethodChannel('$channelNamespace/download_engine');
+  late final _eventChannel = EventChannel('$channelNamespace/download_engine/events');
 
   @override
   final DownloadEngineType type;
 
   @override
   DownloadCapabilities get capabilities {
-    return DownloadCapabilities(supportsBackground: true, supportsCancel: true, supportsPauseResume: false, handlesSaving: true);
+    return DownloadCapabilities(
+      supportsBackground: true,
+      supportsCancel: true,
+      supportsPauseResume: false,
+      handlesSaving: true,
+      supportsHeaders: true,
+      supportsProxy: true,
+      supportsHostOverride: true,
+      supportsCertificateBypass: true,
+      supportsValidation: true,
+    );
   }
 
   late final Stream<DownloadEngineEvent> _events = _eventChannel
@@ -65,6 +77,17 @@ final class NativeDownloadEngine implements DownloadEngine {
         if (item is Map) _snapshotFromNative(item.cast<String, Object?>()),
     ];
   }
+
+  @override
+  Future<void> acknowledge(Set<String> jobIds) async {
+    if (jobIds.isEmpty) {
+      return;
+    }
+    await _methodChannel.invokeMethod<void>('acknowledge', {'jobIds': jobIds.toList(growable: false)});
+  }
+
+  @override
+  Future<void> dispose() async {}
 
   DownloadEngineEvent? _eventFromNative(Object? event) {
     if (event is! Map) {
@@ -113,9 +136,11 @@ final class NativeDownloadEngine implements DownloadEngine {
 }
 
 final class NativeMediaSaver implements MediaSaver {
-  const NativeMediaSaver();
+  NativeMediaSaver({this.channelNamespace = 'freepiv'});
 
-  static const _methodChannel = MethodChannel('freepiv/download_engine');
+  final String channelNamespace;
+
+  late final _methodChannel = MethodChannel('$channelNamespace/download_engine');
 
   @override
   Future<SaveResult> saveDownloadedFile({required DownloadJob job, required DownloadedFile file}) async {

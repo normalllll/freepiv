@@ -16,7 +16,8 @@ abstract interface class DownloadManager {
     required int pageIndex,
     required Uri url,
     String? filename,
-    Map<String, String> headers,
+    DownloadNetworkOptions networkOptions = const DownloadNetworkOptions(),
+    DownloadValidationOptions validation = const DownloadValidationOptions(),
     String? title,
     String? thumbnailUrl,
   });
@@ -27,6 +28,7 @@ abstract interface class DownloadManager {
     required Uint8List bytes,
     required Uri sourceUrl,
     String? filename,
+    DownloadValidationOptions validation = const DownloadValidationOptions(),
     String? title,
     String? thumbnailUrl,
   });
@@ -52,4 +54,6 @@ abstract interface class DownloadManager {
   Stream<DownloadSummary> watchSummary({int? illustId});
 
   Future<void> sync();
+
+  Future<void> dispose();
 }

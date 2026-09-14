@@ -25,9 +25,21 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.net.InetSocketAddress
+import java.net.Proxy
+import java.net.URI
+import java.security.MessageDigest
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import java.util.concurrent.FutureTask
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 import okhttp3.Call
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -81,6 +93,11 @@ object DownloadBridge {
                     result.success(null)
                 }
                 "sync" -> result.success(DownloadForegroundService.snapshots())
+                "acknowledge" -> {
+                    val jobIds = call.argument<List<String>>("jobIds") ?: emptyList()
+                    DownloadForegroundService.acknowledge(jobIds)
+                    result.success(null)
+                }
                 "saveFile" -> {
                     val job = nativeJobFromMap(call.argument<Map<String, Any?>>("job"))
                     val path = call.argument<String>("path")
@@ -190,9 +207,6 @@ object DownloadBridge {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
             permissions += Manifest.permission.WRITE_EXTERNAL_STORAGE
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions += Manifest.permission.POST_NOTIFICATIONS
-        }
         return permissions
     }
 
@@ -262,7 +276,7 @@ class DownloadForegroundService : Service() {
 
         when (intent?.action) {
             ACTION_CANCEL -> intent.getStringExtra(EXTRA_JOB_ID)?.let(::cancelJob)
-            ACTION_CANCEL_ALL -> calls.keys.toList().forEach(::cancelJob)
+            ACTION_CANCEL_ALL -> activeJobIds().forEach(::cancelJob)
             else -> drainPendingJobs().forEach(::startJob)
         }
 
@@ -272,58 +286,87 @@ class DownloadForegroundService : Service() {
 
     private fun startJob(job: NativeDownloadJob) {
         val existing = states[job.id]
-        if (existing?.status == "running") {
+        if (existing?.status == "running" || existing?.status == "queued" || tasks.containsKey(job.id)) {
             return
         }
 
-        val state = NativeTaskState(jobId = job.id, status = "running", saveState = "none")
+        val state = NativeTaskState(jobId = job.id, status = "queued", saveState = "none")
         states[job.id] = state
-        backgroundExecutor.execute {
-            downloadAndSave(job, state)
+        lateinit var future: FutureTask<Unit>
+        future = FutureTask {
+            try {
+                if (cancelledJobs.remove(job.id) || future.isCancelled) {
+                    return@FutureTask
+                }
+                state.status = "running"
+                updateNotification()
+                downloadAndSave(job, state)
+            } finally {
+                tasks.remove(job.id, future)
+                updateNotification()
+                stopIfIdle()
+            }
         }
+        tasks[job.id] = future
+        backgroundExecutor.execute(future)
     }
 
     private fun downloadAndSave(job: NativeDownloadJob, state: NativeTaskState) {
         val tempDirectory = File(cacheDir, "downloads").apply { mkdirs() }
         val partialFile = File(tempDirectory, "${job.id}.tmp")
-        val client = OkHttpClient.Builder().build()
-        val requestBuilder = Request.Builder().url(job.url)
-            .header("Referer", job.headers["Referer"] ?: "https://www.pixiv.net/")
-            .header("User-Agent", job.headers["User-Agent"] ?: "freepiv")
-        for ((key, value) in job.headers) {
-            requestBuilder.header(key, value)
-        }
-
-        val call = client.newCall(requestBuilder.build())
-        calls[job.id] = call
+        var call: Call? = null
         try {
-            val response = call.execute()
-            if (!response.isSuccessful) {
-                throw IllegalStateException("Download failed with HTTP ${response.code}")
+            val client = buildHttpClient(job.networkOptions)
+            val originalUrl = job.url.toHttpUrl()
+            val requestUrl = job.networkOptions.connectHost?.let { originalUrl.newBuilder().host(it).build() } ?: originalUrl
+            val requestBuilder = Request.Builder().url(requestUrl)
+            for ((key, value) in job.networkOptions.headers) {
+                requestBuilder.header(key, value)
             }
+            job.networkOptions.hostHeader?.let { requestBuilder.header("Host", it) }
+            val activeCall = client.newCall(requestBuilder.build())
+            call = activeCall
+            calls[job.id] = activeCall
+            activeCall.execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw IllegalStateException("Download failed with HTTP ${response.code}")
+                }
 
-            val body = response.body ?: throw IllegalStateException("Download response has no body")
-            state.totalBytes = body.contentLength().takeIf { it > 0 }
-            FileOutputStream(partialFile).use { output ->
-                body.byteStream().use { input ->
-                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                    var lastEmit = 0L
-                    while (true) {
-                        val read = input.read(buffer)
-                        if (read < 0) {
-                            break
-                        }
-                        output.write(buffer, 0, read)
-                        state.receivedBytes += read.toLong()
-                        state.progress = progressOf(state.receivedBytes, state.totalBytes)
-                        val now = System.currentTimeMillis()
-                        if (now - lastEmit >= 350L || state.progress >= 1.0) {
-                            lastEmit = now
-                            emitProgress(state)
-                            updateNotification()
+                validateContentType(response.header("Content-Type"), job.validation.allowedContentTypes)
+                val body = response.body ?: throw IllegalStateException("Download response has no body")
+                val responseLength = body.contentLength().takeIf { it > 0 }
+                val expectedBytes = job.validation.expectedBytes
+                if (expectedBytes != null && responseLength != null && expectedBytes != responseLength) {
+                    throw IllegalStateException("Response byte count mismatch: expected $expectedBytes, got $responseLength")
+                }
+                state.totalBytes = expectedBytes ?: responseLength
+                val digest = messageDigest(job.validation.checksum?.algorithm)
+                FileOutputStream(partialFile).use { output ->
+                    body.byteStream().use { input ->
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                        var lastEmit = 0L
+                        while (true) {
+                            if (Thread.currentThread().isInterrupted || activeCall.isCanceled()) {
+                                throw InterruptedException("Download cancelled")
+                            }
+                            val read = input.read(buffer)
+                            if (read < 0) {
+                                break
+                            }
+                            output.write(buffer, 0, read)
+                            digest?.update(buffer, 0, read)
+                            state.receivedBytes += read.toLong()
+                            state.progress = progressOf(state.receivedBytes, state.totalBytes)
+                            val now = System.currentTimeMillis()
+                            if (now - lastEmit >= 350L || state.progress >= 1.0) {
+                                lastEmit = now
+                                emitProgress(state)
+                                updateNotification()
+                            }
                         }
                     }
                 }
+                validateDownloadedFile(partialFile, state.receivedBytes, job.validation, digest)
             }
 
             state.status = "downloaded"
@@ -361,7 +404,7 @@ class DownloadForegroundService : Service() {
                 DownloadBridge.emit(mapOf("type" to "saveFailed", "jobId" to job.id, "localPath" to partialFile.absolutePath, "error" to state.error))
             }
         } catch (error: Throwable) {
-            if (call.isCanceled()) {
+            if (call?.isCanceled() == true || error is InterruptedException || cancelledJobs.remove(job.id)) {
                 state.status = "cancelled"
                 state.error = null
                 partialFile.delete()
@@ -374,15 +417,24 @@ class DownloadForegroundService : Service() {
             }
         } finally {
             calls.remove(job.id)
-            updateNotification()
-            stopIfIdle()
         }
     }
 
     private fun cancelJob(jobId: String) {
-        calls[jobId]?.cancel()
         val state = states[jobId]
-        if (state != null) {
+        if (state?.status == "downloaded" || state?.saveState == "saving" || state?.saveState == "saved") {
+            return
+        }
+        cancelledJobs.add(jobId)
+        synchronized(pendingJobs) {
+            pendingJobs.removeAll { it.id == jobId }
+        }
+        calls.remove(jobId)?.cancel()
+        tasks.remove(jobId)?.cancel(true)
+        if (!calls.containsKey(jobId)) {
+            cancelledJobs.remove(jobId)
+        }
+        if (state != null && state.status != "cancelled") {
             state.status = "cancelled"
             state.error = null
             DownloadBridge.emit(mapOf("type" to "cancelled", "jobId" to jobId))
@@ -413,12 +465,15 @@ class DownloadForegroundService : Service() {
     }
 
     private fun buildNotification(): Notification {
-        val running = states.values.count { it.status == "running" }
-        val completed = states.values.count { it.saveState == "saved" }
-        val failed = states.values.count { it.status == "failed" || it.saveState == "failed" }
-        val total = states.size.coerceAtLeast(1)
-        val overall = (states.values.sumOf { it.progress } / total).coerceIn(0.0, 1.0)
-        val content = "Running $running / Saved $completed / Failed $failed"
+        val sessionStates = activeSessionIds.mapNotNull(states::get)
+        val queued = sessionStates.count { it.status == "queued" }
+        val running = sessionStates.count { it.status == "running" }
+        val completed = sessionStates.count { it.saveState == "saved" }
+        val failed = sessionStates.count { it.status == "failed" || it.saveState == "failed" }
+        val cancelled = sessionStates.count { it.status == "cancelled" }
+        val total = sessionStates.size.coerceAtLeast(1)
+        val overall = (sessionStates.sumOf { it.progress } / total).coerceIn(0.0, 1.0)
+        val content = "Total $total / Queued $queued / Saved $completed / Failed $failed / Cancelled $cancelled"
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notification.Builder(this, CHANNEL_ID)
         } else {
@@ -437,7 +492,7 @@ class DownloadForegroundService : Service() {
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setContentTitle("Downloading images")
             .setContentText(content)
-            .setOngoing(running > 0)
+            .setOngoing(running > 0 || queued > 0)
             .setOnlyAlertOnce(true)
             .setProgress(100, (overall * 100).toInt(), running > 0 && states.values.any { it.totalBytes == null })
             .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Cancel", cancelIntent)
@@ -458,11 +513,22 @@ class DownloadForegroundService : Service() {
             return
         }
         clearNotification()
+        for (jobId in acknowledgedIds) {
+            states.remove(jobId)
+        }
+        acknowledgedIds.clear()
+        activeSessionIds.clear()
         stopSelf()
     }
 
     private fun hasActiveWork(): Boolean {
-        return calls.isNotEmpty() || states.values.any { it.status == "running" || it.saveState == "saving" }
+        val hasPending = synchronized(pendingJobs) { pendingJobs.isNotEmpty() }
+        return hasPending || tasks.isNotEmpty() || calls.isNotEmpty() || states.values.any { it.status == "queued" || it.status == "running" || it.saveState == "saving" }
+    }
+
+    private fun activeJobIds(): List<String> {
+        val pendingIds = synchronized(pendingJobs) { pendingJobs.map { it.id } }
+        return (pendingIds + calls.keys + states.filterValues { it.status == "queued" || it.status == "running" }.keys).distinct()
     }
 
     private fun clearNotification() {
@@ -483,12 +549,18 @@ class DownloadForegroundService : Service() {
         private const val CHANNEL_ID = "freepiv_downloads"
         private const val NOTIFICATION_ID = 4108
 
-        val backgroundExecutor = Executors.newFixedThreadPool(3)
+        val backgroundExecutor = Executors.newCachedThreadPool()
         private val pendingJobs = mutableListOf<NativeDownloadJob>()
         private val calls = ConcurrentHashMap<String, Call>()
+        private val tasks = ConcurrentHashMap<String, FutureTask<Unit>>()
+        private val cancelledJobs = ConcurrentHashMap.newKeySet<String>()
         private val states = ConcurrentHashMap<String, NativeTaskState>()
+        private val activeSessionIds = ConcurrentHashMap.newKeySet<String>()
+        private val acknowledgedIds = ConcurrentHashMap.newKeySet<String>()
 
         fun enqueue(context: Context, jobs: List<NativeDownloadJob>) {
+            acknowledgedIds.removeAll(jobs.map { it.id }.toSet())
+            activeSessionIds.addAll(jobs.map { it.id })
             synchronized(pendingJobs) {
                 pendingJobs.addAll(jobs)
             }
@@ -501,7 +573,6 @@ class DownloadForegroundService : Service() {
         }
 
         fun cancel(context: Context, jobId: String) {
-            calls[jobId]?.cancel()
             val intent = Intent(context, DownloadForegroundService::class.java).setAction(ACTION_CANCEL).putExtra(EXTRA_JOB_ID, jobId)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
@@ -511,7 +582,16 @@ class DownloadForegroundService : Service() {
         }
 
         fun snapshots(): List<Map<String, Any?>> {
-            return states.values.map { it.toMap() }
+            return states.entries.filterNot { acknowledgedIds.contains(it.key) }.map { it.value.toMap() }
+        }
+
+        fun acknowledge(jobIds: List<String>) {
+            for (jobId in jobIds) {
+                val state = states[jobId] ?: continue
+                if (state.status == "failed" || state.status == "cancelled" || state.saveState == "saved" || state.saveState == "failed") {
+                    acknowledgedIds.add(jobId)
+                }
+            }
         }
 
         private fun drainPendingJobs(): List<NativeDownloadJob> {
@@ -533,6 +613,18 @@ object AndroidMediaSaver {
         if (source.length() <= 0L) {
             throw IllegalStateException("Downloaded file is empty: ${source.absolutePath}")
         }
+        val digest = messageDigest(job.validation.checksum?.algorithm)
+        if (digest != null) {
+            FileInputStream(source).use { input ->
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                while (true) {
+                    val read = input.read(buffer)
+                    if (read < 0) break
+                    digest.update(buffer, 0, read)
+                }
+            }
+        }
+        validateDownloadedFile(source, source.length(), job.validation, digest)
 
         val resolver = context.contentResolver
         val displayName = safeFilename(job.filename)
@@ -612,7 +704,27 @@ data class NativeDownloadJob(
     val illustId: Int,
     val url: String,
     val filename: String,
+    val networkOptions: NativeNetworkOptions,
+    val validation: NativeValidationOptions,
+)
+
+data class NativeNetworkOptions(
     val headers: Map<String, String>,
+    val proxyUrl: String?,
+    val connectHost: String?,
+    val hostHeader: String?,
+    val disableTlsSni: Boolean,
+    val allowInvalidCertificates: Boolean,
+    val connectTimeoutSeconds: Long,
+    val receiveTimeoutSeconds: Long,
+)
+
+data class NativeChecksum(val algorithm: String, val value: String)
+
+data class NativeValidationOptions(
+    val expectedBytes: Long?,
+    val allowedContentTypes: List<String>,
+    val checksum: NativeChecksum?,
 )
 
 data class NativeTaskState(
@@ -648,17 +760,107 @@ private fun nativeJobFromMap(map: Map<String, Any?>?): NativeDownloadJob? {
     val id = map["id"] as? String ?: return null
     val url = map["url"] as? String ?: return null
     val filename = map["filename"] as? String ?: "download"
-    val headers = (map["headers"] as? Map<*, *>)?.mapNotNull { (key, value) ->
+    val networkMap = map["networkOptions"] as? Map<*, *> ?: emptyMap<Any?, Any?>()
+    val legacyHeaders = map["headers"] as? Map<*, *>
+    val headers = (networkMap["headers"] as? Map<*, *> ?: legacyHeaders)?.mapNotNull { (key, value) ->
         if (key == null || value == null) null else key.toString() to value.toString()
     }?.toMap() ?: emptyMap()
+    val validationMap = map["validation"] as? Map<*, *> ?: emptyMap<Any?, Any?>()
+    val checksumMap = validationMap["checksum"] as? Map<*, *>
+    val checksum = checksumMap?.let {
+        val algorithm = it["algorithm"]?.toString()?.trim()?.lowercase().orEmpty()
+        val value = it["value"]?.toString()?.trim()?.lowercase().orEmpty()
+        if (algorithm.isEmpty() || value.isEmpty()) null else NativeChecksum(algorithm, value)
+    }
 
     return NativeDownloadJob(
         id = id,
         illustId = (map["illustId"] as? Number)?.toInt() ?: 0,
         url = url,
         filename = filename,
-        headers = headers,
+        networkOptions = NativeNetworkOptions(
+            headers = headers,
+            proxyUrl = networkMap["proxyUrl"]?.toString()?.takeIf { it.isNotBlank() },
+            connectHost = networkMap["connectHost"]?.toString()?.takeIf { it.isNotBlank() },
+            hostHeader = networkMap["hostHeader"]?.toString()?.takeIf { it.isNotBlank() },
+            disableTlsSni = networkMap["disableTlsSni"] == true,
+            allowInvalidCertificates = networkMap["allowInvalidCertificates"] == true,
+            connectTimeoutSeconds = (networkMap["connectTimeoutSeconds"] as? Number)?.toLong()?.coerceAtLeast(1L) ?: 30L,
+            receiveTimeoutSeconds = (networkMap["receiveTimeoutSeconds"] as? Number)?.toLong()?.coerceAtLeast(1L) ?: 120L,
+        ),
+        validation = NativeValidationOptions(
+            expectedBytes = (validationMap["expectedBytes"] as? Number)?.toLong()?.takeIf { it > 0L },
+            allowedContentTypes = (validationMap["allowedContentTypes"] as? List<*>)?.mapNotNull { it?.toString()?.trim()?.lowercase()?.takeIf(String::isNotEmpty) } ?: emptyList(),
+            checksum = checksum,
+        ),
     )
+}
+
+private fun buildHttpClient(options: NativeNetworkOptions): OkHttpClient {
+    val builder = OkHttpClient.Builder()
+        .connectTimeout(options.connectTimeoutSeconds, TimeUnit.SECONDS)
+        .readTimeout(options.receiveTimeoutSeconds, TimeUnit.SECONDS)
+
+    options.proxyUrl?.let { rawProxy ->
+        val proxyUri = URI(rawProxy)
+        val host = proxyUri.host ?: throw IllegalArgumentException("Proxy URL has no host: $rawProxy")
+        val type = if (proxyUri.scheme.equals("socks", true) || proxyUri.scheme.equals("socks5", true)) Proxy.Type.SOCKS else Proxy.Type.HTTP
+        val defaultPort = if (type == Proxy.Type.SOCKS) 1080 else 8080
+        builder.proxy(Proxy(type, InetSocketAddress(host, if (proxyUri.port > 0) proxyUri.port else defaultPort)))
+    }
+
+    if (options.allowInvalidCertificates) {
+        val trustManager = object : X509TrustManager {
+            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+            override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+        }
+        val sslContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, arrayOf<TrustManager>(trustManager), SecureRandom())
+        builder.sslSocketFactory(sslContext.socketFactory, trustManager)
+        builder.hostnameVerifier { _, _ -> true }
+    }
+    return builder.build()
+}
+
+private fun validateContentType(contentType: String?, allowed: List<String>) {
+    if (allowed.isEmpty()) return
+    val actual = contentType?.substringBefore(';')?.trim()?.lowercase()
+        ?: throw IllegalStateException("Download response has no valid Content-Type")
+    val matches = allowed.any { candidate ->
+        val normalized = candidate.trim().lowercase()
+        if (normalized.endsWith("/*")) actual.startsWith(normalized.removeSuffix("*")) else actual == normalized
+    }
+    if (!matches) {
+        throw IllegalStateException("Unexpected download Content-Type: $actual")
+    }
+}
+
+private fun messageDigest(algorithm: String?): MessageDigest? {
+    return when (algorithm?.trim()?.lowercase()) {
+        null, "" -> null
+        "md5" -> MessageDigest.getInstance("MD5")
+        "sha256" -> MessageDigest.getInstance("SHA-256")
+        else -> throw IllegalArgumentException("Unsupported checksum algorithm: $algorithm")
+    }
+}
+
+private fun validateDownloadedFile(file: File, receivedBytes: Long, validation: NativeValidationOptions, digest: MessageDigest?) {
+    if (!file.exists() || receivedBytes <= 0L || file.length() != receivedBytes) {
+        throw IllegalStateException("Downloaded file is empty or incomplete")
+    }
+    validation.expectedBytes?.let { expected ->
+        if (receivedBytes != expected) {
+            throw IllegalStateException("Downloaded byte count mismatch: expected $expected, got $receivedBytes")
+        }
+    }
+    validation.checksum?.let { expected ->
+        val actual = digest?.digest()?.joinToString("") { "%02x".format(it) }
+            ?: throw IllegalStateException("Checksum was configured without a digest")
+        if (!actual.equals(expected.value, ignoreCase = true)) {
+            throw IllegalStateException("Downloaded ${expected.algorithm} checksum mismatch: expected ${expected.value}, got $actual")
+        }
+    }
 }
 
 private fun progressOf(receivedBytes: Long, totalBytes: Long?): Double {

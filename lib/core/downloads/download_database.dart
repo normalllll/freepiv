@@ -14,6 +14,8 @@ class DownloadJobs extends Table {
   TextColumn get url => text()();
   TextColumn get filename => text()();
   TextColumn get headersJson => text().withDefault(const Constant('{}'))();
+  TextColumn get networkOptionsJson => text().withDefault(const Constant('{}'))();
+  TextColumn get validationJson => text().withDefault(const Constant('{}'))();
   TextColumn get saveTargetJson => text().withDefault(const Constant('{}'))();
   TextColumn get thumbnailUrl => text().nullable()();
   TextColumn get title => text().nullable()();
@@ -46,7 +48,7 @@ class DownloadDatabase extends _$DownloadDatabase {
   DownloadDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -57,6 +59,10 @@ class DownloadDatabase extends _$DownloadDatabase {
         }
         if (from < 3) {
           await migrator.addColumn(downloadStates, downloadStates.log);
+        }
+        if (from < 4) {
+          await migrator.addColumn(downloadJobs, downloadJobs.networkOptionsJson);
+          await migrator.addColumn(downloadJobs, downloadJobs.validationJson);
         }
       },
     );

@@ -10,13 +10,10 @@ const appDownloadDirectoryName = 'freepiv';
 const downloadTempDirectoryName = 'freepiv_downloads';
 const fallbackDownloadFilename = 'download';
 
-String filenameFromUrl(Uri url) {
-  if (url.pathSegments.isEmpty) {
-    return fallbackDownloadFilename;
-  }
-
-  final filename = url.pathSegments.last;
-  return filename.isEmpty ? fallbackDownloadFilename : filename;
+String illustDownloadFilename({required int illustId, required int pageIndex, required Uri sourceUrl}) {
+  final extension = p.extension(sourceUrl.path).toLowerCase();
+  final safeExtension = RegExp(r'^\.[a-z0-9]{1,10}$').hasMatch(extension) ? extension : '';
+  return '${illustId}_p$pageIndex$safeExtension';
 }
 
 String safeDownloadFilename(String filename) {

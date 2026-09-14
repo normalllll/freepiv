@@ -19,7 +19,7 @@ class MobileDownloadFloatingWindow extends StatefulWidget {
 }
 
 class _MobileDownloadFloatingWindowState extends State<MobileDownloadFloatingWindow> {
-  static const _collapsedSize = Size.square(56);
+  static const _buttonSize = 56.0;
   static const _panelMaxWidth = 380.0;
   static const _panelMaxHeight = 430.0;
   static const _edgePadding = 12.0;
@@ -59,14 +59,17 @@ class _MobileDownloadFloatingWindowState extends State<MobileDownloadFloatingWin
                   final summary = DownloadSummary.fromTasks(panelTasks);
                   return Stack(
                     children: [
-                      if (_expanded)
-                        Positioned.fill(
+                      Positioned.fill(
+                        key: const ValueKey<String>('mobile-download-dismiss-layer'),
+                        child: IgnorePointer(
+                          ignoring: !_expanded,
                           child: GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: () => setState(() => _expanded = false),
                             child: const ColoredBox(color: Colors.transparent),
                           ),
                         ),
+                      ),
                       _buildPositionedWindow(context, constraints, summary, panelTasks),
                     ],
                   );
@@ -90,6 +93,7 @@ class _MobileDownloadFloatingWindowState extends State<MobileDownloadFloatingWin
     );
 
     return Positioned(
+      key: const ValueKey<String>('mobile-download-window'),
       left: position.dx,
       top: position.dy,
       width: windowSize.width,
@@ -108,10 +112,6 @@ class _MobileDownloadFloatingWindowState extends State<MobileDownloadFloatingWin
   }
 
   Size _windowSizeFor(Size availableSize) {
-    if (!_expanded) {
-      return _collapsedSize;
-    }
-
     final width = math.min(_panelMaxWidth, math.max(0.0, availableSize.width - _edgePadding * 2));
     final height = math.min(_panelMaxHeight, math.max(0.0, availableSize.height - _edgePadding * 2));
     return Size(width, height);
@@ -183,18 +183,55 @@ class _DraggableDownloadWindow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (expanded) {
-      return _DownloadFloatingPanel(summary: summary, tasks: tasks, onDragDelta: onDragDelta, onClose: onClose, onSync: onSync, onTaskTap: onTaskTap);
-    }
-
-    return _DownloadFloatingButton(summary: summary, onDragDelta: onDragDelta, onPressed: onToggleExpanded);
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: IgnorePointer(
+            ignoring: !expanded,
+            child: AnimatedOpacity(
+              opacity: expanded ? 1 : 0,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              child: AnimatedScale(
+                scale: expanded ? 1 : 0.82,
+                alignment: Alignment.bottomRight,
+                duration: const Duration(milliseconds: 260),
+                curve: Curves.easeOutBack,
+                child: _DownloadFloatingPanel(summary: summary, tasks: tasks, onDragDelta: onDragDelta, onClose: onClose, onSync: onSync, onTaskTap: onTaskTap),
+              ),
+            ),
+          ),
+        ),
+        PositionedDirectional(
+          end: 0,
+          bottom: 0,
+          width: _MobileDownloadFloatingWindowState._buttonSize,
+          height: _MobileDownloadFloatingWindowState._buttonSize,
+          child: IgnorePointer(
+            ignoring: expanded,
+            child: AnimatedOpacity(
+              opacity: expanded ? 0 : 1,
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeInOutCubic,
+              child: AnimatedScale(
+                scale: expanded ? 0.82 : 1,
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeInOutCubic,
+                child: _DownloadFloatingButton(summary: summary, expanded: expanded, onDragDelta: onDragDelta, onPressed: onToggleExpanded),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
 class _DownloadFloatingButton extends StatelessWidget {
-  const _DownloadFloatingButton({required this.summary, required this.onDragDelta, required this.onPressed});
+  const _DownloadFloatingButton({required this.summary, required this.expanded, required this.onDragDelta, required this.onPressed});
 
   final DownloadSummary summary;
+  final bool expanded;
   final ValueChanged<Offset> onDragDelta;
   final VoidCallback onPressed;
 
@@ -223,7 +260,14 @@ class _DownloadFloatingButton extends StatelessWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              Center(child: Icon(Icons.downloading_outlined, color: colorScheme.onPrimaryContainer)),
+              Center(
+                child: AnimatedRotation(
+                  turns: expanded ? 0.5 : 0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOutCubic,
+                  child: Icon(Icons.downloading_outlined, color: colorScheme.onPrimaryContainer),
+                ),
+              ),
               PositionedDirectional(
                 end: -1,
                 top: -1,

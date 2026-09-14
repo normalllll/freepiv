@@ -46,15 +46,19 @@ class _DesktopDownloadDockState extends State<DesktopDownloadDock> {
 
         return Stack(
           children: [
-            if (_expanded)
-              Positioned.fill(
+            Positioned.fill(
+              key: const ValueKey<String>('desktop-download-dismiss-layer'),
+              child: IgnorePointer(
+                ignoring: !_expanded,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => setState(() => _expanded = false),
                   child: const ColoredBox(color: Colors.transparent),
                 ),
               ),
+            ),
             Positioned(
+              key: const ValueKey<String>('desktop-download-button'),
               left: 0,
               bottom: widget.bottomOffset,
               width: widget.railWidth,
@@ -63,6 +67,7 @@ class _DesktopDownloadDockState extends State<DesktopDownloadDock> {
               ),
             ),
             Positioned(
+              key: const ValueKey<String>('desktop-download-panel'),
               left: widget.railWidth + 12,
               bottom: widget.bottomOffset,
               width: _panelWidth,

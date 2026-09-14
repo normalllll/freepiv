@@ -1,4 +1,5 @@
 import 'save_target.dart';
+import 'download_request_options.dart';
 
 class DownloadJob {
   DownloadJob({
@@ -7,7 +8,8 @@ class DownloadJob {
     required this.pageIndex,
     required this.url,
     required this.filename,
-    required this.headers,
+    required this.networkOptions,
+    required this.validation,
     required this.saveTarget,
     required this.createdAt,
     this.thumbnailUrl,
@@ -20,7 +22,8 @@ class DownloadJob {
     required Uri url,
     required String filename,
     required SaveTarget saveTarget,
-    Map<String, String> headers = const {},
+    DownloadNetworkOptions networkOptions = const DownloadNetworkOptions(),
+    DownloadValidationOptions validation = const DownloadValidationOptions(),
     String? thumbnailUrl,
     String? title,
   }) {
@@ -31,7 +34,8 @@ class DownloadJob {
       pageIndex: pageIndex,
       url: url,
       filename: filename,
-      headers: headers,
+      networkOptions: networkOptions.normalizedFor(url),
+      validation: validation.normalized(),
       saveTarget: saveTarget,
       thumbnailUrl: thumbnailUrl,
       title: title,
@@ -44,7 +48,8 @@ class DownloadJob {
   final int pageIndex;
   final Uri url;
   final String filename;
-  final Map<String, String> headers;
+  final DownloadNetworkOptions networkOptions;
+  final DownloadValidationOptions validation;
   final SaveTarget saveTarget;
   final String? thumbnailUrl;
   final String? title;
@@ -56,7 +61,8 @@ class DownloadJob {
     int? pageIndex,
     Uri? url,
     String? filename,
-    Map<String, String>? headers,
+    DownloadNetworkOptions? networkOptions,
+    DownloadValidationOptions? validation,
     SaveTarget? saveTarget,
     String? thumbnailUrl,
     String? title,
@@ -68,7 +74,8 @@ class DownloadJob {
       pageIndex: pageIndex ?? this.pageIndex,
       url: url ?? this.url,
       filename: filename ?? this.filename,
-      headers: headers ?? this.headers,
+      networkOptions: networkOptions ?? this.networkOptions,
+      validation: validation ?? this.validation,
       saveTarget: saveTarget ?? this.saveTarget,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       title: title ?? this.title,
@@ -83,7 +90,8 @@ class DownloadJob {
       'pageIndex': pageIndex,
       'url': url.toString(),
       'filename': filename,
-      'headers': headers,
+      'networkOptions': networkOptions.toJson(),
+      'validation': validation.toJson(),
       'saveTarget': saveTarget.toJson(),
       'thumbnailUrl': thumbnailUrl,
       'title': title,

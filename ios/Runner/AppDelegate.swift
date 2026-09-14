@@ -15,7 +15,7 @@ import UIKit
     handleEventsForBackgroundURLSession identifier: String,
     completionHandler: @escaping () -> Void
   ) {
-    FreepivDownloadBridge.shared.setBackgroundCompletionHandler(completionHandler)
+    FreepivDownloadBridge.shared.handleEventsForBackgroundSession(identifier: identifier, completionHandler: completionHandler)
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {

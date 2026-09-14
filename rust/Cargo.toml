@@ -7,10 +7,14 @@ edition = "2021"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-flutter_rust_bridge = "=2.13.0-beta.5"
+flutter_rust_bridge = "=2.13.0"
 pixiv_rs = { git = "https://github.com/normalllll/pixiv_rs.git", branch = "main" }
 #pixiv_rs = { path = "../../pixiv_rs"}
 futures-util = "0.3.32"
+reqwest = { version = "0.13.4", default-features = false, features = ["rustls", "stream", "http2", "socks", "system-proxy"] }
+tokio = { version = "1", features = ["fs", "io-util"] }
+md-5 = "0.10.6"
+sha2 = "0.10.9"
 gif = { version = "0.14.2" }
 image = { version = "0.25.10", default-features = false, features = ["gif", "jpeg", "png", "webp"] }
 zip = { version = "9.0.0-pre2" }

@@ -1,3 +1,7 @@
+// Public dependency-injection parameter names intentionally differ from the
+// private backing fields.
+// ignore_for_file: prefer_initializing_formals
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -5,31 +9,65 @@ import 'dart:typed_data';
 import 'package:freepiv/core/downloads/download_engine.dart';
 import 'package:freepiv/core/downloads/download_file_system.dart';
 import 'package:freepiv/core/downloads/download_manager_contract.dart';
+import 'package:freepiv/core/downloads/download_manager_configuration.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/core/downloads/download_permission_guard.dart';
 import 'package:freepiv/core/downloads/download_store.dart';
+import 'package:freepiv/core/downloads/download_validator.dart';
 import 'package:freepiv/core/downloads/media_saver.dart';
 import 'package:freepiv/core/downloads/platform/desktop_media_saver.dart';
 import 'package:freepiv/core/downloads/platform/native_download_engine.dart';
 import 'package:freepiv/core/downloads/platform/rust_io_download_engine.dart';
-import 'package:freepiv/core/services/app_settings.dart';
 
 final class DefaultDownloadManager implements DownloadManager {
+  DefaultDownloadManager({
+    required DownloadManagerConfiguration configuration,
+    DownloadStore? store,
+    DownloadEngine? engine,
+    MediaSaver? mediaSaver,
+    DownloadPermissionGuard? permissionGuard,
+  }) : _configuration = configuration,
+       _store = store,
+       _engine = engine,
+       _mediaSaver = mediaSaver,
+       _permissionGuard = permissionGuard;
+
+  final DownloadManagerConfiguration _configuration;
   DownloadStore? _store;
   DownloadEngine? _engine;
   MediaSaver? _mediaSaver;
   DownloadPermissionGuard? _permissionGuard;
-  StreamSubscription<DownloadEngineEvent>? _engineSubscription;
+  StreamSubscription<void>? _engineSubscription;
   Future<void>? _initializing;
   bool _initialized = false;
   bool _pumpingQueue = false;
   bool _queuePumpRequested = false;
+  bool _ownsStore = false;
+  bool _disposed = false;
   final _jobs = <String, DownloadJob>{};
   final _waiters = <String, Completer<DownloadedFile>>{};
 
   @override
   Future<void> initialize() {
-    return _initializing ??= _initialize();
+    if (_disposed) {
+      return Future<void>.error(StateError('DownloadManager has been disposed.'));
+    }
+    if (_initialized) {
+      return Future<void>.value();
+    }
+    return _initializing ??= _initializeWithReset();
+  }
+
+  Future<void> _initializeWithReset() async {
+    try {
+      await _initialize();
+    } catch (_) {
+      await _engineSubscription?.cancel();
+      _engineSubscription = null;
+      _initialized = false;
+      _initializing = null;
+      rethrow;
+    }
   }
 
   Future<void> _initialize() async {
@@ -38,12 +76,23 @@ final class DefaultDownloadManager implements DownloadManager {
     }
 
     final components = _createPlatformComponents();
-    _store = DriftDownloadStore.open();
-    _engine = components.engine;
-    _mediaSaver = components.mediaSaver;
-    _permissionGuard = components.permissionGuard;
-    await components.engine.initialize();
-    _engineSubscription = components.engine.events.listen((event) => unawaited(_handleEngineEvent(event)));
+    if (_store == null) {
+      _store = DriftDownloadStore.open();
+      _ownsStore = true;
+    }
+    _engine ??= components.engine;
+    _mediaSaver ??= components.mediaSaver;
+    _permissionGuard ??= components.permissionGuard;
+    await _activeEngine.initialize();
+    _engineSubscription = _activeEngine.events
+        .asyncMap(_handleEngineEvent)
+        .listen(
+          (_) {},
+          onError: (Object error, StackTrace stackTrace) {
+            // An event failure must not terminate processing of later native events.
+            Zone.current.handleUncaughtError(error, stackTrace);
+          },
+        );
     _initialized = true;
     await sync();
   }
@@ -93,7 +142,8 @@ final class DefaultDownloadManager implements DownloadManager {
     required int pageIndex,
     required Uri url,
     String? filename,
-    Map<String, String> headers = const {},
+    DownloadNetworkOptions networkOptions = const DownloadNetworkOptions(),
+    DownloadValidationOptions validation = const DownloadValidationOptions(),
     String? title,
     String? thumbnailUrl,
   }) async {
@@ -102,8 +152,9 @@ final class DefaultDownloadManager implements DownloadManager {
       illustId: illustId,
       pageIndex: pageIndex,
       url: url,
-      filename: filename ?? filenameFromUrl(url),
-      headers: headers,
+      filename: filename ?? illustDownloadFilename(illustId: illustId, pageIndex: pageIndex, sourceUrl: url),
+      networkOptions: networkOptions,
+      validation: validation,
       saveTarget: _defaultSaveTarget(),
       title: title,
       thumbnailUrl: thumbnailUrl,
@@ -126,6 +177,7 @@ final class DefaultDownloadManager implements DownloadManager {
     required Uint8List bytes,
     required Uri sourceUrl,
     String? filename,
+    DownloadValidationOptions validation = const DownloadValidationOptions(),
     String? title,
     String? thumbnailUrl,
   }) async {
@@ -135,7 +187,8 @@ final class DefaultDownloadManager implements DownloadManager {
       illustId: illustId,
       pageIndex: pageIndex,
       url: sourceUrl,
-      filename: filename ?? filenameFromUrl(sourceUrl),
+      filename: filename ?? illustDownloadFilename(illustId: illustId, pageIndex: pageIndex, sourceUrl: sourceUrl),
+      validation: validation,
       saveTarget: _defaultSaveTarget(),
       title: title,
       thumbnailUrl: thumbnailUrl,
@@ -147,6 +200,7 @@ final class DefaultDownloadManager implements DownloadManager {
 
     _jobs[job.id] = job;
     await _activeStore.upsertJob(job);
+    await validateDownloadedBytes(bytes, validation: job.validation);
     await _activeStore.updateStatus(job.id, DownloadStatus.running);
     await _activeStore.updateProgress(job.id, receivedBytes: bytes.lengthInBytes, totalBytes: bytes.lengthInBytes, progress: 1);
     await _activeStore.updateStatus(job.id, DownloadStatus.downloaded);
@@ -187,7 +241,15 @@ final class DefaultDownloadManager implements DownloadManager {
   Future<void> cancel(String jobId) async {
     await _ensureInitialized();
     final task = await _activeStore.getTask(jobId);
-    if (task?.status == DownloadStatus.queued) {
+    if (task == null ||
+        task.status == DownloadStatus.failed ||
+        task.status == DownloadStatus.cancelled ||
+        task.status == DownloadStatus.downloaded ||
+        task.saveState == SaveState.saving ||
+        task.saveState == SaveState.saved) {
+      return;
+    }
+    if (task.status == DownloadStatus.queued) {
       await _activeStore.updateStatus(jobId, DownloadStatus.cancelled);
       _completeWithError(jobId, const DownloadException('Download cancelled'));
       await _pumpQueue();
@@ -284,13 +346,27 @@ final class DefaultDownloadManager implements DownloadManager {
     await _ensureInitialized();
     final snapshots = await _activeEngine.syncActiveTasks();
     final activeIds = <String>{};
+    final nativeSavingIds = <String>{};
+    final terminalSnapshotIds = <String>{};
     for (final snapshot in snapshots) {
       if (snapshot.jobId.isEmpty) {
         continue;
       }
-      activeIds.add(snapshot.jobId);
+      if (snapshot.status == DownloadStatus.running || snapshot.status == DownloadStatus.paused || snapshot.saveState == SaveState.saving) {
+        activeIds.add(snapshot.jobId);
+      }
+      if (snapshot.saveState == SaveState.saving) {
+        nativeSavingIds.add(snapshot.jobId);
+      }
+      if (snapshot.status == DownloadStatus.failed ||
+          snapshot.status == DownloadStatus.cancelled ||
+          snapshot.saveState == SaveState.saved ||
+          snapshot.saveState == SaveState.failed) {
+        terminalSnapshotIds.add(snapshot.jobId);
+      }
       await _activeStore.applyEngineSnapshot(snapshot);
     }
+    await _activeEngine.acknowledge(terminalSnapshotIds);
 
     final recoverableTasks = await _activeStore.listRecoverableTasks();
     for (final task in recoverableTasks) {
@@ -299,9 +375,7 @@ final class DefaultDownloadManager implements DownloadManager {
       }
     }
 
-    if (!_activeEngine.capabilities.handlesSaving) {
-      await _resumePendingSaves();
-    }
+    await _resumePendingSaves(skipJobIds: nativeSavingIds);
     await _pumpQueue();
   }
 
@@ -309,8 +383,16 @@ final class DefaultDownloadManager implements DownloadManager {
     await _ensureInitialized();
     switch (event) {
       case EngineProgressEvent():
+        final task = await _activeStore.getTask(event.jobId);
+        if (task == null || task.status != DownloadStatus.running || event.progress < task.progress) {
+          return;
+        }
         await _activeStore.updateProgress(event.jobId, receivedBytes: event.receivedBytes, totalBytes: event.totalBytes, progress: event.progress);
       case EngineCompletedEvent():
+        final task = await _activeStore.getTask(event.jobId);
+        if (task == null || task.status == DownloadStatus.failed || task.status == DownloadStatus.cancelled || task.saveState == SaveState.saved) {
+          return;
+        }
         await _activeStore.updateProgress(event.jobId, receivedBytes: event.bytesWritten, progress: 1);
         await _activeStore.updateStatus(event.jobId, DownloadStatus.downloaded);
         await _activeStore.updateSaveState(
@@ -326,24 +408,52 @@ final class DefaultDownloadManager implements DownloadManager {
         }
         await _pumpQueue();
       case EngineFailedEvent():
+        final task = await _activeStore.getTask(event.jobId);
+        if (task == null || task.status == DownloadStatus.cancelled || task.status == DownloadStatus.downloaded || task.saveState == SaveState.saved) {
+          await _activeEngine.acknowledge({event.jobId});
+          return;
+        }
         await _activeStore.appendLog(event.jobId, 'Download engine failed.\nerror=${event.error}');
         await _activeStore.updateStatus(event.jobId, DownloadStatus.failed, error: event.error);
         _completeWithError(event.jobId, DownloadException(event.error));
+        await _activeEngine.acknowledge({event.jobId});
         await _pumpQueue();
       case EnginePausedEvent():
+        final task = await _activeStore.getTask(event.jobId);
+        if (task?.status != DownloadStatus.running) {
+          return;
+        }
         await _activeStore.updateStatus(event.jobId, DownloadStatus.paused);
         await _pumpQueue();
       case EngineCancelledEvent():
+        final task = await _activeStore.getTask(event.jobId);
+        if (task == null || task.status == DownloadStatus.downloaded || task.saveState == SaveState.saved || task.saveState == SaveState.saving) {
+          await _activeEngine.acknowledge({event.jobId});
+          return;
+        }
         await _activeStore.updateStatus(event.jobId, DownloadStatus.cancelled);
         _completeWithError(event.jobId, const DownloadException('Download cancelled'));
+        await _activeEngine.acknowledge({event.jobId});
         await _pumpQueue();
       case EngineSaveCompletedEvent():
+        final task = await _activeStore.getTask(event.jobId);
+        if (task == null || task.status == DownloadStatus.cancelled || task.status == DownloadStatus.failed) {
+          await _activeEngine.acknowledge({event.jobId});
+          return;
+        }
         await _activeStore.updateSaveState(event.jobId, SaveState.saved, localPath: event.path, galleryAssetId: event.galleryAssetId);
         await _completeWithSnapshot(event.jobId);
+        await _activeEngine.acknowledge({event.jobId});
       case EngineSaveFailedEvent():
+        final task = await _activeStore.getTask(event.jobId);
+        if (task == null || task.status == DownloadStatus.cancelled || task.saveState == SaveState.saved) {
+          await _activeEngine.acknowledge({event.jobId});
+          return;
+        }
         await _activeStore.appendLog(event.jobId, 'Native save failed.\nlocalPath=${event.localPath ?? '<null>'}\nerror=${event.error}');
         await _activeStore.updateSaveState(event.jobId, SaveState.failed, localPath: event.localPath, error: event.error);
         _completeWithError(event.jobId, DownloadException(event.error));
+        await _activeEngine.acknowledge({event.jobId});
     }
   }
 
@@ -370,9 +480,12 @@ final class DefaultDownloadManager implements DownloadManager {
     }
   }
 
-  Future<void> _resumePendingSaves() async {
+  Future<void> _resumePendingSaves({Set<String> skipJobIds = const <String>{}}) async {
     final pendingTasks = await _activeStore.listPendingSaveTasks();
     for (final task in pendingTasks) {
+      if (skipJobIds.contains(task.id)) {
+        continue;
+      }
       final job = await _jobFor(task.id);
       final localPath = task.localPath;
       if (job == null || localPath == null || localPath.isEmpty) {
@@ -411,7 +524,7 @@ final class DefaultDownloadManager implements DownloadManager {
 
   Future<void> _pumpQueueOnce() async {
     final runningTasks = await _activeStore.listTasks(status: DownloadStatus.running);
-    var availableSlots = AppSettings.maxConcurrentDownloads - runningTasks.length;
+    var availableSlots = _configuration.maxConcurrentDownloads().clamp(1, 64).toInt() - runningTasks.length;
     if (availableSlots <= 0) {
       return;
     }
@@ -440,7 +553,8 @@ final class DefaultDownloadManager implements DownloadManager {
           'Failed to start download.\n'
           'url=${job.url}\n'
           'filename=${job.filename}\n'
-          'headers=${job.headers}\n'
+          'networkOptions=${job.networkOptions.toJson()}\n'
+          'validation=${job.validation.toJson()}\n'
           'saveTarget=${job.saveTarget.toJson()}\n'
           'error=$error\n'
           'stackTrace=$stackTrace',
@@ -457,7 +571,12 @@ final class DefaultDownloadManager implements DownloadManager {
       return;
     }
     final snapshot = await _activeStore.getTask(jobId);
-    waiter.complete(DownloadedFile(path: snapshot?.localPath ?? snapshot?.galleryAssetId ?? '', bytesWritten: snapshot?.receivedBytes ?? 0));
+    final path = snapshot?.localPath ?? snapshot?.galleryAssetId;
+    if (snapshot == null || path == null || path.isEmpty) {
+      waiter.completeError(DownloadException('Download completed without a saved path: $jobId'));
+      return;
+    }
+    waiter.complete(DownloadedFile(path: path, bytesWritten: snapshot.receivedBytes));
   }
 
   void _complete(String jobId, DownloadedFile file) {
@@ -481,7 +600,11 @@ final class DefaultDownloadManager implements DownloadManager {
   }
 
   DownloadJob _normalizeJob(DownloadJob job) {
-    return job.copyWith(saveTarget: _defaultSaveTarget(job.saveTarget));
+    return job.copyWith(
+      saveTarget: _defaultSaveTarget(job.saveTarget),
+      networkOptions: _configuration.resolveNetworkOptions(job.url, job.networkOptions).normalizedFor(job.url),
+      validation: job.validation.normalized(),
+    );
   }
 
   bool _isActiveDownloadTask(DownloadTaskSnapshot task) {
@@ -558,8 +681,30 @@ final class DefaultDownloadManager implements DownloadManager {
     return permissionGuard;
   }
 
+  @override
   Future<void> dispose() async {
+    if (_disposed) {
+      return;
+    }
+    _disposed = true;
     await _engineSubscription?.cancel();
+    _engineSubscription = null;
+    final engine = _engine;
+    if (engine != null) {
+      await engine.dispose();
+    }
+    final store = _store;
+    if (_ownsStore && store != null) {
+      await store.close();
+    }
+    for (final waiter in _waiters.values) {
+      if (!waiter.isCompleted) {
+        waiter.completeError(const DownloadException('Download manager disposed'));
+      }
+    }
+    _waiters.clear();
+    _initialized = false;
+    _initializing = null;
   }
 }
 
@@ -567,14 +712,14 @@ _DownloadComponents _createPlatformComponents() {
   if (Platform.isAndroid) {
     return _DownloadComponents(
       engine: NativeDownloadEngine(type: DownloadEngineType.androidOkHttpForeground),
-      mediaSaver: const NativeMediaSaver(),
+      mediaSaver: NativeMediaSaver(),
       permissionGuard: const NativeDownloadPermissionGuard(),
     );
   }
   if (Platform.isIOS) {
     return _DownloadComponents(
       engine: NativeDownloadEngine(type: DownloadEngineType.iosUrlSession),
-      mediaSaver: const NativeMediaSaver(),
+      mediaSaver: NativeMediaSaver(),
       permissionGuard: const NativeDownloadPermissionGuard(),
     );
   }

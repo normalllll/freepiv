@@ -2,6 +2,9 @@ import Flutter
 import Foundation
 import Photos
 import UIKit
+import CryptoKit
+import CFNetwork
+import Network
 
 final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDownloadDelegate {
   static let shared = FreepivDownloadBridge()
@@ -12,14 +15,10 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
   private var eventSink: FlutterEventSink?
   private var states: [String: NativeDownloadState] = [:]
   private var tasksByJob: [String: URLSessionDownloadTask] = [:]
-  private var backgroundCompletionHandler: (() -> Void)?
-
-  private lazy var session: URLSession = {
-    let config = URLSessionConfiguration.background(withIdentifier: "io.github.normalllll.freepiv.download.background")
-    config.sessionSendsLaunchEvents = true
-    config.httpMaximumConnectionsPerHost = 3
-    return URLSession(configuration: config, delegate: self, delegateQueue: nil)
-  }()
+  private var sessionsByIdentifier: [String: URLSession] = [:]
+  private var backgroundCompletionHandlers: [String: () -> Void] = [:]
+  private let sessionIdentifiersKey = "freepiv.download.sessionIdentifiers"
+  private let defaultSessionIdentifier = "io.github.normalllll.freepiv.download.background.direct"
 
   func register(messenger: FlutterBinaryMessenger) {
     let methodChannel = FlutterMethodChannel(name: methodChannelName, binaryMessenger: messenger)
@@ -31,9 +30,17 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
     eventChannel.setStreamHandler(self)
   }
 
-  func setBackgroundCompletionHandler(_ completionHandler: @escaping () -> Void) {
+  func handleEventsForBackgroundSession(identifier: String, completionHandler: @escaping () -> Void) {
     queue.async {
-      self.backgroundCompletionHandler = completionHandler
+      self.backgroundCompletionHandlers[identifier] = completionHandler
+      let stored = UserDefaults.standard.dictionary(forKey: self.sessionIdentifiersKey) as? [String: String]
+      let proxyUrl = stored?[identifier].flatMap { $0.isEmpty ? nil : $0 }
+      do {
+        _ = try self.session(identifier: identifier, proxyUrl: proxyUrl)
+      } catch {
+        self.backgroundCompletionHandlers[identifier] = nil
+        DispatchQueue.main.async { completionHandler() }
+      }
     }
   }
 
@@ -54,8 +61,10 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
   private func handle(call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
     case "initialize":
-      _ = session
-      result(nil)
+      queue.async {
+        self.restoreKnownSessions()
+        DispatchQueue.main.async { result(nil) }
+      }
     case "prepareForDownload":
       prepareForDownload(result: result)
     case "start":
@@ -75,6 +84,18 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
       result(nil)
     case "sync":
       sync(result: result)
+    case "acknowledge":
+      let args = call.arguments as? [String: Any]
+      let jobIds = args?["jobIds"] as? [String] ?? []
+      queue.async {
+        for jobId in jobIds {
+          guard let state = self.states[jobId] else { continue }
+          if state.status == "failed" || state.status == "cancelled" || state.saveState == "saved" || state.saveState == "failed" {
+            self.states[jobId] = nil
+          }
+        }
+      }
+      result(nil)
     case "saveFile":
       guard
         let args = call.arguments as? [String: Any],
@@ -87,11 +108,13 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
       }
       let bytesWritten = (args["bytesWritten"] as? NSNumber)?.int64Value ?? 0
       saveToPhotos(job: job, localUrl: URL(fileURLWithPath: path), bytesWritten: bytesWritten) { saveResult in
-        switch saveResult {
-        case .success(let payload):
-          result(payload)
-        case .failure(let error):
-          result(FlutterError(code: "save_failed", message: error.localizedDescription, details: nil))
+        DispatchQueue.main.async {
+          switch saveResult {
+          case .success(let payload):
+            result(payload)
+          case .failure(let error):
+            result(FlutterError(code: "save_failed", message: error.localizedDescription, details: nil))
+          }
         }
       }
     default:
@@ -105,7 +128,7 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
         if self.tasksByJob[job.id] != nil {
           continue
         }
-        guard let url = URL(string: job.url) else {
+        guard let url = requestUrl(for: job) else {
           self.states[job.id] = NativeDownloadState(jobId: job.id, status: "failed", saveState: "none", error: "Invalid URL")
           self.emit(["type": "failed", "jobId": job.id, "error": "Invalid URL"])
           continue
@@ -113,14 +136,30 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue(job.headers["Referer"] ?? "https://www.pixiv.net/", forHTTPHeaderField: "Referer")
-        request.setValue(job.headers["User-Agent"] ?? "freepiv", forHTTPHeaderField: "User-Agent")
-        for (key, value) in job.headers {
+        for (key, value) in job.networkOptions.headers {
           request.setValue(value, forHTTPHeaderField: key)
         }
+        if let hostHeader = job.networkOptions.hostHeader {
+          request.setValue(hostHeader, forHTTPHeaderField: "Host")
+        }
+        request.timeoutInterval = TimeInterval(job.networkOptions.receiveTimeoutSeconds)
 
-        let task = self.session.downloadTask(with: request)
-        task.taskDescription = job.id
+        guard let taskDescription = job.encodedTaskDescription() else {
+          self.states[job.id] = NativeDownloadState(jobId: job.id, status: "failed", saveState: "none", error: "Could not encode download job")
+          self.emit(["type": "failed", "jobId": job.id, "error": "Could not encode download job"])
+          continue
+        }
+        let session: URLSession
+        do {
+          session = try self.session(for: job.networkOptions)
+        } catch {
+          let message = error.localizedDescription
+          self.states[job.id] = NativeDownloadState(jobId: job.id, status: "failed", saveState: "none", error: message)
+          self.emit(["type": "failed", "jobId": job.id, "error": message])
+          continue
+        }
+        let task = session.downloadTask(with: request)
+        task.taskDescription = taskDescription
         self.tasksByJob[job.id] = task
         self.states[job.id] = NativeDownloadState(jobId: job.id, status: "running", saveState: "none", filename: job.filename)
         task.resume()
@@ -143,6 +182,9 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
 
   private func cancel(jobId: String) {
     queue.async {
+      if let state = self.states[jobId], state.status == "downloaded" || state.saveState == "saving" || state.saveState == "saved" {
+        return
+      }
       self.tasksByJob[jobId]?.cancel()
       self.tasksByJob[jobId] = nil
       var state = self.states[jobId] ?? NativeDownloadState(jobId: jobId, status: "cancelled", saveState: "none")
@@ -154,36 +196,46 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
   }
 
   private func sync(result: @escaping FlutterResult) {
-    session.getAllTasks { tasks in
-      self.queue.async {
-        for task in tasks {
-          guard let jobId = task.taskDescription else {
-            continue
+    queue.async {
+      self.restoreKnownSessions()
+      let sessions = Array(self.sessionsByIdentifier.values)
+      let group = DispatchGroup()
+      for session in sessions {
+        group.enter()
+        session.getAllTasks { tasks in
+          self.queue.async {
+            for task in tasks {
+              guard let job = NativeDownloadJob(task: task) else { continue }
+              let jobId = job.id
+              self.tasksByJob[jobId] = task as? URLSessionDownloadTask
+              var state = self.states[jobId] ?? NativeDownloadState(jobId: jobId, status: "running", saveState: "none", filename: job.filename)
+              state.status = task.state == .suspended ? "paused" : "running"
+              state.receivedBytes = task.countOfBytesReceived
+              state.totalBytes = task.countOfBytesExpectedToReceive > 0 ? task.countOfBytesExpectedToReceive : job.validation.expectedBytes
+              state.progress = progressOf(received: state.receivedBytes, total: state.totalBytes)
+              self.states[jobId] = state
+            }
+            group.leave()
           }
-          var state = self.states[jobId] ?? NativeDownloadState(jobId: jobId, status: "running", saveState: "none")
-          state.status = task.state == .suspended ? "paused" : "running"
-          state.receivedBytes = task.countOfBytesReceived
-          state.totalBytes = task.countOfBytesExpectedToReceive > 0 ? task.countOfBytesExpectedToReceive : nil
-          state.progress = progressOf(received: state.receivedBytes, total: state.totalBytes)
-          self.states[jobId] = state
         }
+      }
+      group.notify(queue: self.queue) {
         let payload = self.states.values.map { $0.toMap() }
-        DispatchQueue.main.async {
-          result(payload)
-        }
+        DispatchQueue.main.async { result(payload) }
       }
     }
   }
 
   func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-    guard let jobId = downloadTask.taskDescription else {
+    guard let job = NativeDownloadJob(task: downloadTask) else {
       return
     }
+    let jobId = job.id
     queue.async {
       var state = self.states[jobId] ?? NativeDownloadState(jobId: jobId, status: "running", saveState: "none")
       state.status = "running"
       state.receivedBytes = totalBytesWritten
-      state.totalBytes = totalBytesExpectedToWrite > 0 ? totalBytesExpectedToWrite : nil
+      state.totalBytes = job.validation.expectedBytes ?? (totalBytesExpectedToWrite > 0 ? totalBytesExpectedToWrite : nil)
       state.progress = progressOf(received: totalBytesWritten, total: state.totalBytes)
       self.states[jobId] = state
       self.emit(
@@ -199,25 +251,27 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
   }
 
   func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-    guard let jobId = downloadTask.taskDescription else {
+    guard let job = NativeDownloadJob(task: downloadTask) else {
       return
     }
+    let jobId = job.id
 
     queue.async {
       var state = self.states[jobId] ?? NativeDownloadState(jobId: jobId, status: "downloaded", saveState: "pending")
-      let filename = state.filename ?? "\(jobId).img"
+      let filename = job.filename
       do {
+        try validateResponse(downloadTask.response, job: job)
+        try validateDownloadedFile(location, validation: job.validation)
         let destination = try self.moveDownloadedFile(location: location, jobId: jobId, filename: filename)
         state.status = "downloaded"
         state.saveState = "saving"
         state.localPath = destination.path
         state.receivedBytes = downloadTask.countOfBytesReceived
-        state.totalBytes = downloadTask.countOfBytesExpectedToReceive > 0 ? downloadTask.countOfBytesExpectedToReceive : state.receivedBytes
+        state.totalBytes = job.validation.expectedBytes ?? (downloadTask.countOfBytesExpectedToReceive > 0 ? downloadTask.countOfBytesExpectedToReceive : state.receivedBytes)
         state.progress = 1
         self.states[jobId] = state
         self.emit(["type": "completed", "jobId": jobId, "localPath": destination.path, "bytesWritten": state.receivedBytes])
 
-        let job = NativeDownloadJob(id: jobId, url: downloadTask.originalRequest?.url?.absoluteString ?? "", filename: filename, headers: [:])
         self.saveToPhotos(job: job, localUrl: destination, bytesWritten: state.receivedBytes) { saveResult in
           self.queue.async {
             var latest = self.states[jobId] ?? state
@@ -239,19 +293,20 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
           }
         }
       } catch {
-        state.status = "downloaded"
-        state.saveState = "failed"
+        state.status = "failed"
+        state.saveState = "none"
         state.error = error.localizedDescription
         self.states[jobId] = state
-        self.emit(["type": "saveFailed", "jobId": jobId, "error": error.localizedDescription])
+        self.emit(["type": "failed", "jobId": jobId, "error": error.localizedDescription])
       }
     }
   }
 
   func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-    guard let jobId = task.taskDescription else {
+    guard let job = NativeDownloadJob(task: task) else {
       return
     }
+    let jobId = job.id
     queue.async {
       self.tasksByJob[jobId] = nil
       guard let error else {
@@ -260,6 +315,9 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
 
       var state = self.states[jobId] ?? NativeDownloadState(jobId: jobId, status: "failed", saveState: "none")
       if (error as NSError).code == NSURLErrorCancelled {
+        if state.status == "cancelled" {
+          return
+        }
         state.status = "cancelled"
         state.error = nil
         self.emit(["type": "cancelled", "jobId": jobId])
@@ -274,12 +332,123 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
 
   func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
     queue.async {
-      let handler = self.backgroundCompletionHandler
-      self.backgroundCompletionHandler = nil
+      guard let identifier = session.configuration.identifier else { return }
+      let handler = self.backgroundCompletionHandlers.removeValue(forKey: identifier)
       DispatchQueue.main.async {
         handler?()
       }
     }
+  }
+
+  func urlSession(
+    _ session: URLSession,
+    task: URLSessionTask,
+    didReceive challenge: URLAuthenticationChallenge,
+    completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+  ) {
+    guard
+      let job = NativeDownloadJob(task: task),
+      job.networkOptions.allowInvalidCertificates,
+      challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+      let trust = challenge.protectionSpace.serverTrust
+    else {
+      completionHandler(.performDefaultHandling, nil)
+      return
+    }
+    completionHandler(.useCredential, URLCredential(trust: trust))
+  }
+
+  private func restoreKnownSessions() {
+    let stored = UserDefaults.standard.dictionary(forKey: sessionIdentifiersKey) as? [String: String] ?? [:]
+    if stored.isEmpty {
+      _ = try? session(identifier: defaultSessionIdentifier, proxyUrl: nil)
+      return
+    }
+    for (identifier, proxyUrl) in stored {
+      _ = try? session(identifier: identifier, proxyUrl: proxyUrl.isEmpty ? nil : proxyUrl)
+    }
+  }
+
+  private func session(for options: NativeNetworkOptions) throws -> URLSession {
+    let proxyUrl = options.proxyUrl?.trimmingCharacters(in: .whitespacesAndNewlines)
+    let identifier: String
+    if let proxyUrl, !proxyUrl.isEmpty {
+      let digest = SHA256.hash(data: Data(proxyUrl.utf8)).prefix(12).map { String(format: "%02x", $0) }.joined()
+      identifier = "io.github.normalllll.freepiv.download.background.proxy.\(digest)"
+    } else {
+      identifier = defaultSessionIdentifier
+    }
+    return try session(identifier: identifier, proxyUrl: proxyUrl)
+  }
+
+  private func session(identifier: String, proxyUrl: String?) throws -> URLSession {
+    if let existing = sessionsByIdentifier[identifier] {
+      return existing
+    }
+    let config = URLSessionConfiguration.background(withIdentifier: identifier)
+    config.sessionSendsLaunchEvents = true
+    config.httpMaximumConnectionsPerHost = 6
+    if let proxyUrl, !proxyUrl.isEmpty {
+      try configureProxy(for: proxyUrl, configuration: config)
+    }
+    let session = URLSession(configuration: config, delegate: self, delegateQueue: nil)
+    sessionsByIdentifier[identifier] = session
+    var stored = UserDefaults.standard.dictionary(forKey: sessionIdentifiersKey) as? [String: String] ?? [:]
+    stored[identifier] = proxyUrl ?? ""
+    UserDefaults.standard.set(stored, forKey: sessionIdentifiersKey)
+    return session
+  }
+
+  private func configureProxy(for rawUrl: String, configuration: URLSessionConfiguration) throws {
+    guard let components = URLComponents(string: rawUrl),
+          let host = components.host, !host.isEmpty else {
+      throw proxyError("Invalid download proxy URL.")
+    }
+    let scheme = components.scheme?.lowercased() ?? "http"
+    let socks = scheme == "socks5" || scheme == "socks5h"
+    guard socks || scheme == "http" || scheme == "https" else {
+      throw proxyError("Unsupported download proxy scheme. Use HTTP, HTTPS, or SOCKS5.")
+    }
+    let port = components.port ?? (socks ? 1080 : (scheme == "https" ? 443 : 8080))
+    guard (1...65535).contains(port), let endpointPort = NWEndpoint.Port(rawValue: UInt16(port)) else {
+      throw proxyError("Invalid download proxy port.")
+    }
+    if #available(iOS 17.0, *) {
+      let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(host), port: endpointPort)
+      var proxy = socks
+        ? ProxyConfiguration(socksv5Proxy: endpoint)
+        : ProxyConfiguration(httpCONNECTProxy: endpoint, tlsOptions: scheme == "https" ? NWProtocolTLS.Options() : nil)
+      proxy.allowFailover = false
+      if let username = components.user {
+        proxy.applyCredential(username: username, password: components.password ?? "")
+      }
+      configuration.proxyConfigurations = [proxy]
+      return
+    }
+    // Only the HTTP proxy constants are available on older iOS SDKs.
+    // Never drop an unsupported proxy and silently send a direct request.
+    guard scheme == "http", components.user == nil, components.password == nil else {
+      throw proxyError("SOCKS5, HTTPS, and authenticated download proxies require iOS 17 or later.")
+    }
+    configuration.connectionProxyDictionary = [
+      kCFNetworkProxiesHTTPEnable as String: true,
+      kCFNetworkProxiesHTTPProxy as String: host,
+      kCFNetworkProxiesHTTPPort as String: port,
+    ]
+  }
+
+  private func proxyError(_ message: String) -> NSError {
+    NSError(domain: "FreepivDownloadProxy", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
+  }
+
+  private func requestUrl(for job: NativeDownloadJob) -> URL? {
+    guard var components = URLComponents(string: job.url) else {
+      return nil
+    }
+    if let connectHost = job.networkOptions.connectHost {
+      components.host = connectHost
+    }
+    return components.url
   }
 
   private func moveDownloadedFile(location: URL, jobId: String, filename: String) throws -> URL {
@@ -301,7 +470,7 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
     }
 
     do {
-      try validateReadableFile(localUrl)
+      try validateDownloadedFile(localUrl, validation: job.validation)
     } catch {
       completion(.failure(error))
       return
@@ -428,7 +597,8 @@ private struct NativeDownloadJob {
   let id: String
   let url: String
   let filename: String
-  let headers: [String: String]
+  let networkOptions: NativeNetworkOptions
+  let validation: NativeValidationOptions
 
   init?(_ map: [String: Any]) {
     guard let id = map["id"] as? String, let url = map["url"] as? String else {
@@ -437,14 +607,120 @@ private struct NativeDownloadJob {
     self.id = id
     self.url = url
     self.filename = map["filename"] as? String ?? "download"
-    self.headers = (map["headers"] as? [String: String]) ?? [:]
+    self.networkOptions = NativeNetworkOptions(map["networkOptions"] as? [String: Any] ?? [:], legacyHeaders: map["headers"] as? [String: String])
+    self.validation = NativeValidationOptions(map["validation"] as? [String: Any] ?? [:])
   }
 
-  init(id: String, url: String, filename: String, headers: [String: String]) {
+  init?(taskDescription: String?) {
+    guard
+      let taskDescription,
+      let data = taskDescription.data(using: .utf8),
+      let map = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+    else {
+      return nil
+    }
+    self.init(map)
+  }
+
+  init?(task: URLSessionTask) {
+    if let restored = NativeDownloadJob(taskDescription: task.taskDescription) {
+      self = restored
+      return
+    }
+    guard
+      let id = nonEmptyString(task.taskDescription),
+      let request = task.originalRequest,
+      let url = request.url?.absoluteString
+    else {
+      return nil
+    }
     self.id = id
     self.url = url
-    self.filename = filename
-    self.headers = headers
+    let filename = request.url?.lastPathComponent ?? ""
+    self.filename = filename.isEmpty ? "download" : filename
+    self.networkOptions = NativeNetworkOptions(["headers": request.allHTTPHeaderFields ?? [:]])
+    self.validation = NativeValidationOptions([:])
+  }
+
+  func encodedTaskDescription() -> String? {
+    let payload: [String: Any] = [
+      "id": id,
+      "url": url,
+      "filename": filename,
+      "networkOptions": networkOptions.toMap(),
+      "validation": validation.toMap(),
+    ]
+    guard let data = try? JSONSerialization.data(withJSONObject: payload) else { return nil }
+    return String(data: data, encoding: .utf8)
+  }
+}
+
+private struct NativeNetworkOptions {
+  let headers: [String: String]
+  let proxyUrl: String?
+  let connectHost: String?
+  let hostHeader: String?
+  let disableTlsSni: Bool
+  let allowInvalidCertificates: Bool
+  let connectTimeoutSeconds: Int
+  let receiveTimeoutSeconds: Int
+
+  init(_ map: [String: Any], legacyHeaders: [String: String]? = nil) {
+    self.headers = map["headers"] as? [String: String] ?? legacyHeaders ?? [:]
+    self.proxyUrl = nonEmptyString(map["proxyUrl"])
+    self.connectHost = nonEmptyString(map["connectHost"])
+    self.hostHeader = nonEmptyString(map["hostHeader"])
+    self.disableTlsSni = map["disableTlsSni"] as? Bool ?? false
+    self.allowInvalidCertificates = map["allowInvalidCertificates"] as? Bool ?? false
+    self.connectTimeoutSeconds = max((map["connectTimeoutSeconds"] as? NSNumber)?.intValue ?? 30, 1)
+    self.receiveTimeoutSeconds = max((map["receiveTimeoutSeconds"] as? NSNumber)?.intValue ?? 120, 1)
+  }
+
+  func toMap() -> [String: Any] {
+    compactPayload([
+      "headers": headers,
+      "proxyUrl": proxyUrl,
+      "connectHost": connectHost,
+      "hostHeader": hostHeader,
+      "disableTlsSni": disableTlsSni,
+      "allowInvalidCertificates": allowInvalidCertificates,
+      "connectTimeoutSeconds": connectTimeoutSeconds,
+      "receiveTimeoutSeconds": receiveTimeoutSeconds,
+    ])
+  }
+}
+
+private struct NativeChecksum {
+  let algorithm: String
+  let value: String
+
+  init?(_ map: [String: Any]) {
+    guard let algorithm = nonEmptyString(map["algorithm"]), let value = nonEmptyString(map["value"]) else { return nil }
+    self.algorithm = algorithm.lowercased()
+    self.value = value.lowercased()
+  }
+
+  func toMap() -> [String: Any] { ["algorithm": algorithm, "value": value] }
+}
+
+private struct NativeValidationOptions {
+  let expectedBytes: Int64?
+  let allowedContentTypes: [String]
+  let checksum: NativeChecksum?
+
+  init(_ map: [String: Any]) {
+    let bytes = (map["expectedBytes"] as? NSNumber)?.int64Value
+    self.expectedBytes = bytes.flatMap { $0 > 0 ? $0 : nil }
+    self.allowedContentTypes = (map["allowedContentTypes"] as? [Any] ?? []).map { String(describing: $0).lowercased() }
+    self.checksum = (map["checksum"] as? [String: Any]).flatMap(NativeChecksum.init)
+  }
+
+  func toMap() -> [String: Any] {
+    compactPayload([
+      "expectedBytes": expectedBytes,
+      "allowedContentTypes": allowedContentTypes,
+      "checksum": checksum?.toMap(),
+    ])
   }
 }
 
@@ -506,6 +782,64 @@ private func validateReadableFile(_ url: URL) throws {
   guard size > 0 else {
     throw NSError(domain: "freepiv.download", code: 5, userInfo: [NSLocalizedDescriptionKey: "Downloaded file is empty: \(path)"])
   }
+}
+
+private func validateResponse(_ response: URLResponse?, job: NativeDownloadJob) throws {
+  guard let response = response as? HTTPURLResponse else {
+    throw downloadError(6, "Download response is not HTTP.")
+  }
+  guard (200...299).contains(response.statusCode) else {
+    throw downloadError(7, "Download failed with HTTP \(response.statusCode).")
+  }
+  let allowed = job.validation.allowedContentTypes
+  if !allowed.isEmpty {
+    guard let actual = response.mimeType?.lowercased() else {
+      throw downloadError(8, "Download response has no valid Content-Type.")
+    }
+    let matches = allowed.contains { candidate in
+      let normalized = candidate.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+      return normalized.hasSuffix("/*") ? actual.hasPrefix(String(normalized.dropLast())) : actual == normalized
+    }
+    if !matches {
+      throw downloadError(9, "Unexpected download Content-Type: \(actual).")
+    }
+  }
+  if let expected = job.validation.expectedBytes, response.expectedContentLength > 0, response.expectedContentLength != expected {
+    throw downloadError(10, "Response byte count mismatch: expected \(expected), got \(response.expectedContentLength).")
+  }
+}
+
+private func validateDownloadedFile(_ url: URL, validation: NativeValidationOptions) throws {
+  try validateReadableFile(url)
+  let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+  let actualBytes = (attributes[.size] as? NSNumber)?.int64Value ?? 0
+  if let expected = validation.expectedBytes, actualBytes != expected {
+    throw downloadError(11, "Downloaded byte count mismatch: expected \(expected), got \(actualBytes).")
+  }
+  guard let checksum = validation.checksum else { return }
+  let data = try Data(contentsOf: url, options: .mappedIfSafe)
+  let actual: String
+  switch checksum.algorithm {
+  case "md5":
+    actual = Insecure.MD5.hash(data: data).map { String(format: "%02x", $0) }.joined()
+  case "sha256":
+    actual = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+  default:
+    throw downloadError(12, "Unsupported checksum algorithm: \(checksum.algorithm).")
+  }
+  if actual.caseInsensitiveCompare(checksum.value) != .orderedSame {
+    throw downloadError(13, "Downloaded \(checksum.algorithm) checksum mismatch: expected \(checksum.value), got \(actual).")
+  }
+}
+
+private func nonEmptyString(_ value: Any?) -> String? {
+  guard let text = value as? String else { return nil }
+  let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+  return trimmed.isEmpty ? nil : trimmed
+}
+
+private func downloadError(_ code: Int, _ message: String) -> NSError {
+  NSError(domain: "freepiv.download", code: code, userInfo: [NSLocalizedDescriptionKey: message])
 }
 
 private func compactPayload(_ payload: [String: Any?]) -> [String: Any] {

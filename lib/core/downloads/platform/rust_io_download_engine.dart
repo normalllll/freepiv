@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:freepiv/core/downloads/download_engine.dart';
 import 'package:freepiv/core/downloads/download_file_system.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
-import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/src/rust/api/download.dart';
 import 'package:path/path.dart' as p;
 
@@ -16,7 +15,17 @@ final class RustIoDownloadEngine implements DownloadEngine {
 
   @override
   DownloadCapabilities get capabilities {
-    return const DownloadCapabilities(supportsBackground: false, supportsCancel: true, supportsPauseResume: false, handlesSaving: false);
+    return const DownloadCapabilities(
+      supportsBackground: false,
+      supportsCancel: true,
+      supportsPauseResume: false,
+      handlesSaving: false,
+      supportsHeaders: true,
+      supportsProxy: true,
+      supportsHostOverride: true,
+      supportsCertificateBypass: true,
+      supportsValidation: true,
+    );
   }
 
   final _events = StreamController<DownloadEngineEvent>.broadcast();
@@ -74,6 +83,19 @@ final class RustIoDownloadEngine implements DownloadEngine {
     ];
   }
 
+  @override
+  Future<void> acknowledge(Set<String> jobIds) async {}
+
+  @override
+  Future<void> dispose() async {
+    final running = _running.values.toList(growable: false);
+    for (final item in running) {
+      await cancel(item.job.id);
+    }
+    await Future.wait(running.map((item) => item.finished));
+    await _events.close();
+  }
+
   Future<void> _download(DownloadJob job) async {
     final running = _RunningDownload(job: job);
     _running[job.id] = running;
@@ -92,7 +114,7 @@ final class RustIoDownloadEngine implements DownloadEngine {
 
       var lastEmit = DateTime.fromMillisecondsSinceEpoch(0);
       final downloadedPath = await running.download(
-        job.url.toString(),
+        job,
         partialFile.path,
         onProgress: (receivedBytes, totalBytes) {
           running.receivedBytes = receivedBytes;
@@ -143,7 +165,8 @@ final class RustIoDownloadEngine implements DownloadEngine {
                 'filename=${job.filename}\n'
                 'partialPath=${partialFile?.path ?? '<null>'}\n'
                 'downloadedPath=${downloadedFile?.path ?? '<null>'}\n'
-                'proxy=${AppSettings.proxySettings.activeUrl ?? '<none>'}\n'
+                'networkOptions=${job.networkOptions.toJson()}\n'
+                'validation=${job.validation.toJson()}\n'
                 'error=$error\n'
                 'stackTrace=$stackTrace',
           ),
@@ -152,6 +175,7 @@ final class RustIoDownloadEngine implements DownloadEngine {
     } finally {
       _running.remove(job.id);
       await running.subscription?.cancel();
+      running.completeFinished();
     }
   }
 }
@@ -162,36 +186,70 @@ class _RunningDownload {
   final DownloadJob job;
   StreamSubscription<FrbDownloadFileEvent>? subscription;
   Completer<String>? _pathCompleter;
+  final _finishedCompleter = Completer<void>();
   bool cancelled = false;
   int receivedBytes = 0;
   int? totalBytes;
   double progress = 0;
 
-  Future<String> download(String url, String path, {required void Function(int receivedBytes, int? totalBytes) onProgress}) {
+  Future<String> download(DownloadJob job, String path, {required void Function(int receivedBytes, int? totalBytes) onProgress}) {
+    if (cancelled) {
+      return Future<String>.error(const DownloadException('Download cancelled'));
+    }
     final completer = Completer<String>();
-    final proxy = AppSettings.proxySettings.activeUrl;
+    final network = job.networkOptions;
+    final validation = job.validation;
+    final checksum = validation.checksum;
+    final expectedBytes = validation.expectedBytes;
+    if (expectedBytes != null && expectedBytes > 0xffffffff) {
+      return Future<String>.error(const DownloadException('The Rust bridge supports expected byte counts up to 4 GiB.'));
+    }
     _pathCompleter = completer;
-    subscription = downloadToFile(url: url, path: path, proxy: proxy).listen(
-      (event) {
-        if (cancelled) {
-          return;
-        }
-        switch (event) {
-          case FrbDownloadFileEvent_Progress(:final received, :final total):
-            onProgress(received, total > 0 ? total : null);
-          case FrbDownloadFileEvent_Done(:final path):
-            complete(path);
-        }
-      },
-      onError: completeWithError,
-      onDone: () {
-        if (!completer.isCompleted) {
-          completer.completeError(const DownloadException('Download completed without file path.'));
-        }
-      },
-      cancelOnError: true,
-    );
+    subscription =
+        downloadToFile(
+          url: job.url.toString(),
+          path: path,
+          headers: network.headers,
+          proxyUrl: network.proxyUrl,
+          connectHost: network.connectHost,
+          hostHeader: network.hostHeader,
+          disableTlsSni: network.disableTlsSni,
+          allowInvalidCertificates: network.allowInvalidCertificates,
+          connectTimeoutSeconds: network.connectTimeoutSeconds,
+          receiveTimeoutSeconds: network.receiveTimeoutSeconds,
+          expectedBytes: expectedBytes,
+          allowedContentTypes: validation.allowedContentTypes,
+          checksumAlgorithm: checksum?.algorithm.name,
+          checksumValue: checksum?.value,
+        ).listen(
+          (event) {
+            if (cancelled) {
+              return;
+            }
+            switch (event) {
+              case FrbDownloadFileEvent_Progress(:final received, :final total):
+                onProgress(received, total > 0 ? total : null);
+              case FrbDownloadFileEvent_Done(:final path):
+                complete(path);
+            }
+          },
+          onError: completeWithError,
+          onDone: () {
+            if (!completer.isCompleted) {
+              completer.completeError(const DownloadException('Download completed without file path.'));
+            }
+          },
+          cancelOnError: true,
+        );
     return completer.future;
+  }
+
+  Future<void> get finished => _finishedCompleter.future;
+
+  void completeFinished() {
+    if (!_finishedCompleter.isCompleted) {
+      _finishedCompleter.complete();
+    }
   }
 
   void complete(String path) {
