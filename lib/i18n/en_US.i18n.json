@@ -1,8 +1,15 @@
 {
+  "discover": {
+    "searchHint": "Search Pixiv",
+    "history": "Recent searches",
+    "viewAll": "View all",
+    "clearHistory": "Clear history"
+  },
   "app": {
     "title": "freepiv"
   },
   "navigation": {
+    "activity": "Activity",
     "home": "Home",
     "search": "Search",
     "newest": "Newest",

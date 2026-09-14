@@ -13,6 +13,7 @@ class SearchHeader extends ConsumerWidget {
     this.showBackButton = false,
     this.reserveBackButtonSpace = false,
     this.showTypeSelector = true,
+    this.showFilters = true,
     this.compact = false,
     this.onBack,
     this.onTypeChanged,
@@ -25,6 +26,7 @@ class SearchHeader extends ConsumerWidget {
   final bool showBackButton;
   final bool reserveBackButtonSpace;
   final bool showTypeSelector;
+  final bool showFilters;
   final bool compact;
   final VoidCallback? onBack;
   final ValueChanged<SearchType>? onTypeChanged;
@@ -49,7 +51,7 @@ class SearchHeader extends ConsumerWidget {
                 const SizedBox(width: 4),
               ],
               Expanded(
-                child: SearchBox(key: searchBoxKey, onSearch: onSearch, onSelected: onSelected),
+                child: SearchBox(key: searchBoxKey, onSearch: onSearch, onSelected: onSelected, showFilters: showFilters),
               ),
             ],
           ),

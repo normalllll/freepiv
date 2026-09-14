@@ -7,9 +7,10 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/highlight_text_field.dart';
 
 class SearchField extends StatelessWidget {
-  const SearchField({required this.type, required this.session, required this.onSubmitted, super.key});
+  const SearchField({required this.type, required this.session, required this.onSubmitted, this.showFilters = true, super.key});
 
   final SearchType type;
+  final bool showFilters;
   final SearchAutocompleteSession session;
   final ValueChanged<String> onSubmitted;
 
@@ -19,7 +20,14 @@ class SearchField extends StatelessWidget {
       animation: session,
       builder: (context, child) {
         return TextFieldTapRegion(
-          child: SearchInputSurface(type: type, session: session, autofocus: false, onSubmitted: onSubmitted, onTapOutside: (_) => session.focusNode.unfocus()),
+          child: SearchInputSurface(
+            type: type,
+            session: session,
+            autofocus: false,
+            onSubmitted: onSubmitted,
+            showFilters: showFilters,
+            onTapOutside: (_) => session.focusNode.unfocus(),
+          ),
         );
       },
     );
@@ -27,9 +35,18 @@ class SearchField extends StatelessWidget {
 }
 
 class SearchInputSurface extends StatelessWidget {
-  const SearchInputSurface({required this.type, required this.session, required this.autofocus, required this.onSubmitted, this.onTapOutside, super.key});
+  const SearchInputSurface({
+    required this.type,
+    required this.session,
+    required this.autofocus,
+    required this.onSubmitted,
+    this.onTapOutside,
+    this.showFilters = true,
+    super.key,
+  });
 
   final SearchType type;
+  final bool showFilters;
   final SearchAutocompleteSession session;
   final bool autofocus;
   final ValueChanged<String> onSubmitted;
@@ -40,10 +57,10 @@ class SearchInputSurface extends StatelessWidget {
     return SearchInput(
       controller: session.controller,
       focusNode: session.focusNode,
-      hintText: context.t.search.placeholder,
+      hintText: context.t.discover.searchHint,
       onSubmitted: onSubmitted,
       onClear: session.clearAll,
-      actions: [SearchFilterButton(type: type, allowTypeSelection: false, compact: true)],
+      actions: [if (showFilters) SearchFilterButton(type: type, allowTypeSelection: false, compact: true)],
       field: HighlightTextField(
         autofocus: autofocus,
         controller: session.controller,
@@ -54,7 +71,7 @@ class SearchInputSurface extends StatelessWidget {
         onTapOutside: onTapOutside,
         maxLines: 1,
         style: Theme.of(context).textTheme.bodyMedium,
-        decoration: searchInputDecoration(context, context.t.search.placeholder),
+        decoration: searchInputDecoration(context, context.t.discover.searchHint),
       ),
     );
   }

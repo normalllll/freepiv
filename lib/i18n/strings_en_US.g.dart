@@ -41,6 +41,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
+	late final Translations$discover$en_US discover = Translations$discover$en_US.internal(_root);
 	late final Translations$app$en_US app = Translations$app$en_US.internal(_root);
 	late final Translations$navigation$en_US navigation = Translations$navigation$en_US.internal(_root);
 	late final Translations$common$en_US common = Translations$common$en_US.internal(_root);
@@ -63,6 +64,19 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
 }
 
+// Path: discover
+class Translations$discover$en_US {
+	Translations$discover$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get searchHint => 'Search Pixiv';
+	String get history => 'Recent searches';
+	String get viewAll => 'View all';
+	String get clearHistory => 'Clear history';
+}
+
 // Path: app
 class Translations$app$en_US {
 	Translations$app$en_US.internal(this._root);
@@ -80,6 +94,7 @@ class Translations$navigation$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+	String get activity => 'Activity';
 	String get home => 'Home';
 	String get search => 'Search';
 	String get newest => 'Newest';
@@ -1124,7 +1139,12 @@ class Translations$novel$reader$en_US {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'discover.searchHint' => 'Search Pixiv',
+			'discover.history' => 'Recent searches',
+			'discover.viewAll' => 'View all',
+			'discover.clearHistory' => 'Clear history',
 			'app.title' => 'freepiv',
+			'navigation.activity' => 'Activity',
 			'navigation.home' => 'Home',
 			'navigation.search' => 'Search',
 			'navigation.newest' => 'Newest',

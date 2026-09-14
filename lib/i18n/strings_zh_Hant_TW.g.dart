@@ -39,6 +39,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	TranslationsZhHantTw $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhHantTw(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$discover$zh_Hant_TW discover = Translations$discover$zh_Hant_TW.internal(_root);
 	@override late final Translations$app$zh_Hant_TW app = Translations$app$zh_Hant_TW.internal(_root);
 	@override late final Translations$navigation$zh_Hant_TW navigation = Translations$navigation$zh_Hant_TW.internal(_root);
 	@override late final Translations$common$zh_Hant_TW common = Translations$common$zh_Hant_TW.internal(_root);
@@ -61,6 +62,19 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$pixivision$zh_Hant_TW pixivision = Translations$pixivision$zh_Hant_TW.internal(_root);
 }
 
+// Path: discover
+class Translations$discover$zh_Hant_TW extends Translations$discover$en_US {
+	Translations$discover$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get searchHint => '搜尋 Pixiv';
+	@override String get history => '搜尋紀錄';
+	@override String get viewAll => '查看全部';
+	@override String get clearHistory => '清除紀錄';
+}
+
 // Path: app
 class Translations$app$zh_Hant_TW extends Translations$app$en_US {
 	Translations$app$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
@@ -78,6 +92,7 @@ class Translations$navigation$zh_Hant_TW extends Translations$navigation$en_US {
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
+	@override String get activity => '動態';
 	@override String get home => '首頁';
 	@override String get search => '搜尋';
 	@override String get newest => '最新';
@@ -1122,7 +1137,12 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 extension on TranslationsZhHantTw {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'discover.searchHint' => '搜尋 Pixiv',
+			'discover.history' => '搜尋紀錄',
+			'discover.viewAll' => '查看全部',
+			'discover.clearHistory' => '清除紀錄',
 			'app.title' => 'freepiv',
+			'navigation.activity' => '動態',
 			'navigation.home' => '首頁',
 			'navigation.search' => '搜尋',
 			'navigation.newest' => '最新',

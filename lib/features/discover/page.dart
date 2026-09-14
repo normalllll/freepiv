@@ -10,15 +10,20 @@ import 'package:freepiv/features/search/presentation/widgets/search_header.dart'
 import 'package:freepiv/features/search/presentation/widgets/search_trending_tags.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:go_router/go_router.dart';
+import 'package:freepiv/features/search/logic/search_history_logic.dart';
+import 'pixivision_preview.dart';
+import 'package:freepiv/features/pixivision/logic.dart';
+import 'package:freepiv/i18n/strings.g.dart';
+import 'search_history.dart';
 
-class SearchPage extends ConsumerStatefulWidget {
-  const SearchPage({super.key});
+class DiscoverPage extends ConsumerStatefulWidget {
+  const DiscoverPage({super.key});
 
   @override
-  ConsumerState<SearchPage> createState() => _SearchPageState();
+  ConsumerState<DiscoverPage> createState() => _DiscoverPageState();
 }
 
-class _SearchPageState extends ConsumerState<SearchPage> {
+class _DiscoverPageState extends ConsumerState<DiscoverPage> {
   final _searchBoxKey = GlobalKey<SearchBoxState>();
 
   @override
@@ -28,18 +33,39 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         bottom: false,
         child: Column(
           children: [
-            SearchHeader(searchBoxKey: _searchBoxKey, onSearch: _openSearchResult, onSelected: _handleSearchSelection),
+            SearchHeader(
+              searchBoxKey: _searchBoxKey,
+              onSearch: _openSearchResult,
+              onSelected: _handleSearchSelection,
+              showTypeSelector: false,
+              showFilters: false,
+            ),
             Expanded(
               child: DataRefreshView(
                 onRefresh: () async {
-                  await ref.read(searchTrendingTagsProvider.notifier).reload(keepPreviousData: true);
+                  final language = pixivisionLanguagePath(context.t.$meta.locale);
+                  final articles = pixivisionBrowseProvider('https://www.pixivision.net/$language/');
+                  ref.invalidate(articles);
+                  await Future.wait([ref.read(searchTrendingTagsProvider.notifier).reload(keepPreviousData: true), ref.read(articles.future)]);
                   return true;
                 },
                 builder: (context, physics, locators) {
                   return DataLoadingCustomScrollView(
+                    key: const PageStorageKey('discover-content'),
                     physics: physics,
                     slivers: [
                       ?locators.sliverHeader,
+                      SliverToBoxAdapter(
+                        child: DiscoverySearchHistory(
+                          onSelected: (query) {
+                            final draft = ref.read(searchDraftProvider);
+                            ref.read(searchDraftProvider.notifier).setDraft(draft.copyWith(text: query));
+                            ref.read(searchHistoryProvider.notifier).record(query);
+                            _openSearchResult(SearchSubmission(type: draft.type, query: query));
+                          },
+                        ),
+                      ),
+                      const SliverToBoxAdapter(child: DiscoveryPixivisionPreview()),
                       SearchTrendingTagsSliver(
                         onTagSelected: (tag) {
                           _searchBoxKey.currentState?.insertPopularTag(tag);

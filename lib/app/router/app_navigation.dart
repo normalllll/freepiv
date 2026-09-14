@@ -13,11 +13,11 @@ class AppRouteDestination {
 const appRouteDestinations = <AppRouteDestination>[
   AppRouteDestination(route: AppRoute.home, icon: Icons.auto_awesome_mosaic_outlined, selectedIcon: Icons.auto_awesome_mosaic),
   AppRouteDestination(route: AppRoute.newest, icon: Icons.fiber_new_outlined, selectedIcon: Icons.fiber_new),
-  AppRouteDestination(route: AppRoute.search, icon: Icons.search_outlined, selectedIcon: Icons.search),
-  AppRouteDestination(route: AppRoute.pixivision, icon: Icons.auto_stories_outlined, selectedIcon: Icons.auto_stories),
-  AppRouteDestination(route: AppRoute.fanbox, icon: Icons.article_outlined, selectedIcon: Icons.article),
+  AppRouteDestination(route: AppRoute.search, icon: Icons.explore_outlined, selectedIcon: Icons.explore),
   AppRouteDestination(route: AppRoute.me, icon: Icons.account_circle_outlined, selectedIcon: Icons.account_circle),
 ];
+
+bool isMobileNavigationPath(String path) => appRouteDestinations.any((item) => item.route.path == path);
 
 int? appDestinationIndexForPath(String path) {
   for (var index = 0; index < appRouteDestinations.length; index += 1) {
@@ -29,13 +29,12 @@ int? appDestinationIndexForPath(String path) {
   return null;
 }
 
-bool isPrimaryNavigationPath(String path) {
-  if (path.startsWith('/fanbox/') || path.startsWith('/pixivision/')) return false;
-  return appDestinationIndexForPath(path) != null;
-}
-
 String appRouteDestinationLabel(Translations translations, AppRouteDestination destination) {
-  return appRouteLabel(translations, destination.route);
+  return switch (destination.route) {
+    AppRoute.search => translations.common.discover,
+    AppRoute.newest => translations.navigation.activity,
+    _ => appRouteLabel(translations, destination.route),
+  };
 }
 
 String appRouteLabel(Translations translations, AppRoute route) {
@@ -65,10 +64,9 @@ String appRouteLabel(Translations translations, AppRoute route) {
 bool _routeOwnsPath(AppRoute route, String path) {
   return switch (route) {
     AppRoute.home => path == route.path,
-    AppRoute.search => path == route.path,
+    AppRoute.search => path == route.path || path.startsWith('/search/') || path == '/pixivision' || path.startsWith('/pixivision/'),
     AppRoute.newest => path == route.path || path.startsWith('${route.path}/'),
-    AppRoute.fanbox || AppRoute.pixivision => path == route.path || path.startsWith('${route.path}/'),
-    AppRoute.me => path == route.path,
+    AppRoute.me => path == route.path || path.startsWith('/me/') || path == '/fanbox' || path.startsWith('/fanbox/'),
     _ => false,
   };
 }

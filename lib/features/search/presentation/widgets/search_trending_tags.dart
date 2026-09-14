@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,7 +42,12 @@ class SearchTrendingTagsSliver extends ConsumerWidget {
     }
 
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      padding: EdgeInsets.fromLTRB(
+        math.max(12, (MediaQuery.sizeOf(context).width - 900) / 2 + 12),
+        0,
+        math.max(12, (MediaQuery.sizeOf(context).width - 900) / 2 + 12),
+        24,
+      ),
       sliver: SliverLayoutBuilder(
         builder: (context, constraints) {
           return SliverGrid.builder(
@@ -131,7 +137,12 @@ class _TrendingTagGridSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      padding: EdgeInsets.fromLTRB(
+        math.max(12, (MediaQuery.sizeOf(context).width - 900) / 2 + 12),
+        0,
+        math.max(12, (MediaQuery.sizeOf(context).width - 900) / 2 + 12),
+        24,
+      ),
       sliver: SliverLayoutBuilder(
         builder: (context, constraints) {
           return SliverGrid.builder(

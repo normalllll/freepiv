@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/features/search/logic/search_history_logic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_autocomplete_session.dart';
@@ -11,7 +12,9 @@ import 'package:freepiv/features/search/presentation/widgets/search_box/search_s
 export 'search_models.dart';
 
 class SearchBox extends ConsumerStatefulWidget {
-  const SearchBox({required this.onSearch, this.fixedType, this.onSelected, super.key});
+  const SearchBox({required this.onSearch, this.fixedType, this.onSelected, this.showFilters = true, super.key});
+
+  final bool showFilters;
 
   final SearchType? fixedType;
   final ValueChanged<SearchSubmission> onSearch;
@@ -87,7 +90,7 @@ class SearchBoxState extends ConsumerState<SearchBox> {
 
     return CompositedTransformTarget(
       link: _layerLink,
-      child: SearchField(type: activeType, session: _session, onSubmitted: _handleSubmitted),
+      child: SearchField(type: activeType, session: _session, onSubmitted: _handleSubmitted, showFilters: widget.showFilters),
     );
   }
 
@@ -186,6 +189,7 @@ class SearchBoxState extends ConsumerState<SearchBox> {
       return;
     }
 
+    ref.read(searchHistoryProvider.notifier).record(query);
     _hideSuggestionOverlay();
     _session.focusNode.unfocus();
     widget.onSearch(SearchSubmission(type: widget.fixedType ?? _session.type, query: query));

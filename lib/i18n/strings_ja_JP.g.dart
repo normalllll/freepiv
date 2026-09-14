@@ -39,6 +39,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsJaJp $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsJaJp(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final _Translations$discover$ja_JP discover = _Translations$discover$ja_JP._(_root);
 	@override late final _Translations$app$ja_JP app = _Translations$app$ja_JP._(_root);
 	@override late final _Translations$navigation$ja_JP navigation = _Translations$navigation$ja_JP._(_root);
 	@override late final _Translations$common$ja_JP common = _Translations$common$ja_JP._(_root);
@@ -61,6 +62,19 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
 }
 
+// Path: discover
+class _Translations$discover$ja_JP extends Translations$discover$en_US {
+	_Translations$discover$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get searchHint => 'Pixiv を検索';
+	@override String get history => '検索履歴';
+	@override String get viewAll => 'すべて見る';
+	@override String get clearHistory => '履歴を削除';
+}
+
 // Path: app
 class _Translations$app$ja_JP extends Translations$app$en_US {
 	_Translations$app$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
@@ -78,6 +92,7 @@ class _Translations$navigation$ja_JP extends Translations$navigation$en_US {
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
+	@override String get activity => '新着';
 	@override String get home => 'ホーム';
 	@override String get search => '検索';
 	@override String get newest => '最新';
@@ -1122,7 +1137,12 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 extension on TranslationsJaJp {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'discover.searchHint' => 'Pixiv を検索',
+			'discover.history' => '検索履歴',
+			'discover.viewAll' => 'すべて見る',
+			'discover.clearHistory' => '履歴を削除',
 			'app.title' => 'freepiv',
+			'navigation.activity' => '新着',
 			'navigation.home' => 'ホーム',
 			'navigation.search' => '検索',
 			'navigation.newest' => '最新',

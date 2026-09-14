@@ -39,6 +39,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsZhCn $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhCn(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$discover$zh_CN discover = Translations$discover$zh_CN.internal(_root);
 	@override late final Translations$app$zh_CN app = Translations$app$zh_CN.internal(_root);
 	@override late final Translations$navigation$zh_CN navigation = Translations$navigation$zh_CN.internal(_root);
 	@override late final Translations$common$zh_CN common = Translations$common$zh_CN.internal(_root);
@@ -61,6 +62,19 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
 }
 
+// Path: discover
+class Translations$discover$zh_CN extends Translations$discover$en_US {
+	Translations$discover$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get searchHint => '搜索 Pixiv';
+	@override String get history => '搜索历史';
+	@override String get viewAll => '查看全部';
+	@override String get clearHistory => '清空历史';
+}
+
 // Path: app
 class Translations$app$zh_CN extends Translations$app$en_US {
 	Translations$app$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
@@ -78,6 +92,7 @@ class Translations$navigation$zh_CN extends Translations$navigation$en_US {
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
+	@override String get activity => '动态';
 	@override String get home => '首页';
 	@override String get search => '搜索';
 	@override String get newest => '最新';
@@ -1122,7 +1137,12 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 extension on TranslationsZhCn {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'discover.searchHint' => '搜索 Pixiv',
+			'discover.history' => '搜索历史',
+			'discover.viewAll' => '查看全部',
+			'discover.clearHistory' => '清空历史',
 			'app.title' => 'freepiv',
+			'navigation.activity' => '动态',
 			'navigation.home' => '首页',
 			'navigation.search' => '搜索',
 			'navigation.newest' => '最新',

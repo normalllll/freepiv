@@ -1,8 +1,15 @@
 {
+  "discover": {
+    "searchHint": "搜索 Pixiv",
+    "history": "搜索历史",
+    "viewAll": "查看全部",
+    "clearHistory": "清空历史"
+  },
   "app": {
     "title": "freepiv"
   },
   "navigation": {
+    "activity": "动态",
     "home": "首页",
     "search": "搜索",
     "newest": "最新",

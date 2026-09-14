@@ -1,8 +1,15 @@
 {
+  "discover": {
+    "searchHint": "搜尋 Pixiv",
+    "history": "搜尋紀錄",
+    "viewAll": "查看全部",
+    "clearHistory": "清除紀錄"
+  },
   "app": {
     "title": "freepiv"
   },
   "navigation": {
+    "activity": "動態",
     "home": "首頁",
     "search": "搜尋",
     "newest": "最新",

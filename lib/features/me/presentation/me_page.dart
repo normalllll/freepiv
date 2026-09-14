@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/core/core.dart';
@@ -13,14 +15,14 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
 
-class MePage extends StatefulWidget {
+class MePage extends ConsumerStatefulWidget {
   const MePage({super.key});
 
   @override
-  State<MePage> createState() => _MePageState();
+  ConsumerState<MePage> createState() => _MePageState();
 }
 
-class _MePageState extends State<MePage> {
+class _MePageState extends ConsumerState<MePage> {
   @override
   Widget build(BuildContext context) {
     final translations = context.t;
@@ -63,6 +65,21 @@ class _MePageState extends State<MePage> {
                                   title: translations.me.followers,
                                   enabled: account != null,
                                   onTap: () => context.pushNamed(AppRoute.meFollowers.name),
+                                ),
+                                const SizedBox(height: 8),
+                                _MeNavigationEntry(
+                                  icon: Icons.article_outlined,
+                                  title: translations.fanbox.title,
+                                  enabled: true,
+                                  onTap: () {
+                                    final selection = ref.read(fanboxBrowseSelectionProvider);
+                                    context.push(
+                                      Uri(
+                                        path: '/fanbox/browse',
+                                        queryParameters: {'section': selection.section.name, if (selection.query.isNotEmpty) 'q': selection.query},
+                                      ).toString(),
+                                    );
+                                  },
                                 ),
                                 const SizedBox(height: 24),
                                 _MeAboutEntry(onTap: _openAbout),

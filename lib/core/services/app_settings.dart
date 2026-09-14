@@ -88,6 +88,15 @@ class AppSettings {
 
   static const boxName = 'app_settings';
 
+  static const _searchHistoryKey = 'searchHistory';
+
+  static List<String> get searchHistory => switch (_values[_searchHistoryKey]) {
+    final List values => List.unmodifiable(values.whereType<String>().take(30)),
+    _ => const [],
+  };
+
+  static set searchHistory(List<String> value) => _write(_searchHistoryKey, value.take(30).toList());
+
   static const _accountSessionKey = 'accountSession';
   static const _themeModeKey = 'themeMode';
   static const _localeCodeKey = 'localeCode';
@@ -106,6 +115,7 @@ class AppSettings {
   static const maxConcurrentDownloadsLimit = 6;
 
   static const _settingKeys = {
+    _searchHistoryKey,
     _accountSessionKey,
     _themeModeKey,
     _localeCodeKey,

@@ -36,7 +36,7 @@ class RouterShell extends StatelessWidget {
 
         return _MobileShell(
           selectedIndex: selectedIndex ?? 0,
-          showNavigationBar: isPrimaryNavigationPath(path),
+          showNavigationBar: isMobileNavigationPath(path),
           onDestinationSelected: (index) => _selectIndex(context, index),
           child: child,
         );
@@ -339,14 +339,14 @@ class _MobileNavBar extends StatelessWidget {
           height: 58,
           child: Row(
             children: [
-              for (var index = 0; index < appRouteDestinations.length; index += 1)
+              for (final destination in appRouteDestinations)
                 Expanded(
                   child: _MobileNavItem(
-                    label: appRouteDestinationLabel(translations, appRouteDestinations[index]),
-                    icon: appRouteDestinations[index].icon,
-                    selectedIcon: appRouteDestinations[index].selectedIcon,
-                    selected: selectedIndex == index,
-                    onTap: () => onDestinationSelected(index),
+                    label: appRouteDestinationLabel(translations, destination),
+                    icon: destination.icon,
+                    selectedIcon: destination.selectedIcon,
+                    selected: appRouteDestinations[selectedIndex].route == destination.route,
+                    onTap: () => onDestinationSelected(appRouteDestinations.indexWhere((item) => item.route == destination.route)),
                   ),
                 ),
             ],

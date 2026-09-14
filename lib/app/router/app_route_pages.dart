@@ -15,7 +15,7 @@ import 'package:freepiv/features/novel/presentation/reader/novel_reader_page.dar
 import 'package:freepiv/features/ranking/presentation/ranking_work_pages.dart';
 import 'package:freepiv/features/search/presentation/search_illust_result_page.dart';
 import 'package:freepiv/features/search/presentation/search_novel_result_page.dart';
-import 'package:freepiv/features/search/presentation/search_page.dart';
+import 'package:freepiv/features/discover/page.dart';
 import 'package:freepiv/features/search/presentation/search_user_result_page.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
@@ -51,7 +51,7 @@ Page<void> rankingNovelPage(BuildContext context, GoRouterState state) {
 }
 
 Page<void> searchPage(BuildContext context, GoRouterState state) {
-  return const NoTransitionPage(child: SearchPage());
+  return const NoTransitionPage(child: DiscoverPage());
 }
 
 Page<void> searchIllustResultPage(BuildContext context, GoRouterState state) {
