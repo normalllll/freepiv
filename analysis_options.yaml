@@ -1,6 +1,5 @@
 analyzer:
   exclude:
-    - rust_builder/cargokit/**
     - lib/src/rust/frb_generated*.dart
 
 # This file configures the analyzer, which statically analyzes Dart code to

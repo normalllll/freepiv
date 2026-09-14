@@ -10,7 +10,8 @@ crate-type = ["cdylib", "staticlib"]
 flutter_rust_bridge = "=2.13.0"
 pixiv_rs = { git = "https://github.com/normalllll/pixiv_rs.git", branch = "main" }
 futures-util = "0.3.32"
-reqwest = { version = "0.13.4", default-features = false, features = ["rustls", "stream", "http2", "socks", "system-proxy"] }
+reqwest = { version = "0.13.4", default-features = false, features = ["rustls-no-provider", "stream", "http2", "socks", "system-proxy"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 tokio = { version = "1", features = ["fs", "io-util"] }
 md-5 = "0.10.6"
 sha2 = "0.10.9"
