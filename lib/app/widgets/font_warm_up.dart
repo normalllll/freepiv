@@ -1,3 +1,4 @@
+import 'package:freepiv/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 
 class FontWarmUp extends StatefulWidget {
@@ -18,7 +19,7 @@ class _FontWarmUpState extends State<FontWarmUp> {
 
     final textTheme = Theme.of(context).textTheme;
     final baseStyle = textTheme.bodyMedium ?? const TextStyle(fontSize: 14);
-    final configuration = Object.hash(baseStyle.fontFamily, Object.hashAll(baseStyle.fontFamilyFallback ?? const []));
+    final configuration = Object.hash(baseStyle.fontFamily, Object.hashAll(baseStyle.fontFamilyFallback ?? const []), Localizations.localeOf(context));
 
     if (_warmedConfiguration == configuration) {
       return;
@@ -32,10 +33,18 @@ class _FontWarmUpState extends State<FontWarmUp> {
   Widget build(BuildContext context) => widget.child;
 
   void _warmUp(TextStyle baseStyle) {
+    final t = context.t;
+    final samples = [
+      ..._samples,
+      _FontWarmUpSample(
+        locale: Localizations.localeOf(context),
+        text: [t.navigation.home, t.navigation.search, t.navigation.settings, t.navigation.activity, t.navigation.me].join(' '),
+      ),
+    ];
     for (final weight in _fontWeights) {
       final style = baseStyle.copyWith(fontWeight: weight);
 
-      for (final sample in _samples) {
+      for (final sample in samples) {
         final painter = TextPainter(
           text: TextSpan(text: sample.text, style: style),
           textDirection: TextDirection.ltr,
@@ -52,12 +61,6 @@ const _fontWeights = [FontWeight.w400, FontWeight.w700];
 
 const _samples = <_FontWarmUpSample>[
   _FontWarmUpSample(locale: Locale('en', 'US'), text: 'freepiv Search Settings Proxy Address Port 0123456789'),
-  _FontWarmUpSample(locale: Locale('ja', 'JP'), text: '作品タイトル イラスト 小説 検索 設定 プロキシ アドレス ポート'),
-  _FontWarmUpSample(locale: Locale('zh', 'CN'), text: '插画 小说 搜索 设置 代理 地址 端口 简体中文'),
-  _FontWarmUpSample(
-    locale: Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant', countryCode: 'TW'),
-    text: '插畫 小說 搜尋 設定 代理 地址 連接埠 繁體中文',
-  ),
   _FontWarmUpSample(locale: Locale('en', 'US'), text: '★ ☆ ♥ ✓ × … — () [] {} / : @ #'),
 ];
 
