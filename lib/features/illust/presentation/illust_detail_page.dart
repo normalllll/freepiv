@@ -12,7 +12,7 @@ import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
 
 class IllustDetailPage extends ConsumerWidget {

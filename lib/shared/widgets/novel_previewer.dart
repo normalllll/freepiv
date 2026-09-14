@@ -4,7 +4,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/energetic_card.dart';
 import 'package:freepiv/shared/widgets/illust_bookmark_button.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class NovelPreviewer extends StatelessWidget {
   const NovelPreviewer({required this.novel, this.onTap, this.maxWidth, super.key});

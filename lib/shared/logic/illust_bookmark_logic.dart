@@ -1,7 +1,7 @@
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/shared/logic/optimistic_mutation.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/api.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/enums.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'illust_bookmark_logic.g.dart';

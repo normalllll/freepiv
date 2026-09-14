@@ -44,3 +44,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 pubspec.lock
+
+# Local API sessions and captured responses
+/.local/
+**/Cargo.lock

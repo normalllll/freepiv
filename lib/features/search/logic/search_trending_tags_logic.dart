@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:freepiv/core/services/pixiv_service.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'search_trending_tags_logic.g.dart';

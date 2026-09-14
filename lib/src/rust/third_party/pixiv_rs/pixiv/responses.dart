@@ -3,7 +3,8 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
-import '../../frb_generated.dart';
+import '../../../frb_generated.dart';
+import 'enums.dart';
 import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
@@ -123,6 +124,92 @@ class IllustPageResult {
           nextUrl == other.nextUrl;
 }
 
+class IllustSeriesDetail {
+  final String createDate;
+  final int seriesWorkCount;
+  final int width;
+  final int height;
+  final SeriesCoverImageUrls coverImageUrls;
+  final bool watchlistAdded;
+  final int id;
+  final String title;
+  final String caption;
+  final User user;
+
+  const IllustSeriesDetail({
+    required this.createDate,
+    required this.seriesWorkCount,
+    required this.width,
+    required this.height,
+    required this.coverImageUrls,
+    required this.watchlistAdded,
+    required this.id,
+    required this.title,
+    required this.caption,
+    required this.user,
+  });
+
+  @override
+  int get hashCode =>
+      createDate.hashCode ^
+      seriesWorkCount.hashCode ^
+      width.hashCode ^
+      height.hashCode ^
+      coverImageUrls.hashCode ^
+      watchlistAdded.hashCode ^
+      id.hashCode ^
+      title.hashCode ^
+      caption.hashCode ^
+      user.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is IllustSeriesDetail &&
+          runtimeType == other.runtimeType &&
+          createDate == other.createDate &&
+          seriesWorkCount == other.seriesWorkCount &&
+          width == other.width &&
+          height == other.height &&
+          coverImageUrls == other.coverImageUrls &&
+          watchlistAdded == other.watchlistAdded &&
+          id == other.id &&
+          title == other.title &&
+          caption == other.caption &&
+          user == other.user;
+}
+
+class IllustSeriesPageResult {
+  final IllustSeriesDetail illustSeriesDetail;
+  final Illust? illustSeriesFirstIllust;
+  final List<Illust> illusts;
+  final String? nextUrl;
+
+  const IllustSeriesPageResult({
+    required this.illustSeriesDetail,
+    this.illustSeriesFirstIllust,
+    required this.illusts,
+    this.nextUrl,
+  });
+
+  @override
+  int get hashCode =>
+      illustSeriesDetail.hashCode ^
+      illustSeriesFirstIllust.hashCode ^
+      illusts.hashCode ^
+      nextUrl.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is IllustSeriesPageResult &&
+          runtimeType == other.runtimeType &&
+          illustSeriesDetail == other.illustSeriesDetail &&
+          illustSeriesFirstIllust == other.illustSeriesFirstIllust &&
+          illusts == other.illusts &&
+          nextUrl == other.nextUrl;
+}
+
 class NovelDetailResult {
   final Novel novel;
 
@@ -146,7 +233,7 @@ class NovelNavigationInfo {
   const NovelNavigationInfo({this.nextNovel, this.prevNovel});
 
   static Future<NovelNavigationInfo> default_() =>
-      RustLib.instance.api.pixivRsResponsesNovelNavigationInfoDefault();
+      RustLib.instance.api.pixivRsPixivResponsesNovelNavigationInfoDefault();
 
   @override
   int get hashCode => nextNovel.hashCode ^ prevNovel.hashCode;
@@ -174,7 +261,7 @@ class NovelNavigationItem {
   });
 
   static Future<NovelNavigationItem> default_() =>
-      RustLib.instance.api.pixivRsResponsesNovelNavigationItemDefault();
+      RustLib.instance.api.pixivRsPixivResponsesNovelNavigationItemDefault();
 
   @override
   int get hashCode =>
@@ -228,7 +315,7 @@ class NovelRating {
   });
 
   static Future<NovelRating> default_() =>
-      RustLib.instance.api.pixivRsResponsesNovelRatingDefault();
+      RustLib.instance.api.pixivRsPixivResponsesNovelRatingDefault();
 
   @override
   int get hashCode => like.hashCode ^ bookmark.hashCode ^ view.hashCode;
@@ -241,6 +328,100 @@ class NovelRating {
           like == other.like &&
           bookmark == other.bookmark &&
           view == other.view;
+}
+
+class NovelSeriesDetail {
+  final int id;
+  final String title;
+  final String caption;
+  final bool isOriginal;
+  final bool isConcluded;
+  final int contentCount;
+  final int totalCharacterCount;
+  final String displayText;
+  final int novelAiType;
+  final bool watchlistAdded;
+  final User user;
+
+  const NovelSeriesDetail({
+    required this.id,
+    required this.title,
+    required this.caption,
+    required this.isOriginal,
+    required this.isConcluded,
+    required this.contentCount,
+    required this.totalCharacterCount,
+    required this.displayText,
+    required this.novelAiType,
+    required this.watchlistAdded,
+    required this.user,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      title.hashCode ^
+      caption.hashCode ^
+      isOriginal.hashCode ^
+      isConcluded.hashCode ^
+      contentCount.hashCode ^
+      totalCharacterCount.hashCode ^
+      displayText.hashCode ^
+      novelAiType.hashCode ^
+      watchlistAdded.hashCode ^
+      user.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NovelSeriesDetail &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          title == other.title &&
+          caption == other.caption &&
+          isOriginal == other.isOriginal &&
+          isConcluded == other.isConcluded &&
+          contentCount == other.contentCount &&
+          totalCharacterCount == other.totalCharacterCount &&
+          displayText == other.displayText &&
+          novelAiType == other.novelAiType &&
+          watchlistAdded == other.watchlistAdded &&
+          user == other.user;
+}
+
+class NovelSeriesPageResult {
+  final NovelSeriesDetail novelSeriesDetail;
+  final Novel? novelSeriesFirstNovel;
+  final Novel? novelSeriesLatestNovel;
+  final List<Novel> novels;
+  final String? nextUrl;
+
+  const NovelSeriesPageResult({
+    required this.novelSeriesDetail,
+    this.novelSeriesFirstNovel,
+    this.novelSeriesLatestNovel,
+    required this.novels,
+    this.nextUrl,
+  });
+
+  @override
+  int get hashCode =>
+      novelSeriesDetail.hashCode ^
+      novelSeriesFirstNovel.hashCode ^
+      novelSeriesLatestNovel.hashCode ^
+      novels.hashCode ^
+      nextUrl.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NovelSeriesPageResult &&
+          runtimeType == other.runtimeType &&
+          novelSeriesDetail == other.novelSeriesDetail &&
+          novelSeriesFirstNovel == other.novelSeriesFirstNovel &&
+          novelSeriesLatestNovel == other.novelSeriesLatestNovel &&
+          novels == other.novels &&
+          nextUrl == other.nextUrl;
 }
 
 class SearchAutocompleteResult {
@@ -307,6 +488,22 @@ class SearchNovelPageResult {
           novels == other.novels &&
           nextUrl == other.nextUrl &&
           searchSpanLimit == other.searchSpanLimit;
+}
+
+class SeriesCoverImageUrls {
+  final String medium;
+
+  const SeriesCoverImageUrls({required this.medium});
+
+  @override
+  int get hashCode => medium.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SeriesCoverImageUrls &&
+          runtimeType == other.runtimeType &&
+          medium == other.medium;
 }
 
 class TrendTag {
@@ -838,7 +1035,7 @@ class WebviewNovelImageUrls {
   });
 
   static Future<WebviewNovelImageUrls> default_() =>
-      RustLib.instance.api.pixivRsResponsesWebviewNovelImageUrlsDefault();
+      RustLib.instance.api.pixivRsPixivResponsesWebviewNovelImageUrlsDefault();
 
   @override
   int get hashCode =>
@@ -858,6 +1055,65 @@ class WebviewNovelImageUrls {
           size1200X1200 == other.size1200X1200 &&
           size128X128 == other.size128X128 &&
           original == other.original;
+}
+
+class WorkBookmarkDetail {
+  final bool isBookmarked;
+  final List<WorkBookmarkTag> tags;
+  final Restrict restrict;
+
+  const WorkBookmarkDetail({
+    required this.isBookmarked,
+    required this.tags,
+    required this.restrict,
+  });
+
+  @override
+  int get hashCode => isBookmarked.hashCode ^ tags.hashCode ^ restrict.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WorkBookmarkDetail &&
+          runtimeType == other.runtimeType &&
+          isBookmarked == other.isBookmarked &&
+          tags == other.tags &&
+          restrict == other.restrict;
+}
+
+/// The App API wraps bookmark state and suggested tags in bookmark_detail.
+class WorkBookmarkDetailResult {
+  final WorkBookmarkDetail bookmarkDetail;
+
+  const WorkBookmarkDetailResult({required this.bookmarkDetail});
+
+  @override
+  int get hashCode => bookmarkDetail.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WorkBookmarkDetailResult &&
+          runtimeType == other.runtimeType &&
+          bookmarkDetail == other.bookmarkDetail;
+}
+
+class WorkBookmarkTag {
+  final String name;
+  final bool isRegistered;
+
+  const WorkBookmarkTag({required this.name, required this.isRegistered});
+
+  @override
+  int get hashCode => name.hashCode ^ isRegistered.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WorkBookmarkTag &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          isRegistered == other.isRegistered;
 }
 
 class ZipUrls {

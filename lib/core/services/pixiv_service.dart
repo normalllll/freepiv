@@ -4,8 +4,8 @@ import 'package:freepiv/core/services/app_proxy_http_overrides.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_api_settings.dart';
 import 'package:freepiv/src/rust/frb_generated.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/api.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 late PixivApi pixivApi;
 bool _appServicesInitialized = false;

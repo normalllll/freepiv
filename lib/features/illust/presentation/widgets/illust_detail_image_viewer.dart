@@ -10,7 +10,7 @@ import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_ugoira_viewer.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class IllustImagePager extends StatelessWidget {
   const IllustImagePager({

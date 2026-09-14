@@ -11,7 +11,7 @@ import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/api/download.dart';
 import 'package:freepiv/src/rust/api/image_utils.dart';
 import 'package:freepiv/src/rust/api/zip_utils.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class UgoiraPageContent extends StatefulWidget {
   const UgoiraPageContent({required this.illustId, required this.previewUrl, required this.fallbackDownloadUrl, required this.showContextMenu, super.key});

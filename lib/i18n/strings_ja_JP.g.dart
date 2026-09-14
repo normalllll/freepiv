@@ -16,22 +16,22 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	/// Constructing via the enum [AppLocale.build] is preferred.
 	TranslationsJaJp({Map<String, Node>? overrides, PluralResolver? cardinalResolver, PluralResolver? ordinalResolver, TranslationMetadata<AppLocale, Translations>? meta})
 		: assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
-		  $meta = meta ?? TranslationMetadata(
+		  _meta = meta ?? TranslationMetadata(
 		    locale: AppLocale.jaJp,
 		    overrides: overrides ?? {},
 		    cardinalResolver: cardinalResolver,
 		    ordinalResolver: ordinalResolver,
 		  ),
 		  super(cardinalResolver: cardinalResolver, ordinalResolver: ordinalResolver) {
-		super.$meta.setFlatMapFunction($meta.getTranslation); // copy base translations to super.$meta
-		$meta.setFlatMapFunction(_flatMapFunction);
+		_meta.setFlatMapFunction(_flatMapFunction);
 	}
 
 	/// Metadata for the translations of <ja-JP>.
-	@override final TranslationMetadata<AppLocale, Translations> $meta;
+	final TranslationMetadata<AppLocale, Translations> _meta;
+	@override TranslationMetadata<AppLocale, Translations> get $meta => _meta;
 
 	/// Access flat map
-	@override dynamic operator[](String key) => $meta.getTranslation(key) ?? super.$meta.getTranslation(key);
+	@override dynamic operator[](String key) => _meta.getTranslation(key) ?? super[key];
 
 	late final TranslationsJaJp _root = this; // ignore: unused_field
 
@@ -57,6 +57,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$novel$ja_JP novel = _Translations$novel$ja_JP._(_root);
 	@override late final _Translations$follow$ja_JP follow = _Translations$follow$ja_JP._(_root);
 	@override late final _Translations$richText$ja_JP richText = _Translations$richText$ja_JP._(_root);
+	@override late final _Translations$fanbox$ja_JP fanbox = _Translations$fanbox$ja_JP._(_root);
 }
 
 // Path: app
@@ -368,6 +369,88 @@ class _Translations$richText$ja_JP extends Translations$richText$en_US {
 	@override String twitterUser({required Object username}) => 'Twitter：${username}';
 	@override String illustId({required Object id}) => 'イラスト ID：${id}';
 	@override String userId({required Object id}) => 'ユーザー ID：${id}';
+}
+
+// Path: fanbox
+class _Translations$fanbox$ja_JP extends Translations$fanbox$en_US {
+	_Translations$fanbox$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get accountConnected => 'ログイン済み';
+	@override String get updateSession => 'Cookie を更新';
+	@override String get title => 'FANBOX';
+	@override String get home => 'フォロー中の投稿';
+	@override String get supporting => '支援中の投稿';
+	@override String get following => 'フォロー中';
+	@override String get recommended => 'クリエイターを探す';
+	@override String get pixiv => 'Pixiv のフォロー';
+	@override String get plans => '支援中のプラン';
+	@override String get searchCreators => 'クリエイター';
+	@override String get searchTags => 'タグ';
+	@override String get notices => '通知';
+	@override String get messages => 'メッセージ';
+	@override String get bookmarks => '保存した投稿';
+	@override String get login => 'FANBOX にログイン';
+	@override String get cookieHint => 'FANBOXSESSID の値または FANBOXSESSID=値を貼り付け';
+	@override String get importSession => 'ログインファイルを読み込む';
+	@override String get openWebsite => 'FANBOX を開く';
+	@override String get loginHelp => 'ブラウザでログインし、開発者ツール → Application → Cookies から FANBOXSESSID をコピーしてください。Pixiv とは別のログインです。';
+	@override String get logout => 'ログアウト';
+	@override String get empty => 'まだありません';
+	@override String get loadMore => 'もっと見る';
+	@override String get searchHint => 'クリエイター名、ID またはタグ';
+	@override String get creatorId => 'ID でクリエイターを開く';
+	@override String get posts => '投稿';
+	@override String get creatorPlans => 'クリエイターのプラン';
+	@override String restricted({required Object fee}) => '月額 ¥${fee} 以上の支援で閲覧可能';
+	@override String get free => '全体公開';
+	@override String get readable => '閲覧できます';
+	@override String get viewPlans => '支援プランを見る';
+	@override String monthlyFee({required Object fee}) => '月額 ¥${fee}';
+	@override String get supportOnWebsite => 'FANBOX でプランを見る';
+	@override String get follow => 'フォロー';
+	@override String get unfollow => 'フォロー解除';
+	@override String get like => 'いいね';
+	@override String get liked => 'いいね済み';
+	@override String get comments => 'コメント';
+	@override String get reply => '返信';
+	@override String get commentHint => 'コメントを入力';
+	@override String get deleteComment => 'コメントを削除';
+	@override String get deleteConfirm => 'このコメントを削除しますか？';
+	@override String get send => '送信';
+	@override String get save => '投稿を保存';
+	@override String get saved => '保存済み';
+	@override String get download => 'ダウンロード';
+	@override String get downloadAll => 'メディアをすべて保存';
+	@override String get downloadCreator => '投稿を一括ダウンロード';
+	@override String downloadProgress({required Object done, required Object total}) => '${done} / ${total} 件保存済み';
+	@override String get cancelDownload => '現在のファイルの後に停止';
+	@override String get downloadFinished => 'ダウンロード完了';
+	@override String get downloadFailed => 'ダウンロードに失敗しました。再試行時は保存済みファイルをスキップします。';
+	@override String get fanCard => 'ファンカード';
+	@override String get previous => '前の投稿';
+	@override String get next => '次の投稿';
+	@override String get unknown => '未対応の形式です。元の投稿を開いてください。';
+	@override String get openOriginal => '元の投稿を開く';
+	@override String get openLink => 'リンクを開く';
+	@override String get sessionExpired => 'FANBOX セッションが無効か期限切れです。再ログインしてください。';
+	@override String get requestFailed => 'FANBOX を読み込めません。接続を確認して再試行してください。';
+	@override String get accessDenied => 'FANBOX がリクエストを拒否しました。閲覧権限を確認するかサイトを開いてください。';
+	@override String get rateLimited => 'リクエストが多すぎます。しばらくお待ちください。';
+	@override String get loginFailed => 'セッションを確認できません。Cookie とプロキシ設定を確認してください。';
+	@override String get working => '処理中…';
+	@override String get cancel => 'キャンセル';
+	@override String get retry => '再試行';
+	@override String get done => '完了';
+	@override String get newNotice => '未読';
+	@override String get unknownNotice => 'FANBOX のお知らせ';
+	@override String get chooseFolder => '保存先を選択';
+	@override String get unsupportedUrl => 'このリンクは開けません。';
+	@override String get restrictedInfo => '投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。';
+	@override String get noPlans => 'プランがありません';
+	@override String get downloadPreparing => '閲覧可能な投稿を収集中…';
 }
 
 // Path: settings.theme
@@ -1387,6 +1470,79 @@ extension on TranslationsJaJp {
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
 			'richText.illustId' => ({required Object id}) => 'イラスト ID：${id}',
 			'richText.userId' => ({required Object id}) => 'ユーザー ID：${id}',
+			'fanbox.accountConnected' => 'ログイン済み',
+			'fanbox.updateSession' => 'Cookie を更新',
+			'fanbox.title' => 'FANBOX',
+			'fanbox.home' => 'フォロー中の投稿',
+			'fanbox.supporting' => '支援中の投稿',
+			'fanbox.following' => 'フォロー中',
+			'fanbox.recommended' => 'クリエイターを探す',
+			'fanbox.pixiv' => 'Pixiv のフォロー',
+			'fanbox.plans' => '支援中のプラン',
+			'fanbox.searchCreators' => 'クリエイター',
+			'fanbox.searchTags' => 'タグ',
+			'fanbox.notices' => '通知',
+			'fanbox.messages' => 'メッセージ',
+			'fanbox.bookmarks' => '保存した投稿',
+			'fanbox.login' => 'FANBOX にログイン',
+			'fanbox.cookieHint' => 'FANBOXSESSID の値または FANBOXSESSID=値を貼り付け',
+			'fanbox.importSession' => 'ログインファイルを読み込む',
+			'fanbox.openWebsite' => 'FANBOX を開く',
+			'fanbox.loginHelp' => 'ブラウザでログインし、開発者ツール → Application → Cookies から FANBOXSESSID をコピーしてください。Pixiv とは別のログインです。',
+			'fanbox.logout' => 'ログアウト',
+			'fanbox.empty' => 'まだありません',
+			'fanbox.loadMore' => 'もっと見る',
+			'fanbox.searchHint' => 'クリエイター名、ID またはタグ',
+			'fanbox.creatorId' => 'ID でクリエイターを開く',
+			'fanbox.posts' => '投稿',
+			'fanbox.creatorPlans' => 'クリエイターのプラン',
+			'fanbox.restricted' => ({required Object fee}) => '月額 ¥${fee} 以上の支援で閲覧可能',
+			'fanbox.free' => '全体公開',
+			'fanbox.readable' => '閲覧できます',
+			'fanbox.viewPlans' => '支援プランを見る',
+			'fanbox.monthlyFee' => ({required Object fee}) => '月額 ¥${fee}',
+			'fanbox.supportOnWebsite' => 'FANBOX でプランを見る',
+			'fanbox.follow' => 'フォロー',
+			'fanbox.unfollow' => 'フォロー解除',
+			'fanbox.like' => 'いいね',
+			'fanbox.liked' => 'いいね済み',
+			'fanbox.comments' => 'コメント',
+			'fanbox.reply' => '返信',
+			'fanbox.commentHint' => 'コメントを入力',
+			'fanbox.deleteComment' => 'コメントを削除',
+			'fanbox.deleteConfirm' => 'このコメントを削除しますか？',
+			'fanbox.send' => '送信',
+			'fanbox.save' => '投稿を保存',
+			'fanbox.saved' => '保存済み',
+			'fanbox.download' => 'ダウンロード',
+			'fanbox.downloadAll' => 'メディアをすべて保存',
+			'fanbox.downloadCreator' => '投稿を一括ダウンロード',
+			'fanbox.downloadProgress' => ({required Object done, required Object total}) => '${done} / ${total} 件保存済み',
+			'fanbox.cancelDownload' => '現在のファイルの後に停止',
+			'fanbox.downloadFinished' => 'ダウンロード完了',
+			'fanbox.downloadFailed' => 'ダウンロードに失敗しました。再試行時は保存済みファイルをスキップします。',
+			'fanbox.fanCard' => 'ファンカード',
+			'fanbox.previous' => '前の投稿',
+			'fanbox.next' => '次の投稿',
+			'fanbox.unknown' => '未対応の形式です。元の投稿を開いてください。',
+			'fanbox.openOriginal' => '元の投稿を開く',
+			'fanbox.openLink' => 'リンクを開く',
+			'fanbox.sessionExpired' => 'FANBOX セッションが無効か期限切れです。再ログインしてください。',
+			'fanbox.requestFailed' => 'FANBOX を読み込めません。接続を確認して再試行してください。',
+			'fanbox.accessDenied' => 'FANBOX がリクエストを拒否しました。閲覧権限を確認するかサイトを開いてください。',
+			'fanbox.rateLimited' => 'リクエストが多すぎます。しばらくお待ちください。',
+			'fanbox.loginFailed' => 'セッションを確認できません。Cookie とプロキシ設定を確認してください。',
+			'fanbox.working' => '処理中…',
+			'fanbox.cancel' => 'キャンセル',
+			'fanbox.retry' => '再試行',
+			'fanbox.done' => '完了',
+			'fanbox.newNotice' => '未読',
+			'fanbox.unknownNotice' => 'FANBOX のお知らせ',
+			'fanbox.chooseFolder' => '保存先を選択',
+			'fanbox.unsupportedUrl' => 'このリンクは開けません。',
+			'fanbox.restrictedInfo' => '投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。',
+			'fanbox.noPlans' => 'プランがありません',
+			'fanbox.downloadPreparing' => '閲覧可能な投稿を収集中…',
 			_ => null,
 		};
 	}

@@ -5,7 +5,7 @@ import 'package:freepiv/features/illust/presentation/widgets/illust_detail_secti
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 const _relatedWaterfallPadding = EdgeInsets.fromLTRB(12, 0, 12, 24);
 const _relatedWaterfallMaxCrossAxisExtent = 240.0;

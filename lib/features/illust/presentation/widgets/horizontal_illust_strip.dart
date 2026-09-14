@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 const _horizontalIllustStripPadding = EdgeInsets.symmetric(horizontal: 2);
 const _horizontalIllustStripSpacing = 8.0;

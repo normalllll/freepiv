@@ -5,8 +5,8 @@ import 'package:freepiv/features/user_detail/presentation/widgets/user_content_s
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class UserFollowingTabBody extends ConsumerStatefulWidget {
   const UserFollowingTabBody({required this.detail, required this.physics, this.sliverHeader, super.key});

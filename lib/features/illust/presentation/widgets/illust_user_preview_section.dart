@@ -6,8 +6,8 @@ import 'package:freepiv/features/illust/presentation/widgets/horizontal_illust_s
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_section.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
 
 class IllustUserPreviewSection extends ConsumerWidget {

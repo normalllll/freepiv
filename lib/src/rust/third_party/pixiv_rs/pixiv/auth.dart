@@ -3,8 +3,8 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
-import '../../frb_generated.dart';
-import 'error.dart';
+import '../../../frb_generated.dart';
+import '../error.dart';
 import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'responses.dart';
@@ -22,7 +22,7 @@ abstract class PixivAuth implements RustOpaqueInterface {
     required String targetIp,
     required String language,
     required String deviceName,
-  }) => RustLib.instance.api.pixivRsAuthPixivAuthFromParts(
+  }) => RustLib.instance.api.pixivRsPixivAuthPixivAuthFromParts(
     targetIp: targetIp,
     language: language,
     deviceName: deviceName,
@@ -34,7 +34,7 @@ abstract class PixivAuth implements RustOpaqueInterface {
 
   // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
   static Future<PixivAuth> newInstance({required PixivAuthConfig config}) =>
-      RustLib.instance.api.pixivRsAuthPixivAuthNew(config: config);
+      RustLib.instance.api.pixivRsPixivAuthPixivAuthNew(config: config);
 
   Future<UserAccountResult> refreshAuthToken({required String refreshToken});
 
@@ -61,7 +61,7 @@ class PixivAuthConfig {
     required String targetIp,
     required String language,
     required String deviceName,
-  }) => RustLib.instance.api.pixivRsAuthPixivAuthConfigNew(
+  }) => RustLib.instance.api.pixivRsPixivAuthPixivAuthConfigNew(
     targetIp: targetIp,
     language: language,
     deviceName: deviceName,

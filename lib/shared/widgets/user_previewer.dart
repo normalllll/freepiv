@@ -5,7 +5,7 @@ import 'package:freepiv/core/platform/platform_info.dart';
 import 'package:freepiv/shared/widgets/energetic_card.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:freepiv/shared/widgets/user_follow_button.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 

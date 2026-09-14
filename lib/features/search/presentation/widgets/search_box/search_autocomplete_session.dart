@@ -6,7 +6,7 @@ import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_models.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_suggestion.dart';
 import 'package:freepiv/shared/widgets/highlight_text_field.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class SearchAutocompleteSession extends ChangeNotifier {
   SearchAutocompleteSession({required SearchType initialType, String initialText = ''}) : _type = initialType {

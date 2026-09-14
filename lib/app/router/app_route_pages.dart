@@ -21,8 +21,8 @@ import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart'
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
 
 Page<void> loginPage(BuildContext context, GoRouterState state) {

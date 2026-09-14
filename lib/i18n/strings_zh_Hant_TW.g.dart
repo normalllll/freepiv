@@ -16,22 +16,22 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	/// Constructing via the enum [AppLocale.build] is preferred.
 	TranslationsZhHantTw({Map<String, Node>? overrides, PluralResolver? cardinalResolver, PluralResolver? ordinalResolver, TranslationMetadata<AppLocale, Translations>? meta})
 		: assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
-		  $meta = meta ?? TranslationMetadata(
+		  _meta = meta ?? TranslationMetadata(
 		    locale: AppLocale.zhHantTw,
 		    overrides: overrides ?? {},
 		    cardinalResolver: cardinalResolver,
 		    ordinalResolver: ordinalResolver,
 		  ),
 		  super(cardinalResolver: cardinalResolver, ordinalResolver: ordinalResolver) {
-		super.$meta.setFlatMapFunction($meta.getTranslation); // copy base translations to super.$meta
-		$meta.setFlatMapFunction(_flatMapFunction);
+		_meta.setFlatMapFunction(_flatMapFunction);
 	}
 
 	/// Metadata for the translations of <zh-Hant-TW>.
-	@override final TranslationMetadata<AppLocale, Translations> $meta;
+	final TranslationMetadata<AppLocale, Translations> _meta;
+	@override TranslationMetadata<AppLocale, Translations> get $meta => _meta;
 
 	/// Access flat map
-	@override dynamic operator[](String key) => $meta.getTranslation(key) ?? super.$meta.getTranslation(key);
+	@override dynamic operator[](String key) => _meta.getTranslation(key) ?? super[key];
 
 	late final TranslationsZhHantTw _root = this; // ignore: unused_field
 
@@ -57,6 +57,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$novel$zh_Hant_TW novel = Translations$novel$zh_Hant_TW.internal(_root);
 	@override late final Translations$follow$zh_Hant_TW follow = Translations$follow$zh_Hant_TW.internal(_root);
 	@override late final Translations$richText$zh_Hant_TW richText = Translations$richText$zh_Hant_TW.internal(_root);
+	@override late final Translations$fanbox$zh_Hant_TW fanbox = Translations$fanbox$zh_Hant_TW.internal(_root);
 }
 
 // Path: app
@@ -368,6 +369,88 @@ class Translations$richText$zh_Hant_TW extends Translations$richText$en_US {
 	@override String twitterUser({required Object username}) => 'Twitter：${username}';
 	@override String illustId({required Object id}) => '插畫 ID：${id}';
 	@override String userId({required Object id}) => '使用者 ID：${id}';
+}
+
+// Path: fanbox
+class Translations$fanbox$zh_Hant_TW extends Translations$fanbox$en_US {
+	Translations$fanbox$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get accountConnected => '已登入';
+	@override String get updateSession => '更新 Cookie';
+	@override String get title => 'FANBOX';
+	@override String get home => '關注動態';
+	@override String get supporting => '贊助動態';
+	@override String get following => '關注的創作者';
+	@override String get recommended => '探索創作者';
+	@override String get pixiv => 'Pixiv 關注';
+	@override String get plans => '已贊助方案';
+	@override String get searchCreators => '創作者';
+	@override String get searchTags => '標籤';
+	@override String get notices => '通知';
+	@override String get messages => '訊息';
+	@override String get bookmarks => '本機收藏';
+	@override String get login => '登入 FANBOX';
+	@override String get cookieHint => '貼上 FANBOXSESSID 的值或 FANBOXSESSID=值';
+	@override String get importSession => '匯入登入檔案';
+	@override String get openWebsite => '開啟 FANBOX 網站';
+	@override String get loginHelp => '在瀏覽器登入後，從開發人員工具 → 應用程式 → Cookies 複製 FANBOXSESSID。FANBOX 與 Pixiv 分別登入。';
+	@override String get logout => '登出';
+	@override String get empty => '暫無內容';
+	@override String get loadMore => '載入更多';
+	@override String get searchHint => '創作者名稱、ID 或標籤';
+	@override String get creatorId => '透過 ID 開啟創作者';
+	@override String get posts => '文章';
+	@override String get creatorPlans => '創作者方案';
+	@override String restricted({required Object fee}) => '贊助達到 ¥${fee}／月可瀏覽';
+	@override String get free => '公開文章';
+	@override String get readable => '目前可瀏覽';
+	@override String get viewPlans => '查看贊助方案';
+	@override String monthlyFee({required Object fee}) => '¥${fee}／月';
+	@override String get supportOnWebsite => '在 FANBOX 查看方案';
+	@override String get follow => '關注';
+	@override String get unfollow => '取消關注';
+	@override String get like => '按讚';
+	@override String get liked => '已按讚';
+	@override String get comments => '留言';
+	@override String get reply => '回覆';
+	@override String get commentHint => '輸入留言';
+	@override String get deleteComment => '刪除留言';
+	@override String get deleteConfirm => '刪除這則留言？';
+	@override String get send => '傳送';
+	@override String get save => '收藏文章';
+	@override String get saved => '已收藏';
+	@override String get download => '下載';
+	@override String get downloadAll => '下載全部媒體';
+	@override String get downloadCreator => '批次下載創作者文章';
+	@override String downloadProgress({required Object done, required Object total}) => '已下載 ${done} / ${total}';
+	@override String get cancelDownload => '完成目前檔案後停止';
+	@override String get downloadFinished => '下載完成';
+	@override String get downloadFailed => '下載失敗，重試會略過已完成的檔案。';
+	@override String get fanCard => '粉絲卡';
+	@override String get previous => '上一篇';
+	@override String get next => '下一篇';
+	@override String get unknown => '暫不支援此內容格式，可開啟原文查看。';
+	@override String get openOriginal => '開啟原文';
+	@override String get openLink => '開啟連結';
+	@override String get sessionExpired => 'FANBOX 工作階段無效或已過期，請重新登入。';
+	@override String get requestFailed => '無法載入 FANBOX，請檢查網路或重試。';
+	@override String get accessDenied => 'FANBOX 拒絕了請求，請檢查存取權限或開啟網站。';
+	@override String get rateLimited => '請求過於頻繁，請稍後重試。';
+	@override String get loginFailed => '無法驗證工作階段，請檢查 Cookie 和代理設定。';
+	@override String get working => '處理中…';
+	@override String get cancel => '取消';
+	@override String get retry => '重試';
+	@override String get done => '完成';
+	@override String get newNotice => '未讀';
+	@override String get unknownNotice => 'FANBOX 動態';
+	@override String get chooseFolder => '選擇下載資料夾';
+	@override String get unsupportedUrl => '無法開啟此連結。';
+	@override String get restrictedInfo => '文章卡片會保留，內文需要符合金額要求的贊助方案。';
+	@override String get noPlans => '暫無可用方案';
+	@override String get downloadPreparing => '正在收集有權瀏覽的文章…';
 }
 
 // Path: settings.theme
@@ -1387,6 +1470,79 @@ extension on TranslationsZhHantTw {
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
 			'richText.illustId' => ({required Object id}) => '插畫 ID：${id}',
 			'richText.userId' => ({required Object id}) => '使用者 ID：${id}',
+			'fanbox.accountConnected' => '已登入',
+			'fanbox.updateSession' => '更新 Cookie',
+			'fanbox.title' => 'FANBOX',
+			'fanbox.home' => '關注動態',
+			'fanbox.supporting' => '贊助動態',
+			'fanbox.following' => '關注的創作者',
+			'fanbox.recommended' => '探索創作者',
+			'fanbox.pixiv' => 'Pixiv 關注',
+			'fanbox.plans' => '已贊助方案',
+			'fanbox.searchCreators' => '創作者',
+			'fanbox.searchTags' => '標籤',
+			'fanbox.notices' => '通知',
+			'fanbox.messages' => '訊息',
+			'fanbox.bookmarks' => '本機收藏',
+			'fanbox.login' => '登入 FANBOX',
+			'fanbox.cookieHint' => '貼上 FANBOXSESSID 的值或 FANBOXSESSID=值',
+			'fanbox.importSession' => '匯入登入檔案',
+			'fanbox.openWebsite' => '開啟 FANBOX 網站',
+			'fanbox.loginHelp' => '在瀏覽器登入後，從開發人員工具 → 應用程式 → Cookies 複製 FANBOXSESSID。FANBOX 與 Pixiv 分別登入。',
+			'fanbox.logout' => '登出',
+			'fanbox.empty' => '暫無內容',
+			'fanbox.loadMore' => '載入更多',
+			'fanbox.searchHint' => '創作者名稱、ID 或標籤',
+			'fanbox.creatorId' => '透過 ID 開啟創作者',
+			'fanbox.posts' => '文章',
+			'fanbox.creatorPlans' => '創作者方案',
+			'fanbox.restricted' => ({required Object fee}) => '贊助達到 ¥${fee}／月可瀏覽',
+			'fanbox.free' => '公開文章',
+			'fanbox.readable' => '目前可瀏覽',
+			'fanbox.viewPlans' => '查看贊助方案',
+			'fanbox.monthlyFee' => ({required Object fee}) => '¥${fee}／月',
+			'fanbox.supportOnWebsite' => '在 FANBOX 查看方案',
+			'fanbox.follow' => '關注',
+			'fanbox.unfollow' => '取消關注',
+			'fanbox.like' => '按讚',
+			'fanbox.liked' => '已按讚',
+			'fanbox.comments' => '留言',
+			'fanbox.reply' => '回覆',
+			'fanbox.commentHint' => '輸入留言',
+			'fanbox.deleteComment' => '刪除留言',
+			'fanbox.deleteConfirm' => '刪除這則留言？',
+			'fanbox.send' => '傳送',
+			'fanbox.save' => '收藏文章',
+			'fanbox.saved' => '已收藏',
+			'fanbox.download' => '下載',
+			'fanbox.downloadAll' => '下載全部媒體',
+			'fanbox.downloadCreator' => '批次下載創作者文章',
+			'fanbox.downloadProgress' => ({required Object done, required Object total}) => '已下載 ${done} / ${total}',
+			'fanbox.cancelDownload' => '完成目前檔案後停止',
+			'fanbox.downloadFinished' => '下載完成',
+			'fanbox.downloadFailed' => '下載失敗，重試會略過已完成的檔案。',
+			'fanbox.fanCard' => '粉絲卡',
+			'fanbox.previous' => '上一篇',
+			'fanbox.next' => '下一篇',
+			'fanbox.unknown' => '暫不支援此內容格式，可開啟原文查看。',
+			'fanbox.openOriginal' => '開啟原文',
+			'fanbox.openLink' => '開啟連結',
+			'fanbox.sessionExpired' => 'FANBOX 工作階段無效或已過期，請重新登入。',
+			'fanbox.requestFailed' => '無法載入 FANBOX，請檢查網路或重試。',
+			'fanbox.accessDenied' => 'FANBOX 拒絕了請求，請檢查存取權限或開啟網站。',
+			'fanbox.rateLimited' => '請求過於頻繁，請稍後重試。',
+			'fanbox.loginFailed' => '無法驗證工作階段，請檢查 Cookie 和代理設定。',
+			'fanbox.working' => '處理中…',
+			'fanbox.cancel' => '取消',
+			'fanbox.retry' => '重試',
+			'fanbox.done' => '完成',
+			'fanbox.newNotice' => '未讀',
+			'fanbox.unknownNotice' => 'FANBOX 動態',
+			'fanbox.chooseFolder' => '選擇下載資料夾',
+			'fanbox.unsupportedUrl' => '無法開啟此連結。',
+			'fanbox.restrictedInfo' => '文章卡片會保留，內文需要符合金額要求的贊助方案。',
+			'fanbox.noPlans' => '暫無可用方案',
+			'fanbox.downloadPreparing' => '正在收集有權瀏覽的文章…',
 			_ => null,
 		};
 	}

@@ -7,8 +7,8 @@ import 'package:freepiv/features/comments/presentation/widgets/pixiv_comment_tex
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
 
 class NovelCommentsSection extends ConsumerStatefulWidget {

@@ -7,7 +7,7 @@ import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_lis
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/lazy_indexed_stack.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class UserBookmarksTabBody extends ConsumerStatefulWidget {
   const UserBookmarksTabBody({required this.detail, required this.physics, this.sliverHeader, super.key});

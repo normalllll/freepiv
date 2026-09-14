@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:freepiv/features/illust/presentation/widgets/horizontal_illust_strip.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class VerticalIllustPreviewGrid extends StatelessWidget {
   const VerticalIllustPreviewGrid({required this.illusts, required this.onIllustTap, this.minTileExtent = 112, super.key});

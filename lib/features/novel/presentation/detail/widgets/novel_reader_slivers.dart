@@ -4,8 +4,8 @@ import 'package:freepiv/features/illust/presentation/widgets/illust_detail_secti
 import 'package:freepiv/features/novel/domain/novel_text_parser.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_detail_constraints.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class NovelReaderSlivers {
   const NovelReaderSlivers._();

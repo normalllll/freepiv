@@ -7,7 +7,7 @@ import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/error.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class SearchTrendingTagsSliver extends ConsumerWidget {

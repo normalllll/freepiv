@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/enums.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 
 class SearchFilterButton extends ConsumerWidget {
   const SearchFilterButton({required this.type, this.allowTypeSelection = true, this.compact = false, super.key});

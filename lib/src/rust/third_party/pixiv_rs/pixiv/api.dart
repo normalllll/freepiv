@@ -3,9 +3,10 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
-import '../../frb_generated.dart';
+import '../../../frb_generated.dart';
+import '../error.dart';
+import '../pixivision.dart';
 import 'enums.dart';
-import 'error.dart';
 import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'responses.dart';
@@ -36,6 +37,10 @@ abstract class PixivApi implements RustOpaqueInterface {
     required Restrict restrict,
   });
 
+  Future<WorkBookmarkDetailResult> getIllustBookmarkDetail({
+    required int illustId,
+  });
+
   Future<CommentPageResult> getIllustCommentPage({required int illustId});
 
   Future<CommentPageResult> getIllustCommentReplyPage({required int commentId});
@@ -46,15 +51,30 @@ abstract class PixivApi implements RustOpaqueInterface {
     required IllustRankingMode mode,
   });
 
+  /// Historical ranking date in YYYY-MM-DD format, subject to server availability.
+  Future<IllustPageResult> getIllustRankingPageOnDate({
+    required IllustRankingMode mode,
+    required String date,
+  });
+
   Future<IllustPageResult> getIllustRelatedPage({required int illustId});
+
+  Future<IllustSeriesPageResult> getIllustSeriesPage({required int seriesId});
 
   Future<IllustPageResult> getMangaRankingPage({
     required MangaRankingMode mode,
   });
 
+  Future<IllustPageResult> getMangaRankingPageOnDate({
+    required MangaRankingMode mode,
+    required String date,
+  });
+
   Future<IllustPageResult> getMypixivNewIllustPage();
 
   Future<NovelPageResult> getMypixivNewNovelPage();
+
+  Future<UserPageResult> getMypixivUserPage({required int userId});
 
   Future<IllustPageResult> getNewIllustPage({required IllustType illustType});
 
@@ -66,13 +86,23 @@ abstract class PixivApi implements RustOpaqueInterface {
 
   Future<IllustPageResult> getNextIllustPage({required String url});
 
+  Future<IllustSeriesPageResult> getNextIllustSeriesPage({required String url});
+
   Future<NovelPageResult> getNextNovelPage({required String url});
+
+  Future<NovelSeriesPageResult> getNextNovelSeriesPage({required String url});
 
   Future<SearchIllustPageResult> getNextSearchIllustPage({required String url});
 
   Future<SearchNovelPageResult> getNextSearchNovelPage({required String url});
 
+  Future<SpotlightPage> getNextSpotlightArticlePage({required String url});
+
   Future<UserPageResult> getNextUserPage({required String url});
+
+  Future<WorkBookmarkDetailResult> getNovelBookmarkDetail({
+    required int novelId,
+  });
 
   Future<CommentPageResult> getNovelCommentPage({required int novelId});
 
@@ -84,7 +114,14 @@ abstract class PixivApi implements RustOpaqueInterface {
 
   Future<NovelPageResult> getNovelRankingPage({required NovelRankingMode mode});
 
+  Future<NovelPageResult> getNovelRankingPageOnDate({
+    required NovelRankingMode mode,
+    required String date,
+  });
+
   Future<NovelPageResult> getNovelRelatedPage({required int novelId});
+
+  Future<NovelSeriesPageResult> getNovelSeriesPage({required int seriesId});
 
   Future<IllustPageResult> getRecommendedIllustPage({
     required IllustType illustType,
@@ -105,6 +142,14 @@ abstract class PixivApi implements RustOpaqueInterface {
     required SearchOptions options,
   });
 
+  Future<SearchIllustPageResult> getSearchIllustPageWithAi({
+    required String word,
+    required SearchSort sort,
+    required SearchTarget target,
+    required SearchOptions options,
+    SearchAiMode? aiMode,
+  });
+
   Future<SearchNovelPageResult> getSearchNovelPage({
     required String word,
     required SearchSort sort,
@@ -113,6 +158,10 @@ abstract class PixivApi implements RustOpaqueInterface {
   });
 
   Future<UserPageResult> getSearchUserPage({required String word});
+
+  Future<SpotlightPage> getSpotlightArticlePage({
+    required SpotlightCategory category,
+  });
 
   Future<TrendingTagListResult> getTrendingTagList();
 
@@ -125,6 +174,11 @@ abstract class PixivApi implements RustOpaqueInterface {
     required Restrict restrict,
   });
 
+  Future<IllustPageResult> getUserIllustBookmarkPageWithOptions({
+    required int userId,
+    required BookmarkPageOptions options,
+  });
+
   Future<IllustPageResult> getUserIllustPage({
     required int userId,
     required IllustType illustType,
@@ -135,9 +189,14 @@ abstract class PixivApi implements RustOpaqueInterface {
     required Restrict restrict,
   });
 
+  Future<NovelPageResult> getUserNovelBookmarkPageWithOptions({
+    required int userId,
+    required BookmarkPageOptions options,
+  });
+
   Future<NovelPageResult> getUserNovelPage({required int userId});
 
-  Future<IllustPageResult> getUserRelatedPage({
+  Future<UserPageResult> getUserRelatedPage({
     required int offset,
     required int seedUserId,
   });
@@ -147,7 +206,10 @@ abstract class PixivApi implements RustOpaqueInterface {
   Future<UserAccountResult> initAccountAuthToken({required String code});
 
   factory PixivApi({required PixivApiConfig config}) =>
-      RustLib.instance.api.pixivRsApiPixivApiNew(config: config);
+      RustLib.instance.api.pixivRsPixivApiPixivApiNew(config: config);
+
+  /// Updates the account-wide AI visibility preference on Pixiv.
+  Future<String> postAiShowSettings({required SearchAiMode mode});
 
   Future<String> postBookmarkAdd({
     required int id,
@@ -194,7 +256,7 @@ class BookmarkAddOptions {
   });
 
   static Future<BookmarkAddOptions> default_() =>
-      RustLib.instance.api.pixivRsApiBookmarkAddOptionsDefault();
+      RustLib.instance.api.pixivRsPixivApiBookmarkAddOptionsDefault();
 
   @override
   int get hashCode => tags.hashCode ^ restrict.hashCode ^ isNovel.hashCode;
@@ -209,6 +271,34 @@ class BookmarkAddOptions {
           isNovel == other.isNovel;
 }
 
+/// Filters for an account's saved works. Private bookmarks require the owning account.
+class BookmarkPageOptions {
+  final Restrict restrict;
+  final String? tag;
+  final int? maxBookmarkId;
+
+  const BookmarkPageOptions({
+    required this.restrict,
+    this.tag,
+    this.maxBookmarkId,
+  });
+
+  static Future<BookmarkPageOptions> default_() =>
+      RustLib.instance.api.pixivRsPixivApiBookmarkPageOptionsDefault();
+
+  @override
+  int get hashCode => restrict.hashCode ^ tag.hashCode ^ maxBookmarkId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BookmarkPageOptions &&
+          runtimeType == other.runtimeType &&
+          restrict == other.restrict &&
+          tag == other.tag &&
+          maxBookmarkId == other.maxBookmarkId;
+}
+
 class BookmarkTagOptions {
   final Restrict restrict;
   final bool isNovel;
@@ -216,7 +306,7 @@ class BookmarkTagOptions {
   const BookmarkTagOptions({required this.restrict, required this.isNovel});
 
   static Future<BookmarkTagOptions> default_() =>
-      RustLib.instance.api.pixivRsApiBookmarkTagOptionsDefault();
+      RustLib.instance.api.pixivRsPixivApiBookmarkTagOptionsDefault();
 
   @override
   int get hashCode => restrict.hashCode ^ isNovel.hashCode;
@@ -242,7 +332,7 @@ class CommentAddOptions {
   });
 
   static Future<CommentAddOptions> default_() =>
-      RustLib.instance.api.pixivRsApiCommentAddOptionsDefault();
+      RustLib.instance.api.pixivRsPixivApiCommentAddOptionsDefault();
 
   @override
   int get hashCode =>
@@ -282,7 +372,7 @@ class PixivApiConfig {
     required String deviceName,
     UserAccountResult? account,
     required bool acceptInvalidCerts,
-  }) => RustLib.instance.api.pixivRsApiPixivApiConfigNew(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiConfigNew(
     targetIp: targetIp,
     language: language,
     deviceName: deviceName,
@@ -312,6 +402,8 @@ class PixivApiConfig {
           proxy == other.proxy;
 }
 
+enum SearchAiMode { hide_, show_ }
+
 class SearchOptions {
   final String? startDate;
   final String? endDate;
@@ -320,7 +412,7 @@ class SearchOptions {
   const SearchOptions({this.startDate, this.endDate, this.bookmarkTotal});
 
   static Future<SearchOptions> default_() =>
-      RustLib.instance.api.pixivRsApiSearchOptionsDefault();
+      RustLib.instance.api.pixivRsPixivApiSearchOptionsDefault();
 
   @override
   int get hashCode =>

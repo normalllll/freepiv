@@ -3,7 +3,7 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
-import '../../frb_generated.dart';
+import '../../../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'models.freezed.dart';
@@ -70,6 +70,7 @@ class Comment {
 
 class Illust {
   final int id;
+  final Series? series;
   final String title;
   final String kind;
   final ImageUrls imageUrls;
@@ -99,6 +100,7 @@ class Illust {
 
   const Illust({
     required this.id,
+    this.series,
     required this.title,
     required this.kind,
     required this.imageUrls,
@@ -126,14 +128,15 @@ class Illust {
   });
 
   Future<bool> isR18() =>
-      RustLib.instance.api.pixivRsModelsIllustIsR18(that: this);
+      RustLib.instance.api.pixivRsPixivModelsIllustIsR18(that: this);
 
   Future<bool> isUgoira() =>
-      RustLib.instance.api.pixivRsModelsIllustIsUgoira(that: this);
+      RustLib.instance.api.pixivRsPixivModelsIllustIsUgoira(that: this);
 
   @override
   int get hashCode =>
       id.hashCode ^
+      series.hashCode ^
       title.hashCode ^
       kind.hashCode ^
       imageUrls.hashCode ^
@@ -165,6 +168,7 @@ class Illust {
       other is Illust &&
           runtimeType == other.runtimeType &&
           id == other.id &&
+          series == other.series &&
           title == other.title &&
           kind == other.kind &&
           imageUrls == other.imageUrls &&

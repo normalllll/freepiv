@@ -4,7 +4,7 @@ import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/logic/user_follow_logic.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/enums.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class UserFollowButton extends ConsumerWidget {

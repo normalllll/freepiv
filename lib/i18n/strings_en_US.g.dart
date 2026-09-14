@@ -20,20 +20,21 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	/// Constructing via the enum [AppLocale.build] is preferred.
 	Translations({Map<String, Node>? overrides, PluralResolver? cardinalResolver, PluralResolver? ordinalResolver, TranslationMetadata<AppLocale, Translations>? meta})
 		: assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
-		  $meta = meta ?? TranslationMetadata(
+		  _meta = meta ?? TranslationMetadata(
 		    locale: AppLocale.enUs,
 		    overrides: overrides ?? {},
 		    cardinalResolver: cardinalResolver,
 		    ordinalResolver: ordinalResolver,
 		  ) {
-		$meta.setFlatMapFunction(_flatMapFunction);
+		_meta.setFlatMapFunction(_flatMapFunction);
 	}
 
 	/// Metadata for the translations of <en-US>.
-	@override final TranslationMetadata<AppLocale, Translations> $meta;
+	final TranslationMetadata<AppLocale, Translations> _meta;
+	@override TranslationMetadata<AppLocale, Translations> get $meta => _meta;
 
 	/// Access flat map
-	dynamic operator[](String key) => $meta.getTranslation(key);
+	dynamic operator[](String key) => _meta.getTranslation(key);
 
 	late final Translations _root = this; // ignore: unused_field
 
@@ -58,6 +59,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$novel$en_US novel = Translations$novel$en_US.internal(_root);
 	late final Translations$follow$en_US follow = Translations$follow$en_US.internal(_root);
 	late final Translations$richText$en_US richText = Translations$richText$en_US.internal(_root);
+	late final Translations$fanbox$en_US fanbox = Translations$fanbox$en_US.internal(_root);
 }
 
 // Path: app
@@ -369,6 +371,88 @@ class Translations$richText$en_US {
 	String twitterUser({required Object username}) => 'Twitter: ${username}';
 	String illustId({required Object id}) => 'Illust ID: ${id}';
 	String userId({required Object id}) => 'User ID: ${id}';
+}
+
+// Path: fanbox
+class Translations$fanbox$en_US {
+	Translations$fanbox$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get accountConnected => 'Connected';
+	String get updateSession => 'Update Cookie';
+	String get title => 'FANBOX';
+	String get home => 'Following feed';
+	String get supporting => 'Supporting feed';
+	String get following => 'Following';
+	String get recommended => 'Discover';
+	String get pixiv => 'From Pixiv';
+	String get plans => 'Supported plans';
+	String get searchCreators => 'Creators';
+	String get searchTags => 'Tags';
+	String get notices => 'Notifications';
+	String get messages => 'Messages';
+	String get bookmarks => 'Saved posts';
+	String get login => 'Sign in to FANBOX';
+	String get cookieHint => 'Paste FANBOXSESSID or FANBOXSESSID=value';
+	String get importSession => 'Import session file';
+	String get openWebsite => 'Open FANBOX website';
+	String get loginHelp => 'Log in in your browser, then copy FANBOXSESSID from Developer Tools → Application → Cookies. Your Pixiv login is separate.';
+	String get logout => 'Sign out';
+	String get empty => 'No items yet';
+	String get loadMore => 'Load more';
+	String get searchHint => 'Creator name, ID or tag';
+	String get creatorId => 'Open creator by ID';
+	String get posts => 'Posts';
+	String get creatorPlans => 'Creator plans';
+	String restricted({required Object fee}) => 'Support at least ¥${fee}/month to read';
+	String get free => 'Public';
+	String get readable => 'Available to you';
+	String get viewPlans => 'View support plans';
+	String monthlyFee({required Object fee}) => '¥${fee}/month';
+	String get supportOnWebsite => 'View plan on FANBOX';
+	String get follow => 'Follow';
+	String get unfollow => 'Unfollow';
+	String get like => 'Like';
+	String get liked => 'Liked';
+	String get comments => 'Comments';
+	String get reply => 'Reply';
+	String get commentHint => 'Write a comment';
+	String get deleteComment => 'Delete comment';
+	String get deleteConfirm => 'Delete this comment?';
+	String get send => 'Send';
+	String get save => 'Save post';
+	String get saved => 'Saved';
+	String get download => 'Download';
+	String get downloadAll => 'Download all media';
+	String get downloadCreator => 'Download creator posts';
+	String downloadProgress({required Object done, required Object total}) => 'Downloaded ${done} / ${total}';
+	String get cancelDownload => 'Stop after current file';
+	String get downloadFinished => 'Download finished';
+	String get downloadFailed => 'Download failed. Retry to resume existing files.';
+	String get fanCard => 'Fan card';
+	String get previous => 'Previous post';
+	String get next => 'Next post';
+	String get unknown => 'This content format is not supported yet. Open the original post to view it.';
+	String get openOriginal => 'Open original';
+	String get openLink => 'Open link';
+	String get sessionExpired => 'Your FANBOX session is invalid or expired. Please sign in again.';
+	String get requestFailed => 'Unable to load FANBOX. Check your connection or retry.';
+	String get accessDenied => 'FANBOX denied this request. Check your access or open the website.';
+	String get rateLimited => 'Too many requests. Please try again later.';
+	String get loginFailed => 'Could not validate the session. Check the Cookie and proxy settings.';
+	String get working => 'Working…';
+	String get cancel => 'Cancel';
+	String get retry => 'Retry';
+	String get done => 'Done';
+	String get newNotice => 'Unread';
+	String get unknownNotice => 'FANBOX activity';
+	String get chooseFolder => 'Choose download folder';
+	String get unsupportedUrl => 'This link cannot be opened.';
+	String get restrictedInfo => 'This post remains visible, but its content requires a qualifying support plan.';
+	String get noPlans => 'No available plans';
+	String get downloadPreparing => 'Collecting accessible posts…';
 }
 
 // Path: settings.theme
@@ -1388,6 +1472,79 @@ extension on Translations {
 			'richText.twitterUser' => ({required Object username}) => 'Twitter: ${username}',
 			'richText.illustId' => ({required Object id}) => 'Illust ID: ${id}',
 			'richText.userId' => ({required Object id}) => 'User ID: ${id}',
+			'fanbox.accountConnected' => 'Connected',
+			'fanbox.updateSession' => 'Update Cookie',
+			'fanbox.title' => 'FANBOX',
+			'fanbox.home' => 'Following feed',
+			'fanbox.supporting' => 'Supporting feed',
+			'fanbox.following' => 'Following',
+			'fanbox.recommended' => 'Discover',
+			'fanbox.pixiv' => 'From Pixiv',
+			'fanbox.plans' => 'Supported plans',
+			'fanbox.searchCreators' => 'Creators',
+			'fanbox.searchTags' => 'Tags',
+			'fanbox.notices' => 'Notifications',
+			'fanbox.messages' => 'Messages',
+			'fanbox.bookmarks' => 'Saved posts',
+			'fanbox.login' => 'Sign in to FANBOX',
+			'fanbox.cookieHint' => 'Paste FANBOXSESSID or FANBOXSESSID=value',
+			'fanbox.importSession' => 'Import session file',
+			'fanbox.openWebsite' => 'Open FANBOX website',
+			'fanbox.loginHelp' => 'Log in in your browser, then copy FANBOXSESSID from Developer Tools → Application → Cookies. Your Pixiv login is separate.',
+			'fanbox.logout' => 'Sign out',
+			'fanbox.empty' => 'No items yet',
+			'fanbox.loadMore' => 'Load more',
+			'fanbox.searchHint' => 'Creator name, ID or tag',
+			'fanbox.creatorId' => 'Open creator by ID',
+			'fanbox.posts' => 'Posts',
+			'fanbox.creatorPlans' => 'Creator plans',
+			'fanbox.restricted' => ({required Object fee}) => 'Support at least ¥${fee}/month to read',
+			'fanbox.free' => 'Public',
+			'fanbox.readable' => 'Available to you',
+			'fanbox.viewPlans' => 'View support plans',
+			'fanbox.monthlyFee' => ({required Object fee}) => '¥${fee}/month',
+			'fanbox.supportOnWebsite' => 'View plan on FANBOX',
+			'fanbox.follow' => 'Follow',
+			'fanbox.unfollow' => 'Unfollow',
+			'fanbox.like' => 'Like',
+			'fanbox.liked' => 'Liked',
+			'fanbox.comments' => 'Comments',
+			'fanbox.reply' => 'Reply',
+			'fanbox.commentHint' => 'Write a comment',
+			'fanbox.deleteComment' => 'Delete comment',
+			'fanbox.deleteConfirm' => 'Delete this comment?',
+			'fanbox.send' => 'Send',
+			'fanbox.save' => 'Save post',
+			'fanbox.saved' => 'Saved',
+			'fanbox.download' => 'Download',
+			'fanbox.downloadAll' => 'Download all media',
+			'fanbox.downloadCreator' => 'Download creator posts',
+			'fanbox.downloadProgress' => ({required Object done, required Object total}) => 'Downloaded ${done} / ${total}',
+			'fanbox.cancelDownload' => 'Stop after current file',
+			'fanbox.downloadFinished' => 'Download finished',
+			'fanbox.downloadFailed' => 'Download failed. Retry to resume existing files.',
+			'fanbox.fanCard' => 'Fan card',
+			'fanbox.previous' => 'Previous post',
+			'fanbox.next' => 'Next post',
+			'fanbox.unknown' => 'This content format is not supported yet. Open the original post to view it.',
+			'fanbox.openOriginal' => 'Open original',
+			'fanbox.openLink' => 'Open link',
+			'fanbox.sessionExpired' => 'Your FANBOX session is invalid or expired. Please sign in again.',
+			'fanbox.requestFailed' => 'Unable to load FANBOX. Check your connection or retry.',
+			'fanbox.accessDenied' => 'FANBOX denied this request. Check your access or open the website.',
+			'fanbox.rateLimited' => 'Too many requests. Please try again later.',
+			'fanbox.loginFailed' => 'Could not validate the session. Check the Cookie and proxy settings.',
+			'fanbox.working' => 'Working…',
+			'fanbox.cancel' => 'Cancel',
+			'fanbox.retry' => 'Retry',
+			'fanbox.done' => 'Done',
+			'fanbox.newNotice' => 'Unread',
+			'fanbox.unknownNotice' => 'FANBOX activity',
+			'fanbox.chooseFolder' => 'Choose download folder',
+			'fanbox.unsupportedUrl' => 'This link cannot be opened.',
+			'fanbox.restrictedInfo' => 'This post remains visible, but its content requires a qualifying support plan.',
+			'fanbox.noPlans' => 'No available plans',
+			'fanbox.downloadPreparing' => 'Collecting accessible posts…',
 			_ => null,
 		};
 	}

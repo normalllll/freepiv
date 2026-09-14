@@ -5,7 +5,7 @@ import 'package:freepiv/features/illust/presentation/widgets/illust_detail_secti
 import 'package:freepiv/features/illust/presentation/widgets/vertical_illust_preview_grid.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class IllustRelatedSection extends ConsumerWidget {
   const IllustRelatedSection({required this.illustId, required this.onIllustTap, required this.onShowMore, super.key});

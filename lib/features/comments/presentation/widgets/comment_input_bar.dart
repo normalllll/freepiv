@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 typedef CommentSubmitCallback = Future<bool> Function({required String text, int? stampId});
 

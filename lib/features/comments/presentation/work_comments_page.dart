@@ -8,7 +8,7 @@ import 'package:freepiv/features/comments/presentation/widgets/comment_tile.dart
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/error.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class WorkCommentsPage extends StatefulWidget {
   const WorkCommentsPage({required this.workType, required this.workId, this.totalComments, super.key});

@@ -3,7 +3,7 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
-import '../../frb_generated.dart';
+import '../../../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `hash`, `hash`, `hash`, `hash`, `hash`, `hash`, `hash`, `hash`
@@ -28,7 +28,7 @@ enum IllustRankingMode {
   month;
 
   Future<void> asPixivParam() => RustLib.instance.api
-      .pixivRsEnumsIllustRankingModeAsPixivParam(that: this);
+      .pixivRsPixivEnumsIllustRankingModeAsPixivParam(that: this);
 }
 
 enum IllustType {
@@ -36,7 +36,7 @@ enum IllustType {
   manga;
 
   Future<void> asPixivParam() =>
-      RustLib.instance.api.pixivRsEnumsIllustTypeAsPixivParam(that: this);
+      RustLib.instance.api.pixivRsPixivEnumsIllustTypeAsPixivParam(that: this);
 }
 
 enum MangaRankingMode {
@@ -47,8 +47,8 @@ enum MangaRankingMode {
   weekR18,
   weekR18G;
 
-  Future<void> asPixivParam() =>
-      RustLib.instance.api.pixivRsEnumsMangaRankingModeAsPixivParam(that: this);
+  Future<void> asPixivParam() => RustLib.instance.api
+      .pixivRsPixivEnumsMangaRankingModeAsPixivParam(that: this);
 }
 
 enum NovelRankingMode {
@@ -60,8 +60,8 @@ enum NovelRankingMode {
   weekR18,
   weekRookie;
 
-  Future<void> asPixivParam() =>
-      RustLib.instance.api.pixivRsEnumsNovelRankingModeAsPixivParam(that: this);
+  Future<void> asPixivParam() => RustLib.instance.api
+      .pixivRsPixivEnumsNovelRankingModeAsPixivParam(that: this);
 }
 
 enum Restrict {
@@ -69,7 +69,7 @@ enum Restrict {
   private;
 
   Future<void> asPixivParam() =>
-      RustLib.instance.api.pixivRsEnumsRestrictAsPixivParam(that: this);
+      RustLib.instance.api.pixivRsPixivEnumsRestrictAsPixivParam(that: this);
 }
 
 enum SearchSort {
@@ -78,7 +78,7 @@ enum SearchSort {
   popularDesc;
 
   Future<void> asPixivParam() =>
-      RustLib.instance.api.pixivRsEnumsSearchSortAsPixivParam(that: this);
+      RustLib.instance.api.pixivRsPixivEnumsSearchSortAsPixivParam(that: this);
 }
 
 enum SearchTarget {
@@ -86,8 +86,8 @@ enum SearchTarget {
   exactMatchForTags,
   titleAndCaption;
 
-  Future<void> asPixivParam() =>
-      RustLib.instance.api.pixivRsEnumsSearchTargetAsPixivParam(that: this);
+  Future<void> asPixivParam() => RustLib.instance.api
+      .pixivRsPixivEnumsSearchTargetAsPixivParam(that: this);
 }
 
 enum WorkType {
@@ -96,5 +96,5 @@ enum WorkType {
   novel;
 
   Future<void> asPixivParam() =>
-      RustLib.instance.api.pixivRsEnumsWorkTypeAsPixivParam(that: this);
+      RustLib.instance.api.pixivRsPixivEnumsWorkTypeAsPixivParam(that: this);
 }

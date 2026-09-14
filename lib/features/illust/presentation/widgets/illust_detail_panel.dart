@@ -9,7 +9,7 @@ import 'package:freepiv/features/illust/presentation/widgets/illust_related_sect
 import 'package:freepiv/features/illust/presentation/widgets/illust_user_preview_section.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class IllustDetailPanel extends StatelessWidget {
   const IllustDetailPanel({

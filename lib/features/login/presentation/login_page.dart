@@ -9,8 +9,9 @@ import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -146,7 +147,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final proxySettings = ref.watch(proxySettingsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(translations.login.title)),
+      appBar: AppBar(
+        title: Text(translations.login.title),
+        actions: [TextButton(onPressed: () => context.go('/fanbox'), child: Text(translations.fanbox.title))],
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),

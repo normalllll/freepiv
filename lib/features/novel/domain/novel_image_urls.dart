@@ -1,5 +1,5 @@
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 String novelCoverUrl(Novel novel, WebviewNovel webviewNovel) {
   final webviewCover = webviewNovel.coverUrl.trim();

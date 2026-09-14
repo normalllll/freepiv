@@ -1,5 +1,5 @@
 import 'package:freepiv/core/services/app_settings.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 String illustPreviewImageUrl(ImageUrls imageUrls, PreviewImageQuality quality) {
   return switch (quality) {

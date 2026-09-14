@@ -6,8 +6,8 @@ import 'package:freepiv/features/illust/presentation/widgets/illust_detail_secti
 import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class NovelHeader extends StatelessWidget {
   const NovelHeader({required this.novel, required this.webviewNovel, super.key});

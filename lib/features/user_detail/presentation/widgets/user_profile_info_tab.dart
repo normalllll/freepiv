@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UserProfileInfoBody extends StatelessWidget {

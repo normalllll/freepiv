@@ -5,7 +5,7 @@ import 'package:freepiv/core/core.dart';
 import 'package:freepiv/shared/widgets/energetic_card.dart';
 import 'package:freepiv/shared/widgets/illust_bookmark_button.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class IllustPreviewer extends ConsumerWidget {
   const IllustPreviewer({required this.illust, required this.onTap, this.fit = BoxFit.cover, this.square = false, super.key});

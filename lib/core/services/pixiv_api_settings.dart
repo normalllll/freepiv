@@ -1,7 +1,7 @@
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/api.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/responses.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class PixivApiSettings {
   const PixivApiSettings._();

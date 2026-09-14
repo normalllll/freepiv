@@ -1,3 +1,5 @@
 rust_input: crate::api,pixiv_rs
 rust_root: rust/
 dart_output: lib/src/rust
+type_64bit_int: true
+web: false

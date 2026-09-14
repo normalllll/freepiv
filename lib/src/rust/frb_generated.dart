@@ -13,12 +13,14 @@ import 'frb_generated.dart';
 import 'frb_generated.io.dart'
     if (dart.library.js_interop) 'frb_generated.web.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
-import 'third_party/pixiv_rs/api.dart';
-import 'third_party/pixiv_rs/auth.dart';
-import 'third_party/pixiv_rs/enums.dart';
 import 'third_party/pixiv_rs/error.dart';
-import 'third_party/pixiv_rs/models.dart';
-import 'third_party/pixiv_rs/responses.dart';
+import 'third_party/pixiv_rs/fanbox.dart';
+import 'third_party/pixiv_rs/pixiv/api.dart';
+import 'third_party/pixiv_rs/pixiv/auth.dart';
+import 'third_party/pixiv_rs/pixiv/enums.dart';
+import 'third_party/pixiv_rs/pixiv/models.dart';
+import 'third_party/pixiv_rs/pixiv/responses.dart';
+import 'third_party/pixiv_rs/pixivision.dart';
 
 /// Main entrypoint of the Rust API
 class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
@@ -73,7 +75,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 27025120;
+  int get rustContentHash => -949954706;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -85,176 +87,367 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  UserAccountResult? pixivRsApiPixivApiAccount({required PixivApi that});
+  Future<void> pixivRsFanboxFanboxApiAddComment({
+    required FanboxApi that,
+    required String postId,
+    required String body,
+    String? rootCommentId,
+    String? parentCommentId,
+  });
 
-  String pixivRsApiPixivApiGenerateLoginUrl({required PixivApi that});
+  Future<void> pixivRsFanboxFanboxApiDeleteComment({
+    required FanboxApi that,
+    required String commentId,
+  });
 
-  Future<BookmarkTagPageResult> pixivRsApiPixivApiGetBookmarkTagPage({
+  Future<void> pixivRsFanboxFanboxApiDownloadMedia({
+    required FanboxApi that,
+    required String url,
+    required String path,
+  });
+
+  Future<void> pixivRsFanboxFanboxApiFollowCreator({
+    required FanboxApi that,
+    required String userId,
+  });
+
+  Future<FanboxCommentPage> pixivRsFanboxFanboxApiGetComments({
+    required FanboxApi that,
+    required String postId,
+  });
+
+  Future<FanboxCreator> pixivRsFanboxFanboxApiGetCreator({
+    required FanboxApi that,
+    required String creatorId,
+  });
+
+  Future<List<String>> pixivRsFanboxFanboxApiGetCreatorPostPages({
+    required FanboxApi that,
+    required String creatorId,
+  });
+
+  Future<FanboxSupport> pixivRsFanboxFanboxApiGetCreatorSupport({
+    required FanboxApi that,
+    required String creatorId,
+  });
+
+  Future<List<FanboxTag>> pixivRsFanboxFanboxApiGetCreatorTags({
+    required FanboxApi that,
+    required String creatorId,
+  });
+
+  Future<List<FanboxCreator>> pixivRsFanboxFanboxApiGetCreators({
+    required FanboxApi that,
+    required FanboxCreatorList list,
+  });
+
+  Future<Uint8List> pixivRsFanboxFanboxApiGetMediaBytes({
+    required FanboxApi that,
+    required String url,
+  });
+
+  Future<List<FanboxNotice>> pixivRsFanboxFanboxApiGetMessages({
+    required FanboxApi that,
+  });
+
+  Future<FanboxCommentPage> pixivRsFanboxFanboxApiGetNextComments({
+    required FanboxApi that,
+    required String url,
+  });
+
+  Future<FanboxNoticePage> pixivRsFanboxFanboxApiGetNextNotices({
+    required FanboxApi that,
+    required String url,
+  });
+
+  Future<FanboxPostPage> pixivRsFanboxFanboxApiGetNextPosts({
+    required FanboxApi that,
+    required String url,
+  });
+
+  Future<FanboxNoticePage> pixivRsFanboxFanboxApiGetNotices({
+    required FanboxApi that,
+  });
+
+  Future<List<FanboxPlan>> pixivRsFanboxFanboxApiGetPlans({
+    required FanboxApi that,
+    String? creatorId,
+  });
+
+  Future<FanboxPost> pixivRsFanboxFanboxApiGetPost({
+    required FanboxApi that,
+    required String postId,
+  });
+
+  Future<FanboxPostPage> pixivRsFanboxFanboxApiGetPosts({
+    required FanboxApi that,
+    required FanboxFeed feed,
+  });
+
+  Future<void> pixivRsFanboxFanboxApiLikeComment({
+    required FanboxApi that,
+    required String commentId,
+  });
+
+  Future<void> pixivRsFanboxFanboxApiLikePost({
+    required FanboxApi that,
+    required String postId,
+  });
+
+  FanboxApi pixivRsFanboxFanboxApiNew({
+    required String session,
+    String? proxy,
+    required String language,
+    required bool acceptInvalidCerts,
+  });
+
+  Future<void> pixivRsFanboxFanboxApiRefreshCsrfToken({
+    required FanboxApi that,
+  });
+
+  Future<FanboxCreatorPage> pixivRsFanboxFanboxApiSearchCreators({
+    required FanboxApi that,
+    required String keyword,
+    required int page,
+  });
+
+  Future<List<FanboxTag>> pixivRsFanboxFanboxApiSearchTags({
+    required FanboxApi that,
+    required String keyword,
+  });
+
+  Future<void> pixivRsFanboxFanboxApiUnfollowCreator({
+    required FanboxApi that,
+    required String userId,
+  });
+
+  Future<void> pixivRsFanboxFanboxApiValidateSession({required FanboxApi that});
+
+  UserAccountResult? pixivRsPixivApiPixivApiAccount({required PixivApi that});
+
+  String pixivRsPixivApiPixivApiGenerateLoginUrl({required PixivApi that});
+
+  Future<BookmarkTagPageResult> pixivRsPixivApiPixivApiGetBookmarkTagPage({
     required PixivApi that,
     required int userId,
     required BookmarkTagOptions options,
   });
 
-  Future<IllustPageResult> pixivRsApiPixivApiGetFollowNewIllustPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetFollowNewIllustPage({
     required PixivApi that,
     Restrict? restrict,
   });
 
-  Future<NovelPageResult> pixivRsApiPixivApiGetFollowNewNovelPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetFollowNewNovelPage({
     required PixivApi that,
     Restrict? restrict,
   });
 
-  Future<UserPageResult> pixivRsApiPixivApiGetFollowerPage({
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetFollowerPage({
     required PixivApi that,
     required int userId,
   });
 
-  Future<UserPageResult> pixivRsApiPixivApiGetFollowingUserPage({
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetFollowingUserPage({
     required PixivApi that,
     required int userId,
     required Restrict restrict,
   });
 
-  Future<CommentPageResult> pixivRsApiPixivApiGetIllustCommentPage({
+  Future<WorkBookmarkDetailResult>
+  pixivRsPixivApiPixivApiGetIllustBookmarkDetail({
     required PixivApi that,
     required int illustId,
   });
 
-  Future<CommentPageResult> pixivRsApiPixivApiGetIllustCommentReplyPage({
+  Future<CommentPageResult> pixivRsPixivApiPixivApiGetIllustCommentPage({
+    required PixivApi that,
+    required int illustId,
+  });
+
+  Future<CommentPageResult> pixivRsPixivApiPixivApiGetIllustCommentReplyPage({
     required PixivApi that,
     required int commentId,
   });
 
-  Future<IllustDetailResult> pixivRsApiPixivApiGetIllustDetail({
+  Future<IllustDetailResult> pixivRsPixivApiPixivApiGetIllustDetail({
     required PixivApi that,
     required int illustId,
   });
 
-  Future<IllustPageResult> pixivRsApiPixivApiGetIllustRankingPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetIllustRankingPage({
     required PixivApi that,
     required IllustRankingMode mode,
   });
 
-  Future<IllustPageResult> pixivRsApiPixivApiGetIllustRelatedPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetIllustRankingPageOnDate({
+    required PixivApi that,
+    required IllustRankingMode mode,
+    required String date,
+  });
+
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetIllustRelatedPage({
     required PixivApi that,
     required int illustId,
   });
 
-  Future<IllustPageResult> pixivRsApiPixivApiGetMangaRankingPage({
+  Future<IllustSeriesPageResult> pixivRsPixivApiPixivApiGetIllustSeriesPage({
+    required PixivApi that,
+    required int seriesId,
+  });
+
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetMangaRankingPage({
     required PixivApi that,
     required MangaRankingMode mode,
   });
 
-  Future<IllustPageResult> pixivRsApiPixivApiGetMypixivNewIllustPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetMangaRankingPageOnDate({
+    required PixivApi that,
+    required MangaRankingMode mode,
+    required String date,
+  });
+
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetMypixivNewIllustPage({
     required PixivApi that,
   });
 
-  Future<NovelPageResult> pixivRsApiPixivApiGetMypixivNewNovelPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetMypixivNewNovelPage({
     required PixivApi that,
   });
 
-  Future<IllustPageResult> pixivRsApiPixivApiGetNewIllustPage({
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetMypixivUserPage({
+    required PixivApi that,
+    required int userId,
+  });
+
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetNewIllustPage({
     required PixivApi that,
     required IllustType illustType,
   });
 
-  Future<NovelPageResult> pixivRsApiPixivApiGetNewNovelPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetNewNovelPage({
     required PixivApi that,
   });
 
-  Future<BookmarkTagPageResult> pixivRsApiPixivApiGetNextBookmarkTagPage({
-    required PixivApi that,
-    required String url,
-  });
-
-  Future<CommentPageResult> pixivRsApiPixivApiGetNextCommentPage({
+  Future<BookmarkTagPageResult> pixivRsPixivApiPixivApiGetNextBookmarkTagPage({
     required PixivApi that,
     required String url,
   });
 
-  Future<IllustPageResult> pixivRsApiPixivApiGetNextIllustPage({
+  Future<CommentPageResult> pixivRsPixivApiPixivApiGetNextCommentPage({
     required PixivApi that,
     required String url,
   });
 
-  Future<NovelPageResult> pixivRsApiPixivApiGetNextNovelPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetNextIllustPage({
     required PixivApi that,
     required String url,
   });
 
-  Future<SearchIllustPageResult> pixivRsApiPixivApiGetNextSearchIllustPage({
+  Future<IllustSeriesPageResult>
+  pixivRsPixivApiPixivApiGetNextIllustSeriesPage({
     required PixivApi that,
     required String url,
   });
 
-  Future<SearchNovelPageResult> pixivRsApiPixivApiGetNextSearchNovelPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetNextNovelPage({
     required PixivApi that,
     required String url,
   });
 
-  Future<UserPageResult> pixivRsApiPixivApiGetNextUserPage({
+  Future<NovelSeriesPageResult> pixivRsPixivApiPixivApiGetNextNovelSeriesPage({
     required PixivApi that,
     required String url,
   });
 
-  Future<CommentPageResult> pixivRsApiPixivApiGetNovelCommentPage({
+  Future<SearchIllustPageResult>
+  pixivRsPixivApiPixivApiGetNextSearchIllustPage({
+    required PixivApi that,
+    required String url,
+  });
+
+  Future<SearchNovelPageResult> pixivRsPixivApiPixivApiGetNextSearchNovelPage({
+    required PixivApi that,
+    required String url,
+  });
+
+  Future<SpotlightPage> pixivRsPixivApiPixivApiGetNextSpotlightArticlePage({
+    required PixivApi that,
+    required String url,
+  });
+
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetNextUserPage({
+    required PixivApi that,
+    required String url,
+  });
+
+  Future<WorkBookmarkDetailResult>
+  pixivRsPixivApiPixivApiGetNovelBookmarkDetail({
     required PixivApi that,
     required int novelId,
   });
 
-  Future<CommentPageResult> pixivRsApiPixivApiGetNovelCommentReplyPage({
+  Future<CommentPageResult> pixivRsPixivApiPixivApiGetNovelCommentPage({
+    required PixivApi that,
+    required int novelId,
+  });
+
+  Future<CommentPageResult> pixivRsPixivApiPixivApiGetNovelCommentReplyPage({
     required PixivApi that,
     required int commentId,
   });
 
-  Future<NovelDetailResult> pixivRsApiPixivApiGetNovelDetail({
+  Future<NovelDetailResult> pixivRsPixivApiPixivApiGetNovelDetail({
     required PixivApi that,
     required int novelId,
   });
 
-  Future<String> pixivRsApiPixivApiGetNovelHtml({
+  Future<String> pixivRsPixivApiPixivApiGetNovelHtml({
     required PixivApi that,
     required int novelId,
   });
 
-  Future<NovelPageResult> pixivRsApiPixivApiGetNovelRankingPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetNovelRankingPage({
     required PixivApi that,
     required NovelRankingMode mode,
   });
 
-  Future<NovelPageResult> pixivRsApiPixivApiGetNovelRelatedPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetNovelRankingPageOnDate({
+    required PixivApi that,
+    required NovelRankingMode mode,
+    required String date,
+  });
+
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetNovelRelatedPage({
     required PixivApi that,
     required int novelId,
   });
 
-  Future<IllustPageResult> pixivRsApiPixivApiGetRecommendedIllustPage({
+  Future<NovelSeriesPageResult> pixivRsPixivApiPixivApiGetNovelSeriesPage({
+    required PixivApi that,
+    required int seriesId,
+  });
+
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetRecommendedIllustPage({
     required PixivApi that,
     required IllustType illustType,
   });
 
-  Future<NovelPageResult> pixivRsApiPixivApiGetRecommendedNovelPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetRecommendedNovelPage({
     required PixivApi that,
   });
 
-  Future<UserPageResult> pixivRsApiPixivApiGetRecommendedUserPage({
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetRecommendedUserPage({
     required PixivApi that,
   });
 
-  Future<SearchAutocompleteResult> pixivRsApiPixivApiGetSearchAutocomplete({
-    required PixivApi that,
-    required String word,
-  });
-
-  Future<SearchIllustPageResult> pixivRsApiPixivApiGetSearchIllustPage({
+  Future<SearchAutocompleteResult>
+  pixivRsPixivApiPixivApiGetSearchAutocomplete({
     required PixivApi that,
     required String word,
-    required SearchSort sort,
-    required SearchTarget target,
-    required SearchOptions options,
   });
 
-  Future<SearchNovelPageResult> pixivRsApiPixivApiGetSearchNovelPage({
+  Future<SearchIllustPageResult> pixivRsPixivApiPixivApiGetSearchIllustPage({
     required PixivApi that,
     required String word,
     required SearchSort sort,
@@ -262,157 +455,238 @@ abstract class RustLibApi extends BaseApi {
     required SearchOptions options,
   });
 
-  Future<UserPageResult> pixivRsApiPixivApiGetSearchUserPage({
+  Future<SearchIllustPageResult>
+  pixivRsPixivApiPixivApiGetSearchIllustPageWithAi({
+    required PixivApi that,
+    required String word,
+    required SearchSort sort,
+    required SearchTarget target,
+    required SearchOptions options,
+    SearchAiMode? aiMode,
+  });
+
+  Future<SearchNovelPageResult> pixivRsPixivApiPixivApiGetSearchNovelPage({
+    required PixivApi that,
+    required String word,
+    required SearchSort sort,
+    required SearchTarget target,
+    required SearchOptions options,
+  });
+
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetSearchUserPage({
     required PixivApi that,
     required String word,
   });
 
-  Future<TrendingTagListResult> pixivRsApiPixivApiGetTrendingTagList({
+  Future<SpotlightPage> pixivRsPixivApiPixivApiGetSpotlightArticlePage({
+    required PixivApi that,
+    required SpotlightCategory category,
+  });
+
+  Future<TrendingTagListResult> pixivRsPixivApiPixivApiGetTrendingTagList({
     required PixivApi that,
   });
 
-  Future<UgoiraMetadataResult> pixivRsApiPixivApiGetUgoiraMetadata({
+  Future<UgoiraMetadataResult> pixivRsPixivApiPixivApiGetUgoiraMetadata({
     required PixivApi that,
     required int illustId,
   });
 
-  Future<UserDetailResult> pixivRsApiPixivApiGetUserDetail({
+  Future<UserDetailResult> pixivRsPixivApiPixivApiGetUserDetail({
     required PixivApi that,
     required int userId,
   });
 
-  Future<IllustPageResult> pixivRsApiPixivApiGetUserIllustBookmarkPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetUserIllustBookmarkPage({
     required PixivApi that,
     required int userId,
     required Restrict restrict,
   });
 
-  Future<IllustPageResult> pixivRsApiPixivApiGetUserIllustPage({
+  Future<IllustPageResult>
+  pixivRsPixivApiPixivApiGetUserIllustBookmarkPageWithOptions({
+    required PixivApi that,
+    required int userId,
+    required BookmarkPageOptions options,
+  });
+
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetUserIllustPage({
     required PixivApi that,
     required int userId,
     required IllustType illustType,
   });
 
-  Future<NovelPageResult> pixivRsApiPixivApiGetUserNovelBookmarkPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetUserNovelBookmarkPage({
     required PixivApi that,
     required int userId,
     required Restrict restrict,
   });
 
-  Future<NovelPageResult> pixivRsApiPixivApiGetUserNovelPage({
+  Future<NovelPageResult>
+  pixivRsPixivApiPixivApiGetUserNovelBookmarkPageWithOptions({
+    required PixivApi that,
+    required int userId,
+    required BookmarkPageOptions options,
+  });
+
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetUserNovelPage({
     required PixivApi that,
     required int userId,
   });
 
-  Future<IllustPageResult> pixivRsApiPixivApiGetUserRelatedPage({
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetUserRelatedPage({
     required PixivApi that,
     required int offset,
     required int seedUserId,
   });
 
-  Future<WebviewNovel> pixivRsApiPixivApiGetWebviewNovel({
+  Future<WebviewNovel> pixivRsPixivApiPixivApiGetWebviewNovel({
     required PixivApi that,
     required int novelId,
   });
 
-  Future<UserAccountResult> pixivRsApiPixivApiInitAccountAuthToken({
+  Future<UserAccountResult> pixivRsPixivApiPixivApiInitAccountAuthToken({
     required PixivApi that,
     required String code,
   });
 
-  PixivApi pixivRsApiPixivApiNew({required PixivApiConfig config});
+  PixivApi pixivRsPixivApiPixivApiNew({required PixivApiConfig config});
 
-  Future<String> pixivRsApiPixivApiPostBookmarkAdd({
+  Future<String> pixivRsPixivApiPixivApiPostAiShowSettings({
+    required PixivApi that,
+    required SearchAiMode mode,
+  });
+
+  Future<String> pixivRsPixivApiPixivApiPostBookmarkAdd({
     required PixivApi that,
     required int id,
     required BookmarkAddOptions options,
   });
 
-  Future<String> pixivRsApiPixivApiPostBookmarkDelete({
+  Future<String> pixivRsPixivApiPixivApiPostBookmarkDelete({
     required PixivApi that,
     required int id,
     required bool isNovel,
   });
 
-  Future<String> pixivRsApiPixivApiPostFollowAdd({
+  Future<String> pixivRsPixivApiPixivApiPostFollowAdd({
     required PixivApi that,
     required int userId,
     required Restrict restrict,
   });
 
-  Future<String> pixivRsApiPixivApiPostFollowDelete({
+  Future<String> pixivRsPixivApiPixivApiPostFollowDelete({
     required PixivApi that,
     required int userId,
   });
 
-  Future<CommentAddResult> pixivRsApiPixivApiPostIllustCommentAdd({
+  Future<CommentAddResult> pixivRsPixivApiPixivApiPostIllustCommentAdd({
     required PixivApi that,
     required int illustId,
     required CommentAddOptions options,
   });
 
-  Future<String> pixivRsApiPixivApiPostIllustCommentDelete({
+  Future<String> pixivRsPixivApiPixivApiPostIllustCommentDelete({
     required PixivApi that,
     required int commentId,
   });
 
-  Future<CommentAddResult> pixivRsApiPixivApiPostNovelCommentAdd({
+  Future<CommentAddResult> pixivRsPixivApiPixivApiPostNovelCommentAdd({
     required PixivApi that,
     required int novelId,
     required CommentAddOptions options,
   });
 
-  Future<String> pixivRsApiPixivApiPostNovelCommentDelete({
+  Future<String> pixivRsPixivApiPixivApiPostNovelCommentDelete({
     required PixivApi that,
     required int commentId,
   });
 
-  void pixivRsApiPixivApiSetAccount({
+  void pixivRsPixivApiPixivApiSetAccount({
     required PixivApi that,
     UserAccountResult? account,
   });
 
-  void pixivRsApiPixivApiSetProxy({
+  void pixivRsPixivApiPixivApiSetProxy({
     required PixivApi that,
     required String proxy,
   });
 
-  Future<String> pixivRsAuthPixivAuthCodeChallenge({required PixivAuth that});
+  Future<String> pixivRsPixivAuthPixivAuthCodeChallenge({
+    required PixivAuth that,
+  });
 
-  Future<String> pixivRsAuthPixivAuthCodeVerifier({required PixivAuth that});
+  Future<String> pixivRsPixivAuthPixivAuthCodeVerifier({
+    required PixivAuth that,
+  });
 
-  Future<PixivAuth> pixivRsAuthPixivAuthFromParts({
+  Future<PixivAuth> pixivRsPixivAuthPixivAuthFromParts({
     required String targetIp,
     required String language,
     required String deviceName,
   });
 
-  Future<String> pixivRsAuthPixivAuthGenerateLoginUrl({
+  Future<String> pixivRsPixivAuthPixivAuthGenerateLoginUrl({
     required PixivAuth that,
   });
 
-  Future<UserAccountResult> pixivRsAuthPixivAuthInitAccountAuthToken({
+  Future<UserAccountResult> pixivRsPixivAuthPixivAuthInitAccountAuthToken({
     required PixivAuth that,
     required String code,
   });
 
-  Future<PixivAuth> pixivRsAuthPixivAuthNew({required PixivAuthConfig config});
+  Future<PixivAuth> pixivRsPixivAuthPixivAuthNew({
+    required PixivAuthConfig config,
+  });
 
-  Future<UserAccountResult> pixivRsAuthPixivAuthRefreshAuthToken({
+  Future<UserAccountResult> pixivRsPixivAuthPixivAuthRefreshAuthToken({
     required PixivAuth that,
     required String refreshToken,
   });
 
-  Future<void> pixivRsAuthPixivAuthSetProxy({
+  Future<void> pixivRsPixivAuthPixivAuthSetProxy({
     required PixivAuth that,
     required String proxy,
   });
 
-  Future<BookmarkAddOptions> pixivRsApiBookmarkAddOptionsDefault();
+  Future<Article> pixivRsPixivisionPixivisionApiGetArticle({
+    required PixivisionApi that,
+    required int id,
+  });
 
-  Future<BookmarkTagOptions> pixivRsApiBookmarkTagOptionsDefault();
+  Future<Article> pixivRsPixivisionPixivisionApiGetArticleByUrl({
+    required PixivisionApi that,
+    required String url,
+  });
 
-  Future<CommentAddOptions> pixivRsApiCommentAddOptionsDefault();
+  Future<ArticlePage> pixivRsPixivisionPixivisionApiGetArticlePage({
+    required PixivisionApi that,
+    required ArticleFeed feed,
+    required int page,
+  });
+
+  Future<ArticlePage> pixivRsPixivisionPixivisionApiGetNextArticlePage({
+    required PixivisionApi that,
+    required String url,
+  });
+
+  Future<TagDirectory> pixivRsPixivisionPixivisionApiGetTagDirectory({
+    required PixivisionApi that,
+  });
+
+  Future<PixivisionApi> pixivRsPixivisionPixivisionApiNew({
+    required PixivisionConfig config,
+  });
+
+  Future<BookmarkAddOptions> pixivRsPixivApiBookmarkAddOptionsDefault();
+
+  Future<BookmarkPageOptions> pixivRsPixivApiBookmarkPageOptionsDefault();
+
+  Future<BookmarkTagOptions> pixivRsPixivApiBookmarkTagOptionsDefault();
+
+  Future<void> pixivRsPixivisionCategoryPath({required Category that});
+
+  Future<CommentAddOptions> pixivRsPixivApiCommentAddOptionsDefault();
 
   Stream<FrbDownloadFileEvent> crateApiDownloadDownloadToFile({
     required String url,
@@ -436,38 +710,85 @@ abstract class RustLibApi extends BaseApi {
     String? proxy,
   });
 
+  Future<FanboxComment> pixivRsFanboxFanboxCommentDefault();
+
+  Future<FanboxCommentPage> pixivRsFanboxFanboxCommentPageDefault();
+
+  Future<FanboxCreator> pixivRsFanboxFanboxCreatorDefault();
+
+  Future<FanboxCreatorPage> pixivRsFanboxFanboxCreatorPageDefault();
+
+  Future<FanboxFile> pixivRsFanboxFanboxFileDefault();
+
+  Future<FanboxImage> pixivRsFanboxFanboxImageDefault();
+
+  Future<FanboxNotice> pixivRsFanboxFanboxNoticeDefault();
+
+  Future<FanboxNoticePage> pixivRsFanboxFanboxNoticePageDefault();
+
+  Future<FanboxPlan> pixivRsFanboxFanboxPlanDefault();
+
+  Future<FanboxPost> pixivRsFanboxFanboxPostDefault();
+
+  Future<FanboxPostPage> pixivRsFanboxFanboxPostPageDefault();
+
+  Future<FanboxSupport> pixivRsFanboxFanboxSupportDefault();
+
+  Future<FanboxTag> pixivRsFanboxFanboxTagDefault();
+
+  Future<FanboxUser> pixivRsFanboxFanboxUserDefault();
+
   Future<String?> crateApiProxyGetSystemProxy();
 
-  Future<bool> pixivRsModelsIllustIsR18({required Illust that});
+  Future<bool> pixivRsPixivModelsIllustIsR18({required Illust that});
 
-  Future<bool> pixivRsModelsIllustIsUgoira({required Illust that});
+  Future<bool> pixivRsPixivModelsIllustIsUgoira({required Illust that});
 
-  Future<void> pixivRsEnumsIllustRankingModeAsPixivParam({
+  Future<void> pixivRsPixivEnumsIllustRankingModeAsPixivParam({
     required IllustRankingMode that,
   });
 
-  Future<void> pixivRsEnumsIllustTypeAsPixivParam({required IllustType that});
+  Future<void> pixivRsPixivEnumsIllustTypeAsPixivParam({
+    required IllustType that,
+  });
 
   Future<Uint8List> crateApiImageUtilsImageUtilsImagesToGif({
     required List<Uint8List> images,
     required List<int> delays,
   });
 
-  Future<void> pixivRsEnumsMangaRankingModeAsPixivParam({
+  Future<void> pixivRsPixivisionLanguagePath({required Language that});
+
+  Future<void> pixivRsPixivEnumsMangaRankingModeAsPixivParam({
     required MangaRankingMode that,
   });
 
-  Future<NovelNavigationInfo> pixivRsResponsesNovelNavigationInfoDefault();
+  Future<NovelNavigationInfo> pixivRsPixivResponsesNovelNavigationInfoDefault();
 
-  Future<NovelNavigationItem> pixivRsResponsesNovelNavigationItemDefault();
+  Future<NovelNavigationItem> pixivRsPixivResponsesNovelNavigationItemDefault();
 
-  Future<void> pixivRsEnumsNovelRankingModeAsPixivParam({
+  Future<void> pixivRsPixivEnumsNovelRankingModeAsPixivParam({
     required NovelRankingMode that,
   });
 
-  Future<NovelRating> pixivRsResponsesNovelRatingDefault();
+  Future<NovelRating> pixivRsPixivResponsesNovelRatingDefault();
 
-  Future<PixivApiConfig> pixivRsApiPixivApiConfigNew({
+  Future<Article> pixivRsPixivisionParseArticle({
+    required String html,
+    required String url,
+  });
+
+  Future<ArticlePage> pixivRsPixivisionParseArticlePage({
+    required String html,
+    required String url,
+  });
+
+  Future<TagDirectory> pixivRsPixivisionParseTagDirectory({
+    required String html,
+    required String url,
+  });
+
+  Future<PixivApiConfig> pixivRsPixivApiPixivApiConfigNew({
     required String targetIp,
     required String language,
     required String deviceName,
@@ -475,7 +796,7 @@ abstract class RustLibApi extends BaseApi {
     required bool acceptInvalidCerts,
   });
 
-  Future<PixivAuthConfig> pixivRsAuthPixivAuthConfigNew({
+  Future<PixivAuthConfig> pixivRsPixivAuthPixivAuthConfigNew({
     required String targetIp,
     required String language,
     required String deviceName,
@@ -493,23 +814,44 @@ abstract class RustLibApi extends BaseApi {
     required String message,
   });
 
-  Future<void> pixivRsEnumsRestrictAsPixivParam({required Restrict that});
+  Future<PixivisionConfig> pixivRsPixivisionPixivisionConfigDefault();
 
-  Future<SearchOptions> pixivRsApiSearchOptionsDefault();
+  Future<void> pixivRsPixivEnumsRestrictAsPixivParam({required Restrict that});
 
-  Future<void> pixivRsEnumsSearchSortAsPixivParam({required SearchSort that});
+  Future<SearchOptions> pixivRsPixivApiSearchOptionsDefault();
 
-  Future<void> pixivRsEnumsSearchTargetAsPixivParam({
+  Future<void> pixivRsPixivEnumsSearchSortAsPixivParam({
+    required SearchSort that,
+  });
+
+  Future<void> pixivRsPixivEnumsSearchTargetAsPixivParam({
     required SearchTarget that,
   });
 
-  Future<WebviewNovelImageUrls> pixivRsResponsesWebviewNovelImageUrlsDefault();
+  Future<WebviewNovelImageUrls>
+  pixivRsPixivResponsesWebviewNovelImageUrlsDefault();
 
-  Future<void> pixivRsEnumsWorkTypeAsPixivParam({required WorkType that});
+  Future<void> pixivRsPixivEnumsWorkTypeAsPixivParam({required WorkType that});
 
   Future<List<Uint8List>> crateApiZipUtilsZipUtilsUnzipFiles({
     required List<int> bytes,
   });
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_ArticleFeed;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_ArticleFeed;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ArticleFeedPtr;
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_FanboxApi;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_FanboxApi;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_FanboxApiPtr;
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_GifError;
@@ -536,6 +878,15 @@ abstract class RustLibApi extends BaseApi {
   CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_PixivAuthPtr;
 
   RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_PixivisionApi;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_PixivisionApi;
+
+  CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_PixivisionApiPtr;
+
+  RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_UnzipError;
 
   RustArcDecrementStrongCountFnType
@@ -553,7 +904,1037 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  UserAccountResult? pixivRsApiPixivApiAccount({required PixivApi that}) {
+  Future<void> pixivRsFanboxFanboxApiAddComment({
+    required FanboxApi that,
+    required String postId,
+    required String body,
+    String? rootCommentId,
+    String? parentCommentId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(postId, serializer);
+          sse_encode_String(body, serializer);
+          sse_encode_opt_String(rootCommentId, serializer);
+          sse_encode_opt_String(parentCommentId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 1,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiAddCommentConstMeta,
+        argValues: [that, postId, body, rootCommentId, parentCommentId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiAddCommentConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_add_comment",
+        argNames: [
+          "that",
+          "postId",
+          "body",
+          "rootCommentId",
+          "parentCommentId",
+        ],
+      );
+
+  @override
+  Future<void> pixivRsFanboxFanboxApiDeleteComment({
+    required FanboxApi that,
+    required String commentId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(commentId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 2,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiDeleteCommentConstMeta,
+        argValues: [that, commentId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiDeleteCommentConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_delete_comment",
+        argNames: ["that", "commentId"],
+      );
+
+  @override
+  Future<void> pixivRsFanboxFanboxApiDownloadMedia({
+    required FanboxApi that,
+    required String url,
+    required String path,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(url, serializer);
+          sse_encode_String(path, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 3,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiDownloadMediaConstMeta,
+        argValues: [that, url, path],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiDownloadMediaConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_download_media",
+        argNames: ["that", "url", "path"],
+      );
+
+  @override
+  Future<void> pixivRsFanboxFanboxApiFollowCreator({
+    required FanboxApi that,
+    required String userId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(userId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 4,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiFollowCreatorConstMeta,
+        argValues: [that, userId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiFollowCreatorConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_follow_creator",
+        argNames: ["that", "userId"],
+      );
+
+  @override
+  Future<FanboxCommentPage> pixivRsFanboxFanboxApiGetComments({
+    required FanboxApi that,
+    required String postId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(postId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_comment_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetCommentsConstMeta,
+        argValues: [that, postId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetCommentsConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_comments",
+        argNames: ["that", "postId"],
+      );
+
+  @override
+  Future<FanboxCreator> pixivRsFanboxFanboxApiGetCreator({
+    required FanboxApi that,
+    required String creatorId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(creatorId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_creator,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetCreatorConstMeta,
+        argValues: [that, creatorId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetCreatorConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_creator",
+        argNames: ["that", "creatorId"],
+      );
+
+  @override
+  Future<List<String>> pixivRsFanboxFanboxApiGetCreatorPostPages({
+    required FanboxApi that,
+    required String creatorId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(creatorId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 7,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_String,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetCreatorPostPagesConstMeta,
+        argValues: [that, creatorId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetCreatorPostPagesConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_creator_post_pages",
+        argNames: ["that", "creatorId"],
+      );
+
+  @override
+  Future<FanboxSupport> pixivRsFanboxFanboxApiGetCreatorSupport({
+    required FanboxApi that,
+    required String creatorId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(creatorId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 8,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_support,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetCreatorSupportConstMeta,
+        argValues: [that, creatorId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetCreatorSupportConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_creator_support",
+        argNames: ["that", "creatorId"],
+      );
+
+  @override
+  Future<List<FanboxTag>> pixivRsFanboxFanboxApiGetCreatorTags({
+    required FanboxApi that,
+    required String creatorId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(creatorId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 9,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_fanbox_tag,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetCreatorTagsConstMeta,
+        argValues: [that, creatorId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetCreatorTagsConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_creator_tags",
+        argNames: ["that", "creatorId"],
+      );
+
+  @override
+  Future<List<FanboxCreator>> pixivRsFanboxFanboxApiGetCreators({
+    required FanboxApi that,
+    required FanboxCreatorList list,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_fanbox_creator_list(list, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 10,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_fanbox_creator,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetCreatorsConstMeta,
+        argValues: [that, list],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetCreatorsConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_creators",
+        argNames: ["that", "list"],
+      );
+
+  @override
+  Future<Uint8List> pixivRsFanboxFanboxApiGetMediaBytes({
+    required FanboxApi that,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 11,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_prim_u_8_strict,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetMediaBytesConstMeta,
+        argValues: [that, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetMediaBytesConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_media_bytes",
+        argNames: ["that", "url"],
+      );
+
+  @override
+  Future<List<FanboxNotice>> pixivRsFanboxFanboxApiGetMessages({
+    required FanboxApi that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 12,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_fanbox_notice,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetMessagesConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetMessagesConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_messages",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<FanboxCommentPage> pixivRsFanboxFanboxApiGetNextComments({
+    required FanboxApi that,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 13,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_comment_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetNextCommentsConstMeta,
+        argValues: [that, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetNextCommentsConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_next_comments",
+        argNames: ["that", "url"],
+      );
+
+  @override
+  Future<FanboxNoticePage> pixivRsFanboxFanboxApiGetNextNotices({
+    required FanboxApi that,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 14,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_notice_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetNextNoticesConstMeta,
+        argValues: [that, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetNextNoticesConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_next_notices",
+        argNames: ["that", "url"],
+      );
+
+  @override
+  Future<FanboxPostPage> pixivRsFanboxFanboxApiGetNextPosts({
+    required FanboxApi that,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 15,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_post_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetNextPostsConstMeta,
+        argValues: [that, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetNextPostsConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_next_posts",
+        argNames: ["that", "url"],
+      );
+
+  @override
+  Future<FanboxNoticePage> pixivRsFanboxFanboxApiGetNotices({
+    required FanboxApi that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 16,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_notice_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetNoticesConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetNoticesConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_notices",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<List<FanboxPlan>> pixivRsFanboxFanboxApiGetPlans({
+    required FanboxApi that,
+    String? creatorId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_opt_String(creatorId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 17,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_fanbox_plan,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetPlansConstMeta,
+        argValues: [that, creatorId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetPlansConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_plans",
+        argNames: ["that", "creatorId"],
+      );
+
+  @override
+  Future<FanboxPost> pixivRsFanboxFanboxApiGetPost({
+    required FanboxApi that,
+    required String postId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(postId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 18,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_post,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetPostConstMeta,
+        argValues: [that, postId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetPostConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_post",
+        argNames: ["that", "postId"],
+      );
+
+  @override
+  Future<FanboxPostPage> pixivRsFanboxFanboxApiGetPosts({
+    required FanboxApi that,
+    required FanboxFeed feed,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_box_autoadd_fanbox_feed(feed, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 19,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_post_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiGetPostsConstMeta,
+        argValues: [that, feed],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiGetPostsConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_get_posts",
+        argNames: ["that", "feed"],
+      );
+
+  @override
+  Future<void> pixivRsFanboxFanboxApiLikeComment({
+    required FanboxApi that,
+    required String commentId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(commentId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 20,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiLikeCommentConstMeta,
+        argValues: [that, commentId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiLikeCommentConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_like_comment",
+        argNames: ["that", "commentId"],
+      );
+
+  @override
+  Future<void> pixivRsFanboxFanboxApiLikePost({
+    required FanboxApi that,
+    required String postId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(postId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 21,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiLikePostConstMeta,
+        argValues: [that, postId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiLikePostConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_like_post",
+        argNames: ["that", "postId"],
+      );
+
+  @override
+  FanboxApi pixivRsFanboxFanboxApiNew({
+    required String session,
+    String? proxy,
+    required String language,
+    required bool acceptInvalidCerts,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(session, serializer);
+          sse_encode_opt_String(proxy, serializer);
+          sse_encode_String(language, serializer);
+          sse_encode_bool(acceptInvalidCerts, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 22)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiNewConstMeta,
+        argValues: [session, proxy, language, acceptInvalidCerts],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiNewConstMeta => const TaskConstMeta(
+    debugName: "FanboxApi_new",
+    argNames: ["session", "proxy", "language", "acceptInvalidCerts"],
+  );
+
+  @override
+  Future<void> pixivRsFanboxFanboxApiRefreshCsrfToken({
+    required FanboxApi that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 23,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiRefreshCsrfTokenConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiRefreshCsrfTokenConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_refresh_csrf_token",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<FanboxCreatorPage> pixivRsFanboxFanboxApiSearchCreators({
+    required FanboxApi that,
+    required String keyword,
+    required int page,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(keyword, serializer);
+          sse_encode_u_32(page, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 24,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_creator_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiSearchCreatorsConstMeta,
+        argValues: [that, keyword, page],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiSearchCreatorsConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_search_creators",
+        argNames: ["that", "keyword", "page"],
+      );
+
+  @override
+  Future<List<FanboxTag>> pixivRsFanboxFanboxApiSearchTags({
+    required FanboxApi that,
+    required String keyword,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(keyword, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 25,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_fanbox_tag,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiSearchTagsConstMeta,
+        argValues: [that, keyword],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiSearchTagsConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_search_tags",
+        argNames: ["that", "keyword"],
+      );
+
+  @override
+  Future<void> pixivRsFanboxFanboxApiUnfollowCreator({
+    required FanboxApi that,
+    required String userId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(userId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 26,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiUnfollowCreatorConstMeta,
+        argValues: [that, userId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiUnfollowCreatorConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_unfollow_creator",
+        argNames: ["that", "userId"],
+      );
+
+  @override
+  Future<void> pixivRsFanboxFanboxApiValidateSession({
+    required FanboxApi that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 27,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsFanboxFanboxApiValidateSessionConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxApiValidateSessionConstMeta =>
+      const TaskConstMeta(
+        debugName: "FanboxApi_validate_session",
+        argNames: ["that"],
+      );
+
+  @override
+  UserAccountResult? pixivRsPixivApiPixivApiAccount({required PixivApi that}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
@@ -562,24 +1943,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 28)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_opt_box_autoadd_user_account_result,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsApiPixivApiAccountConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiAccountConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiAccountConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiAccountConstMeta =>
       const TaskConstMeta(debugName: "PixivApi_account", argNames: ["that"]);
 
   @override
-  String pixivRsApiPixivApiGenerateLoginUrl({required PixivApi that}) {
+  String pixivRsPixivApiPixivApiGenerateLoginUrl({required PixivApi that}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
@@ -588,27 +1969,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 29)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsApiPixivApiGenerateLoginUrlConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGenerateLoginUrlConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGenerateLoginUrlConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGenerateLoginUrlConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_generate_login_url",
         argNames: ["that"],
       );
 
   @override
-  Future<BookmarkTagPageResult> pixivRsApiPixivApiGetBookmarkTagPage({
+  Future<BookmarkTagPageResult> pixivRsPixivApiPixivApiGetBookmarkTagPage({
     required PixivApi that,
     required int userId,
     required BookmarkTagOptions options,
@@ -626,7 +2007,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 30,
             port: port_,
           );
         },
@@ -634,21 +2015,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_bookmark_tag_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetBookmarkTagPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetBookmarkTagPageConstMeta,
         argValues: [that, userId, options],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetBookmarkTagPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetBookmarkTagPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_bookmark_tag_page",
         argNames: ["that", "userId", "options"],
       );
 
   @override
-  Future<IllustPageResult> pixivRsApiPixivApiGetFollowNewIllustPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetFollowNewIllustPage({
     required PixivApi that,
     Restrict? restrict,
   }) {
@@ -664,7 +2045,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 4,
+            funcId: 31,
             port: port_,
           );
         },
@@ -672,21 +2053,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetFollowNewIllustPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetFollowNewIllustPageConstMeta,
         argValues: [that, restrict],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetFollowNewIllustPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetFollowNewIllustPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_follow_new_illust_page",
         argNames: ["that", "restrict"],
       );
 
   @override
-  Future<NovelPageResult> pixivRsApiPixivApiGetFollowNewNovelPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetFollowNewNovelPage({
     required PixivApi that,
     Restrict? restrict,
   }) {
@@ -702,7 +2083,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 32,
             port: port_,
           );
         },
@@ -710,21 +2091,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetFollowNewNovelPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetFollowNewNovelPageConstMeta,
         argValues: [that, restrict],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetFollowNewNovelPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetFollowNewNovelPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_follow_new_novel_page",
         argNames: ["that", "restrict"],
       );
 
   @override
-  Future<UserPageResult> pixivRsApiPixivApiGetFollowerPage({
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetFollowerPage({
     required PixivApi that,
     required int userId,
   }) {
@@ -740,7 +2121,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 33,
             port: port_,
           );
         },
@@ -748,21 +2129,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_user_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetFollowerPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetFollowerPageConstMeta,
         argValues: [that, userId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetFollowerPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetFollowerPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_follower_page",
         argNames: ["that", "userId"],
       );
 
   @override
-  Future<UserPageResult> pixivRsApiPixivApiGetFollowingUserPage({
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetFollowingUserPage({
     required PixivApi that,
     required int userId,
     required Restrict restrict,
@@ -780,7 +2161,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 34,
             port: port_,
           );
         },
@@ -788,21 +2169,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_user_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetFollowingUserPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetFollowingUserPageConstMeta,
         argValues: [that, userId, restrict],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetFollowingUserPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetFollowingUserPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_following_user_page",
         argNames: ["that", "userId", "restrict"],
       );
 
   @override
-  Future<CommentPageResult> pixivRsApiPixivApiGetIllustCommentPage({
+  Future<WorkBookmarkDetailResult>
+  pixivRsPixivApiPixivApiGetIllustBookmarkDetail({
     required PixivApi that,
     required int illustId,
   }) {
@@ -818,7 +2200,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 8,
+            funcId: 35,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_work_bookmark_detail_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetIllustBookmarkDetailConstMeta,
+        argValues: [that, illustId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetIllustBookmarkDetailConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_illust_bookmark_detail",
+        argNames: ["that", "illustId"],
+      );
+
+  @override
+  Future<CommentPageResult> pixivRsPixivApiPixivApiGetIllustCommentPage({
+    required PixivApi that,
+    required int illustId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_CastedPrimitive_u_64(illustId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 36,
             port: port_,
           );
         },
@@ -826,21 +2246,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_comment_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetIllustCommentPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetIllustCommentPageConstMeta,
         argValues: [that, illustId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetIllustCommentPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetIllustCommentPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_illust_comment_page",
         argNames: ["that", "illustId"],
       );
 
   @override
-  Future<CommentPageResult> pixivRsApiPixivApiGetIllustCommentReplyPage({
+  Future<CommentPageResult> pixivRsPixivApiPixivApiGetIllustCommentReplyPage({
     required PixivApi that,
     required int commentId,
   }) {
@@ -856,7 +2276,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 9,
+            funcId: 37,
             port: port_,
           );
         },
@@ -864,21 +2284,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_comment_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetIllustCommentReplyPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetIllustCommentReplyPageConstMeta,
         argValues: [that, commentId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetIllustCommentReplyPageConstMeta =>
+  TaskConstMeta
+  get kPixivRsPixivApiPixivApiGetIllustCommentReplyPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_illust_comment_reply_page",
         argNames: ["that", "commentId"],
       );
 
   @override
-  Future<IllustDetailResult> pixivRsApiPixivApiGetIllustDetail({
+  Future<IllustDetailResult> pixivRsPixivApiPixivApiGetIllustDetail({
     required PixivApi that,
     required int illustId,
   }) {
@@ -894,7 +2315,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 38,
             port: port_,
           );
         },
@@ -902,21 +2323,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_illust_detail_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetIllustDetailConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetIllustDetailConstMeta,
         argValues: [that, illustId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetIllustDetailConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetIllustDetailConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_illust_detail",
         argNames: ["that", "illustId"],
       );
 
   @override
-  Future<IllustPageResult> pixivRsApiPixivApiGetIllustRankingPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetIllustRankingPage({
     required PixivApi that,
     required IllustRankingMode mode,
   }) {
@@ -932,7 +2353,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 11,
+            funcId: 39,
             port: port_,
           );
         },
@@ -940,21 +2361,62 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetIllustRankingPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetIllustRankingPageConstMeta,
         argValues: [that, mode],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetIllustRankingPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetIllustRankingPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_illust_ranking_page",
         argNames: ["that", "mode"],
       );
 
   @override
-  Future<IllustPageResult> pixivRsApiPixivApiGetIllustRelatedPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetIllustRankingPageOnDate({
+    required PixivApi that,
+    required IllustRankingMode mode,
+    required String date,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_illust_ranking_mode(mode, serializer);
+          sse_encode_String(date, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 40,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_illust_page_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetIllustRankingPageOnDateConstMeta,
+        argValues: [that, mode, date],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kPixivRsPixivApiPixivApiGetIllustRankingPageOnDateConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_illust_ranking_page_on_date",
+        argNames: ["that", "mode", "date"],
+      );
+
+  @override
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetIllustRelatedPage({
     required PixivApi that,
     required int illustId,
   }) {
@@ -970,7 +2432,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 12,
+            funcId: 41,
             port: port_,
           );
         },
@@ -978,21 +2440,59 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetIllustRelatedPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetIllustRelatedPageConstMeta,
         argValues: [that, illustId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetIllustRelatedPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetIllustRelatedPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_illust_related_page",
         argNames: ["that", "illustId"],
       );
 
   @override
-  Future<IllustPageResult> pixivRsApiPixivApiGetMangaRankingPage({
+  Future<IllustSeriesPageResult> pixivRsPixivApiPixivApiGetIllustSeriesPage({
+    required PixivApi that,
+    required int seriesId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_CastedPrimitive_u_64(seriesId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 42,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_illust_series_page_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetIllustSeriesPageConstMeta,
+        argValues: [that, seriesId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetIllustSeriesPageConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_illust_series_page",
+        argNames: ["that", "seriesId"],
+      );
+
+  @override
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetMangaRankingPage({
     required PixivApi that,
     required MangaRankingMode mode,
   }) {
@@ -1008,7 +2508,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 13,
+            funcId: 43,
             port: port_,
           );
         },
@@ -1016,22 +2516,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetMangaRankingPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetMangaRankingPageConstMeta,
         argValues: [that, mode],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetMangaRankingPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetMangaRankingPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_manga_ranking_page",
         argNames: ["that", "mode"],
       );
 
   @override
-  Future<IllustPageResult> pixivRsApiPixivApiGetMypixivNewIllustPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetMangaRankingPageOnDate({
     required PixivApi that,
+    required MangaRankingMode mode,
+    required String date,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -1041,10 +2543,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
+          sse_encode_manga_ranking_mode(mode, serializer);
+          sse_encode_String(date, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 14,
+            funcId: 44,
             port: port_,
           );
         },
@@ -1052,21 +2556,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetMypixivNewIllustPageConstMeta,
-        argValues: [that],
+        constMeta: kPixivRsPixivApiPixivApiGetMangaRankingPageOnDateConstMeta,
+        argValues: [that, mode, date],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetMypixivNewIllustPageConstMeta =>
+  TaskConstMeta
+  get kPixivRsPixivApiPixivApiGetMangaRankingPageOnDateConstMeta =>
       const TaskConstMeta(
-        debugName: "PixivApi_get_mypixiv_new_illust_page",
-        argNames: ["that"],
+        debugName: "PixivApi_get_manga_ranking_page_on_date",
+        argNames: ["that", "mode", "date"],
       );
 
   @override
-  Future<NovelPageResult> pixivRsApiPixivApiGetMypixivNewNovelPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetMypixivNewIllustPage({
     required PixivApi that,
   }) {
     return handler.executeNormal(
@@ -1080,7 +2585,43 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 15,
+            funcId: 45,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_illust_page_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetMypixivNewIllustPageConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetMypixivNewIllustPageConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_mypixiv_new_illust_page",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetMypixivNewNovelPage({
+    required PixivApi that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 46,
             port: port_,
           );
         },
@@ -1088,21 +2629,59 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetMypixivNewNovelPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetMypixivNewNovelPageConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetMypixivNewNovelPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetMypixivNewNovelPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_mypixiv_new_novel_page",
         argNames: ["that"],
       );
 
   @override
-  Future<IllustPageResult> pixivRsApiPixivApiGetNewIllustPage({
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetMypixivUserPage({
+    required PixivApi that,
+    required int userId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_CastedPrimitive_u_64(userId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 47,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_user_page_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetMypixivUserPageConstMeta,
+        argValues: [that, userId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetMypixivUserPageConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_mypixiv_user_page",
+        argNames: ["that", "userId"],
+      );
+
+  @override
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetNewIllustPage({
     required PixivApi that,
     required IllustType illustType,
   }) {
@@ -1118,7 +2697,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 16,
+            funcId: 48,
             port: port_,
           );
         },
@@ -1126,21 +2705,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNewIllustPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNewIllustPageConstMeta,
         argValues: [that, illustType],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNewIllustPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNewIllustPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_new_illust_page",
         argNames: ["that", "illustType"],
       );
 
   @override
-  Future<NovelPageResult> pixivRsApiPixivApiGetNewNovelPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetNewNovelPage({
     required PixivApi that,
   }) {
     return handler.executeNormal(
@@ -1154,7 +2733,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 17,
+            funcId: 49,
             port: port_,
           );
         },
@@ -1162,21 +2741,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNewNovelPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNewNovelPageConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNewNovelPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNewNovelPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_new_novel_page",
         argNames: ["that"],
       );
 
   @override
-  Future<BookmarkTagPageResult> pixivRsApiPixivApiGetNextBookmarkTagPage({
+  Future<BookmarkTagPageResult> pixivRsPixivApiPixivApiGetNextBookmarkTagPage({
     required PixivApi that,
     required String url,
   }) {
@@ -1192,7 +2771,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 18,
+            funcId: 50,
             port: port_,
           );
         },
@@ -1200,21 +2779,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_bookmark_tag_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNextBookmarkTagPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNextBookmarkTagPageConstMeta,
         argValues: [that, url],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNextBookmarkTagPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNextBookmarkTagPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_next_bookmark_tag_page",
         argNames: ["that", "url"],
       );
 
   @override
-  Future<CommentPageResult> pixivRsApiPixivApiGetNextCommentPage({
+  Future<CommentPageResult> pixivRsPixivApiPixivApiGetNextCommentPage({
     required PixivApi that,
     required String url,
   }) {
@@ -1230,7 +2809,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 19,
+            funcId: 51,
             port: port_,
           );
         },
@@ -1238,21 +2817,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_comment_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNextCommentPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNextCommentPageConstMeta,
         argValues: [that, url],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNextCommentPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNextCommentPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_next_comment_page",
         argNames: ["that", "url"],
       );
 
   @override
-  Future<IllustPageResult> pixivRsApiPixivApiGetNextIllustPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetNextIllustPage({
     required PixivApi that,
     required String url,
   }) {
@@ -1268,7 +2847,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 20,
+            funcId: 52,
             port: port_,
           );
         },
@@ -1276,21 +2855,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNextIllustPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNextIllustPageConstMeta,
         argValues: [that, url],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNextIllustPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNextIllustPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_next_illust_page",
         argNames: ["that", "url"],
       );
 
   @override
-  Future<NovelPageResult> pixivRsApiPixivApiGetNextNovelPage({
+  Future<IllustSeriesPageResult>
+  pixivRsPixivApiPixivApiGetNextIllustSeriesPage({
     required PixivApi that,
     required String url,
   }) {
@@ -1306,7 +2886,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 21,
+            funcId: 53,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_illust_series_page_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetNextIllustSeriesPageConstMeta,
+        argValues: [that, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNextIllustSeriesPageConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_next_illust_series_page",
+        argNames: ["that", "url"],
+      );
+
+  @override
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetNextNovelPage({
+    required PixivApi that,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 54,
             port: port_,
           );
         },
@@ -1314,21 +2932,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNextNovelPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNextNovelPageConstMeta,
         argValues: [that, url],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNextNovelPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNextNovelPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_next_novel_page",
         argNames: ["that", "url"],
       );
 
   @override
-  Future<SearchIllustPageResult> pixivRsApiPixivApiGetNextSearchIllustPage({
+  Future<NovelSeriesPageResult> pixivRsPixivApiPixivApiGetNextNovelSeriesPage({
     required PixivApi that,
     required String url,
   }) {
@@ -1344,7 +2962,46 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 22,
+            funcId: 55,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_novel_series_page_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetNextNovelSeriesPageConstMeta,
+        argValues: [that, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNextNovelSeriesPageConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_next_novel_series_page",
+        argNames: ["that", "url"],
+      );
+
+  @override
+  Future<SearchIllustPageResult>
+  pixivRsPixivApiPixivApiGetNextSearchIllustPage({
+    required PixivApi that,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 56,
             port: port_,
           );
         },
@@ -1352,21 +3009,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_search_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNextSearchIllustPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNextSearchIllustPageConstMeta,
         argValues: [that, url],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNextSearchIllustPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNextSearchIllustPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_next_search_illust_page",
         argNames: ["that", "url"],
       );
 
   @override
-  Future<SearchNovelPageResult> pixivRsApiPixivApiGetNextSearchNovelPage({
+  Future<SearchNovelPageResult> pixivRsPixivApiPixivApiGetNextSearchNovelPage({
     required PixivApi that,
     required String url,
   }) {
@@ -1382,7 +3039,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 23,
+            funcId: 57,
             port: port_,
           );
         },
@@ -1390,21 +3047,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_search_novel_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNextSearchNovelPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNextSearchNovelPageConstMeta,
         argValues: [that, url],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNextSearchNovelPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNextSearchNovelPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_next_search_novel_page",
         argNames: ["that", "url"],
       );
 
   @override
-  Future<UserPageResult> pixivRsApiPixivApiGetNextUserPage({
+  Future<SpotlightPage> pixivRsPixivApiPixivApiGetNextSpotlightArticlePage({
     required PixivApi that,
     required String url,
   }) {
@@ -1420,7 +3077,46 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 24,
+            funcId: 58,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_spotlight_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetNextSpotlightArticlePageConstMeta,
+        argValues: [that, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kPixivRsPixivApiPixivApiGetNextSpotlightArticlePageConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_next_spotlight_article_page",
+        argNames: ["that", "url"],
+      );
+
+  @override
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetNextUserPage({
+    required PixivApi that,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 59,
             port: port_,
           );
         },
@@ -1428,21 +3124,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_user_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNextUserPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNextUserPageConstMeta,
         argValues: [that, url],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNextUserPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNextUserPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_next_user_page",
         argNames: ["that", "url"],
       );
 
   @override
-  Future<CommentPageResult> pixivRsApiPixivApiGetNovelCommentPage({
+  Future<WorkBookmarkDetailResult>
+  pixivRsPixivApiPixivApiGetNovelBookmarkDetail({
     required PixivApi that,
     required int novelId,
   }) {
@@ -1458,7 +3155,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 25,
+            funcId: 60,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_work_bookmark_detail_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetNovelBookmarkDetailConstMeta,
+        argValues: [that, novelId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNovelBookmarkDetailConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_novel_bookmark_detail",
+        argNames: ["that", "novelId"],
+      );
+
+  @override
+  Future<CommentPageResult> pixivRsPixivApiPixivApiGetNovelCommentPage({
+    required PixivApi that,
+    required int novelId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_CastedPrimitive_u_64(novelId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 61,
             port: port_,
           );
         },
@@ -1466,21 +3201,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_comment_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNovelCommentPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNovelCommentPageConstMeta,
         argValues: [that, novelId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNovelCommentPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNovelCommentPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_novel_comment_page",
         argNames: ["that", "novelId"],
       );
 
   @override
-  Future<CommentPageResult> pixivRsApiPixivApiGetNovelCommentReplyPage({
+  Future<CommentPageResult> pixivRsPixivApiPixivApiGetNovelCommentReplyPage({
     required PixivApi that,
     required int commentId,
   }) {
@@ -1496,7 +3231,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 26,
+            funcId: 62,
             port: port_,
           );
         },
@@ -1504,21 +3239,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_comment_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNovelCommentReplyPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNovelCommentReplyPageConstMeta,
         argValues: [that, commentId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNovelCommentReplyPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNovelCommentReplyPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_novel_comment_reply_page",
         argNames: ["that", "commentId"],
       );
 
   @override
-  Future<NovelDetailResult> pixivRsApiPixivApiGetNovelDetail({
+  Future<NovelDetailResult> pixivRsPixivApiPixivApiGetNovelDetail({
     required PixivApi that,
     required int novelId,
   }) {
@@ -1534,7 +3269,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 27,
+            funcId: 63,
             port: port_,
           );
         },
@@ -1542,21 +3277,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_detail_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNovelDetailConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNovelDetailConstMeta,
         argValues: [that, novelId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNovelDetailConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNovelDetailConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_novel_detail",
         argNames: ["that", "novelId"],
       );
 
   @override
-  Future<String> pixivRsApiPixivApiGetNovelHtml({
+  Future<String> pixivRsPixivApiPixivApiGetNovelHtml({
     required PixivApi that,
     required int novelId,
   }) {
@@ -1572,7 +3307,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 28,
+            funcId: 64,
             port: port_,
           );
         },
@@ -1580,21 +3315,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNovelHtmlConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNovelHtmlConstMeta,
         argValues: [that, novelId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNovelHtmlConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNovelHtmlConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_novel_html",
         argNames: ["that", "novelId"],
       );
 
   @override
-  Future<NovelPageResult> pixivRsApiPixivApiGetNovelRankingPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetNovelRankingPage({
     required PixivApi that,
     required NovelRankingMode mode,
   }) {
@@ -1610,7 +3345,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 29,
+            funcId: 65,
             port: port_,
           );
         },
@@ -1618,21 +3353,62 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNovelRankingPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNovelRankingPageConstMeta,
         argValues: [that, mode],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNovelRankingPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNovelRankingPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_novel_ranking_page",
         argNames: ["that", "mode"],
       );
 
   @override
-  Future<NovelPageResult> pixivRsApiPixivApiGetNovelRelatedPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetNovelRankingPageOnDate({
+    required PixivApi that,
+    required NovelRankingMode mode,
+    required String date,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_novel_ranking_mode(mode, serializer);
+          sse_encode_String(date, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 66,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_novel_page_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetNovelRankingPageOnDateConstMeta,
+        argValues: [that, mode, date],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kPixivRsPixivApiPixivApiGetNovelRankingPageOnDateConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_novel_ranking_page_on_date",
+        argNames: ["that", "mode", "date"],
+      );
+
+  @override
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetNovelRelatedPage({
     required PixivApi that,
     required int novelId,
   }) {
@@ -1648,7 +3424,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 30,
+            funcId: 67,
             port: port_,
           );
         },
@@ -1656,21 +3432,59 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetNovelRelatedPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetNovelRelatedPageConstMeta,
         argValues: [that, novelId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetNovelRelatedPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNovelRelatedPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_novel_related_page",
         argNames: ["that", "novelId"],
       );
 
   @override
-  Future<IllustPageResult> pixivRsApiPixivApiGetRecommendedIllustPage({
+  Future<NovelSeriesPageResult> pixivRsPixivApiPixivApiGetNovelSeriesPage({
+    required PixivApi that,
+    required int seriesId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_CastedPrimitive_u_64(seriesId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 68,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_novel_series_page_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetNovelSeriesPageConstMeta,
+        argValues: [that, seriesId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetNovelSeriesPageConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_novel_series_page",
+        argNames: ["that", "seriesId"],
+      );
+
+  @override
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetRecommendedIllustPage({
     required PixivApi that,
     required IllustType illustType,
   }) {
@@ -1686,7 +3500,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 31,
+            funcId: 69,
             port: port_,
           );
         },
@@ -1694,21 +3508,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetRecommendedIllustPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetRecommendedIllustPageConstMeta,
         argValues: [that, illustType],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetRecommendedIllustPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetRecommendedIllustPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_recommended_illust_page",
         argNames: ["that", "illustType"],
       );
 
   @override
-  Future<NovelPageResult> pixivRsApiPixivApiGetRecommendedNovelPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetRecommendedNovelPage({
     required PixivApi that,
   }) {
     return handler.executeNormal(
@@ -1722,7 +3536,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 32,
+            funcId: 70,
             port: port_,
           );
         },
@@ -1730,21 +3544,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetRecommendedNovelPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetRecommendedNovelPageConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetRecommendedNovelPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetRecommendedNovelPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_recommended_novel_page",
         argNames: ["that"],
       );
 
   @override
-  Future<UserPageResult> pixivRsApiPixivApiGetRecommendedUserPage({
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetRecommendedUserPage({
     required PixivApi that,
   }) {
     return handler.executeNormal(
@@ -1758,7 +3572,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 33,
+            funcId: 71,
             port: port_,
           );
         },
@@ -1766,21 +3580,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_user_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetRecommendedUserPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetRecommendedUserPageConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetRecommendedUserPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetRecommendedUserPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_recommended_user_page",
         argNames: ["that"],
       );
 
   @override
-  Future<SearchAutocompleteResult> pixivRsApiPixivApiGetSearchAutocomplete({
+  Future<SearchAutocompleteResult>
+  pixivRsPixivApiPixivApiGetSearchAutocomplete({
     required PixivApi that,
     required String word,
   }) {
@@ -1796,7 +3611,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 34,
+            funcId: 72,
             port: port_,
           );
         },
@@ -1804,21 +3619,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_search_autocomplete_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetSearchAutocompleteConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetSearchAutocompleteConstMeta,
         argValues: [that, word],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetSearchAutocompleteConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetSearchAutocompleteConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_search_autocomplete",
         argNames: ["that", "word"],
       );
 
   @override
-  Future<SearchIllustPageResult> pixivRsApiPixivApiGetSearchIllustPage({
+  Future<SearchIllustPageResult> pixivRsPixivApiPixivApiGetSearchIllustPage({
     required PixivApi that,
     required String word,
     required SearchSort sort,
@@ -1840,7 +3655,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 35,
+            funcId: 73,
             port: port_,
           );
         },
@@ -1848,21 +3663,69 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_search_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetSearchIllustPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetSearchIllustPageConstMeta,
         argValues: [that, word, sort, target, options],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetSearchIllustPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetSearchIllustPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_search_illust_page",
         argNames: ["that", "word", "sort", "target", "options"],
       );
 
   @override
-  Future<SearchNovelPageResult> pixivRsApiPixivApiGetSearchNovelPage({
+  Future<SearchIllustPageResult>
+  pixivRsPixivApiPixivApiGetSearchIllustPageWithAi({
+    required PixivApi that,
+    required String word,
+    required SearchSort sort,
+    required SearchTarget target,
+    required SearchOptions options,
+    SearchAiMode? aiMode,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(word, serializer);
+          sse_encode_search_sort(sort, serializer);
+          sse_encode_search_target(target, serializer);
+          sse_encode_box_autoadd_search_options(options, serializer);
+          sse_encode_opt_box_autoadd_search_ai_mode(aiMode, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 74,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_search_illust_page_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetSearchIllustPageWithAiConstMeta,
+        argValues: [that, word, sort, target, options, aiMode],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kPixivRsPixivApiPixivApiGetSearchIllustPageWithAiConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_search_illust_page_with_ai",
+        argNames: ["that", "word", "sort", "target", "options", "aiMode"],
+      );
+
+  @override
+  Future<SearchNovelPageResult> pixivRsPixivApiPixivApiGetSearchNovelPage({
     required PixivApi that,
     required String word,
     required SearchSort sort,
@@ -1884,7 +3747,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 36,
+            funcId: 75,
             port: port_,
           );
         },
@@ -1892,21 +3755,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_search_novel_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetSearchNovelPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetSearchNovelPageConstMeta,
         argValues: [that, word, sort, target, options],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetSearchNovelPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetSearchNovelPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_search_novel_page",
         argNames: ["that", "word", "sort", "target", "options"],
       );
 
   @override
-  Future<UserPageResult> pixivRsApiPixivApiGetSearchUserPage({
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetSearchUserPage({
     required PixivApi that,
     required String word,
   }) {
@@ -1922,7 +3785,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 37,
+            funcId: 76,
             port: port_,
           );
         },
@@ -1930,21 +3793,59 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_user_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetSearchUserPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetSearchUserPageConstMeta,
         argValues: [that, word],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetSearchUserPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetSearchUserPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_search_user_page",
         argNames: ["that", "word"],
       );
 
   @override
-  Future<TrendingTagListResult> pixivRsApiPixivApiGetTrendingTagList({
+  Future<SpotlightPage> pixivRsPixivApiPixivApiGetSpotlightArticlePage({
+    required PixivApi that,
+    required SpotlightCategory category,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_spotlight_category(category, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 77,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_spotlight_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiGetSpotlightArticlePageConstMeta,
+        argValues: [that, category],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetSpotlightArticlePageConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_spotlight_article_page",
+        argNames: ["that", "category"],
+      );
+
+  @override
+  Future<TrendingTagListResult> pixivRsPixivApiPixivApiGetTrendingTagList({
     required PixivApi that,
   }) {
     return handler.executeNormal(
@@ -1958,7 +3859,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 38,
+            funcId: 78,
             port: port_,
           );
         },
@@ -1966,21 +3867,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_trending_tag_list_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetTrendingTagListConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetTrendingTagListConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetTrendingTagListConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetTrendingTagListConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_trending_tag_list",
         argNames: ["that"],
       );
 
   @override
-  Future<UgoiraMetadataResult> pixivRsApiPixivApiGetUgoiraMetadata({
+  Future<UgoiraMetadataResult> pixivRsPixivApiPixivApiGetUgoiraMetadata({
     required PixivApi that,
     required int illustId,
   }) {
@@ -1996,7 +3897,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 39,
+            funcId: 79,
             port: port_,
           );
         },
@@ -2004,21 +3905,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_ugoira_metadata_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetUgoiraMetadataConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetUgoiraMetadataConstMeta,
         argValues: [that, illustId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetUgoiraMetadataConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetUgoiraMetadataConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_ugoira_metadata",
         argNames: ["that", "illustId"],
       );
 
   @override
-  Future<UserDetailResult> pixivRsApiPixivApiGetUserDetail({
+  Future<UserDetailResult> pixivRsPixivApiPixivApiGetUserDetail({
     required PixivApi that,
     required int userId,
   }) {
@@ -2034,7 +3935,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 40,
+            funcId: 80,
             port: port_,
           );
         },
@@ -2042,21 +3943,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_user_detail_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetUserDetailConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetUserDetailConstMeta,
         argValues: [that, userId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetUserDetailConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetUserDetailConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_user_detail",
         argNames: ["that", "userId"],
       );
 
   @override
-  Future<IllustPageResult> pixivRsApiPixivApiGetUserIllustBookmarkPage({
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetUserIllustBookmarkPage({
     required PixivApi that,
     required int userId,
     required Restrict restrict,
@@ -2074,7 +3975,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 41,
+            funcId: 81,
             port: port_,
           );
         },
@@ -2082,21 +3983,65 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetUserIllustBookmarkPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetUserIllustBookmarkPageConstMeta,
         argValues: [that, userId, restrict],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetUserIllustBookmarkPageConstMeta =>
+  TaskConstMeta
+  get kPixivRsPixivApiPixivApiGetUserIllustBookmarkPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_user_illust_bookmark_page",
         argNames: ["that", "userId", "restrict"],
       );
 
   @override
-  Future<IllustPageResult> pixivRsApiPixivApiGetUserIllustPage({
+  Future<IllustPageResult>
+  pixivRsPixivApiPixivApiGetUserIllustBookmarkPageWithOptions({
+    required PixivApi that,
+    required int userId,
+    required BookmarkPageOptions options,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_CastedPrimitive_u_64(userId, serializer);
+          sse_encode_box_autoadd_bookmark_page_options(options, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 82,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_illust_page_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta:
+            kPixivRsPixivApiPixivApiGetUserIllustBookmarkPageWithOptionsConstMeta,
+        argValues: [that, userId, options],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kPixivRsPixivApiPixivApiGetUserIllustBookmarkPageWithOptionsConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_user_illust_bookmark_page_with_options",
+        argNames: ["that", "userId", "options"],
+      );
+
+  @override
+  Future<IllustPageResult> pixivRsPixivApiPixivApiGetUserIllustPage({
     required PixivApi that,
     required int userId,
     required IllustType illustType,
@@ -2114,7 +4059,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 42,
+            funcId: 83,
             port: port_,
           );
         },
@@ -2122,21 +4067,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_illust_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetUserIllustPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetUserIllustPageConstMeta,
         argValues: [that, userId, illustType],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetUserIllustPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetUserIllustPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_user_illust_page",
         argNames: ["that", "userId", "illustType"],
       );
 
   @override
-  Future<NovelPageResult> pixivRsApiPixivApiGetUserNovelBookmarkPage({
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetUserNovelBookmarkPage({
     required PixivApi that,
     required int userId,
     required Restrict restrict,
@@ -2154,7 +4099,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 43,
+            funcId: 84,
             port: port_,
           );
         },
@@ -2162,21 +4107,64 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetUserNovelBookmarkPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetUserNovelBookmarkPageConstMeta,
         argValues: [that, userId, restrict],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetUserNovelBookmarkPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetUserNovelBookmarkPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_user_novel_bookmark_page",
         argNames: ["that", "userId", "restrict"],
       );
 
   @override
-  Future<NovelPageResult> pixivRsApiPixivApiGetUserNovelPage({
+  Future<NovelPageResult>
+  pixivRsPixivApiPixivApiGetUserNovelBookmarkPageWithOptions({
+    required PixivApi that,
+    required int userId,
+    required BookmarkPageOptions options,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_CastedPrimitive_u_64(userId, serializer);
+          sse_encode_box_autoadd_bookmark_page_options(options, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 85,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_novel_page_result,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta:
+            kPixivRsPixivApiPixivApiGetUserNovelBookmarkPageWithOptionsConstMeta,
+        argValues: [that, userId, options],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kPixivRsPixivApiPixivApiGetUserNovelBookmarkPageWithOptionsConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_get_user_novel_bookmark_page_with_options",
+        argNames: ["that", "userId", "options"],
+      );
+
+  @override
+  Future<NovelPageResult> pixivRsPixivApiPixivApiGetUserNovelPage({
     required PixivApi that,
     required int userId,
   }) {
@@ -2192,7 +4180,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 44,
+            funcId: 86,
             port: port_,
           );
         },
@@ -2200,21 +4188,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetUserNovelPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetUserNovelPageConstMeta,
         argValues: [that, userId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetUserNovelPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetUserNovelPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_user_novel_page",
         argNames: ["that", "userId"],
       );
 
   @override
-  Future<IllustPageResult> pixivRsApiPixivApiGetUserRelatedPage({
+  Future<UserPageResult> pixivRsPixivApiPixivApiGetUserRelatedPage({
     required PixivApi that,
     required int offset,
     required int seedUserId,
@@ -2232,29 +4220,29 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 45,
+            funcId: 87,
             port: port_,
           );
         },
         codec: SseCodec(
-          decodeSuccessData: sse_decode_illust_page_result,
+          decodeSuccessData: sse_decode_user_page_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetUserRelatedPageConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetUserRelatedPageConstMeta,
         argValues: [that, offset, seedUserId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetUserRelatedPageConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetUserRelatedPageConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_user_related_page",
         argNames: ["that", "offset", "seedUserId"],
       );
 
   @override
-  Future<WebviewNovel> pixivRsApiPixivApiGetWebviewNovel({
+  Future<WebviewNovel> pixivRsPixivApiPixivApiGetWebviewNovel({
     required PixivApi that,
     required int novelId,
   }) {
@@ -2270,7 +4258,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 46,
+            funcId: 88,
             port: port_,
           );
         },
@@ -2278,21 +4266,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_webview_novel,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiGetWebviewNovelConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiGetWebviewNovelConstMeta,
         argValues: [that, novelId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiGetWebviewNovelConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiGetWebviewNovelConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_get_webview_novel",
         argNames: ["that", "novelId"],
       );
 
   @override
-  Future<UserAccountResult> pixivRsApiPixivApiInitAccountAuthToken({
+  Future<UserAccountResult> pixivRsPixivApiPixivApiInitAccountAuthToken({
     required PixivApi that,
     required String code,
   }) {
@@ -2308,7 +4296,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 47,
+            funcId: 89,
             port: port_,
           );
         },
@@ -2316,45 +4304,83 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_user_account_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiInitAccountAuthTokenConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiInitAccountAuthTokenConstMeta,
         argValues: [that, code],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiInitAccountAuthTokenConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiInitAccountAuthTokenConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_init_account_auth_token",
         argNames: ["that", "code"],
       );
 
   @override
-  PixivApi pixivRsApiPixivApiNew({required PixivApiConfig config}) {
+  PixivApi pixivRsPixivApiPixivApiNew({required PixivApiConfig config}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_box_autoadd_pixiv_api_config(config, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 48)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 90)!;
         },
         codec: SseCodec(
           decodeSuccessData:
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsApiPixivApiNewConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiNewConstMeta,
         argValues: [config],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiNewConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiNewConstMeta =>
       const TaskConstMeta(debugName: "PixivApi_new", argNames: ["config"]);
 
   @override
-  Future<String> pixivRsApiPixivApiPostBookmarkAdd({
+  Future<String> pixivRsPixivApiPixivApiPostAiShowSettings({
+    required PixivApi that,
+    required SearchAiMode mode,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
+            that,
+            serializer,
+          );
+          sse_encode_search_ai_mode(mode, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 91,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivApiPixivApiPostAiShowSettingsConstMeta,
+        argValues: [that, mode],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivApiPixivApiPostAiShowSettingsConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_post_ai_show_settings",
+        argNames: ["that", "mode"],
+      );
+
+  @override
+  Future<String> pixivRsPixivApiPixivApiPostBookmarkAdd({
     required PixivApi that,
     required int id,
     required BookmarkAddOptions options,
@@ -2372,7 +4398,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 49,
+            funcId: 92,
             port: port_,
           );
         },
@@ -2380,21 +4406,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiPostBookmarkAddConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiPostBookmarkAddConstMeta,
         argValues: [that, id, options],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiPostBookmarkAddConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiPostBookmarkAddConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_post_bookmark_add",
         argNames: ["that", "id", "options"],
       );
 
   @override
-  Future<String> pixivRsApiPixivApiPostBookmarkDelete({
+  Future<String> pixivRsPixivApiPixivApiPostBookmarkDelete({
     required PixivApi that,
     required int id,
     required bool isNovel,
@@ -2412,7 +4438,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 50,
+            funcId: 93,
             port: port_,
           );
         },
@@ -2420,21 +4446,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiPostBookmarkDeleteConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiPostBookmarkDeleteConstMeta,
         argValues: [that, id, isNovel],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiPostBookmarkDeleteConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiPostBookmarkDeleteConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_post_bookmark_delete",
         argNames: ["that", "id", "isNovel"],
       );
 
   @override
-  Future<String> pixivRsApiPixivApiPostFollowAdd({
+  Future<String> pixivRsPixivApiPixivApiPostFollowAdd({
     required PixivApi that,
     required int userId,
     required Restrict restrict,
@@ -2452,7 +4478,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 51,
+            funcId: 94,
             port: port_,
           );
         },
@@ -2460,21 +4486,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiPostFollowAddConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiPostFollowAddConstMeta,
         argValues: [that, userId, restrict],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiPostFollowAddConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiPostFollowAddConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_post_follow_add",
         argNames: ["that", "userId", "restrict"],
       );
 
   @override
-  Future<String> pixivRsApiPixivApiPostFollowDelete({
+  Future<String> pixivRsPixivApiPixivApiPostFollowDelete({
     required PixivApi that,
     required int userId,
   }) {
@@ -2490,7 +4516,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 52,
+            funcId: 95,
             port: port_,
           );
         },
@@ -2498,21 +4524,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiPostFollowDeleteConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiPostFollowDeleteConstMeta,
         argValues: [that, userId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiPostFollowDeleteConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiPostFollowDeleteConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_post_follow_delete",
         argNames: ["that", "userId"],
       );
 
   @override
-  Future<CommentAddResult> pixivRsApiPixivApiPostIllustCommentAdd({
+  Future<CommentAddResult> pixivRsPixivApiPixivApiPostIllustCommentAdd({
     required PixivApi that,
     required int illustId,
     required CommentAddOptions options,
@@ -2530,7 +4556,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 53,
+            funcId: 96,
             port: port_,
           );
         },
@@ -2538,21 +4564,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_comment_add_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiPostIllustCommentAddConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiPostIllustCommentAddConstMeta,
         argValues: [that, illustId, options],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiPostIllustCommentAddConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiPostIllustCommentAddConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_post_illust_comment_add",
         argNames: ["that", "illustId", "options"],
       );
 
   @override
-  Future<String> pixivRsApiPixivApiPostIllustCommentDelete({
+  Future<String> pixivRsPixivApiPixivApiPostIllustCommentDelete({
     required PixivApi that,
     required int commentId,
   }) {
@@ -2568,7 +4594,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 54,
+            funcId: 97,
             port: port_,
           );
         },
@@ -2576,21 +4602,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiPostIllustCommentDeleteConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiPostIllustCommentDeleteConstMeta,
         argValues: [that, commentId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiPostIllustCommentDeleteConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiPostIllustCommentDeleteConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_post_illust_comment_delete",
         argNames: ["that", "commentId"],
       );
 
   @override
-  Future<CommentAddResult> pixivRsApiPixivApiPostNovelCommentAdd({
+  Future<CommentAddResult> pixivRsPixivApiPixivApiPostNovelCommentAdd({
     required PixivApi that,
     required int novelId,
     required CommentAddOptions options,
@@ -2608,7 +4634,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 55,
+            funcId: 98,
             port: port_,
           );
         },
@@ -2616,21 +4642,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_comment_add_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiPostNovelCommentAddConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiPostNovelCommentAddConstMeta,
         argValues: [that, novelId, options],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiPostNovelCommentAddConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiPostNovelCommentAddConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_post_novel_comment_add",
         argNames: ["that", "novelId", "options"],
       );
 
   @override
-  Future<String> pixivRsApiPixivApiPostNovelCommentDelete({
+  Future<String> pixivRsPixivApiPixivApiPostNovelCommentDelete({
     required PixivApi that,
     required int commentId,
   }) {
@@ -2646,7 +4672,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 56,
+            funcId: 99,
             port: port_,
           );
         },
@@ -2654,21 +4680,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsApiPixivApiPostNovelCommentDeleteConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiPostNovelCommentDeleteConstMeta,
         argValues: [that, commentId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiPostNovelCommentDeleteConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiPostNovelCommentDeleteConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_post_novel_comment_delete",
         argNames: ["that", "commentId"],
       );
 
   @override
-  void pixivRsApiPixivApiSetAccount({
+  void pixivRsPixivApiPixivApiSetAccount({
     required PixivApi that,
     UserAccountResult? account,
   }) {
@@ -2681,27 +4707,31 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_opt_box_autoadd_user_account_result(account, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 57)!;
+          return pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 100,
+          )!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsApiPixivApiSetAccountConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiSetAccountConstMeta,
         argValues: [that, account],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiSetAccountConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiSetAccountConstMeta =>
       const TaskConstMeta(
         debugName: "PixivApi_set_account",
         argNames: ["that", "account"],
       );
 
   @override
-  void pixivRsApiPixivApiSetProxy({
+  void pixivRsPixivApiPixivApiSetProxy({
     required PixivApi that,
     required String proxy,
   }) {
@@ -2714,26 +4744,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_String(proxy, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 58)!;
+          return pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 101,
+          )!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsApiPixivApiSetProxyConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiSetProxyConstMeta,
         argValues: [that, proxy],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiSetProxyConstMeta => const TaskConstMeta(
-    debugName: "PixivApi_set_proxy",
-    argNames: ["that", "proxy"],
-  );
+  TaskConstMeta get kPixivRsPixivApiPixivApiSetProxyConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivApi_set_proxy",
+        argNames: ["that", "proxy"],
+      );
 
   @override
-  Future<String> pixivRsAuthPixivAuthCodeChallenge({required PixivAuth that}) {
+  Future<String> pixivRsPixivAuthPixivAuthCodeChallenge({
+    required PixivAuth that,
+  }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -2745,7 +4782,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 59,
+            funcId: 102,
             port: port_,
           );
         },
@@ -2753,21 +4790,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsAuthPixivAuthCodeChallengeConstMeta,
+        constMeta: kPixivRsPixivAuthPixivAuthCodeChallengeConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsAuthPixivAuthCodeChallengeConstMeta =>
+  TaskConstMeta get kPixivRsPixivAuthPixivAuthCodeChallengeConstMeta =>
       const TaskConstMeta(
         debugName: "PixivAuth_code_challenge",
         argNames: ["that"],
       );
 
   @override
-  Future<String> pixivRsAuthPixivAuthCodeVerifier({required PixivAuth that}) {
+  Future<String> pixivRsPixivAuthPixivAuthCodeVerifier({
+    required PixivAuth that,
+  }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -2779,7 +4818,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 60,
+            funcId: 103,
             port: port_,
           );
         },
@@ -2787,21 +4826,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsAuthPixivAuthCodeVerifierConstMeta,
+        constMeta: kPixivRsPixivAuthPixivAuthCodeVerifierConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsAuthPixivAuthCodeVerifierConstMeta =>
+  TaskConstMeta get kPixivRsPixivAuthPixivAuthCodeVerifierConstMeta =>
       const TaskConstMeta(
         debugName: "PixivAuth_code_verifier",
         argNames: ["that"],
       );
 
   @override
-  Future<PixivAuth> pixivRsAuthPixivAuthFromParts({
+  Future<PixivAuth> pixivRsPixivAuthPixivAuthFromParts({
     required String targetIp,
     required String language,
     required String deviceName,
@@ -2816,7 +4855,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 61,
+            funcId: 104,
             port: port_,
           );
         },
@@ -2825,21 +4864,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivAuth,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsAuthPixivAuthFromPartsConstMeta,
+        constMeta: kPixivRsPixivAuthPixivAuthFromPartsConstMeta,
         argValues: [targetIp, language, deviceName],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsAuthPixivAuthFromPartsConstMeta =>
+  TaskConstMeta get kPixivRsPixivAuthPixivAuthFromPartsConstMeta =>
       const TaskConstMeta(
         debugName: "PixivAuth_from_parts",
         argNames: ["targetIp", "language", "deviceName"],
       );
 
   @override
-  Future<String> pixivRsAuthPixivAuthGenerateLoginUrl({
+  Future<String> pixivRsPixivAuthPixivAuthGenerateLoginUrl({
     required PixivAuth that,
   }) {
     return handler.executeNormal(
@@ -2853,7 +4892,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 62,
+            funcId: 105,
             port: port_,
           );
         },
@@ -2861,21 +4900,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsAuthPixivAuthGenerateLoginUrlConstMeta,
+        constMeta: kPixivRsPixivAuthPixivAuthGenerateLoginUrlConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsAuthPixivAuthGenerateLoginUrlConstMeta =>
+  TaskConstMeta get kPixivRsPixivAuthPixivAuthGenerateLoginUrlConstMeta =>
       const TaskConstMeta(
         debugName: "PixivAuth_generate_login_url",
         argNames: ["that"],
       );
 
   @override
-  Future<UserAccountResult> pixivRsAuthPixivAuthInitAccountAuthToken({
+  Future<UserAccountResult> pixivRsPixivAuthPixivAuthInitAccountAuthToken({
     required PixivAuth that,
     required String code,
   }) {
@@ -2891,7 +4930,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 63,
+            funcId: 106,
             port: port_,
           );
         },
@@ -2899,21 +4938,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_user_account_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsAuthPixivAuthInitAccountAuthTokenConstMeta,
+        constMeta: kPixivRsPixivAuthPixivAuthInitAccountAuthTokenConstMeta,
         argValues: [that, code],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsAuthPixivAuthInitAccountAuthTokenConstMeta =>
+  TaskConstMeta get kPixivRsPixivAuthPixivAuthInitAccountAuthTokenConstMeta =>
       const TaskConstMeta(
         debugName: "PixivAuth_init_account_auth_token",
         argNames: ["that", "code"],
       );
 
   @override
-  Future<PixivAuth> pixivRsAuthPixivAuthNew({required PixivAuthConfig config}) {
+  Future<PixivAuth> pixivRsPixivAuthPixivAuthNew({
+    required PixivAuthConfig config,
+  }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -2922,7 +4963,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 64,
+            funcId: 107,
             port: port_,
           );
         },
@@ -2931,18 +4972,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivAuth,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsAuthPixivAuthNewConstMeta,
+        constMeta: kPixivRsPixivAuthPixivAuthNewConstMeta,
         argValues: [config],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsAuthPixivAuthNewConstMeta =>
+  TaskConstMeta get kPixivRsPixivAuthPixivAuthNewConstMeta =>
       const TaskConstMeta(debugName: "PixivAuth_new", argNames: ["config"]);
 
   @override
-  Future<UserAccountResult> pixivRsAuthPixivAuthRefreshAuthToken({
+  Future<UserAccountResult> pixivRsPixivAuthPixivAuthRefreshAuthToken({
     required PixivAuth that,
     required String refreshToken,
   }) {
@@ -2958,7 +4999,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 65,
+            funcId: 108,
             port: port_,
           );
         },
@@ -2966,21 +5007,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_user_account_result,
           decodeErrorData: sse_decode_pixiv_error,
         ),
-        constMeta: kPixivRsAuthPixivAuthRefreshAuthTokenConstMeta,
+        constMeta: kPixivRsPixivAuthPixivAuthRefreshAuthTokenConstMeta,
         argValues: [that, refreshToken],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsAuthPixivAuthRefreshAuthTokenConstMeta =>
+  TaskConstMeta get kPixivRsPixivAuthPixivAuthRefreshAuthTokenConstMeta =>
       const TaskConstMeta(
         debugName: "PixivAuth_refresh_auth_token",
         argNames: ["that", "refreshToken"],
       );
 
   @override
-  Future<void> pixivRsAuthPixivAuthSetProxy({
+  Future<void> pixivRsPixivAuthPixivAuthSetProxy({
     required PixivAuth that,
     required String proxy,
   }) {
@@ -2996,7 +5037,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 66,
+            funcId: 109,
             port: port_,
           );
         },
@@ -3004,21 +5045,246 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsAuthPixivAuthSetProxyConstMeta,
+        constMeta: kPixivRsPixivAuthPixivAuthSetProxyConstMeta,
         argValues: [that, proxy],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsAuthPixivAuthSetProxyConstMeta =>
+  TaskConstMeta get kPixivRsPixivAuthPixivAuthSetProxyConstMeta =>
       const TaskConstMeta(
         debugName: "PixivAuth_set_proxy",
         argNames: ["that", "proxy"],
       );
 
   @override
-  Future<BookmarkAddOptions> pixivRsApiBookmarkAddOptionsDefault() {
+  Future<Article> pixivRsPixivisionPixivisionApiGetArticle({
+    required PixivisionApi that,
+    required int id,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+            that,
+            serializer,
+          );
+          sse_encode_CastedPrimitive_u_64(id, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 110,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_article,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivisionPixivisionApiGetArticleConstMeta,
+        argValues: [that, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivisionPixivisionApiGetArticleConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivisionApi_get_article",
+        argNames: ["that", "id"],
+      );
+
+  @override
+  Future<Article> pixivRsPixivisionPixivisionApiGetArticleByUrl({
+    required PixivisionApi that,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 111,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_article,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivisionPixivisionApiGetArticleByUrlConstMeta,
+        argValues: [that, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivisionPixivisionApiGetArticleByUrlConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivisionApi_get_article_by_url",
+        argNames: ["that", "url"],
+      );
+
+  @override
+  Future<ArticlePage> pixivRsPixivisionPixivisionApiGetArticlePage({
+    required PixivisionApi that,
+    required ArticleFeed feed,
+    required int page,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+            that,
+            serializer,
+          );
+          sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArticleFeed(
+            feed,
+            serializer,
+          );
+          sse_encode_u_32(page, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 112,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_article_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivisionPixivisionApiGetArticlePageConstMeta,
+        argValues: [that, feed, page],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivisionPixivisionApiGetArticlePageConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivisionApi_get_article_page",
+        argNames: ["that", "feed", "page"],
+      );
+
+  @override
+  Future<ArticlePage> pixivRsPixivisionPixivisionApiGetNextArticlePage({
+    required PixivisionApi that,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 113,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_article_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivisionPixivisionApiGetNextArticlePageConstMeta,
+        argValues: [that, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta
+  get kPixivRsPixivisionPixivisionApiGetNextArticlePageConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivisionApi_get_next_article_page",
+        argNames: ["that", "url"],
+      );
+
+  @override
+  Future<TagDirectory> pixivRsPixivisionPixivisionApiGetTagDirectory({
+    required PixivisionApi that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 114,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_tag_directory,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivisionPixivisionApiGetTagDirectoryConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivisionPixivisionApiGetTagDirectoryConstMeta =>
+      const TaskConstMeta(
+        debugName: "PixivisionApi_get_tag_directory",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<PixivisionApi> pixivRsPixivisionPixivisionApiNew({
+    required PixivisionConfig config,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_pixivision_config(config, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 115,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivisionPixivisionApiNewConstMeta,
+        argValues: [config],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivisionPixivisionApiNewConstMeta =>
+      const TaskConstMeta(debugName: "PixivisionApi_new", argNames: ["config"]);
+
+  @override
+  Future<BookmarkAddOptions> pixivRsPixivApiBookmarkAddOptionsDefault() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3026,7 +5292,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 68,
+            funcId: 117,
             port: port_,
           );
         },
@@ -3034,21 +5300,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_bookmark_add_options,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsApiBookmarkAddOptionsDefaultConstMeta,
+        constMeta: kPixivRsPixivApiBookmarkAddOptionsDefaultConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiBookmarkAddOptionsDefaultConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiBookmarkAddOptionsDefaultConstMeta =>
       const TaskConstMeta(
         debugName: "bookmark_add_options_default",
         argNames: [],
       );
 
   @override
-  Future<BookmarkTagOptions> pixivRsApiBookmarkTagOptionsDefault() {
+  Future<BookmarkPageOptions> pixivRsPixivApiBookmarkPageOptionsDefault() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3056,7 +5322,37 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 69,
+            funcId: 118,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bookmark_page_options,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsPixivApiBookmarkPageOptionsDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivApiBookmarkPageOptionsDefaultConstMeta =>
+      const TaskConstMeta(
+        debugName: "bookmark_page_options_default",
+        argNames: [],
+      );
+
+  @override
+  Future<BookmarkTagOptions> pixivRsPixivApiBookmarkTagOptionsDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 119,
             port: port_,
           );
         },
@@ -3064,21 +5360,49 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_bookmark_tag_options,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsApiBookmarkTagOptionsDefaultConstMeta,
+        constMeta: kPixivRsPixivApiBookmarkTagOptionsDefaultConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiBookmarkTagOptionsDefaultConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiBookmarkTagOptionsDefaultConstMeta =>
       const TaskConstMeta(
         debugName: "bookmark_tag_options_default",
         argNames: [],
       );
 
   @override
-  Future<CommentAddOptions> pixivRsApiCommentAddOptionsDefault() {
+  Future<void> pixivRsPixivisionCategoryPath({required Category that}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_category(that, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 120,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsPixivisionCategoryPathConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivisionCategoryPathConstMeta =>
+      const TaskConstMeta(debugName: "category_path", argNames: ["that"]);
+
+  @override
+  Future<CommentAddOptions> pixivRsPixivApiCommentAddOptionsDefault() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3086,7 +5410,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 70,
+            funcId: 121,
             port: port_,
           );
         },
@@ -3094,14 +5418,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_comment_add_options,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsApiCommentAddOptionsDefaultConstMeta,
+        constMeta: kPixivRsPixivApiCommentAddOptionsDefaultConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiCommentAddOptionsDefaultConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiCommentAddOptionsDefaultConstMeta =>
       const TaskConstMeta(
         debugName: "comment_add_options_default",
         argNames: [],
@@ -3148,7 +5472,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 71,
+              funcId: 122,
               port: port_,
             );
           },
@@ -3223,7 +5547,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 72,
+              funcId: 123,
               port: port_,
             );
           },
@@ -3247,6 +5571,393 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<FanboxComment> pixivRsFanboxFanboxCommentDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 124,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_comment,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxCommentDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxCommentDefaultConstMeta =>
+      const TaskConstMeta(debugName: "fanbox_comment_default", argNames: []);
+
+  @override
+  Future<FanboxCommentPage> pixivRsFanboxFanboxCommentPageDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 125,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_comment_page,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxCommentPageDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxCommentPageDefaultConstMeta =>
+      const TaskConstMeta(
+        debugName: "fanbox_comment_page_default",
+        argNames: [],
+      );
+
+  @override
+  Future<FanboxCreator> pixivRsFanboxFanboxCreatorDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 126,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_creator,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxCreatorDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxCreatorDefaultConstMeta =>
+      const TaskConstMeta(debugName: "fanbox_creator_default", argNames: []);
+
+  @override
+  Future<FanboxCreatorPage> pixivRsFanboxFanboxCreatorPageDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 127,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_creator_page,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxCreatorPageDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxCreatorPageDefaultConstMeta =>
+      const TaskConstMeta(
+        debugName: "fanbox_creator_page_default",
+        argNames: [],
+      );
+
+  @override
+  Future<FanboxFile> pixivRsFanboxFanboxFileDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 128,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_file,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxFileDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxFileDefaultConstMeta =>
+      const TaskConstMeta(debugName: "fanbox_file_default", argNames: []);
+
+  @override
+  Future<FanboxImage> pixivRsFanboxFanboxImageDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 129,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_image,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxImageDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxImageDefaultConstMeta =>
+      const TaskConstMeta(debugName: "fanbox_image_default", argNames: []);
+
+  @override
+  Future<FanboxNotice> pixivRsFanboxFanboxNoticeDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 130,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_notice,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxNoticeDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxNoticeDefaultConstMeta =>
+      const TaskConstMeta(debugName: "fanbox_notice_default", argNames: []);
+
+  @override
+  Future<FanboxNoticePage> pixivRsFanboxFanboxNoticePageDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 131,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_notice_page,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxNoticePageDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxNoticePageDefaultConstMeta =>
+      const TaskConstMeta(
+        debugName: "fanbox_notice_page_default",
+        argNames: [],
+      );
+
+  @override
+  Future<FanboxPlan> pixivRsFanboxFanboxPlanDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 132,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_plan,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxPlanDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxPlanDefaultConstMeta =>
+      const TaskConstMeta(debugName: "fanbox_plan_default", argNames: []);
+
+  @override
+  Future<FanboxPost> pixivRsFanboxFanboxPostDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 133,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_post,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxPostDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxPostDefaultConstMeta =>
+      const TaskConstMeta(debugName: "fanbox_post_default", argNames: []);
+
+  @override
+  Future<FanboxPostPage> pixivRsFanboxFanboxPostPageDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 134,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_post_page,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxPostPageDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxPostPageDefaultConstMeta =>
+      const TaskConstMeta(debugName: "fanbox_post_page_default", argNames: []);
+
+  @override
+  Future<FanboxSupport> pixivRsFanboxFanboxSupportDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 135,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_support,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxSupportDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxSupportDefaultConstMeta =>
+      const TaskConstMeta(debugName: "fanbox_support_default", argNames: []);
+
+  @override
+  Future<FanboxTag> pixivRsFanboxFanboxTagDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 136,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_tag,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxTagDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxTagDefaultConstMeta =>
+      const TaskConstMeta(debugName: "fanbox_tag_default", argNames: []);
+
+  @override
+  Future<FanboxUser> pixivRsFanboxFanboxUserDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 137,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_fanbox_user,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsFanboxFanboxUserDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsFanboxFanboxUserDefaultConstMeta =>
+      const TaskConstMeta(debugName: "fanbox_user_default", argNames: []);
+
+  @override
   Future<String?> crateApiProxyGetSystemProxy() {
     return handler.executeNormal(
       NormalTask(
@@ -3255,7 +5966,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 73,
+            funcId: 138,
             port: port_,
           );
         },
@@ -3274,7 +5985,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "get_system_proxy", argNames: []);
 
   @override
-  Future<bool> pixivRsModelsIllustIsR18({required Illust that}) {
+  Future<bool> pixivRsPixivModelsIllustIsR18({required Illust that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3283,7 +5994,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 74,
+            funcId: 139,
             port: port_,
           );
         },
@@ -3291,18 +6002,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_bool,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsModelsIllustIsR18ConstMeta,
+        constMeta: kPixivRsPixivModelsIllustIsR18ConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsModelsIllustIsR18ConstMeta =>
+  TaskConstMeta get kPixivRsPixivModelsIllustIsR18ConstMeta =>
       const TaskConstMeta(debugName: "illust_is_r18", argNames: ["that"]);
 
   @override
-  Future<bool> pixivRsModelsIllustIsUgoira({required Illust that}) {
+  Future<bool> pixivRsPixivModelsIllustIsUgoira({required Illust that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3311,7 +6022,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 75,
+            funcId: 140,
             port: port_,
           );
         },
@@ -3319,18 +6030,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_bool,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsModelsIllustIsUgoiraConstMeta,
+        constMeta: kPixivRsPixivModelsIllustIsUgoiraConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsModelsIllustIsUgoiraConstMeta =>
+  TaskConstMeta get kPixivRsPixivModelsIllustIsUgoiraConstMeta =>
       const TaskConstMeta(debugName: "illust_is_ugoira", argNames: ["that"]);
 
   @override
-  Future<void> pixivRsEnumsIllustRankingModeAsPixivParam({
+  Future<void> pixivRsPixivEnumsIllustRankingModeAsPixivParam({
     required IllustRankingMode that,
   }) {
     return handler.executeNormal(
@@ -3341,7 +6052,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 76,
+            funcId: 141,
             port: port_,
           );
         },
@@ -3349,21 +6060,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsEnumsIllustRankingModeAsPixivParamConstMeta,
+        constMeta: kPixivRsPixivEnumsIllustRankingModeAsPixivParamConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsEnumsIllustRankingModeAsPixivParamConstMeta =>
+  TaskConstMeta get kPixivRsPixivEnumsIllustRankingModeAsPixivParamConstMeta =>
       const TaskConstMeta(
         debugName: "illust_ranking_mode_as_pixiv_param",
         argNames: ["that"],
       );
 
   @override
-  Future<void> pixivRsEnumsIllustTypeAsPixivParam({required IllustType that}) {
+  Future<void> pixivRsPixivEnumsIllustTypeAsPixivParam({
+    required IllustType that,
+  }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3372,7 +6085,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 77,
+            funcId: 142,
             port: port_,
           );
         },
@@ -3380,14 +6093,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsEnumsIllustTypeAsPixivParamConstMeta,
+        constMeta: kPixivRsPixivEnumsIllustTypeAsPixivParamConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsEnumsIllustTypeAsPixivParamConstMeta =>
+  TaskConstMeta get kPixivRsPixivEnumsIllustTypeAsPixivParamConstMeta =>
       const TaskConstMeta(
         debugName: "illust_type_as_pixiv_param",
         argNames: ["that"],
@@ -3407,7 +6120,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 78,
+            funcId: 143,
             port: port_,
           );
         },
@@ -3430,7 +6143,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> pixivRsEnumsMangaRankingModeAsPixivParam({
+  Future<void> pixivRsPixivisionLanguagePath({required Language that}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_language(that, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 144,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsPixivisionLanguagePathConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivisionLanguagePathConstMeta =>
+      const TaskConstMeta(debugName: "language_path", argNames: ["that"]);
+
+  @override
+  Future<void> pixivRsPixivEnumsMangaRankingModeAsPixivParam({
     required MangaRankingMode that,
   }) {
     return handler.executeNormal(
@@ -3441,7 +6182,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 79,
+            funcId: 145,
             port: port_,
           );
         },
@@ -3449,21 +6190,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsEnumsMangaRankingModeAsPixivParamConstMeta,
+        constMeta: kPixivRsPixivEnumsMangaRankingModeAsPixivParamConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsEnumsMangaRankingModeAsPixivParamConstMeta =>
+  TaskConstMeta get kPixivRsPixivEnumsMangaRankingModeAsPixivParamConstMeta =>
       const TaskConstMeta(
         debugName: "manga_ranking_mode_as_pixiv_param",
         argNames: ["that"],
       );
 
   @override
-  Future<NovelNavigationInfo> pixivRsResponsesNovelNavigationInfoDefault() {
+  Future<NovelNavigationInfo>
+  pixivRsPixivResponsesNovelNavigationInfoDefault() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3471,7 +6213,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 80,
+            funcId: 146,
             port: port_,
           );
         },
@@ -3479,21 +6221,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_navigation_info,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsResponsesNovelNavigationInfoDefaultConstMeta,
+        constMeta: kPixivRsPixivResponsesNovelNavigationInfoDefaultConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsResponsesNovelNavigationInfoDefaultConstMeta =>
+  TaskConstMeta get kPixivRsPixivResponsesNovelNavigationInfoDefaultConstMeta =>
       const TaskConstMeta(
         debugName: "novel_navigation_info_default",
         argNames: [],
       );
 
   @override
-  Future<NovelNavigationItem> pixivRsResponsesNovelNavigationItemDefault() {
+  Future<NovelNavigationItem>
+  pixivRsPixivResponsesNovelNavigationItemDefault() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3501,7 +6244,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 81,
+            funcId: 147,
             port: port_,
           );
         },
@@ -3509,21 +6252,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_navigation_item,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsResponsesNovelNavigationItemDefaultConstMeta,
+        constMeta: kPixivRsPixivResponsesNovelNavigationItemDefaultConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsResponsesNovelNavigationItemDefaultConstMeta =>
+  TaskConstMeta get kPixivRsPixivResponsesNovelNavigationItemDefaultConstMeta =>
       const TaskConstMeta(
         debugName: "novel_navigation_item_default",
         argNames: [],
       );
 
   @override
-  Future<void> pixivRsEnumsNovelRankingModeAsPixivParam({
+  Future<void> pixivRsPixivEnumsNovelRankingModeAsPixivParam({
     required NovelRankingMode that,
   }) {
     return handler.executeNormal(
@@ -3534,7 +6277,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 82,
+            funcId: 148,
             port: port_,
           );
         },
@@ -3542,21 +6285,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsEnumsNovelRankingModeAsPixivParamConstMeta,
+        constMeta: kPixivRsPixivEnumsNovelRankingModeAsPixivParamConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsEnumsNovelRankingModeAsPixivParamConstMeta =>
+  TaskConstMeta get kPixivRsPixivEnumsNovelRankingModeAsPixivParamConstMeta =>
       const TaskConstMeta(
         debugName: "novel_ranking_mode_as_pixiv_param",
         argNames: ["that"],
       );
 
   @override
-  Future<NovelRating> pixivRsResponsesNovelRatingDefault() {
+  Future<NovelRating> pixivRsPixivResponsesNovelRatingDefault() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3564,7 +6307,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 83,
+            funcId: 149,
             port: port_,
           );
         },
@@ -3572,18 +6315,123 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_novel_rating,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsResponsesNovelRatingDefaultConstMeta,
+        constMeta: kPixivRsPixivResponsesNovelRatingDefaultConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsResponsesNovelRatingDefaultConstMeta =>
+  TaskConstMeta get kPixivRsPixivResponsesNovelRatingDefaultConstMeta =>
       const TaskConstMeta(debugName: "novel_rating_default", argNames: []);
 
   @override
-  Future<PixivApiConfig> pixivRsApiPixivApiConfigNew({
+  Future<Article> pixivRsPixivisionParseArticle({
+    required String html,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(html, serializer);
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 150,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_article,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivisionParseArticleConstMeta,
+        argValues: [html, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivisionParseArticleConstMeta =>
+      const TaskConstMeta(
+        debugName: "parse_article",
+        argNames: ["html", "url"],
+      );
+
+  @override
+  Future<ArticlePage> pixivRsPixivisionParseArticlePage({
+    required String html,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(html, serializer);
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 151,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_article_page,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivisionParseArticlePageConstMeta,
+        argValues: [html, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivisionParseArticlePageConstMeta =>
+      const TaskConstMeta(
+        debugName: "parse_article_page",
+        argNames: ["html", "url"],
+      );
+
+  @override
+  Future<TagDirectory> pixivRsPixivisionParseTagDirectory({
+    required String html,
+    required String url,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(html, serializer);
+          sse_encode_String(url, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 152,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_tag_directory,
+          decodeErrorData: sse_decode_pixiv_error,
+        ),
+        constMeta: kPixivRsPixivisionParseTagDirectoryConstMeta,
+        argValues: [html, url],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivisionParseTagDirectoryConstMeta =>
+      const TaskConstMeta(
+        debugName: "parse_tag_directory",
+        argNames: ["html", "url"],
+      );
+
+  @override
+  Future<PixivApiConfig> pixivRsPixivApiPixivApiConfigNew({
     required String targetIp,
     required String language,
     required String deviceName,
@@ -3602,7 +6450,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 84,
+            funcId: 153,
             port: port_,
           );
         },
@@ -3610,7 +6458,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_pixiv_api_config,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsApiPixivApiConfigNewConstMeta,
+        constMeta: kPixivRsPixivApiPixivApiConfigNewConstMeta,
         argValues: [
           targetIp,
           language,
@@ -3623,7 +6471,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     );
   }
 
-  TaskConstMeta get kPixivRsApiPixivApiConfigNewConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiPixivApiConfigNewConstMeta =>
       const TaskConstMeta(
         debugName: "pixiv_api_config_new",
         argNames: [
@@ -3636,7 +6484,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<PixivAuthConfig> pixivRsAuthPixivAuthConfigNew({
+  Future<PixivAuthConfig> pixivRsPixivAuthPixivAuthConfigNew({
     required String targetIp,
     required String language,
     required String deviceName,
@@ -3651,7 +6499,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 85,
+            funcId: 154,
             port: port_,
           );
         },
@@ -3659,14 +6507,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_pixiv_auth_config,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsAuthPixivAuthConfigNewConstMeta,
+        constMeta: kPixivRsPixivAuthPixivAuthConfigNewConstMeta,
         argValues: [targetIp, language, deviceName],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsAuthPixivAuthConfigNewConstMeta =>
+  TaskConstMeta get kPixivRsPixivAuthPixivAuthConfigNewConstMeta =>
       const TaskConstMeta(
         debugName: "pixiv_auth_config_new",
         argNames: ["targetIp", "language", "deviceName"],
@@ -3686,7 +6534,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 86,
+            funcId: 155,
             port: port_,
           );
         },
@@ -3716,7 +6564,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 87,
+            funcId: 156,
             port: port_,
           );
         },
@@ -3751,7 +6599,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 88,
+            funcId: 157,
             port: port_,
           );
         },
@@ -3772,7 +6620,34 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  Future<void> pixivRsEnumsRestrictAsPixivParam({required Restrict that}) {
+  Future<PixivisionConfig> pixivRsPixivisionPixivisionConfigDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 158,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_pixivision_config,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsPixivisionPixivisionConfigDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsPixivisionPixivisionConfigDefaultConstMeta =>
+      const TaskConstMeta(debugName: "pixivision_config_default", argNames: []);
+
+  @override
+  Future<void> pixivRsPixivEnumsRestrictAsPixivParam({required Restrict that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3781,7 +6656,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 89,
+            funcId: 159,
             port: port_,
           );
         },
@@ -3789,21 +6664,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsEnumsRestrictAsPixivParamConstMeta,
+        constMeta: kPixivRsPixivEnumsRestrictAsPixivParamConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsEnumsRestrictAsPixivParamConstMeta =>
+  TaskConstMeta get kPixivRsPixivEnumsRestrictAsPixivParamConstMeta =>
       const TaskConstMeta(
         debugName: "restrict_as_pixiv_param",
         argNames: ["that"],
       );
 
   @override
-  Future<SearchOptions> pixivRsApiSearchOptionsDefault() {
+  Future<SearchOptions> pixivRsPixivApiSearchOptionsDefault() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3811,7 +6686,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 90,
+            funcId: 160,
             port: port_,
           );
         },
@@ -3819,18 +6694,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_search_options,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsApiSearchOptionsDefaultConstMeta,
+        constMeta: kPixivRsPixivApiSearchOptionsDefaultConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsApiSearchOptionsDefaultConstMeta =>
+  TaskConstMeta get kPixivRsPixivApiSearchOptionsDefaultConstMeta =>
       const TaskConstMeta(debugName: "search_options_default", argNames: []);
 
   @override
-  Future<void> pixivRsEnumsSearchSortAsPixivParam({required SearchSort that}) {
+  Future<void> pixivRsPixivEnumsSearchSortAsPixivParam({
+    required SearchSort that,
+  }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3839,7 +6716,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 91,
+            funcId: 161,
             port: port_,
           );
         },
@@ -3847,21 +6724,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsEnumsSearchSortAsPixivParamConstMeta,
+        constMeta: kPixivRsPixivEnumsSearchSortAsPixivParamConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsEnumsSearchSortAsPixivParamConstMeta =>
+  TaskConstMeta get kPixivRsPixivEnumsSearchSortAsPixivParamConstMeta =>
       const TaskConstMeta(
         debugName: "search_sort_as_pixiv_param",
         argNames: ["that"],
       );
 
   @override
-  Future<void> pixivRsEnumsSearchTargetAsPixivParam({
+  Future<void> pixivRsPixivEnumsSearchTargetAsPixivParam({
     required SearchTarget that,
   }) {
     return handler.executeNormal(
@@ -3872,7 +6749,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 92,
+            funcId: 162,
             port: port_,
           );
         },
@@ -3880,21 +6757,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsEnumsSearchTargetAsPixivParamConstMeta,
+        constMeta: kPixivRsPixivEnumsSearchTargetAsPixivParamConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsEnumsSearchTargetAsPixivParamConstMeta =>
+  TaskConstMeta get kPixivRsPixivEnumsSearchTargetAsPixivParamConstMeta =>
       const TaskConstMeta(
         debugName: "search_target_as_pixiv_param",
         argNames: ["that"],
       );
 
   @override
-  Future<WebviewNovelImageUrls> pixivRsResponsesWebviewNovelImageUrlsDefault() {
+  Future<WebviewNovelImageUrls>
+  pixivRsPixivResponsesWebviewNovelImageUrlsDefault() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3902,7 +6780,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 93,
+            funcId: 163,
             port: port_,
           );
         },
@@ -3910,21 +6788,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_webview_novel_image_urls,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsResponsesWebviewNovelImageUrlsDefaultConstMeta,
+        constMeta: kPixivRsPixivResponsesWebviewNovelImageUrlsDefaultConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsResponsesWebviewNovelImageUrlsDefaultConstMeta =>
+  TaskConstMeta
+  get kPixivRsPixivResponsesWebviewNovelImageUrlsDefaultConstMeta =>
       const TaskConstMeta(
         debugName: "webview_novel_image_urls_default",
         argNames: [],
       );
 
   @override
-  Future<void> pixivRsEnumsWorkTypeAsPixivParam({required WorkType that}) {
+  Future<void> pixivRsPixivEnumsWorkTypeAsPixivParam({required WorkType that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -3933,7 +6812,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 94,
+            funcId: 164,
             port: port_,
           );
         },
@@ -3941,14 +6820,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kPixivRsEnumsWorkTypeAsPixivParamConstMeta,
+        constMeta: kPixivRsPixivEnumsWorkTypeAsPixivParamConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kPixivRsEnumsWorkTypeAsPixivParamConstMeta =>
+  TaskConstMeta get kPixivRsPixivEnumsWorkTypeAsPixivParamConstMeta =>
       const TaskConstMeta(
         debugName: "work_type_as_pixiv_param",
         argNames: ["that"],
@@ -3966,7 +6845,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 95,
+            funcId: 165,
             port: port_,
           );
         },
@@ -3987,6 +6866,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         debugName: "zip_utils_unzip_files",
         argNames: ["bytes"],
       );
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_ArticleFeed => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArticleFeed;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_ArticleFeed => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArticleFeed;
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_FanboxApi => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_FanboxApi => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi;
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_GifError => wire
@@ -4013,6 +6908,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivAuth;
 
   RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_PixivisionApi => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_PixivisionApi => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi;
+
+  RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_UnzipError => wire
       .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUnzipError;
 
@@ -4024,6 +6927,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return AnyhowException(raw as String);
+  }
+
+  @protected
+  ArticleFeed
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArticleFeed(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ArticleFeedImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  FanboxApi
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return FanboxApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -4054,6 +6975,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PixivisionApi
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PixivisionApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
   UnzipError
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUnzipError(
     dynamic raw,
@@ -4081,6 +7011,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  FanboxApi
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return FanboxApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
   PixivApi
   dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
     dynamic raw,
@@ -4096,6 +7035,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return PixivAuthImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  PixivisionApi
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PixivisionApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -4125,6 +7073,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ArticleFeed
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArticleFeed(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ArticleFeedImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  FanboxApi
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return FanboxApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
   GifError
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGifError(
     dynamic raw,
@@ -4149,6 +7115,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return PixivAuthImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  PixivisionApi
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PixivisionApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -4187,6 +7162,146 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Article dco_decode_article(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 16)
+      throw Exception('unexpected arr length: expect 16 but see ${arr.length}');
+    return Article(
+      id: dco_decode_CastedPrimitive_u_64(arr[0]),
+      url: dco_decode_String(arr[1]),
+      language: dco_decode_language(arr[2]),
+      title: dco_decode_String(arr[3]),
+      description: dco_decode_opt_String(arr[4]),
+      thumbnail: dco_decode_opt_String(arr[5]),
+      publishDate: dco_decode_String(arr[6]),
+      category: dco_decode_opt_box_autoadd_article_link(arr[7]),
+      tags: dco_decode_list_pixivision_tag(arr[8]),
+      translations: dco_decode_list_article_link(arr[9]),
+      blocks: dco_decode_list_article_block(arr[10]),
+      related: dco_decode_list_article_section(arr[11]),
+      monthlyRanking: dco_decode_list_article_summary(arr[12]),
+      recommended: dco_decode_list_article_summary(arr[13]),
+      nextUrl: dco_decode_opt_String(arr[14]),
+      previousUrl: dco_decode_opt_String(arr[15]),
+    );
+  }
+
+  @protected
+  ArticleBlock dco_decode_article_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
+    return ArticleBlock(
+      kind: dco_decode_block_kind(arr[0]),
+      anchor: dco_decode_opt_String(arr[1]),
+      headingLevel: dco_decode_opt_box_autoadd_u_8(arr[2]),
+      html: dco_decode_String(arr[3]),
+      text: dco_decode_String(arr[4]),
+      images: dco_decode_list_article_image(arr[5]),
+      links: dco_decode_list_article_link(arr[6]),
+      works: dco_decode_list_featured_work(arr[7]),
+      embeds: dco_decode_list_article_embed(arr[8]),
+    );
+  }
+
+  @protected
+  ArticleEmbed dco_decode_article_embed(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return ArticleEmbed(
+      kind: dco_decode_embed_kind(arr[0]),
+      url: dco_decode_String(arr[1]),
+      title: dco_decode_opt_String(arr[2]),
+      poster: dco_decode_opt_String(arr[3]),
+    );
+  }
+
+  @protected
+  ArticleImage dco_decode_article_image(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return ArticleImage(
+      url: dco_decode_String(arr[0]),
+      alt: dco_decode_String(arr[1]),
+      width: dco_decode_opt_box_autoadd_u_32(arr[2]),
+      height: dco_decode_opt_box_autoadd_u_32(arr[3]),
+    );
+  }
+
+  @protected
+  ArticleLink dco_decode_article_link(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return ArticleLink(
+      title: dco_decode_String(arr[0]),
+      url: dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
+  ArticlePage dco_decode_article_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
+    return ArticlePage(
+      url: dco_decode_String(arr[0]),
+      title: dco_decode_String(arr[1]),
+      description: dco_decode_opt_String(arr[2]),
+      articles: dco_decode_list_article_summary(arr[3]),
+      nextUrl: dco_decode_opt_String(arr[4]),
+      previousUrl: dco_decode_opt_String(arr[5]),
+      monthlyRanking: dco_decode_list_article_summary(arr[6]),
+      recommended: dco_decode_list_article_summary(arr[7]),
+      categories: dco_decode_list_article_link(arr[8]),
+    );
+  }
+
+  @protected
+  ArticleSection dco_decode_article_section(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return ArticleSection(
+      title: dco_decode_String(arr[0]),
+      url: dco_decode_opt_String(arr[1]),
+      articles: dco_decode_list_article_summary(arr[2]),
+    );
+  }
+
+  @protected
+  ArticleSummary dco_decode_article_summary(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return ArticleSummary(
+      id: dco_decode_CastedPrimitive_u_64(arr[0]),
+      title: dco_decode_String(arr[1]),
+      url: dco_decode_String(arr[2]),
+      thumbnail: dco_decode_opt_String(arr[3]),
+      publishDate: dco_decode_opt_String(arr[4]),
+      category: dco_decode_opt_box_autoadd_article_link(arr[5]),
+      tags: dco_decode_list_pixivision_tag(arr[6]),
+    );
+  }
+
+  @protected
+  BlockKind dco_decode_block_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return BlockKind.values[raw as int];
+  }
+
+  @protected
   BookmarkAddOptions dco_decode_bookmark_add_options(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -4196,6 +7311,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       tags: dco_decode_list_String(arr[0]),
       restrict: dco_decode_restrict(arr[1]),
       isNovel: dco_decode_bool(arr[2]),
+    );
+  }
+
+  @protected
+  BookmarkPageOptions dco_decode_bookmark_page_options(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return BookmarkPageOptions(
+      restrict: dco_decode_restrict(arr[0]),
+      tag: dco_decode_opt_String(arr[1]),
+      maxBookmarkId: dco_decode_opt_CastedPrimitive_u_64(arr[2]),
     );
   }
 
@@ -4242,9 +7370,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ArticleLink dco_decode_box_autoadd_article_link(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_article_link(raw);
+  }
+
+  @protected
   BookmarkAddOptions dco_decode_box_autoadd_bookmark_add_options(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_bookmark_add_options(raw);
+  }
+
+  @protected
+  BookmarkPageOptions dco_decode_box_autoadd_bookmark_page_options(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_bookmark_page_options(raw);
   }
 
   @protected
@@ -4266,9 +7408,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  FanboxFeed dco_decode_box_autoadd_fanbox_feed(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fanbox_feed(raw);
+  }
+
+  @protected
+  FanboxFile dco_decode_box_autoadd_fanbox_file(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fanbox_file(raw);
+  }
+
+  @protected
+  FanboxImage dco_decode_box_autoadd_fanbox_image(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_fanbox_image(raw);
+  }
+
+  @protected
   Illust dco_decode_box_autoadd_illust(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_illust(raw);
+  }
+
+  @protected
+  Novel dco_decode_box_autoadd_novel(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_novel(raw);
   }
 
   @protected
@@ -4300,15 +7466,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PixivisionConfig dco_decode_box_autoadd_pixivision_config(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_pixivision_config(raw);
+  }
+
+  @protected
+  PixivisionTag dco_decode_box_autoadd_pixivision_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_pixivision_tag(raw);
+  }
+
+  @protected
   Restrict dco_decode_box_autoadd_restrict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_restrict(raw);
   }
 
   @protected
+  SearchAiMode dco_decode_box_autoadd_search_ai_mode(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_search_ai_mode(raw);
+  }
+
+  @protected
   SearchOptions dco_decode_box_autoadd_search_options(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_search_options(raw);
+  }
+
+  @protected
+  Series dco_decode_box_autoadd_series(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_series(raw);
   }
 
   @protected
@@ -4330,9 +7520,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int dco_decode_box_autoadd_u_8(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
   UserAccountResult dco_decode_box_autoadd_user_account_result(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_user_account_result(raw);
+  }
+
+  @protected
+  Category dco_decode_category(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return Category.values[raw as int];
   }
 
   @protected
@@ -4383,6 +7585,339 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       comments: dco_decode_list_comment(arr[0]),
       nextUrl: dco_decode_opt_String(arr[1]),
     );
+  }
+
+  @protected
+  EmbedKind dco_decode_embed_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return EmbedKind.values[raw as int];
+  }
+
+  @protected
+  FanboxBlock dco_decode_fanbox_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return FanboxBlock_Paragraph(
+          text: dco_decode_String(raw[1]),
+          spans: dco_decode_list_fanbox_text_span(raw[2]),
+        );
+      case 1:
+        return FanboxBlock_Heading(text: dco_decode_String(raw[1]));
+      case 2:
+        return FanboxBlock_Image(
+          image: dco_decode_box_autoadd_fanbox_image(raw[1]),
+        );
+      case 3:
+        return FanboxBlock_File(
+          file: dco_decode_box_autoadd_fanbox_file(raw[1]),
+        );
+      case 4:
+        return FanboxBlock_Embed(
+          url: dco_decode_opt_String(raw[1]),
+          html: dco_decode_opt_String(raw[2]),
+        );
+      case 5:
+        return FanboxBlock_PostLink(
+          postId: dco_decode_String(raw[1]),
+          creatorId: dco_decode_String(raw[2]),
+          title: dco_decode_String(raw[3]),
+        );
+      case 6:
+        return FanboxBlock_Unknown(
+          text: dco_decode_String(raw[1]),
+          rawJson: dco_decode_String(raw[2]),
+        );
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  FanboxComment dco_decode_fanbox_comment(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    return FanboxComment(
+      id: dco_decode_String(arr[0]),
+      user: dco_decode_fanbox_user(arr[1]),
+      body: dco_decode_String(arr[2]),
+      createdDatetime: dco_decode_String(arr[3]),
+      isLiked: dco_decode_bool(arr[4]),
+      isOwn: dco_decode_bool(arr[5]),
+      likeCount: dco_decode_CastedPrimitive_u_64(arr[6]),
+      replies: dco_decode_list_fanbox_comment(arr[7]),
+    );
+  }
+
+  @protected
+  FanboxCommentPage dco_decode_fanbox_comment_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return FanboxCommentPage(
+      comments: dco_decode_list_fanbox_comment(arr[0]),
+      nextUrl: dco_decode_opt_String(arr[1]),
+      canComment: dco_decode_bool(arr[2]),
+    );
+  }
+
+  @protected
+  FanboxCreator dco_decode_fanbox_creator(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
+    return FanboxCreator(
+      creatorId: dco_decode_String(arr[0]),
+      user: dco_decode_fanbox_user(arr[1]),
+      description: dco_decode_String(arr[2]),
+      coverUrl: dco_decode_opt_String(arr[3]),
+      isFollowed: dco_decode_bool(arr[4]),
+      isSupported: dco_decode_bool(arr[5]),
+      hasAdultContent: dco_decode_bool(arr[6]),
+      profileLinks: dco_decode_list_String(arr[7]),
+      profileImages: dco_decode_list_String(arr[8]),
+    );
+  }
+
+  @protected
+  FanboxCreatorList dco_decode_fanbox_creator_list(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return FanboxCreatorList.values[raw as int];
+  }
+
+  @protected
+  FanboxCreatorPage dco_decode_fanbox_creator_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return FanboxCreatorPage(
+      creators: dco_decode_list_fanbox_creator(arr[0]),
+      nextPage: dco_decode_opt_box_autoadd_u_32(arr[1]),
+    );
+  }
+
+  @protected
+  FanboxFeed dco_decode_fanbox_feed(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return FanboxFeed_Home();
+      case 1:
+        return FanboxFeed_Supporting();
+      case 2:
+        return FanboxFeed_Creator(creatorId: dco_decode_String(raw[1]));
+      case 3:
+        return FanboxFeed_Tag(
+          tag: dco_decode_String(raw[1]),
+          creatorId: dco_decode_opt_String(raw[2]),
+          page: dco_decode_u_32(raw[3]),
+        );
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  FanboxFile dco_decode_fanbox_file(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return FanboxFile(
+      id: dco_decode_String(arr[0]),
+      name: dco_decode_String(arr[1]),
+      extension_: dco_decode_String(arr[2]),
+      size: dco_decode_CastedPrimitive_u_64(arr[3]),
+      url: dco_decode_String(arr[4]),
+    );
+  }
+
+  @protected
+  FanboxImage dco_decode_fanbox_image(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return FanboxImage(
+      id: dco_decode_String(arr[0]),
+      originalUrl: dco_decode_String(arr[1]),
+      thumbnailUrl: dco_decode_String(arr[2]),
+      width: dco_decode_u_32(arr[3]),
+      height: dco_decode_u_32(arr[4]),
+      extension_: dco_decode_String(arr[5]),
+    );
+  }
+
+  @protected
+  FanboxNotice dco_decode_fanbox_notice(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 10)
+      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
+    return FanboxNotice(
+      id: dco_decode_String(arr[0]),
+      kind: dco_decode_String(arr[1]),
+      userName: dco_decode_String(arr[2]),
+      title: dco_decode_String(arr[3]),
+      body: dco_decode_String(arr[4]),
+      date: dco_decode_String(arr[5]),
+      isUnread: dco_decode_bool(arr[6]),
+      postId: dco_decode_opt_String(arr[7]),
+      creatorId: dco_decode_opt_String(arr[8]),
+      iconUrl: dco_decode_opt_String(arr[9]),
+    );
+  }
+
+  @protected
+  FanboxNoticePage dco_decode_fanbox_notice_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return FanboxNoticePage(
+      notices: dco_decode_list_fanbox_notice(arr[0]),
+      nextUrl: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
+  FanboxPlan dco_decode_fanbox_plan(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return FanboxPlan(
+      id: dco_decode_String(arr[0]),
+      creatorId: dco_decode_String(arr[1]),
+      user: dco_decode_fanbox_user(arr[2]),
+      title: dco_decode_String(arr[3]),
+      description: dco_decode_String(arr[4]),
+      fee: dco_decode_CastedPrimitive_u_64(arr[5]),
+      coverUrl: dco_decode_opt_String(arr[6]),
+    );
+  }
+
+  @protected
+  FanboxPost dco_decode_fanbox_post(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 18)
+      throw Exception('unexpected arr length: expect 18 but see ${arr.length}');
+    return FanboxPost(
+      id: dco_decode_String(arr[0]),
+      creatorId: dco_decode_String(arr[1]),
+      user: dco_decode_fanbox_user(arr[2]),
+      title: dco_decode_String(arr[3]),
+      excerpt: dco_decode_String(arr[4]),
+      coverUrl: dco_decode_opt_String(arr[5]),
+      publishedDatetime: dco_decode_String(arr[6]),
+      updatedDatetime: dco_decode_String(arr[7]),
+      feeRequired: dco_decode_CastedPrimitive_u_64(arr[8]),
+      isRestricted: dco_decode_bool(arr[9]),
+      isLiked: dco_decode_bool(arr[10]),
+      likeCount: dco_decode_CastedPrimitive_u_64(arr[11]),
+      commentCount: dco_decode_CastedPrimitive_u_64(arr[12]),
+      tags: dco_decode_list_String(arr[13]),
+      blocks: dco_decode_list_fanbox_block(arr[14]),
+      previousPostId: dco_decode_opt_String(arr[15]),
+      nextPostId: dco_decode_opt_String(arr[16]),
+      unknownBodyJson: dco_decode_opt_String(arr[17]),
+    );
+  }
+
+  @protected
+  FanboxPostPage dco_decode_fanbox_post_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return FanboxPostPage(
+      posts: dco_decode_list_fanbox_post(arr[0]),
+      nextUrl: dco_decode_opt_String(arr[1]),
+      nextPage: dco_decode_opt_box_autoadd_u_32(arr[2]),
+    );
+  }
+
+  @protected
+  FanboxSupport dco_decode_fanbox_support(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return FanboxSupport(
+      creatorId: dco_decode_String(arr[0]),
+      fanCardUrl: dco_decode_opt_String(arr[1]),
+      startedDatetime: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
+  FanboxTag dco_decode_fanbox_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return FanboxTag(
+      name: dco_decode_String(arr[0]),
+      count: dco_decode_opt_CastedPrimitive_u_64(arr[1]),
+    );
+  }
+
+  @protected
+  FanboxTextSpan dco_decode_fanbox_text_span(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return FanboxTextSpan(
+      offset: dco_decode_u_32(arr[0]),
+      length: dco_decode_u_32(arr[1]),
+      bold: dco_decode_bool(arr[2]),
+      italic: dco_decode_bool(arr[3]),
+      url: dco_decode_opt_String(arr[4]),
+    );
+  }
+
+  @protected
+  FanboxUser dco_decode_fanbox_user(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return FanboxUser(
+      id: dco_decode_String(arr[0]),
+      name: dco_decode_String(arr[1]),
+      iconUrl: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
+  FeaturedWork dco_decode_featured_work(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    return FeaturedWork(
+      id: dco_decode_CastedPrimitive_u_64(arr[0]),
+      kind: dco_decode_featured_work_kind(arr[1]),
+      title: dco_decode_String(arr[2]),
+      url: dco_decode_String(arr[3]),
+      userId: dco_decode_opt_CastedPrimitive_u_64(arr[4]),
+      userName: dco_decode_opt_String(arr[5]),
+      preview: dco_decode_opt_String(arr[6]),
+      pageCount: dco_decode_opt_box_autoadd_u_32(arr[7]),
+    );
+  }
+
+  @protected
+  FeaturedWorkKind dco_decode_featured_work_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return FeaturedWorkKind.values[raw as int];
   }
 
   @protected
@@ -4447,34 +7982,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Illust dco_decode_illust(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 25)
-      throw Exception('unexpected arr length: expect 25 but see ${arr.length}');
+    if (arr.length != 26)
+      throw Exception('unexpected arr length: expect 26 but see ${arr.length}');
     return Illust(
       id: dco_decode_CastedPrimitive_u_64(arr[0]),
-      title: dco_decode_String(arr[1]),
-      kind: dco_decode_String(arr[2]),
-      imageUrls: dco_decode_image_urls(arr[3]),
-      caption: dco_decode_String(arr[4]),
-      restrict: dco_decode_i_32(arr[5]),
-      user: dco_decode_user(arr[6]),
-      tags: dco_decode_list_tag(arr[7]),
-      tools: dco_decode_list_String(arr[8]),
-      createDate: dco_decode_String(arr[9]),
-      pageCount: dco_decode_CastedPrimitive_u_64(arr[10]),
-      width: dco_decode_CastedPrimitive_u_64(arr[11]),
-      height: dco_decode_CastedPrimitive_u_64(arr[12]),
-      sanityLevel: dco_decode_i_32(arr[13]),
-      xRestrict: dco_decode_i_32(arr[14]),
-      metaSinglePage: dco_decode_meta_single_page(arr[15]),
-      metaPages: dco_decode_list_meta_page(arr[16]),
-      totalView: dco_decode_CastedPrimitive_u_64(arr[17]),
-      totalBookmarks: dco_decode_CastedPrimitive_u_64(arr[18]),
-      isBookmarked: dco_decode_bool(arr[19]),
-      visible: dco_decode_bool(arr[20]),
-      isMuted: dco_decode_bool(arr[21]),
-      totalComments: dco_decode_opt_CastedPrimitive_u_64(arr[22]),
-      illustAiType: dco_decode_i_32(arr[23]),
-      restrictionAttributes: dco_decode_opt_list_String(arr[24]),
+      series: dco_decode_opt_box_autoadd_series(arr[1]),
+      title: dco_decode_String(arr[2]),
+      kind: dco_decode_String(arr[3]),
+      imageUrls: dco_decode_image_urls(arr[4]),
+      caption: dco_decode_String(arr[5]),
+      restrict: dco_decode_i_32(arr[6]),
+      user: dco_decode_user(arr[7]),
+      tags: dco_decode_list_tag(arr[8]),
+      tools: dco_decode_list_String(arr[9]),
+      createDate: dco_decode_String(arr[10]),
+      pageCount: dco_decode_CastedPrimitive_u_64(arr[11]),
+      width: dco_decode_CastedPrimitive_u_64(arr[12]),
+      height: dco_decode_CastedPrimitive_u_64(arr[13]),
+      sanityLevel: dco_decode_i_32(arr[14]),
+      xRestrict: dco_decode_i_32(arr[15]),
+      metaSinglePage: dco_decode_meta_single_page(arr[16]),
+      metaPages: dco_decode_list_meta_page(arr[17]),
+      totalView: dco_decode_CastedPrimitive_u_64(arr[18]),
+      totalBookmarks: dco_decode_CastedPrimitive_u_64(arr[19]),
+      isBookmarked: dco_decode_bool(arr[20]),
+      visible: dco_decode_bool(arr[21]),
+      isMuted: dco_decode_bool(arr[22]),
+      totalComments: dco_decode_opt_CastedPrimitive_u_64(arr[23]),
+      illustAiType: dco_decode_i_32(arr[24]),
+      restrictionAttributes: dco_decode_opt_list_String(arr[25]),
     );
   }
 
@@ -4507,6 +8043,40 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  IllustSeriesDetail dco_decode_illust_series_detail(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 10)
+      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
+    return IllustSeriesDetail(
+      createDate: dco_decode_String(arr[0]),
+      seriesWorkCount: dco_decode_CastedPrimitive_u_64(arr[1]),
+      width: dco_decode_CastedPrimitive_u_64(arr[2]),
+      height: dco_decode_CastedPrimitive_u_64(arr[3]),
+      coverImageUrls: dco_decode_series_cover_image_urls(arr[4]),
+      watchlistAdded: dco_decode_bool(arr[5]),
+      id: dco_decode_CastedPrimitive_u_64(arr[6]),
+      title: dco_decode_String(arr[7]),
+      caption: dco_decode_String(arr[8]),
+      user: dco_decode_user(arr[9]),
+    );
+  }
+
+  @protected
+  IllustSeriesPageResult dco_decode_illust_series_page_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return IllustSeriesPageResult(
+      illustSeriesDetail: dco_decode_illust_series_detail(arr[0]),
+      illustSeriesFirstIllust: dco_decode_opt_box_autoadd_illust(arr[1]),
+      illusts: dco_decode_list_illust(arr[2]),
+      nextUrl: dco_decode_opt_String(arr[3]),
+    );
+  }
+
+  @protected
   IllustType dco_decode_illust_type(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return IllustType.values[raw as int];
@@ -4536,9 +8106,51 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Language dco_decode_language(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return Language.values[raw as int];
+  }
+
+  @protected
   List<String> dco_decode_list_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_String).toList();
+  }
+
+  @protected
+  List<ArticleBlock> dco_decode_list_article_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_article_block).toList();
+  }
+
+  @protected
+  List<ArticleEmbed> dco_decode_list_article_embed(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_article_embed).toList();
+  }
+
+  @protected
+  List<ArticleImage> dco_decode_list_article_image(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_article_image).toList();
+  }
+
+  @protected
+  List<ArticleLink> dco_decode_list_article_link(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_article_link).toList();
+  }
+
+  @protected
+  List<ArticleSection> dco_decode_list_article_section(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_article_section).toList();
+  }
+
+  @protected
+  List<ArticleSummary> dco_decode_list_article_summary(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_article_summary).toList();
   }
 
   @protected
@@ -4551,6 +8163,60 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<Comment> dco_decode_list_comment(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_comment).toList();
+  }
+
+  @protected
+  List<FanboxBlock> dco_decode_list_fanbox_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fanbox_block).toList();
+  }
+
+  @protected
+  List<FanboxComment> dco_decode_list_fanbox_comment(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fanbox_comment).toList();
+  }
+
+  @protected
+  List<FanboxCreator> dco_decode_list_fanbox_creator(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fanbox_creator).toList();
+  }
+
+  @protected
+  List<FanboxNotice> dco_decode_list_fanbox_notice(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fanbox_notice).toList();
+  }
+
+  @protected
+  List<FanboxPlan> dco_decode_list_fanbox_plan(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fanbox_plan).toList();
+  }
+
+  @protected
+  List<FanboxPost> dco_decode_list_fanbox_post(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fanbox_post).toList();
+  }
+
+  @protected
+  List<FanboxTag> dco_decode_list_fanbox_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fanbox_tag).toList();
+  }
+
+  @protected
+  List<FanboxTextSpan> dco_decode_list_fanbox_text_span(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_fanbox_text_span).toList();
+  }
+
+  @protected
+  List<FeaturedWork> dco_decode_list_featured_work(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_featured_work).toList();
   }
 
   @protected
@@ -4584,6 +8250,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<PixivisionTag> dco_decode_list_pixivision_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_pixivision_tag).toList();
+  }
+
+  @protected
   List<int> dco_decode_list_prim_i_32_loose(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as List<int>;
@@ -4614,9 +8286,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SpotlightArticle> dco_decode_list_spotlight_article(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_spotlight_article).toList();
+  }
+
+  @protected
   List<Tag> dco_decode_list_tag(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_tag).toList();
+  }
+
+  @protected
+  List<TagGroup> dco_decode_list_tag_group(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_tag_group).toList();
+  }
+
+  @protected
+  List<TagNode> dco_decode_list_tag_node(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_tag_node).toList();
   }
 
   @protected
@@ -4635,6 +8325,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<WebviewNovelImage> dco_decode_list_webview_novel_image(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_webview_novel_image).toList();
+  }
+
+  @protected
+  List<WorkBookmarkTag> dco_decode_list_work_bookmark_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_work_bookmark_tag).toList();
   }
 
   @protected
@@ -4795,6 +8491,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  NovelSeriesDetail dco_decode_novel_series_detail(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 11)
+      throw Exception('unexpected arr length: expect 11 but see ${arr.length}');
+    return NovelSeriesDetail(
+      id: dco_decode_CastedPrimitive_u_64(arr[0]),
+      title: dco_decode_String(arr[1]),
+      caption: dco_decode_String(arr[2]),
+      isOriginal: dco_decode_bool(arr[3]),
+      isConcluded: dco_decode_bool(arr[4]),
+      contentCount: dco_decode_CastedPrimitive_u_64(arr[5]),
+      totalCharacterCount: dco_decode_CastedPrimitive_u_64(arr[6]),
+      displayText: dco_decode_String(arr[7]),
+      novelAiType: dco_decode_i_32(arr[8]),
+      watchlistAdded: dco_decode_bool(arr[9]),
+      user: dco_decode_user(arr[10]),
+    );
+  }
+
+  @protected
+  NovelSeriesPageResult dco_decode_novel_series_page_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return NovelSeriesPageResult(
+      novelSeriesDetail: dco_decode_novel_series_detail(arr[0]),
+      novelSeriesFirstNovel: dco_decode_opt_box_autoadd_novel(arr[1]),
+      novelSeriesLatestNovel: dco_decode_opt_box_autoadd_novel(arr[2]),
+      novels: dco_decode_list_novel(arr[3]),
+      nextUrl: dco_decode_opt_String(arr[4]),
+    );
+  }
+
+  @protected
   int? dco_decode_opt_CastedPrimitive_u_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_CastedPrimitive_u_64(raw);
@@ -4807,9 +8539,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ArticleLink? dco_decode_opt_box_autoadd_article_link(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_article_link(raw);
+  }
+
+  @protected
   bool? dco_decode_opt_box_autoadd_bool(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_bool(raw);
+  }
+
+  @protected
+  Illust? dco_decode_opt_box_autoadd_illust(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_illust(raw);
+  }
+
+  @protected
+  Novel? dco_decode_opt_box_autoadd_novel(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_novel(raw);
   }
 
   @protected
@@ -4833,9 +8583,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PixivisionTag? dco_decode_opt_box_autoadd_pixivision_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_pixivision_tag(raw);
+  }
+
+  @protected
   Restrict? dco_decode_opt_box_autoadd_restrict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_restrict(raw);
+  }
+
+  @protected
+  SearchAiMode? dco_decode_opt_box_autoadd_search_ai_mode(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_search_ai_mode(raw);
+  }
+
+  @protected
+  Series? dco_decode_opt_box_autoadd_series(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_series(raw);
   }
 
   @protected
@@ -4854,6 +8622,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_u_32(raw);
+  }
+
+  @protected
+  int? dco_decode_opt_box_autoadd_u_8(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_u_8(raw);
   }
 
   @protected
@@ -4923,6 +8697,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PixivisionConfig dco_decode_pixivision_config(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return PixivisionConfig(
+      language: dco_decode_language(arr[0]),
+      proxy: dco_decode_opt_String(arr[1]),
+      acceptInvalidCerts: dco_decode_bool(arr[2]),
+    );
+  }
+
+  @protected
+  PixivisionTag dco_decode_pixivision_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return PixivisionTag(
+      id: dco_decode_CastedPrimitive_u_64(arr[0]),
+      name: dco_decode_String(arr[1]),
+      url: dco_decode_String(arr[2]),
+    );
+  }
+
+  @protected
   ProfileImageUrls dco_decode_profile_image_urls(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -4945,6 +8745,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Restrict dco_decode_restrict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return Restrict.values[raw as int];
+  }
+
+  @protected
+  SearchAiMode dco_decode_search_ai_mode(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return SearchAiMode.values[raw as int];
   }
 
   @protected
@@ -5020,6 +8826,51 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SeriesCoverImageUrls dco_decode_series_cover_image_urls(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 1)
+      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
+    return SeriesCoverImageUrls(medium: dco_decode_String(arr[0]));
+  }
+
+  @protected
+  SpotlightArticle dco_decode_spotlight_article(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    return SpotlightArticle(
+      id: dco_decode_CastedPrimitive_u_64(arr[0]),
+      title: dco_decode_String(arr[1]),
+      pureTitle: dco_decode_opt_String(arr[2]),
+      thumbnail: dco_decode_String(arr[3]),
+      articleUrl: dco_decode_String(arr[4]),
+      publishDate: dco_decode_String(arr[5]),
+      category: dco_decode_String(arr[6]),
+      subcategoryLabel: dco_decode_opt_String(arr[7]),
+    );
+  }
+
+  @protected
+  SpotlightCategory dco_decode_spotlight_category(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return SpotlightCategory.values[raw as int];
+  }
+
+  @protected
+  SpotlightPage dco_decode_spotlight_page(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SpotlightPage(
+      spotlightArticles: dco_decode_list_spotlight_article(arr[0]),
+      nextUrl: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
   Stamp dco_decode_stamp(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -5040,6 +8891,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     return Tag(
       name: dco_decode_String(arr[0]),
       translatedName: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
+  TagDirectory dco_decode_tag_directory(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return TagDirectory(
+      url: dco_decode_String(arr[0]),
+      groups: dco_decode_list_tag_group(arr[1]),
+    );
+  }
+
+  @protected
+  TagGroup dco_decode_tag_group(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return TagGroup(
+      name: dco_decode_String(arr[0]),
+      nodes: dco_decode_list_tag_node(arr[1]),
+    );
+  }
+
+  @protected
+  TagNode dco_decode_tag_node(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return TagNode(
+      name: dco_decode_String(arr[0]),
+      tag: dco_decode_opt_box_autoadd_pixivision_tag(arr[1]),
+      articleCount: dco_decode_opt_CastedPrimitive_u_64(arr[2]),
+      children: dco_decode_list_tag_node(arr[3]),
     );
   }
 
@@ -5345,6 +9234,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  WorkBookmarkDetail dco_decode_work_bookmark_detail(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return WorkBookmarkDetail(
+      isBookmarked: dco_decode_bool(arr[0]),
+      tags: dco_decode_list_work_bookmark_tag(arr[1]),
+      restrict: dco_decode_restrict(arr[2]),
+    );
+  }
+
+  @protected
+  WorkBookmarkDetailResult dco_decode_work_bookmark_detail_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 1)
+      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
+    return WorkBookmarkDetailResult(
+      bookmarkDetail: dco_decode_work_bookmark_detail(arr[0]),
+    );
+  }
+
+  @protected
+  WorkBookmarkTag dco_decode_work_bookmark_tag(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return WorkBookmarkTag(
+      name: dco_decode_String(arr[0]),
+      isRegistered: dco_decode_bool(arr[1]),
+    );
+  }
+
+  @protected
   WorkType dco_decode_work_type(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return WorkType.values[raw as int];
@@ -5373,6 +9298,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_String(deserializer);
     return AnyhowException(inner);
+  }
+
+  @protected
+  ArticleFeed
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArticleFeed(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return ArticleFeedImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  FanboxApi
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return FanboxApiImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
   }
 
   @protected
@@ -5406,6 +9355,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return PixivAuthImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  PixivisionApi
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return PixivisionApiImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
@@ -5448,6 +9409,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  FanboxApi
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return FanboxApiImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
   PixivApi
   sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
     SseDeserializer deserializer,
@@ -5466,6 +9439,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return PixivAuthImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  PixivisionApi
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return PixivisionApiImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
@@ -5492,6 +9477,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_record_string_string(deserializer);
     return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
+  }
+
+  @protected
+  ArticleFeed
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArticleFeed(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return ArticleFeedImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  FanboxApi
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return FanboxApiImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
   }
 
   @protected
@@ -5525,6 +9534,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return PixivAuthImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  PixivisionApi
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return PixivisionApiImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
@@ -5568,6 +9589,174 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Article sse_decode_article(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_language = sse_decode_language(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_description = sse_decode_opt_String(deserializer);
+    var var_thumbnail = sse_decode_opt_String(deserializer);
+    var var_publishDate = sse_decode_String(deserializer);
+    var var_category = sse_decode_opt_box_autoadd_article_link(deserializer);
+    var var_tags = sse_decode_list_pixivision_tag(deserializer);
+    var var_translations = sse_decode_list_article_link(deserializer);
+    var var_blocks = sse_decode_list_article_block(deserializer);
+    var var_related = sse_decode_list_article_section(deserializer);
+    var var_monthlyRanking = sse_decode_list_article_summary(deserializer);
+    var var_recommended = sse_decode_list_article_summary(deserializer);
+    var var_nextUrl = sse_decode_opt_String(deserializer);
+    var var_previousUrl = sse_decode_opt_String(deserializer);
+    return Article(
+      id: var_id,
+      url: var_url,
+      language: var_language,
+      title: var_title,
+      description: var_description,
+      thumbnail: var_thumbnail,
+      publishDate: var_publishDate,
+      category: var_category,
+      tags: var_tags,
+      translations: var_translations,
+      blocks: var_blocks,
+      related: var_related,
+      monthlyRanking: var_monthlyRanking,
+      recommended: var_recommended,
+      nextUrl: var_nextUrl,
+      previousUrl: var_previousUrl,
+    );
+  }
+
+  @protected
+  ArticleBlock sse_decode_article_block(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_kind = sse_decode_block_kind(deserializer);
+    var var_anchor = sse_decode_opt_String(deserializer);
+    var var_headingLevel = sse_decode_opt_box_autoadd_u_8(deserializer);
+    var var_html = sse_decode_String(deserializer);
+    var var_text = sse_decode_String(deserializer);
+    var var_images = sse_decode_list_article_image(deserializer);
+    var var_links = sse_decode_list_article_link(deserializer);
+    var var_works = sse_decode_list_featured_work(deserializer);
+    var var_embeds = sse_decode_list_article_embed(deserializer);
+    return ArticleBlock(
+      kind: var_kind,
+      anchor: var_anchor,
+      headingLevel: var_headingLevel,
+      html: var_html,
+      text: var_text,
+      images: var_images,
+      links: var_links,
+      works: var_works,
+      embeds: var_embeds,
+    );
+  }
+
+  @protected
+  ArticleEmbed sse_decode_article_embed(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_kind = sse_decode_embed_kind(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_title = sse_decode_opt_String(deserializer);
+    var var_poster = sse_decode_opt_String(deserializer);
+    return ArticleEmbed(
+      kind: var_kind,
+      url: var_url,
+      title: var_title,
+      poster: var_poster,
+    );
+  }
+
+  @protected
+  ArticleImage sse_decode_article_image(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_url = sse_decode_String(deserializer);
+    var var_alt = sse_decode_String(deserializer);
+    var var_width = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_height = sse_decode_opt_box_autoadd_u_32(deserializer);
+    return ArticleImage(
+      url: var_url,
+      alt: var_alt,
+      width: var_width,
+      height: var_height,
+    );
+  }
+
+  @protected
+  ArticleLink sse_decode_article_link(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_title = sse_decode_String(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    return ArticleLink(title: var_title, url: var_url);
+  }
+
+  @protected
+  ArticlePage sse_decode_article_page(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_url = sse_decode_String(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_description = sse_decode_opt_String(deserializer);
+    var var_articles = sse_decode_list_article_summary(deserializer);
+    var var_nextUrl = sse_decode_opt_String(deserializer);
+    var var_previousUrl = sse_decode_opt_String(deserializer);
+    var var_monthlyRanking = sse_decode_list_article_summary(deserializer);
+    var var_recommended = sse_decode_list_article_summary(deserializer);
+    var var_categories = sse_decode_list_article_link(deserializer);
+    return ArticlePage(
+      url: var_url,
+      title: var_title,
+      description: var_description,
+      articles: var_articles,
+      nextUrl: var_nextUrl,
+      previousUrl: var_previousUrl,
+      monthlyRanking: var_monthlyRanking,
+      recommended: var_recommended,
+      categories: var_categories,
+    );
+  }
+
+  @protected
+  ArticleSection sse_decode_article_section(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_title = sse_decode_String(deserializer);
+    var var_url = sse_decode_opt_String(deserializer);
+    var var_articles = sse_decode_list_article_summary(deserializer);
+    return ArticleSection(
+      title: var_title,
+      url: var_url,
+      articles: var_articles,
+    );
+  }
+
+  @protected
+  ArticleSummary sse_decode_article_summary(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_thumbnail = sse_decode_opt_String(deserializer);
+    var var_publishDate = sse_decode_opt_String(deserializer);
+    var var_category = sse_decode_opt_box_autoadd_article_link(deserializer);
+    var var_tags = sse_decode_list_pixivision_tag(deserializer);
+    return ArticleSummary(
+      id: var_id,
+      title: var_title,
+      url: var_url,
+      thumbnail: var_thumbnail,
+      publishDate: var_publishDate,
+      category: var_category,
+      tags: var_tags,
+    );
+  }
+
+  @protected
+  BlockKind sse_decode_block_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return BlockKind.values[inner];
+  }
+
+  @protected
   BookmarkAddOptions sse_decode_bookmark_add_options(
     SseDeserializer deserializer,
   ) {
@@ -5579,6 +9768,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       tags: var_tags,
       restrict: var_restrict,
       isNovel: var_isNovel,
+    );
+  }
+
+  @protected
+  BookmarkPageOptions sse_decode_bookmark_page_options(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_restrict = sse_decode_restrict(deserializer);
+    var var_tag = sse_decode_opt_String(deserializer);
+    var var_maxBookmarkId = sse_decode_opt_CastedPrimitive_u_64(deserializer);
+    return BookmarkPageOptions(
+      restrict: var_restrict,
+      tag: var_tag,
+      maxBookmarkId: var_maxBookmarkId,
     );
   }
 
@@ -5620,11 +9824,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ArticleLink sse_decode_box_autoadd_article_link(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_article_link(deserializer));
+  }
+
+  @protected
   BookmarkAddOptions sse_decode_box_autoadd_bookmark_add_options(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_bookmark_add_options(deserializer));
+  }
+
+  @protected
+  BookmarkPageOptions sse_decode_box_autoadd_bookmark_page_options(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_bookmark_page_options(deserializer));
   }
 
   @protected
@@ -5650,9 +9870,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  FanboxFeed sse_decode_box_autoadd_fanbox_feed(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fanbox_feed(deserializer));
+  }
+
+  @protected
+  FanboxFile sse_decode_box_autoadd_fanbox_file(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fanbox_file(deserializer));
+  }
+
+  @protected
+  FanboxImage sse_decode_box_autoadd_fanbox_image(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_fanbox_image(deserializer));
+  }
+
+  @protected
   Illust sse_decode_box_autoadd_illust(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_illust(deserializer));
+  }
+
+  @protected
+  Novel sse_decode_box_autoadd_novel(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_novel(deserializer));
   }
 
   @protected
@@ -5688,9 +9934,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PixivisionConfig sse_decode_box_autoadd_pixivision_config(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_pixivision_config(deserializer));
+  }
+
+  @protected
+  PixivisionTag sse_decode_box_autoadd_pixivision_tag(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_pixivision_tag(deserializer));
+  }
+
+  @protected
   Restrict sse_decode_box_autoadd_restrict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_restrict(deserializer));
+  }
+
+  @protected
+  SearchAiMode sse_decode_box_autoadd_search_ai_mode(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_search_ai_mode(deserializer));
   }
 
   @protected
@@ -5699,6 +9969,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_search_options(deserializer));
+  }
+
+  @protected
+  Series sse_decode_box_autoadd_series(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_series(deserializer));
   }
 
   @protected
@@ -5720,11 +9996,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int sse_decode_box_autoadd_u_8(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_u_8(deserializer));
+  }
+
+  @protected
   UserAccountResult sse_decode_box_autoadd_user_account_result(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_user_account_result(deserializer));
+  }
+
+  @protected
+  Category sse_decode_category(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return Category.values[inner];
   }
 
   @protected
@@ -5776,6 +10065,388 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_comments = sse_decode_list_comment(deserializer);
     var var_nextUrl = sse_decode_opt_String(deserializer);
     return CommentPageResult(comments: var_comments, nextUrl: var_nextUrl);
+  }
+
+  @protected
+  EmbedKind sse_decode_embed_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return EmbedKind.values[inner];
+  }
+
+  @protected
+  FanboxBlock sse_decode_fanbox_block(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        var var_text = sse_decode_String(deserializer);
+        var var_spans = sse_decode_list_fanbox_text_span(deserializer);
+        return FanboxBlock_Paragraph(text: var_text, spans: var_spans);
+      case 1:
+        var var_text = sse_decode_String(deserializer);
+        return FanboxBlock_Heading(text: var_text);
+      case 2:
+        var var_image = sse_decode_box_autoadd_fanbox_image(deserializer);
+        return FanboxBlock_Image(image: var_image);
+      case 3:
+        var var_file = sse_decode_box_autoadd_fanbox_file(deserializer);
+        return FanboxBlock_File(file: var_file);
+      case 4:
+        var var_url = sse_decode_opt_String(deserializer);
+        var var_html = sse_decode_opt_String(deserializer);
+        return FanboxBlock_Embed(url: var_url, html: var_html);
+      case 5:
+        var var_postId = sse_decode_String(deserializer);
+        var var_creatorId = sse_decode_String(deserializer);
+        var var_title = sse_decode_String(deserializer);
+        return FanboxBlock_PostLink(
+          postId: var_postId,
+          creatorId: var_creatorId,
+          title: var_title,
+        );
+      case 6:
+        var var_text = sse_decode_String(deserializer);
+        var var_rawJson = sse_decode_String(deserializer);
+        return FanboxBlock_Unknown(text: var_text, rawJson: var_rawJson);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  FanboxComment sse_decode_fanbox_comment(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_user = sse_decode_fanbox_user(deserializer);
+    var var_body = sse_decode_String(deserializer);
+    var var_createdDatetime = sse_decode_String(deserializer);
+    var var_isLiked = sse_decode_bool(deserializer);
+    var var_isOwn = sse_decode_bool(deserializer);
+    var var_likeCount = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_replies = sse_decode_list_fanbox_comment(deserializer);
+    return FanboxComment(
+      id: var_id,
+      user: var_user,
+      body: var_body,
+      createdDatetime: var_createdDatetime,
+      isLiked: var_isLiked,
+      isOwn: var_isOwn,
+      likeCount: var_likeCount,
+      replies: var_replies,
+    );
+  }
+
+  @protected
+  FanboxCommentPage sse_decode_fanbox_comment_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_comments = sse_decode_list_fanbox_comment(deserializer);
+    var var_nextUrl = sse_decode_opt_String(deserializer);
+    var var_canComment = sse_decode_bool(deserializer);
+    return FanboxCommentPage(
+      comments: var_comments,
+      nextUrl: var_nextUrl,
+      canComment: var_canComment,
+    );
+  }
+
+  @protected
+  FanboxCreator sse_decode_fanbox_creator(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_creatorId = sse_decode_String(deserializer);
+    var var_user = sse_decode_fanbox_user(deserializer);
+    var var_description = sse_decode_String(deserializer);
+    var var_coverUrl = sse_decode_opt_String(deserializer);
+    var var_isFollowed = sse_decode_bool(deserializer);
+    var var_isSupported = sse_decode_bool(deserializer);
+    var var_hasAdultContent = sse_decode_bool(deserializer);
+    var var_profileLinks = sse_decode_list_String(deserializer);
+    var var_profileImages = sse_decode_list_String(deserializer);
+    return FanboxCreator(
+      creatorId: var_creatorId,
+      user: var_user,
+      description: var_description,
+      coverUrl: var_coverUrl,
+      isFollowed: var_isFollowed,
+      isSupported: var_isSupported,
+      hasAdultContent: var_hasAdultContent,
+      profileLinks: var_profileLinks,
+      profileImages: var_profileImages,
+    );
+  }
+
+  @protected
+  FanboxCreatorList sse_decode_fanbox_creator_list(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return FanboxCreatorList.values[inner];
+  }
+
+  @protected
+  FanboxCreatorPage sse_decode_fanbox_creator_page(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_creators = sse_decode_list_fanbox_creator(deserializer);
+    var var_nextPage = sse_decode_opt_box_autoadd_u_32(deserializer);
+    return FanboxCreatorPage(creators: var_creators, nextPage: var_nextPage);
+  }
+
+  @protected
+  FanboxFeed sse_decode_fanbox_feed(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        return FanboxFeed_Home();
+      case 1:
+        return FanboxFeed_Supporting();
+      case 2:
+        var var_creatorId = sse_decode_String(deserializer);
+        return FanboxFeed_Creator(creatorId: var_creatorId);
+      case 3:
+        var var_tag = sse_decode_String(deserializer);
+        var var_creatorId = sse_decode_opt_String(deserializer);
+        var var_page = sse_decode_u_32(deserializer);
+        return FanboxFeed_Tag(
+          tag: var_tag,
+          creatorId: var_creatorId,
+          page: var_page,
+        );
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  FanboxFile sse_decode_fanbox_file(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_extension_ = sse_decode_String(deserializer);
+    var var_size = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    return FanboxFile(
+      id: var_id,
+      name: var_name,
+      extension_: var_extension_,
+      size: var_size,
+      url: var_url,
+    );
+  }
+
+  @protected
+  FanboxImage sse_decode_fanbox_image(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_originalUrl = sse_decode_String(deserializer);
+    var var_thumbnailUrl = sse_decode_String(deserializer);
+    var var_width = sse_decode_u_32(deserializer);
+    var var_height = sse_decode_u_32(deserializer);
+    var var_extension_ = sse_decode_String(deserializer);
+    return FanboxImage(
+      id: var_id,
+      originalUrl: var_originalUrl,
+      thumbnailUrl: var_thumbnailUrl,
+      width: var_width,
+      height: var_height,
+      extension_: var_extension_,
+    );
+  }
+
+  @protected
+  FanboxNotice sse_decode_fanbox_notice(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_kind = sse_decode_String(deserializer);
+    var var_userName = sse_decode_String(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_body = sse_decode_String(deserializer);
+    var var_date = sse_decode_String(deserializer);
+    var var_isUnread = sse_decode_bool(deserializer);
+    var var_postId = sse_decode_opt_String(deserializer);
+    var var_creatorId = sse_decode_opt_String(deserializer);
+    var var_iconUrl = sse_decode_opt_String(deserializer);
+    return FanboxNotice(
+      id: var_id,
+      kind: var_kind,
+      userName: var_userName,
+      title: var_title,
+      body: var_body,
+      date: var_date,
+      isUnread: var_isUnread,
+      postId: var_postId,
+      creatorId: var_creatorId,
+      iconUrl: var_iconUrl,
+    );
+  }
+
+  @protected
+  FanboxNoticePage sse_decode_fanbox_notice_page(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_notices = sse_decode_list_fanbox_notice(deserializer);
+    var var_nextUrl = sse_decode_opt_String(deserializer);
+    return FanboxNoticePage(notices: var_notices, nextUrl: var_nextUrl);
+  }
+
+  @protected
+  FanboxPlan sse_decode_fanbox_plan(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_creatorId = sse_decode_String(deserializer);
+    var var_user = sse_decode_fanbox_user(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_description = sse_decode_String(deserializer);
+    var var_fee = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_coverUrl = sse_decode_opt_String(deserializer);
+    return FanboxPlan(
+      id: var_id,
+      creatorId: var_creatorId,
+      user: var_user,
+      title: var_title,
+      description: var_description,
+      fee: var_fee,
+      coverUrl: var_coverUrl,
+    );
+  }
+
+  @protected
+  FanboxPost sse_decode_fanbox_post(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_creatorId = sse_decode_String(deserializer);
+    var var_user = sse_decode_fanbox_user(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_excerpt = sse_decode_String(deserializer);
+    var var_coverUrl = sse_decode_opt_String(deserializer);
+    var var_publishedDatetime = sse_decode_String(deserializer);
+    var var_updatedDatetime = sse_decode_String(deserializer);
+    var var_feeRequired = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_isRestricted = sse_decode_bool(deserializer);
+    var var_isLiked = sse_decode_bool(deserializer);
+    var var_likeCount = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_commentCount = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_tags = sse_decode_list_String(deserializer);
+    var var_blocks = sse_decode_list_fanbox_block(deserializer);
+    var var_previousPostId = sse_decode_opt_String(deserializer);
+    var var_nextPostId = sse_decode_opt_String(deserializer);
+    var var_unknownBodyJson = sse_decode_opt_String(deserializer);
+    return FanboxPost(
+      id: var_id,
+      creatorId: var_creatorId,
+      user: var_user,
+      title: var_title,
+      excerpt: var_excerpt,
+      coverUrl: var_coverUrl,
+      publishedDatetime: var_publishedDatetime,
+      updatedDatetime: var_updatedDatetime,
+      feeRequired: var_feeRequired,
+      isRestricted: var_isRestricted,
+      isLiked: var_isLiked,
+      likeCount: var_likeCount,
+      commentCount: var_commentCount,
+      tags: var_tags,
+      blocks: var_blocks,
+      previousPostId: var_previousPostId,
+      nextPostId: var_nextPostId,
+      unknownBodyJson: var_unknownBodyJson,
+    );
+  }
+
+  @protected
+  FanboxPostPage sse_decode_fanbox_post_page(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_posts = sse_decode_list_fanbox_post(deserializer);
+    var var_nextUrl = sse_decode_opt_String(deserializer);
+    var var_nextPage = sse_decode_opt_box_autoadd_u_32(deserializer);
+    return FanboxPostPage(
+      posts: var_posts,
+      nextUrl: var_nextUrl,
+      nextPage: var_nextPage,
+    );
+  }
+
+  @protected
+  FanboxSupport sse_decode_fanbox_support(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_creatorId = sse_decode_String(deserializer);
+    var var_fanCardUrl = sse_decode_opt_String(deserializer);
+    var var_startedDatetime = sse_decode_opt_String(deserializer);
+    return FanboxSupport(
+      creatorId: var_creatorId,
+      fanCardUrl: var_fanCardUrl,
+      startedDatetime: var_startedDatetime,
+    );
+  }
+
+  @protected
+  FanboxTag sse_decode_fanbox_tag(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_count = sse_decode_opt_CastedPrimitive_u_64(deserializer);
+    return FanboxTag(name: var_name, count: var_count);
+  }
+
+  @protected
+  FanboxTextSpan sse_decode_fanbox_text_span(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_offset = sse_decode_u_32(deserializer);
+    var var_length = sse_decode_u_32(deserializer);
+    var var_bold = sse_decode_bool(deserializer);
+    var var_italic = sse_decode_bool(deserializer);
+    var var_url = sse_decode_opt_String(deserializer);
+    return FanboxTextSpan(
+      offset: var_offset,
+      length: var_length,
+      bold: var_bold,
+      italic: var_italic,
+      url: var_url,
+    );
+  }
+
+  @protected
+  FanboxUser sse_decode_fanbox_user(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_iconUrl = sse_decode_opt_String(deserializer);
+    return FanboxUser(id: var_id, name: var_name, iconUrl: var_iconUrl);
+  }
+
+  @protected
+  FeaturedWork sse_decode_featured_work(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_kind = sse_decode_featured_work_kind(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_userId = sse_decode_opt_CastedPrimitive_u_64(deserializer);
+    var var_userName = sse_decode_opt_String(deserializer);
+    var var_preview = sse_decode_opt_String(deserializer);
+    var var_pageCount = sse_decode_opt_box_autoadd_u_32(deserializer);
+    return FeaturedWork(
+      id: var_id,
+      kind: var_kind,
+      title: var_title,
+      url: var_url,
+      userId: var_userId,
+      userName: var_userName,
+      preview: var_preview,
+      pageCount: var_pageCount,
+    );
+  }
+
+  @protected
+  FeaturedWorkKind sse_decode_featured_work_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return FeaturedWorkKind.values[inner];
   }
 
   @protected
@@ -5848,6 +10519,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Illust sse_decode_illust(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_id = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_series = sse_decode_opt_box_autoadd_series(deserializer);
     var var_title = sse_decode_String(deserializer);
     var var_kind = sse_decode_String(deserializer);
     var var_imageUrls = sse_decode_image_urls(deserializer);
@@ -5874,6 +10546,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_restrictionAttributes = sse_decode_opt_list_String(deserializer);
     return Illust(
       id: var_id,
+      series: var_series,
       title: var_title,
       kind: var_kind,
       imageUrls: var_imageUrls,
@@ -5933,6 +10606,54 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  IllustSeriesDetail sse_decode_illust_series_detail(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_createDate = sse_decode_String(deserializer);
+    var var_seriesWorkCount = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_width = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_height = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_coverImageUrls = sse_decode_series_cover_image_urls(deserializer);
+    var var_watchlistAdded = sse_decode_bool(deserializer);
+    var var_id = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_caption = sse_decode_String(deserializer);
+    var var_user = sse_decode_user(deserializer);
+    return IllustSeriesDetail(
+      createDate: var_createDate,
+      seriesWorkCount: var_seriesWorkCount,
+      width: var_width,
+      height: var_height,
+      coverImageUrls: var_coverImageUrls,
+      watchlistAdded: var_watchlistAdded,
+      id: var_id,
+      title: var_title,
+      caption: var_caption,
+      user: var_user,
+    );
+  }
+
+  @protected
+  IllustSeriesPageResult sse_decode_illust_series_page_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_illustSeriesDetail = sse_decode_illust_series_detail(deserializer);
+    var var_illustSeriesFirstIllust = sse_decode_opt_box_autoadd_illust(
+      deserializer,
+    );
+    var var_illusts = sse_decode_list_illust(deserializer);
+    var var_nextUrl = sse_decode_opt_String(deserializer);
+    return IllustSeriesPageResult(
+      illustSeriesDetail: var_illustSeriesDetail,
+      illustSeriesFirstIllust: var_illustSeriesFirstIllust,
+      illusts: var_illusts,
+      nextUrl: var_nextUrl,
+    );
+  }
+
+  @protected
   IllustType sse_decode_illust_type(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
@@ -5961,6 +10682,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Language sse_decode_language(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return Language.values[inner];
+  }
+
+  @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -5968,6 +10696,88 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <String>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_String(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ArticleBlock> sse_decode_list_article_block(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ArticleBlock>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_article_block(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ArticleEmbed> sse_decode_list_article_embed(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ArticleEmbed>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_article_embed(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ArticleImage> sse_decode_list_article_image(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ArticleImage>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_article_image(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ArticleLink> sse_decode_list_article_link(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ArticleLink>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_article_link(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ArticleSection> sse_decode_list_article_section(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ArticleSection>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_article_section(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ArticleSummary> sse_decode_list_article_summary(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ArticleSummary>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_article_summary(deserializer));
     }
     return ans_;
   }
@@ -5992,6 +10802,124 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <Comment>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_comment(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FanboxBlock> sse_decode_list_fanbox_block(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FanboxBlock>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fanbox_block(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FanboxComment> sse_decode_list_fanbox_comment(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FanboxComment>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fanbox_comment(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FanboxCreator> sse_decode_list_fanbox_creator(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FanboxCreator>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fanbox_creator(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FanboxNotice> sse_decode_list_fanbox_notice(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FanboxNotice>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fanbox_notice(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FanboxPlan> sse_decode_list_fanbox_plan(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FanboxPlan>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fanbox_plan(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FanboxPost> sse_decode_list_fanbox_post(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FanboxPost>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fanbox_post(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FanboxTag> sse_decode_list_fanbox_tag(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FanboxTag>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fanbox_tag(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FanboxTextSpan> sse_decode_list_fanbox_text_span(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FanboxTextSpan>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_fanbox_text_span(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<FeaturedWork> sse_decode_list_featured_work(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <FeaturedWork>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_featured_work(deserializer));
     }
     return ans_;
   }
@@ -6059,6 +10987,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<PixivisionTag> sse_decode_list_pixivision_tag(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <PixivisionTag>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_pixivision_tag(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<int> sse_decode_list_prim_i_32_loose(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
@@ -6101,6 +11043,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SpotlightArticle> sse_decode_list_spotlight_article(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SpotlightArticle>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_spotlight_article(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<Tag> sse_decode_list_tag(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -6108,6 +11064,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <Tag>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_tag(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<TagGroup> sse_decode_list_tag_group(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <TagGroup>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_tag_group(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<TagNode> sse_decode_list_tag_node(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <TagNode>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_tag_node(deserializer));
     }
     return ans_;
   }
@@ -6146,6 +11126,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <WebviewNovelImage>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_webview_novel_image(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<WorkBookmarkTag> sse_decode_list_work_bookmark_tag(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <WorkBookmarkTag>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_work_bookmark_tag(deserializer));
     }
     return ans_;
   }
@@ -6337,6 +11331,60 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  NovelSeriesDetail sse_decode_novel_series_detail(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_caption = sse_decode_String(deserializer);
+    var var_isOriginal = sse_decode_bool(deserializer);
+    var var_isConcluded = sse_decode_bool(deserializer);
+    var var_contentCount = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_totalCharacterCount = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_displayText = sse_decode_String(deserializer);
+    var var_novelAiType = sse_decode_i_32(deserializer);
+    var var_watchlistAdded = sse_decode_bool(deserializer);
+    var var_user = sse_decode_user(deserializer);
+    return NovelSeriesDetail(
+      id: var_id,
+      title: var_title,
+      caption: var_caption,
+      isOriginal: var_isOriginal,
+      isConcluded: var_isConcluded,
+      contentCount: var_contentCount,
+      totalCharacterCount: var_totalCharacterCount,
+      displayText: var_displayText,
+      novelAiType: var_novelAiType,
+      watchlistAdded: var_watchlistAdded,
+      user: var_user,
+    );
+  }
+
+  @protected
+  NovelSeriesPageResult sse_decode_novel_series_page_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_novelSeriesDetail = sse_decode_novel_series_detail(deserializer);
+    var var_novelSeriesFirstNovel = sse_decode_opt_box_autoadd_novel(
+      deserializer,
+    );
+    var var_novelSeriesLatestNovel = sse_decode_opt_box_autoadd_novel(
+      deserializer,
+    );
+    var var_novels = sse_decode_list_novel(deserializer);
+    var var_nextUrl = sse_decode_opt_String(deserializer);
+    return NovelSeriesPageResult(
+      novelSeriesDetail: var_novelSeriesDetail,
+      novelSeriesFirstNovel: var_novelSeriesFirstNovel,
+      novelSeriesLatestNovel: var_novelSeriesLatestNovel,
+      novels: var_novels,
+      nextUrl: var_nextUrl,
+    );
+  }
+
+  @protected
   int? sse_decode_opt_CastedPrimitive_u_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -6359,11 +11407,46 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ArticleLink? sse_decode_opt_box_autoadd_article_link(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_article_link(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   bool? sse_decode_opt_box_autoadd_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_bool(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  Illust? sse_decode_opt_box_autoadd_illust(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_illust(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  Novel? sse_decode_opt_box_autoadd_novel(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_novel(deserializer));
     } else {
       return null;
     }
@@ -6396,11 +11479,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PixivisionTag? sse_decode_opt_box_autoadd_pixivision_tag(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_pixivision_tag(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   Restrict? sse_decode_opt_box_autoadd_restrict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_restrict(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SearchAiMode? sse_decode_opt_box_autoadd_search_ai_mode(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_search_ai_mode(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  Series? sse_decode_opt_box_autoadd_series(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_series(deserializer));
     } else {
       return null;
     }
@@ -6434,6 +11554,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_u_32(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  int? sse_decode_opt_box_autoadd_u_8(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_u_8(deserializer));
     } else {
       return null;
     }
@@ -6526,6 +11657,28 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PixivisionConfig sse_decode_pixivision_config(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_language = sse_decode_language(deserializer);
+    var var_proxy = sse_decode_opt_String(deserializer);
+    var var_acceptInvalidCerts = sse_decode_bool(deserializer);
+    return PixivisionConfig(
+      language: var_language,
+      proxy: var_proxy,
+      acceptInvalidCerts: var_acceptInvalidCerts,
+    );
+  }
+
+  @protected
+  PixivisionTag sse_decode_pixivision_tag(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    return PixivisionTag(id: var_id, name: var_name, url: var_url);
+  }
+
+  @protected
   ProfileImageUrls sse_decode_profile_image_urls(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_medium = sse_decode_String(deserializer);
@@ -6547,6 +11700,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
     return Restrict.values[inner];
+  }
+
+  @protected
+  SearchAiMode sse_decode_search_ai_mode(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return SearchAiMode.values[inner];
   }
 
   @protected
@@ -6624,6 +11784,58 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SeriesCoverImageUrls sse_decode_series_cover_image_urls(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_medium = sse_decode_String(deserializer);
+    return SeriesCoverImageUrls(medium: var_medium);
+  }
+
+  @protected
+  SpotlightArticle sse_decode_spotlight_article(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_pureTitle = sse_decode_opt_String(deserializer);
+    var var_thumbnail = sse_decode_String(deserializer);
+    var var_articleUrl = sse_decode_String(deserializer);
+    var var_publishDate = sse_decode_String(deserializer);
+    var var_category = sse_decode_String(deserializer);
+    var var_subcategoryLabel = sse_decode_opt_String(deserializer);
+    return SpotlightArticle(
+      id: var_id,
+      title: var_title,
+      pureTitle: var_pureTitle,
+      thumbnail: var_thumbnail,
+      articleUrl: var_articleUrl,
+      publishDate: var_publishDate,
+      category: var_category,
+      subcategoryLabel: var_subcategoryLabel,
+    );
+  }
+
+  @protected
+  SpotlightCategory sse_decode_spotlight_category(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return SpotlightCategory.values[inner];
+  }
+
+  @protected
+  SpotlightPage sse_decode_spotlight_page(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_spotlightArticles = sse_decode_list_spotlight_article(deserializer);
+    var var_nextUrl = sse_decode_opt_String(deserializer);
+    return SpotlightPage(
+      spotlightArticles: var_spotlightArticles,
+      nextUrl: var_nextUrl,
+    );
+  }
+
+  @protected
   Stamp sse_decode_stamp(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_stampId = sse_decode_CastedPrimitive_u_64(deserializer);
@@ -6637,6 +11849,37 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_name = sse_decode_String(deserializer);
     var var_translatedName = sse_decode_opt_String(deserializer);
     return Tag(name: var_name, translatedName: var_translatedName);
+  }
+
+  @protected
+  TagDirectory sse_decode_tag_directory(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_url = sse_decode_String(deserializer);
+    var var_groups = sse_decode_list_tag_group(deserializer);
+    return TagDirectory(url: var_url, groups: var_groups);
+  }
+
+  @protected
+  TagGroup sse_decode_tag_group(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_nodes = sse_decode_list_tag_node(deserializer);
+    return TagGroup(name: var_name, nodes: var_nodes);
+  }
+
+  @protected
+  TagNode sse_decode_tag_node(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_tag = sse_decode_opt_box_autoadd_pixivision_tag(deserializer);
+    var var_articleCount = sse_decode_opt_CastedPrimitive_u_64(deserializer);
+    var var_children = sse_decode_list_tag_node(deserializer);
+    return TagNode(
+      name: var_name,
+      tag: var_tag,
+      articleCount: var_articleCount,
+      children: var_children,
+    );
   }
 
   @protected
@@ -7005,6 +12248,38 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  WorkBookmarkDetail sse_decode_work_bookmark_detail(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_isBookmarked = sse_decode_bool(deserializer);
+    var var_tags = sse_decode_list_work_bookmark_tag(deserializer);
+    var var_restrict = sse_decode_restrict(deserializer);
+    return WorkBookmarkDetail(
+      isBookmarked: var_isBookmarked,
+      tags: var_tags,
+      restrict: var_restrict,
+    );
+  }
+
+  @protected
+  WorkBookmarkDetailResult sse_decode_work_bookmark_detail_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_bookmarkDetail = sse_decode_work_bookmark_detail(deserializer);
+    return WorkBookmarkDetailResult(bookmarkDetail: var_bookmarkDetail);
+  }
+
+  @protected
+  WorkBookmarkTag sse_decode_work_bookmark_tag(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_isRegistered = sse_decode_bool(deserializer);
+    return WorkBookmarkTag(name: var_name, isRegistered: var_isRegistered);
+  }
+
+  @protected
   WorkType sse_decode_work_type(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
@@ -7031,6 +12306,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.message, serializer);
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArticleFeed(
+    ArticleFeed self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as ArticleFeedImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    FanboxApi self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as FanboxApiImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
   }
 
   @protected
@@ -7068,6 +12369,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
       (self as PixivAuthImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+    PixivisionApi self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as PixivisionApiImpl).frbInternalSseEncode(move: true),
       serializer,
     );
   }
@@ -7113,6 +12427,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    FanboxApi self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as FanboxApiImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
   sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivApi(
     PixivApi self,
     SseSerializer serializer,
@@ -7138,6 +12465,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+    PixivisionApi self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as PixivisionApiImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
   void sse_encode_CastedPrimitive_i_64(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_64(sseEncodeCastedPrimitiveI64(self), serializer);
@@ -7157,6 +12497,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_record_string_string(
       self.entries.map((e) => (e.key, e.value)).toList(),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArticleFeed(
+    ArticleFeed self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as ArticleFeedImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerFanboxApi(
+    FanboxApi self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as FanboxApiImpl).frbInternalSseEncode(move: null),
       serializer,
     );
   }
@@ -7196,6 +12562,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
       (self as PixivAuthImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPixivisionApi(
+    PixivisionApi self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as PixivisionApiImpl).frbInternalSseEncode(move: null),
       serializer,
     );
   }
@@ -7254,6 +12633,112 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_article(Article self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_CastedPrimitive_u_64(self.id, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_language(self.language, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_opt_String(self.description, serializer);
+    sse_encode_opt_String(self.thumbnail, serializer);
+    sse_encode_String(self.publishDate, serializer);
+    sse_encode_opt_box_autoadd_article_link(self.category, serializer);
+    sse_encode_list_pixivision_tag(self.tags, serializer);
+    sse_encode_list_article_link(self.translations, serializer);
+    sse_encode_list_article_block(self.blocks, serializer);
+    sse_encode_list_article_section(self.related, serializer);
+    sse_encode_list_article_summary(self.monthlyRanking, serializer);
+    sse_encode_list_article_summary(self.recommended, serializer);
+    sse_encode_opt_String(self.nextUrl, serializer);
+    sse_encode_opt_String(self.previousUrl, serializer);
+  }
+
+  @protected
+  void sse_encode_article_block(ArticleBlock self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_block_kind(self.kind, serializer);
+    sse_encode_opt_String(self.anchor, serializer);
+    sse_encode_opt_box_autoadd_u_8(self.headingLevel, serializer);
+    sse_encode_String(self.html, serializer);
+    sse_encode_String(self.text, serializer);
+    sse_encode_list_article_image(self.images, serializer);
+    sse_encode_list_article_link(self.links, serializer);
+    sse_encode_list_featured_work(self.works, serializer);
+    sse_encode_list_article_embed(self.embeds, serializer);
+  }
+
+  @protected
+  void sse_encode_article_embed(ArticleEmbed self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_embed_kind(self.kind, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_opt_String(self.title, serializer);
+    sse_encode_opt_String(self.poster, serializer);
+  }
+
+  @protected
+  void sse_encode_article_image(ArticleImage self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.url, serializer);
+    sse_encode_String(self.alt, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.width, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.height, serializer);
+  }
+
+  @protected
+  void sse_encode_article_link(ArticleLink self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.title, serializer);
+    sse_encode_String(self.url, serializer);
+  }
+
+  @protected
+  void sse_encode_article_page(ArticlePage self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.url, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_opt_String(self.description, serializer);
+    sse_encode_list_article_summary(self.articles, serializer);
+    sse_encode_opt_String(self.nextUrl, serializer);
+    sse_encode_opt_String(self.previousUrl, serializer);
+    sse_encode_list_article_summary(self.monthlyRanking, serializer);
+    sse_encode_list_article_summary(self.recommended, serializer);
+    sse_encode_list_article_link(self.categories, serializer);
+  }
+
+  @protected
+  void sse_encode_article_section(
+    ArticleSection self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.title, serializer);
+    sse_encode_opt_String(self.url, serializer);
+    sse_encode_list_article_summary(self.articles, serializer);
+  }
+
+  @protected
+  void sse_encode_article_summary(
+    ArticleSummary self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_CastedPrimitive_u_64(self.id, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_opt_String(self.thumbnail, serializer);
+    sse_encode_opt_String(self.publishDate, serializer);
+    sse_encode_opt_box_autoadd_article_link(self.category, serializer);
+    sse_encode_list_pixivision_tag(self.tags, serializer);
+  }
+
+  @protected
+  void sse_encode_block_kind(BlockKind self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
   void sse_encode_bookmark_add_options(
     BookmarkAddOptions self,
     SseSerializer serializer,
@@ -7262,6 +12747,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_list_String(self.tags, serializer);
     sse_encode_restrict(self.restrict, serializer);
     sse_encode_bool(self.isNovel, serializer);
+  }
+
+  @protected
+  void sse_encode_bookmark_page_options(
+    BookmarkPageOptions self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_restrict(self.restrict, serializer);
+    sse_encode_opt_String(self.tag, serializer);
+    sse_encode_opt_CastedPrimitive_u_64(self.maxBookmarkId, serializer);
   }
 
   @protected
@@ -7298,12 +12794,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_article_link(
+    ArticleLink self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_article_link(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_bookmark_add_options(
     BookmarkAddOptions self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_bookmark_add_options(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_bookmark_page_options(
+    BookmarkPageOptions self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bookmark_page_options(self, serializer);
   }
 
   @protected
@@ -7331,9 +12845,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_fanbox_feed(
+    FanboxFeed self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fanbox_feed(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_fanbox_file(
+    FanboxFile self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fanbox_file(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_fanbox_image(
+    FanboxImage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_fanbox_image(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_illust(Illust self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_illust(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_novel(Novel self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_novel(self, serializer);
   }
 
   @protected
@@ -7373,6 +12920,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_pixivision_config(
+    PixivisionConfig self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_pixivision_config(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_pixivision_tag(
+    PixivisionTag self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_pixivision_tag(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_restrict(
     Restrict self,
     SseSerializer serializer,
@@ -7382,12 +12947,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_search_ai_mode(
+    SearchAiMode self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_search_ai_mode(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_search_options(
     SearchOptions self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_search_options(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_series(Series self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_series(self, serializer);
   }
 
   @protected
@@ -7409,12 +12989,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_u_8(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_8(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_user_account_result(
     UserAccountResult self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_user_account_result(self, serializer);
+  }
+
+  @protected
+  void sse_encode_category(Category self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected
@@ -7456,6 +13048,279 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_comment(self.comments, serializer);
     sse_encode_opt_String(self.nextUrl, serializer);
+  }
+
+  @protected
+  void sse_encode_embed_kind(EmbedKind self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_block(FanboxBlock self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case FanboxBlock_Paragraph(text: final text, spans: final spans):
+        sse_encode_i_32(0, serializer);
+        sse_encode_String(text, serializer);
+        sse_encode_list_fanbox_text_span(spans, serializer);
+      case FanboxBlock_Heading(text: final text):
+        sse_encode_i_32(1, serializer);
+        sse_encode_String(text, serializer);
+      case FanboxBlock_Image(image: final image):
+        sse_encode_i_32(2, serializer);
+        sse_encode_box_autoadd_fanbox_image(image, serializer);
+      case FanboxBlock_File(file: final file):
+        sse_encode_i_32(3, serializer);
+        sse_encode_box_autoadd_fanbox_file(file, serializer);
+      case FanboxBlock_Embed(url: final url, html: final html):
+        sse_encode_i_32(4, serializer);
+        sse_encode_opt_String(url, serializer);
+        sse_encode_opt_String(html, serializer);
+      case FanboxBlock_PostLink(
+        postId: final postId,
+        creatorId: final creatorId,
+        title: final title,
+      ):
+        sse_encode_i_32(5, serializer);
+        sse_encode_String(postId, serializer);
+        sse_encode_String(creatorId, serializer);
+        sse_encode_String(title, serializer);
+      case FanboxBlock_Unknown(text: final text, rawJson: final rawJson):
+        sse_encode_i_32(6, serializer);
+        sse_encode_String(text, serializer);
+        sse_encode_String(rawJson, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_fanbox_comment(FanboxComment self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_fanbox_user(self.user, serializer);
+    sse_encode_String(self.body, serializer);
+    sse_encode_String(self.createdDatetime, serializer);
+    sse_encode_bool(self.isLiked, serializer);
+    sse_encode_bool(self.isOwn, serializer);
+    sse_encode_CastedPrimitive_u_64(self.likeCount, serializer);
+    sse_encode_list_fanbox_comment(self.replies, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_comment_page(
+    FanboxCommentPage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_fanbox_comment(self.comments, serializer);
+    sse_encode_opt_String(self.nextUrl, serializer);
+    sse_encode_bool(self.canComment, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_creator(FanboxCreator self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.creatorId, serializer);
+    sse_encode_fanbox_user(self.user, serializer);
+    sse_encode_String(self.description, serializer);
+    sse_encode_opt_String(self.coverUrl, serializer);
+    sse_encode_bool(self.isFollowed, serializer);
+    sse_encode_bool(self.isSupported, serializer);
+    sse_encode_bool(self.hasAdultContent, serializer);
+    sse_encode_list_String(self.profileLinks, serializer);
+    sse_encode_list_String(self.profileImages, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_creator_list(
+    FanboxCreatorList self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_creator_page(
+    FanboxCreatorPage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_fanbox_creator(self.creators, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.nextPage, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_feed(FanboxFeed self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case FanboxFeed_Home():
+        sse_encode_i_32(0, serializer);
+      case FanboxFeed_Supporting():
+        sse_encode_i_32(1, serializer);
+      case FanboxFeed_Creator(creatorId: final creatorId):
+        sse_encode_i_32(2, serializer);
+        sse_encode_String(creatorId, serializer);
+      case FanboxFeed_Tag(
+        tag: final tag,
+        creatorId: final creatorId,
+        page: final page,
+      ):
+        sse_encode_i_32(3, serializer);
+        sse_encode_String(tag, serializer);
+        sse_encode_opt_String(creatorId, serializer);
+        sse_encode_u_32(page, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_fanbox_file(FanboxFile self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.extension_, serializer);
+    sse_encode_CastedPrimitive_u_64(self.size, serializer);
+    sse_encode_String(self.url, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_image(FanboxImage self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.originalUrl, serializer);
+    sse_encode_String(self.thumbnailUrl, serializer);
+    sse_encode_u_32(self.width, serializer);
+    sse_encode_u_32(self.height, serializer);
+    sse_encode_String(self.extension_, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_notice(FanboxNotice self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.kind, serializer);
+    sse_encode_String(self.userName, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_String(self.body, serializer);
+    sse_encode_String(self.date, serializer);
+    sse_encode_bool(self.isUnread, serializer);
+    sse_encode_opt_String(self.postId, serializer);
+    sse_encode_opt_String(self.creatorId, serializer);
+    sse_encode_opt_String(self.iconUrl, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_notice_page(
+    FanboxNoticePage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_fanbox_notice(self.notices, serializer);
+    sse_encode_opt_String(self.nextUrl, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_plan(FanboxPlan self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.creatorId, serializer);
+    sse_encode_fanbox_user(self.user, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_String(self.description, serializer);
+    sse_encode_CastedPrimitive_u_64(self.fee, serializer);
+    sse_encode_opt_String(self.coverUrl, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_post(FanboxPost self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.creatorId, serializer);
+    sse_encode_fanbox_user(self.user, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_String(self.excerpt, serializer);
+    sse_encode_opt_String(self.coverUrl, serializer);
+    sse_encode_String(self.publishedDatetime, serializer);
+    sse_encode_String(self.updatedDatetime, serializer);
+    sse_encode_CastedPrimitive_u_64(self.feeRequired, serializer);
+    sse_encode_bool(self.isRestricted, serializer);
+    sse_encode_bool(self.isLiked, serializer);
+    sse_encode_CastedPrimitive_u_64(self.likeCount, serializer);
+    sse_encode_CastedPrimitive_u_64(self.commentCount, serializer);
+    sse_encode_list_String(self.tags, serializer);
+    sse_encode_list_fanbox_block(self.blocks, serializer);
+    sse_encode_opt_String(self.previousPostId, serializer);
+    sse_encode_opt_String(self.nextPostId, serializer);
+    sse_encode_opt_String(self.unknownBodyJson, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_post_page(
+    FanboxPostPage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_fanbox_post(self.posts, serializer);
+    sse_encode_opt_String(self.nextUrl, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.nextPage, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_support(FanboxSupport self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.creatorId, serializer);
+    sse_encode_opt_String(self.fanCardUrl, serializer);
+    sse_encode_opt_String(self.startedDatetime, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_tag(FanboxTag self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_opt_CastedPrimitive_u_64(self.count, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_text_span(
+    FanboxTextSpan self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self.offset, serializer);
+    sse_encode_u_32(self.length, serializer);
+    sse_encode_bool(self.bold, serializer);
+    sse_encode_bool(self.italic, serializer);
+    sse_encode_opt_String(self.url, serializer);
+  }
+
+  @protected
+  void sse_encode_fanbox_user(FanboxUser self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.name, serializer);
+    sse_encode_opt_String(self.iconUrl, serializer);
+  }
+
+  @protected
+  void sse_encode_featured_work(FeaturedWork self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_CastedPrimitive_u_64(self.id, serializer);
+    sse_encode_featured_work_kind(self.kind, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_opt_CastedPrimitive_u_64(self.userId, serializer);
+    sse_encode_opt_String(self.userName, serializer);
+    sse_encode_opt_String(self.preview, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.pageCount, serializer);
+  }
+
+  @protected
+  void sse_encode_featured_work_kind(
+    FeaturedWorkKind self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected
@@ -7521,6 +13386,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_illust(Illust self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_CastedPrimitive_u_64(self.id, serializer);
+    sse_encode_opt_box_autoadd_series(self.series, serializer);
     sse_encode_String(self.title, serializer);
     sse_encode_String(self.kind, serializer);
     sse_encode_image_urls(self.imageUrls, serializer);
@@ -7577,6 +13443,36 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_illust_series_detail(
+    IllustSeriesDetail self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.createDate, serializer);
+    sse_encode_CastedPrimitive_u_64(self.seriesWorkCount, serializer);
+    sse_encode_CastedPrimitive_u_64(self.width, serializer);
+    sse_encode_CastedPrimitive_u_64(self.height, serializer);
+    sse_encode_series_cover_image_urls(self.coverImageUrls, serializer);
+    sse_encode_bool(self.watchlistAdded, serializer);
+    sse_encode_CastedPrimitive_u_64(self.id, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_String(self.caption, serializer);
+    sse_encode_user(self.user, serializer);
+  }
+
+  @protected
+  void sse_encode_illust_series_page_result(
+    IllustSeriesPageResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_illust_series_detail(self.illustSeriesDetail, serializer);
+    sse_encode_opt_box_autoadd_illust(self.illustSeriesFirstIllust, serializer);
+    sse_encode_list_illust(self.illusts, serializer);
+    sse_encode_opt_String(self.nextUrl, serializer);
+  }
+
+  @protected
   void sse_encode_illust_type(IllustType self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
@@ -7597,11 +13493,89 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_language(Language self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_String(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_article_block(
+    List<ArticleBlock> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_article_block(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_article_embed(
+    List<ArticleEmbed> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_article_embed(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_article_image(
+    List<ArticleImage> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_article_image(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_article_link(
+    List<ArticleLink> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_article_link(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_article_section(
+    List<ArticleSection> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_article_section(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_article_summary(
+    List<ArticleSummary> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_article_summary(item, serializer);
     }
   }
 
@@ -7623,6 +13597,114 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_comment(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fanbox_block(
+    List<FanboxBlock> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fanbox_block(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fanbox_comment(
+    List<FanboxComment> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fanbox_comment(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fanbox_creator(
+    List<FanboxCreator> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fanbox_creator(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fanbox_notice(
+    List<FanboxNotice> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fanbox_notice(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fanbox_plan(
+    List<FanboxPlan> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fanbox_plan(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fanbox_post(
+    List<FanboxPost> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fanbox_post(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fanbox_tag(
+    List<FanboxTag> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fanbox_tag(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_fanbox_text_span(
+    List<FanboxTextSpan> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_fanbox_text_span(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_featured_work(
+    List<FeaturedWork> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_featured_work(item, serializer);
     }
   }
 
@@ -7674,6 +13756,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_novel(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_pixivision_tag(
+    List<PixivisionTag> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_pixivision_tag(item, serializer);
     }
   }
 
@@ -7734,11 +13828,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_spotlight_article(
+    List<SpotlightArticle> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_spotlight_article(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_tag(List<Tag> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_tag(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_tag_group(
+    List<TagGroup> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_tag_group(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_tag_node(List<TagNode> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_tag_node(item, serializer);
     }
   }
 
@@ -7775,6 +13902,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_webview_novel_image(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_work_bookmark_tag(
+    List<WorkBookmarkTag> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_work_bookmark_tag(item, serializer);
     }
   }
 
@@ -7920,6 +14059,38 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_novel_series_detail(
+    NovelSeriesDetail self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_CastedPrimitive_u_64(self.id, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_String(self.caption, serializer);
+    sse_encode_bool(self.isOriginal, serializer);
+    sse_encode_bool(self.isConcluded, serializer);
+    sse_encode_CastedPrimitive_u_64(self.contentCount, serializer);
+    sse_encode_CastedPrimitive_u_64(self.totalCharacterCount, serializer);
+    sse_encode_String(self.displayText, serializer);
+    sse_encode_i_32(self.novelAiType, serializer);
+    sse_encode_bool(self.watchlistAdded, serializer);
+    sse_encode_user(self.user, serializer);
+  }
+
+  @protected
+  void sse_encode_novel_series_page_result(
+    NovelSeriesPageResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_novel_series_detail(self.novelSeriesDetail, serializer);
+    sse_encode_opt_box_autoadd_novel(self.novelSeriesFirstNovel, serializer);
+    sse_encode_opt_box_autoadd_novel(self.novelSeriesLatestNovel, serializer);
+    sse_encode_list_novel(self.novels, serializer);
+    sse_encode_opt_String(self.nextUrl, serializer);
+  }
+
+  @protected
   void sse_encode_opt_CastedPrimitive_u_64(
     int? self,
     SseSerializer serializer,
@@ -7943,12 +14114,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_article_link(
+    ArticleLink? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_article_link(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_bool(bool? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_bool(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_illust(
+    Illust? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_illust(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_novel(Novel? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_novel(self, serializer);
     }
   }
 
@@ -7979,6 +14186,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_pixivision_tag(
+    PixivisionTag? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_pixivision_tag(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_restrict(
     Restrict? self,
     SseSerializer serializer,
@@ -7988,6 +14208,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_restrict(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_search_ai_mode(
+    SearchAiMode? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_search_ai_mode(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_series(
+    Series? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_series(self, serializer);
     }
   }
 
@@ -8018,6 +14264,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_u_32(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_u_8(int? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_u_8(self, serializer);
     }
   }
 
@@ -8094,6 +14350,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_pixivision_config(
+    PixivisionConfig self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_language(self.language, serializer);
+    sse_encode_opt_String(self.proxy, serializer);
+    sse_encode_bool(self.acceptInvalidCerts, serializer);
+  }
+
+  @protected
+  void sse_encode_pixivision_tag(PixivisionTag self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_CastedPrimitive_u_64(self.id, serializer);
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.url, serializer);
+  }
+
+  @protected
   void sse_encode_profile_image_urls(
     ProfileImageUrls self,
     SseSerializer serializer,
@@ -8114,6 +14389,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void sse_encode_restrict(Restrict self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_search_ai_mode(SearchAiMode self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
   }
@@ -8177,6 +14458,47 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_series_cover_image_urls(
+    SeriesCoverImageUrls self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.medium, serializer);
+  }
+
+  @protected
+  void sse_encode_spotlight_article(
+    SpotlightArticle self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_CastedPrimitive_u_64(self.id, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_opt_String(self.pureTitle, serializer);
+    sse_encode_String(self.thumbnail, serializer);
+    sse_encode_String(self.articleUrl, serializer);
+    sse_encode_String(self.publishDate, serializer);
+    sse_encode_String(self.category, serializer);
+    sse_encode_opt_String(self.subcategoryLabel, serializer);
+  }
+
+  @protected
+  void sse_encode_spotlight_category(
+    SpotlightCategory self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_spotlight_page(SpotlightPage self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_spotlight_article(self.spotlightArticles, serializer);
+    sse_encode_opt_String(self.nextUrl, serializer);
+  }
+
+  @protected
   void sse_encode_stamp(Stamp self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_CastedPrimitive_u_64(self.stampId, serializer);
@@ -8188,6 +14510,29 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.name, serializer);
     sse_encode_opt_String(self.translatedName, serializer);
+  }
+
+  @protected
+  void sse_encode_tag_directory(TagDirectory self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.url, serializer);
+    sse_encode_list_tag_group(self.groups, serializer);
+  }
+
+  @protected
+  void sse_encode_tag_group(TagGroup self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_list_tag_node(self.nodes, serializer);
+  }
+
+  @protected
+  void sse_encode_tag_node(TagNode self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_opt_box_autoadd_pixivision_tag(self.tag, serializer);
+    sse_encode_opt_CastedPrimitive_u_64(self.articleCount, serializer);
+    sse_encode_list_tag_node(self.children, serializer);
   }
 
   @protected
@@ -8444,6 +14789,36 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_work_bookmark_detail(
+    WorkBookmarkDetail self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self.isBookmarked, serializer);
+    sse_encode_list_work_bookmark_tag(self.tags, serializer);
+    sse_encode_restrict(self.restrict, serializer);
+  }
+
+  @protected
+  void sse_encode_work_bookmark_detail_result(
+    WorkBookmarkDetailResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_work_bookmark_detail(self.bookmarkDetail, serializer);
+  }
+
+  @protected
+  void sse_encode_work_bookmark_tag(
+    WorkBookmarkTag self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_bool(self.isRegistered, serializer);
+  }
+
+  @protected
   void sse_encode_work_type(WorkType self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
@@ -8459,6 +14834,173 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_zip_utils(ZipUtils self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
   }
+}
+
+@sealed
+class ArticleFeedImpl extends RustOpaque implements ArticleFeed {
+  // Not to be used by end users
+  ArticleFeedImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  ArticleFeedImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_ArticleFeed,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_ArticleFeed,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_ArticleFeedPtr,
+  );
+}
+
+@sealed
+class FanboxApiImpl extends RustOpaque implements FanboxApi {
+  // Not to be used by end users
+  FanboxApiImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  FanboxApiImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_FanboxApi,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_FanboxApi,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_FanboxApiPtr,
+  );
+
+  Future<void> addComment({
+    required String postId,
+    required String body,
+    String? rootCommentId,
+    String? parentCommentId,
+  }) => RustLib.instance.api.pixivRsFanboxFanboxApiAddComment(
+    that: this,
+    postId: postId,
+    body: body,
+    rootCommentId: rootCommentId,
+    parentCommentId: parentCommentId,
+  );
+
+  Future<void> deleteComment({required String commentId}) => RustLib
+      .instance
+      .api
+      .pixivRsFanboxFanboxApiDeleteComment(that: this, commentId: commentId);
+
+  Future<void> downloadMedia({required String url, required String path}) =>
+      RustLib.instance.api.pixivRsFanboxFanboxApiDownloadMedia(
+        that: this,
+        url: url,
+        path: path,
+      );
+
+  Future<void> followCreator({required String userId}) => RustLib.instance.api
+      .pixivRsFanboxFanboxApiFollowCreator(that: this, userId: userId);
+
+  Future<FanboxCommentPage> getComments({required String postId}) => RustLib
+      .instance
+      .api
+      .pixivRsFanboxFanboxApiGetComments(that: this, postId: postId);
+
+  Future<FanboxCreator> getCreator({required String creatorId}) => RustLib
+      .instance
+      .api
+      .pixivRsFanboxFanboxApiGetCreator(that: this, creatorId: creatorId);
+
+  Future<List<String>> getCreatorPostPages({required String creatorId}) =>
+      RustLib.instance.api.pixivRsFanboxFanboxApiGetCreatorPostPages(
+        that: this,
+        creatorId: creatorId,
+      );
+
+  Future<FanboxSupport> getCreatorSupport({required String creatorId}) =>
+      RustLib.instance.api.pixivRsFanboxFanboxApiGetCreatorSupport(
+        that: this,
+        creatorId: creatorId,
+      );
+
+  Future<List<FanboxTag>> getCreatorTags({required String creatorId}) => RustLib
+      .instance
+      .api
+      .pixivRsFanboxFanboxApiGetCreatorTags(that: this, creatorId: creatorId);
+
+  Future<List<FanboxCreator>> getCreators({required FanboxCreatorList list}) =>
+      RustLib.instance.api.pixivRsFanboxFanboxApiGetCreators(
+        that: this,
+        list: list,
+      );
+
+  /// Download only FANBOX/Pixiv media; credentials never follow redirects to another host.
+  Future<Uint8List> getMediaBytes({required String url}) => RustLib.instance.api
+      .pixivRsFanboxFanboxApiGetMediaBytes(that: this, url: url);
+
+  Future<List<FanboxNotice>> getMessages() =>
+      RustLib.instance.api.pixivRsFanboxFanboxApiGetMessages(that: this);
+
+  Future<FanboxCommentPage> getNextComments({required String url}) => RustLib
+      .instance
+      .api
+      .pixivRsFanboxFanboxApiGetNextComments(that: this, url: url);
+
+  Future<FanboxNoticePage> getNextNotices({required String url}) => RustLib
+      .instance
+      .api
+      .pixivRsFanboxFanboxApiGetNextNotices(that: this, url: url);
+
+  Future<FanboxPostPage> getNextPosts({required String url}) => RustLib
+      .instance
+      .api
+      .pixivRsFanboxFanboxApiGetNextPosts(that: this, url: url);
+
+  /// Listing deliberately keeps notifications unread.
+  Future<FanboxNoticePage> getNotices() =>
+      RustLib.instance.api.pixivRsFanboxFanboxApiGetNotices(that: this);
+
+  Future<List<FanboxPlan>> getPlans({String? creatorId}) => RustLib.instance.api
+      .pixivRsFanboxFanboxApiGetPlans(that: this, creatorId: creatorId);
+
+  Future<FanboxPost> getPost({required String postId}) => RustLib.instance.api
+      .pixivRsFanboxFanboxApiGetPost(that: this, postId: postId);
+
+  Future<FanboxPostPage> getPosts({required FanboxFeed feed}) => RustLib
+      .instance
+      .api
+      .pixivRsFanboxFanboxApiGetPosts(that: this, feed: feed);
+
+  Future<void> likeComment({required String commentId}) => RustLib.instance.api
+      .pixivRsFanboxFanboxApiLikeComment(that: this, commentId: commentId);
+
+  Future<void> likePost({required String postId}) => RustLib.instance.api
+      .pixivRsFanboxFanboxApiLikePost(that: this, postId: postId);
+
+  Future<void> refreshCsrfToken() =>
+      RustLib.instance.api.pixivRsFanboxFanboxApiRefreshCsrfToken(that: this);
+
+  Future<FanboxCreatorPage> searchCreators({
+    required String keyword,
+    required int page,
+  }) => RustLib.instance.api.pixivRsFanboxFanboxApiSearchCreators(
+    that: this,
+    keyword: keyword,
+    page: page,
+  );
+
+  Future<List<FanboxTag>> searchTags({required String keyword}) => RustLib
+      .instance
+      .api
+      .pixivRsFanboxFanboxApiSearchTags(that: this, keyword: keyword);
+
+  Future<void> unfollowCreator({required String userId}) => RustLib.instance.api
+      .pixivRsFanboxFanboxApiUnfollowCreator(that: this, userId: userId);
+
+  Future<void> validateSession() =>
+      RustLib.instance.api.pixivRsFanboxFanboxApiValidateSession(that: this);
 }
 
 @sealed
@@ -8501,54 +15043,62 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
   );
 
   UserAccountResult? account() =>
-      RustLib.instance.api.pixivRsApiPixivApiAccount(that: this);
+      RustLib.instance.api.pixivRsPixivApiPixivApiAccount(that: this);
 
   String generateLoginUrl() =>
-      RustLib.instance.api.pixivRsApiPixivApiGenerateLoginUrl(that: this);
+      RustLib.instance.api.pixivRsPixivApiPixivApiGenerateLoginUrl(that: this);
 
   Future<BookmarkTagPageResult> getBookmarkTagPage({
     required int userId,
     required BookmarkTagOptions options,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetBookmarkTagPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetBookmarkTagPage(
     that: this,
     userId: userId,
     options: options,
   );
 
   Future<IllustPageResult> getFollowNewIllustPage({Restrict? restrict}) =>
-      RustLib.instance.api.pixivRsApiPixivApiGetFollowNewIllustPage(
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetFollowNewIllustPage(
         that: this,
         restrict: restrict,
       );
 
-  Future<NovelPageResult> getFollowNewNovelPage({Restrict? restrict}) => RustLib
-      .instance
-      .api
-      .pixivRsApiPixivApiGetFollowNewNovelPage(that: this, restrict: restrict);
+  Future<NovelPageResult> getFollowNewNovelPage({Restrict? restrict}) =>
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetFollowNewNovelPage(
+        that: this,
+        restrict: restrict,
+      );
 
   Future<UserPageResult> getFollowerPage({required int userId}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetFollowerPage(that: this, userId: userId);
+      .pixivRsPixivApiPixivApiGetFollowerPage(that: this, userId: userId);
 
   Future<UserPageResult> getFollowingUserPage({
     required int userId,
     required Restrict restrict,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetFollowingUserPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetFollowingUserPage(
     that: this,
     userId: userId,
     restrict: restrict,
   );
 
+  Future<WorkBookmarkDetailResult> getIllustBookmarkDetail({
+    required int illustId,
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetIllustBookmarkDetail(
+    that: this,
+    illustId: illustId,
+  );
+
   Future<CommentPageResult> getIllustCommentPage({required int illustId}) =>
-      RustLib.instance.api.pixivRsApiPixivApiGetIllustCommentPage(
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetIllustCommentPage(
         that: this,
         illustId: illustId,
       );
 
   Future<CommentPageResult> getIllustCommentReplyPage({
     required int commentId,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetIllustCommentReplyPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetIllustCommentReplyPage(
     that: this,
     commentId: commentId,
   );
@@ -8556,45 +15106,75 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
   Future<IllustDetailResult> getIllustDetail({required int illustId}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetIllustDetail(that: this, illustId: illustId);
+      .pixivRsPixivApiPixivApiGetIllustDetail(that: this, illustId: illustId);
 
   Future<IllustPageResult> getIllustRankingPage({
     required IllustRankingMode mode,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetIllustRankingPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetIllustRankingPage(
     that: this,
     mode: mode,
   );
 
+  /// Historical ranking date in YYYY-MM-DD format, subject to server availability.
+  Future<IllustPageResult> getIllustRankingPageOnDate({
+    required IllustRankingMode mode,
+    required String date,
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetIllustRankingPageOnDate(
+    that: this,
+    mode: mode,
+    date: date,
+  );
+
   Future<IllustPageResult> getIllustRelatedPage({required int illustId}) =>
-      RustLib.instance.api.pixivRsApiPixivApiGetIllustRelatedPage(
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetIllustRelatedPage(
         that: this,
         illustId: illustId,
       );
 
+  Future<IllustSeriesPageResult> getIllustSeriesPage({required int seriesId}) =>
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetIllustSeriesPage(
+        that: this,
+        seriesId: seriesId,
+      );
+
   Future<IllustPageResult> getMangaRankingPage({
     required MangaRankingMode mode,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetMangaRankingPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetMangaRankingPage(
     that: this,
     mode: mode,
   );
 
-  Future<IllustPageResult> getMypixivNewIllustPage() => RustLib.instance.api
-      .pixivRsApiPixivApiGetMypixivNewIllustPage(that: this);
+  Future<IllustPageResult> getMangaRankingPageOnDate({
+    required MangaRankingMode mode,
+    required String date,
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetMangaRankingPageOnDate(
+    that: this,
+    mode: mode,
+    date: date,
+  );
 
-  Future<NovelPageResult> getMypixivNewNovelPage() =>
-      RustLib.instance.api.pixivRsApiPixivApiGetMypixivNewNovelPage(that: this);
+  Future<IllustPageResult> getMypixivNewIllustPage() => RustLib.instance.api
+      .pixivRsPixivApiPixivApiGetMypixivNewIllustPage(that: this);
+
+  Future<NovelPageResult> getMypixivNewNovelPage() => RustLib.instance.api
+      .pixivRsPixivApiPixivApiGetMypixivNewNovelPage(that: this);
+
+  Future<UserPageResult> getMypixivUserPage({required int userId}) => RustLib
+      .instance
+      .api
+      .pixivRsPixivApiPixivApiGetMypixivUserPage(that: this, userId: userId);
 
   Future<IllustPageResult> getNewIllustPage({required IllustType illustType}) =>
-      RustLib.instance.api.pixivRsApiPixivApiGetNewIllustPage(
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetNewIllustPage(
         that: this,
         illustType: illustType,
       );
 
   Future<NovelPageResult> getNewNovelPage() =>
-      RustLib.instance.api.pixivRsApiPixivApiGetNewNovelPage(that: this);
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetNewNovelPage(that: this);
 
   Future<BookmarkTagPageResult> getNextBookmarkTagPage({required String url}) =>
-      RustLib.instance.api.pixivRsApiPixivApiGetNextBookmarkTagPage(
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetNextBookmarkTagPage(
         that: this,
         url: url,
       );
@@ -8602,27 +15182,46 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
   Future<CommentPageResult> getNextCommentPage({required String url}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetNextCommentPage(that: this, url: url);
+      .pixivRsPixivApiPixivApiGetNextCommentPage(that: this, url: url);
 
   Future<IllustPageResult> getNextIllustPage({required String url}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetNextIllustPage(that: this, url: url);
+      .pixivRsPixivApiPixivApiGetNextIllustPage(that: this, url: url);
+
+  Future<IllustSeriesPageResult> getNextIllustSeriesPage({
+    required String url,
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetNextIllustSeriesPage(
+    that: this,
+    url: url,
+  );
 
   Future<NovelPageResult> getNextNovelPage({required String url}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetNextNovelPage(that: this, url: url);
+      .pixivRsPixivApiPixivApiGetNextNovelPage(that: this, url: url);
+
+  Future<NovelSeriesPageResult> getNextNovelSeriesPage({required String url}) =>
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetNextNovelSeriesPage(
+        that: this,
+        url: url,
+      );
 
   Future<SearchIllustPageResult> getNextSearchIllustPage({
     required String url,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetNextSearchIllustPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetNextSearchIllustPage(
     that: this,
     url: url,
   );
 
   Future<SearchNovelPageResult> getNextSearchNovelPage({required String url}) =>
-      RustLib.instance.api.pixivRsApiPixivApiGetNextSearchNovelPage(
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetNextSearchNovelPage(
+        that: this,
+        url: url,
+      );
+
+  Future<SpotlightPage> getNextSpotlightArticlePage({required String url}) =>
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetNextSpotlightArticlePage(
         that: this,
         url: url,
       );
@@ -8630,17 +15229,24 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
   Future<UserPageResult> getNextUserPage({required String url}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetNextUserPage(that: this, url: url);
+      .pixivRsPixivApiPixivApiGetNextUserPage(that: this, url: url);
+
+  Future<WorkBookmarkDetailResult> getNovelBookmarkDetail({
+    required int novelId,
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetNovelBookmarkDetail(
+    that: this,
+    novelId: novelId,
+  );
 
   Future<CommentPageResult> getNovelCommentPage({required int novelId}) =>
-      RustLib.instance.api.pixivRsApiPixivApiGetNovelCommentPage(
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetNovelCommentPage(
         that: this,
         novelId: novelId,
       );
 
   Future<CommentPageResult> getNovelCommentReplyPage({
     required int commentId,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetNovelCommentReplyPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetNovelCommentReplyPage(
     that: this,
     commentId: commentId,
   );
@@ -8648,39 +15254,54 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
   Future<NovelDetailResult> getNovelDetail({required int novelId}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetNovelDetail(that: this, novelId: novelId);
+      .pixivRsPixivApiPixivApiGetNovelDetail(that: this, novelId: novelId);
 
   Future<String> getNovelHtml({required int novelId}) => RustLib.instance.api
-      .pixivRsApiPixivApiGetNovelHtml(that: this, novelId: novelId);
+      .pixivRsPixivApiPixivApiGetNovelHtml(that: this, novelId: novelId);
 
   Future<NovelPageResult> getNovelRankingPage({
     required NovelRankingMode mode,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetNovelRankingPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetNovelRankingPage(
     that: this,
     mode: mode,
+  );
+
+  Future<NovelPageResult> getNovelRankingPageOnDate({
+    required NovelRankingMode mode,
+    required String date,
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetNovelRankingPageOnDate(
+    that: this,
+    mode: mode,
+    date: date,
   );
 
   Future<NovelPageResult> getNovelRelatedPage({required int novelId}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetNovelRelatedPage(that: this, novelId: novelId);
+      .pixivRsPixivApiPixivApiGetNovelRelatedPage(that: this, novelId: novelId);
+
+  Future<NovelSeriesPageResult> getNovelSeriesPage({required int seriesId}) =>
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetNovelSeriesPage(
+        that: this,
+        seriesId: seriesId,
+      );
 
   Future<IllustPageResult> getRecommendedIllustPage({
     required IllustType illustType,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetRecommendedIllustPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetRecommendedIllustPage(
     that: this,
     illustType: illustType,
   );
 
   Future<NovelPageResult> getRecommendedNovelPage() => RustLib.instance.api
-      .pixivRsApiPixivApiGetRecommendedNovelPage(that: this);
+      .pixivRsPixivApiPixivApiGetRecommendedNovelPage(that: this);
 
-  Future<UserPageResult> getRecommendedUserPage() =>
-      RustLib.instance.api.pixivRsApiPixivApiGetRecommendedUserPage(that: this);
+  Future<UserPageResult> getRecommendedUserPage() => RustLib.instance.api
+      .pixivRsPixivApiPixivApiGetRecommendedUserPage(that: this);
 
   Future<SearchAutocompleteResult> getSearchAutocomplete({
     required String word,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetSearchAutocomplete(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetSearchAutocomplete(
     that: this,
     word: word,
   );
@@ -8690,7 +15311,7 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
     required SearchSort sort,
     required SearchTarget target,
     required SearchOptions options,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetSearchIllustPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetSearchIllustPage(
     that: this,
     word: word,
     sort: sort,
@@ -8698,12 +15319,27 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
     options: options,
   );
 
+  Future<SearchIllustPageResult> getSearchIllustPageWithAi({
+    required String word,
+    required SearchSort sort,
+    required SearchTarget target,
+    required SearchOptions options,
+    SearchAiMode? aiMode,
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetSearchIllustPageWithAi(
+    that: this,
+    word: word,
+    sort: sort,
+    target: target,
+    options: options,
+    aiMode: aiMode,
+  );
+
   Future<SearchNovelPageResult> getSearchNovelPage({
     required String word,
     required SearchSort sort,
     required SearchTarget target,
     required SearchOptions options,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetSearchNovelPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetSearchNovelPage(
     that: this,
     word: word,
     sort: sort,
@@ -8714,13 +15350,20 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
   Future<UserPageResult> getSearchUserPage({required String word}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetSearchUserPage(that: this, word: word);
+      .pixivRsPixivApiPixivApiGetSearchUserPage(that: this, word: word);
 
-  Future<TrendingTagListResult> getTrendingTagList() =>
-      RustLib.instance.api.pixivRsApiPixivApiGetTrendingTagList(that: this);
+  Future<SpotlightPage> getSpotlightArticlePage({
+    required SpotlightCategory category,
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetSpotlightArticlePage(
+    that: this,
+    category: category,
+  );
+
+  Future<TrendingTagListResult> getTrendingTagList() => RustLib.instance.api
+      .pixivRsPixivApiPixivApiGetTrendingTagList(that: this);
 
   Future<UgoiraMetadataResult> getUgoiraMetadata({required int illustId}) =>
-      RustLib.instance.api.pixivRsApiPixivApiGetUgoiraMetadata(
+      RustLib.instance.api.pixivRsPixivApiPixivApiGetUgoiraMetadata(
         that: this,
         illustId: illustId,
       );
@@ -8728,21 +15371,31 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
   Future<UserDetailResult> getUserDetail({required int userId}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetUserDetail(that: this, userId: userId);
+      .pixivRsPixivApiPixivApiGetUserDetail(that: this, userId: userId);
 
   Future<IllustPageResult> getUserIllustBookmarkPage({
     required int userId,
     required Restrict restrict,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetUserIllustBookmarkPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetUserIllustBookmarkPage(
     that: this,
     userId: userId,
     restrict: restrict,
   );
 
+  Future<IllustPageResult> getUserIllustBookmarkPageWithOptions({
+    required int userId,
+    required BookmarkPageOptions options,
+  }) => RustLib.instance.api
+      .pixivRsPixivApiPixivApiGetUserIllustBookmarkPageWithOptions(
+        that: this,
+        userId: userId,
+        options: options,
+      );
+
   Future<IllustPageResult> getUserIllustPage({
     required int userId,
     required IllustType illustType,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetUserIllustPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetUserIllustPage(
     that: this,
     userId: userId,
     illustType: illustType,
@@ -8751,21 +15404,31 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
   Future<NovelPageResult> getUserNovelBookmarkPage({
     required int userId,
     required Restrict restrict,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetUserNovelBookmarkPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetUserNovelBookmarkPage(
     that: this,
     userId: userId,
     restrict: restrict,
   );
 
+  Future<NovelPageResult> getUserNovelBookmarkPageWithOptions({
+    required int userId,
+    required BookmarkPageOptions options,
+  }) => RustLib.instance.api
+      .pixivRsPixivApiPixivApiGetUserNovelBookmarkPageWithOptions(
+        that: this,
+        userId: userId,
+        options: options,
+      );
+
   Future<NovelPageResult> getUserNovelPage({required int userId}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetUserNovelPage(that: this, userId: userId);
+      .pixivRsPixivApiPixivApiGetUserNovelPage(that: this, userId: userId);
 
-  Future<IllustPageResult> getUserRelatedPage({
+  Future<UserPageResult> getUserRelatedPage({
     required int offset,
     required int seedUserId,
-  }) => RustLib.instance.api.pixivRsApiPixivApiGetUserRelatedPage(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiGetUserRelatedPage(
     that: this,
     offset: offset,
     seedUserId: seedUserId,
@@ -8774,25 +15437,31 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
   Future<WebviewNovel> getWebviewNovel({required int novelId}) => RustLib
       .instance
       .api
-      .pixivRsApiPixivApiGetWebviewNovel(that: this, novelId: novelId);
+      .pixivRsPixivApiPixivApiGetWebviewNovel(that: this, novelId: novelId);
 
   Future<UserAccountResult> initAccountAuthToken({required String code}) =>
-      RustLib.instance.api.pixivRsApiPixivApiInitAccountAuthToken(
+      RustLib.instance.api.pixivRsPixivApiPixivApiInitAccountAuthToken(
         that: this,
         code: code,
       );
 
+  /// Updates the account-wide AI visibility preference on Pixiv.
+  Future<String> postAiShowSettings({required SearchAiMode mode}) => RustLib
+      .instance
+      .api
+      .pixivRsPixivApiPixivApiPostAiShowSettings(that: this, mode: mode);
+
   Future<String> postBookmarkAdd({
     required int id,
     required BookmarkAddOptions options,
-  }) => RustLib.instance.api.pixivRsApiPixivApiPostBookmarkAdd(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiPostBookmarkAdd(
     that: this,
     id: id,
     options: options,
   );
 
   Future<String> postBookmarkDelete({required int id, required bool isNovel}) =>
-      RustLib.instance.api.pixivRsApiPixivApiPostBookmarkDelete(
+      RustLib.instance.api.pixivRsPixivApiPixivApiPostBookmarkDelete(
         that: this,
         id: id,
         isNovel: isNovel,
@@ -8801,26 +15470,26 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
   Future<String> postFollowAdd({
     required int userId,
     required Restrict restrict,
-  }) => RustLib.instance.api.pixivRsApiPixivApiPostFollowAdd(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiPostFollowAdd(
     that: this,
     userId: userId,
     restrict: restrict,
   );
 
   Future<String> postFollowDelete({required int userId}) => RustLib.instance.api
-      .pixivRsApiPixivApiPostFollowDelete(that: this, userId: userId);
+      .pixivRsPixivApiPixivApiPostFollowDelete(that: this, userId: userId);
 
   Future<CommentAddResult> postIllustCommentAdd({
     required int illustId,
     required CommentAddOptions options,
-  }) => RustLib.instance.api.pixivRsApiPixivApiPostIllustCommentAdd(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiPostIllustCommentAdd(
     that: this,
     illustId: illustId,
     options: options,
   );
 
   Future<String> postIllustCommentDelete({required int commentId}) =>
-      RustLib.instance.api.pixivRsApiPixivApiPostIllustCommentDelete(
+      RustLib.instance.api.pixivRsPixivApiPixivApiPostIllustCommentDelete(
         that: this,
         commentId: commentId,
       );
@@ -8828,23 +15497,23 @@ class PixivApiImpl extends RustOpaque implements PixivApi {
   Future<CommentAddResult> postNovelCommentAdd({
     required int novelId,
     required CommentAddOptions options,
-  }) => RustLib.instance.api.pixivRsApiPixivApiPostNovelCommentAdd(
+  }) => RustLib.instance.api.pixivRsPixivApiPixivApiPostNovelCommentAdd(
     that: this,
     novelId: novelId,
     options: options,
   );
 
   Future<String> postNovelCommentDelete({required int commentId}) =>
-      RustLib.instance.api.pixivRsApiPixivApiPostNovelCommentDelete(
+      RustLib.instance.api.pixivRsPixivApiPixivApiPostNovelCommentDelete(
         that: this,
         commentId: commentId,
       );
 
   void setAccount({UserAccountResult? account}) => RustLib.instance.api
-      .pixivRsApiPixivApiSetAccount(that: this, account: account);
+      .pixivRsPixivApiPixivApiSetAccount(that: this, account: account);
 
-  void setProxy({required String proxy}) =>
-      RustLib.instance.api.pixivRsApiPixivApiSetProxy(that: this, proxy: proxy);
+  void setProxy({required String proxy}) => RustLib.instance.api
+      .pixivRsPixivApiPixivApiSetProxy(that: this, proxy: proxy);
 }
 
 @sealed
@@ -8867,28 +15536,73 @@ class PixivAuthImpl extends RustOpaque implements PixivAuth {
   );
 
   Future<String> codeChallenge() =>
-      RustLib.instance.api.pixivRsAuthPixivAuthCodeChallenge(that: this);
+      RustLib.instance.api.pixivRsPixivAuthPixivAuthCodeChallenge(that: this);
 
   Future<String> codeVerifier() =>
-      RustLib.instance.api.pixivRsAuthPixivAuthCodeVerifier(that: this);
+      RustLib.instance.api.pixivRsPixivAuthPixivAuthCodeVerifier(that: this);
 
-  Future<String> generateLoginUrl() =>
-      RustLib.instance.api.pixivRsAuthPixivAuthGenerateLoginUrl(that: this);
+  Future<String> generateLoginUrl() => RustLib.instance.api
+      .pixivRsPixivAuthPixivAuthGenerateLoginUrl(that: this);
 
   Future<UserAccountResult> initAccountAuthToken({required String code}) =>
-      RustLib.instance.api.pixivRsAuthPixivAuthInitAccountAuthToken(
+      RustLib.instance.api.pixivRsPixivAuthPixivAuthInitAccountAuthToken(
         that: this,
         code: code,
       );
 
   Future<UserAccountResult> refreshAuthToken({required String refreshToken}) =>
-      RustLib.instance.api.pixivRsAuthPixivAuthRefreshAuthToken(
+      RustLib.instance.api.pixivRsPixivAuthPixivAuthRefreshAuthToken(
         that: this,
         refreshToken: refreshToken,
       );
 
   Future<void> setProxy({required String proxy}) => RustLib.instance.api
-      .pixivRsAuthPixivAuthSetProxy(that: this, proxy: proxy);
+      .pixivRsPixivAuthPixivAuthSetProxy(that: this, proxy: proxy);
+}
+
+@sealed
+class PixivisionApiImpl extends RustOpaque implements PixivisionApi {
+  // Not to be used by end users
+  PixivisionApiImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  PixivisionApiImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_PixivisionApi,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_PixivisionApi,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_PixivisionApiPtr,
+  );
+
+  Future<Article> getArticle({required int id}) => RustLib.instance.api
+      .pixivRsPixivisionPixivisionApiGetArticle(that: this, id: id);
+
+  /// Also accepts translated article URLs and links to subsequent article pages.
+  Future<Article> getArticleByUrl({required String url}) => RustLib.instance.api
+      .pixivRsPixivisionPixivisionApiGetArticleByUrl(that: this, url: url);
+
+  Future<ArticlePage> getArticlePage({
+    required ArticleFeed feed,
+    required int page,
+  }) => RustLib.instance.api.pixivRsPixivisionPixivisionApiGetArticlePage(
+    that: this,
+    feed: feed,
+    page: page,
+  );
+
+  /// Accepts site list links; keeps search/tag/category and pagination parameters.
+  Future<ArticlePage> getNextArticlePage({required String url}) => RustLib
+      .instance
+      .api
+      .pixivRsPixivisionPixivisionApiGetNextArticlePage(that: this, url: url);
+
+  Future<TagDirectory> getTagDirectory() => RustLib.instance.api
+      .pixivRsPixivisionPixivisionApiGetTagDirectory(that: this);
 }
 
 @sealed
