@@ -1,123 +1,48 @@
 # freepiv
 
-**A cross-platform third-party Pixiv app for Android, iOS, macOS, Windows, and Linux.**
+English | [简体中文](README_zh_cn.md)
 
-freepiv provides a smooth, modern, and cross-platform experience for browsing Pixiv content. It is built with Flutter and Rust, aiming to deliver a fast and
-responsive Pixiv client across mobile and desktop platforms.
+**An open-source, cross-platform Pixiv browser with FANBOX and pixivision.**
 
-> freepiv is an unofficial third-party app and is not affiliated with or endorsed by Pixiv Inc.
+Browse illustrations and manga, read novels and articles, follow creators, and download artwork on Android, Windows, Linux, macOS, and iOS.
+
+[Download](https://github.com/normalllll/freepiv/releases/latest) · [Features](#features) · [Screenshots](#screenshots)
 
 ![Screenshot](screenshots/0.webp)
 
----
-
 ## Features
 
-* 🌐 **Cross-Platform Support**: Available on Android, iOS, macOS, Windows, and Linux.
+- **Pixiv browsing:** Recommendations, rankings, followed creators' updates, illustrations, manga, animated artwork, and novels.
+- **Search and discovery:** Search works and users, filter results, browse tags, and revisit recent searches.
+- **Your library:** Follow creators, bookmark works, and browse your account's collections.
+- **FANBOX:** Browse followed and recommended creators, read posts, view creator plans, and download accessible attachments. Paid posts show their required support tier; access follows your FANBOX account's subscriptions.
+- **pixivision:** Discover articles by category, tag, or keyword, explore popular articles, and open featured works and creators in the app.
+- **Download management:** Track Pixiv and FANBOX tasks in a floating panel, pause and resume downloads, retry failures, and clear completed tasks. FANBOX files are organized in a separate folder.
+- **Desktop and mobile layouts:** Adaptive navigation, mouse-drag scrolling, a custom Windows title bar, themes, and English, Simplified Chinese, Traditional Chinese, and Japanese interfaces.
 
-- 🖥️ **Desktop-Optimized UI**: Provides a dedicated desktop layout and interaction experience for macOS, Windows, and Linux.
+## Download and install
 
-* 🖼️ **Illustration Browsing**: Browse Pixiv artworks with a clean and responsive interface.
-* 🔍 **Search & Discovery**: Search artworks, novels, users, and tags.
-* ❤️ **Bookmarks & Favorites**: Manage bookmarked works from your Pixiv account.
-* 🚀 **High Performance**: Powered by Flutter and Rust for fast networking, parsing, and UI performance.
-* 🧩 **Native Integration**: Uses `flutter_rust_bridge` to connect Flutter UI with Rust backend logic.
+Download packages from [GitHub Releases](https://github.com/normalllll/freepiv/releases/latest).
 
----
+| Platform | Package                                                                                                                                                                                                                                                                      | Installation                                                                                                                                                                             |
+|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Android  | [ARM64 APK](https://github.com/normalllll/freepiv/releases/latest/download/app-arm64-v8a-release.apk)                                                                                                                                                                        | Suitable for most current phones. Choose the [universal APK](https://github.com/normalllll/freepiv/releases/latest/download/app-universal-release.apk) if unsure about your architecture |
+| Windows  | [windows-x64.zip](https://github.com/normalllll/freepiv/releases/latest/download/windows-x64.zip)                                                                                                                                                                            | Extract the complete archive and run freepiv.exe                                                                                                                                         |
+| Linux    | [DEB](https://github.com/normalllll/freepiv/releases/latest/download/linux_amd64.deb), [RPM](https://github.com/normalllll/freepiv/releases/latest/download/linux_amd64.rpm), or [tar.gz](https://github.com/normalllll/freepiv/releases/latest/download/linux-amd64.tar.gz) | x86_64 builds for Ubuntu 24.04 or compatible systems. Choose your distribution's package, or extract the archive and run freepiv                                                         |
+| macOS    | [Apple Silicon](https://github.com/normalllll/freepiv/releases/latest/download/macos-arm64-nosigned.zip), [Intel](https://github.com/normalllll/freepiv/releases/latest/download/macos-x86_64-nosigned.zip)                                                                  | Extract and move the app to Applications. Builds are not notarized                                                                                                                       |
+| iOS      | [ios-nosigned.ipa](https://github.com/normalllll/freepiv/releases/latest/download/ios-nosigned.ipa)                                                                                                                                                                          | Requires your own signing method before installation                                                                                                                                     |
 
-## Downloads
+Android ARM32 and x86_64 packages are also available. Check each release's assets and notes for available packages and features.
 
-| Architecture | Windows                                                                               | Linux                                                                                                                                                                                                                                                                           | Android                                                                                           | macOS                                                                                           | iOS                                                                                    |
-|--------------|---------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
-| x86-64(x64)  | [zip](https://github.com/normalllll/freepiv/releases/latest/download/windows-x64.zip) | [tar.gz](https://github.com/normalllll/freepiv/releases/latest/download/linux-amd64.tar.gz) / [deb](https://github.com/normalllll/freepiv/releases/latest/download/freepiv_amd64.deb) / [rpm](https://github.com/normalllll/freepiv/releases/latest/download/freepiv_amd64.rpm) | [APK](https://github.com/normalllll/freepiv/releases/latest/download/app-x86_64-release.apk)      | [zip](https://github.com/normalllll/freepiv/releases/latest/download/macos-x86_64-nosigned.zip) |                                                                                        |
-| ARM64        |                                                                                       |                                                                                                                                                                                                                                                                                 | [APK](https://github.com/normalllll/freepiv/releases/latest/download/app-arm64-v8a-release.apk)   | [zip](https://github.com/normalllll/freepiv/releases/latest/download/macos-arm64-nosigned.zip)  | [IPA](https://github.com/normalllll/freepiv/releases/latest/download/ios-nosigned.ipa) |
-| ARM32        |                                                                                       |                                                                                                                                                                                                                                                                                 | [APK](https://github.com/normalllll/freepiv/releases/latest/download/app-armeabi-v7a-release.apk) |                                                                                                 |                                                                                        |
-| Universal    |                                                                                       |                                                                                                                                                                                                                                                                                 | [APK](https://github.com/normalllll/freepiv/releases/latest/download/app-universal-release.apk)   |                                                                                                 |                                                                                        |
+## Getting started
 
-Visit the [releases page](https://github.com/normalllll/freepiv/releases) for more details on the latest versions.
+Sign in to Pixiv to browse your recommendations, follows, and bookmarks. Open **Discover** for search and pixivision, or **Me → FANBOX** for creator posts. FANBOX uses a separate sign-in, managed in Settings.
 
----
+FANBOX browser sign-in is available on Windows, Android, and iOS. Windows requires WebView2 Runtime; manual cookie sign-in remains available when browser sign-in is unavailable. If content fails to load, check your connection and the app's proxy settings.
 
-## Getting Started
+## Contributing
 
-### Prerequisites
-
-Before building or running freepiv, install the following dependencies:
-
-* [Flutter](https://flutter.dev/docs/get-started/install): A cross-platform UI toolkit.
-* [Rust](https://www.rust-lang.org/tools/install): A performance-oriented systems programming language.
-* [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge): A tool for integrating Flutter and Rust.
-
-### Installation
-
-1. Install Flutter by following the [official Flutter guide](https://flutter.dev/docs/get-started/install).
-
-2. Install Rust using `rustup` by following the [official Rust guide](https://www.rust-lang.org/tools/install).
-
-3. Install `flutter_rust_bridge_codegen`:
-
-   ```bash
-   cargo install flutter_rust_bridge_codegen
-   ```
-
-4. Clone the repository:
-
-   ```bash
-   git clone https://github.com/normalllll/freepiv.git
-   cd freepiv
-   ```
-
-5. Install Flutter dependencies:
-
-   ```bash
-   flutter pub get
-   ```
-
-6. Generate Flutter/Rust bridge code:
-
-   ```bash
-   flutter_rust_bridge_codegen generate --type-64bit-int --no-web
-   ```
-
-7. Generate Dart code:
-
-   ```bash
-   dart run build_runner build --delete-conflicting-outputs
-   ```
-
-8. Run the app:
-
-   ```bash
-   flutter run
-   ```
-
----
-
-## Development
-
-When Rust bridge types or API definitions change, regenerate the bridge code:
-
-```bash
-flutter_rust_bridge_codegen generate --type-64bit-int --no-web
-```
-
-When Dart generated files need to be updated, run:
-
-```bash
-dart run build_runner build --delete-conflicting-outputs
-```
-
-For platform-specific builds, use Flutter's build commands:
-
-```bash
-flutter build apk
-flutter build ios
-flutter build macos
-flutter build windows
-flutter build linux
-```
-
----
+Report bugs or suggest features in [Issues](https://github.com/normalllll/freepiv/issues). Include your platform, the affected page, and steps to reproduce. Code, design, and translation contributions are welcome.
 
 ## Screenshots
 
@@ -132,30 +57,8 @@ flutter build linux
 | ![Mobile Screenshot 1](screenshots/mobile/img0.webp) | ![Mobile Screenshot 2](screenshots/mobile/img1.webp) | ![Mobile Screenshot 3](screenshots/mobile/img2.webp) | ![Mobile Screenshot 4](screenshots/mobile/img3.webp) |
 |:----------------------------------------------------:|:----------------------------------------------------:|:----------------------------------------------------:|:----------------------------------------------------:|
 
----
-
-## Contributing
-
-Contributions are welcome!
-
-* 🛠 **Bug Reports**: Found a bug? Open an issue on the [issue tracker](https://github.com/normalllll/freepiv/issues).
-* 🌟 **Feature Requests**: Have an idea for a new feature? Feel free to propose it.
-* 💻 **Code Contributions**: Pull requests are welcome.
-* 🎨 **Design Contributions**: Icons, UI improvements, and visual design contributions are appreciated.
-
----
-
-## Disclaimer
-
-freepiv is an unofficial third-party Pixiv client.
-
-This project is not affiliated with, sponsored by, or endorsed by Pixiv Inc. Pixiv and related names, logos, and trademarks belong to their respective owners.
-
-Users are responsible for complying with Pixiv's terms of service and local laws when using this application.
-
----
-
 ## License
 
-This project is licensed under the **GNU General Public License v3.0**. See the [LICENSE](https://github.com/normalllll/freepiv/blob/main/LICENSE) file for more
-details.
+Licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE).
+
+freepiv is an unofficial client and is not affiliated with or endorsed by pixiv Inc.
