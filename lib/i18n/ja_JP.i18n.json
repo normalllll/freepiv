@@ -11,6 +11,9 @@
     "settings": "設定"
   },
   "common": {
+    "apply": "適用",
+    "reset": "リセット",
+    "discover": "見つける",
     "back": "戻る",
     "cancel": "キャンセル",
     "retry": "再試行",

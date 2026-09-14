@@ -92,6 +92,9 @@ class _Translations$common$ja_JP extends Translations$common$en_US {
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
+	@override String get apply => '適用';
+	@override String get reset => 'リセット';
+	@override String get discover => '見つける';
 	@override String get back => '戻る';
 	@override String get cancel => 'キャンセル';
 	@override String get retry => '再試行';
@@ -1098,6 +1101,9 @@ extension on TranslationsJaJp {
 			'navigation.ranking' => 'ランキング',
 			'navigation.me' => '自分',
 			'navigation.settings' => '設定',
+			'common.apply' => '適用',
+			'common.reset' => 'リセット',
+			'common.discover' => '見つける',
 			'common.back' => '戻る',
 			'common.cancel' => 'キャンセル',
 			'common.retry' => '再試行',

@@ -92,6 +92,9 @@ class Translations$common$zh_Hant_TW extends Translations$common$en_US {
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
+	@override String get apply => '套用';
+	@override String get reset => '重設';
+	@override String get discover => '探索';
 	@override String get back => '返回';
 	@override String get cancel => '取消';
 	@override String get retry => '重試';
@@ -1098,6 +1101,9 @@ extension on TranslationsZhHantTw {
 			'navigation.ranking' => '排行榜',
 			'navigation.me' => '我的',
 			'navigation.settings' => '設定',
+			'common.apply' => '套用',
+			'common.reset' => '重設',
+			'common.discover' => '探索',
 			'common.back' => '返回',
 			'common.cancel' => '取消',
 			'common.retry' => '重試',

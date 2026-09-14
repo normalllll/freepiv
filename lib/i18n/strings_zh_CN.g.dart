@@ -92,6 +92,9 @@ class Translations$common$zh_CN extends Translations$common$en_US {
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
+	@override String get apply => '应用';
+	@override String get reset => '重置';
+	@override String get discover => '发现';
 	@override String get back => '返回';
 	@override String get cancel => '取消';
 	@override String get retry => '重试';
@@ -1098,6 +1101,9 @@ extension on TranslationsZhCn {
 			'navigation.ranking' => '排行榜',
 			'navigation.me' => '我的',
 			'navigation.settings' => '设置',
+			'common.apply' => '应用',
+			'common.reset' => '重置',
+			'common.discover' => '发现',
 			'common.back' => '返回',
 			'common.cancel' => '取消',
 			'common.retry' => '重试',

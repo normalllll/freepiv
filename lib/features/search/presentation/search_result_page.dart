@@ -14,39 +14,23 @@ import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleto
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
 
-class SearchResultPage extends ConsumerStatefulWidget {
-  const SearchResultPage({required this.type, required this.initialKeyword, super.key});
+class _ScopedSearchResultPage extends ConsumerStatefulWidget {
+  const _ScopedSearchResultPage({required this.type, required this.initialKeyword});
 
   final SearchType type;
   final String initialKeyword;
 
   @override
-  ConsumerState<SearchResultPage> createState() => _SearchResultPageState();
+  ConsumerState<_ScopedSearchResultPage> createState() => _SearchResultPageState();
 }
 
-class _SearchResultPageState extends ConsumerState<SearchResultPage> {
+class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> {
   late String _keyword;
 
   @override
   void initState() {
     super.initState();
     _keyword = widget.initialKeyword.trim();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      ref.read(searchDraftProvider.notifier).setDraft(SearchDraftState(text: _keyword, type: widget.type));
-    });
-  }
-
-  @override
-  void didUpdateWidget(covariant SearchResultPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final nextKeyword = widget.initialKeyword.trim();
-    if (oldWidget.initialKeyword != widget.initialKeyword && nextKeyword != _keyword) {
-      setState(() => _keyword = nextKeyword);
-      ref.read(searchDraftProvider.notifier).setDraft(SearchDraftState(text: nextKeyword, type: widget.type));
-    }
   }
 
   @override
@@ -56,22 +40,27 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
     return AutoScaffold(
       builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool shouldUseDesktopShell) {
         return Scaffold(
-          appBar: shouldUseDesktopShell ? null : _mobileAppBar(),
           body: SafeArea(
-            top: shouldUseDesktopShell,
+            top: true,
             bottom: false,
             child: Column(
               children: [
-                if (shouldUseDesktopShell)
-                  Material(
-                    color: colorScheme.surface,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
-                      ),
-                      child: SearchHeader(showTypeSelector: false, compact: true, onSearch: _submitSearch, onSelected: _handleSearchSelection),
+                Material(
+                  color: colorScheme.surface,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
+                    ),
+                    child: SearchHeader(
+                      showBackButton: !shouldUseDesktopShell,
+                      onBack: () => Navigator.of(context).maybePop(),
+                      compact: true,
+                      onSearch: _submitSearch,
+                      onSelected: _handleSearchSelection,
+                      onTypeChanged: (type) => _submitSearch(SearchSubmission(query: _keyword, type: type)),
                     ),
                   ),
+                ),
                 Expanded(
                   child: switch (widget.type) {
                     SearchType.illust => _buildIllustResult(),
@@ -84,17 +73,6 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
           ),
         );
       },
-    );
-  }
-
-  AppBar _mobileAppBar() {
-    return AppBar(
-      titleSpacing: 0,
-      toolbarHeight: 64,
-      title: Padding(
-        padding: const EdgeInsetsDirectional.only(end: 12),
-        child: SearchBox(onSearch: _submitSearch, onSelected: _handleSearchSelection),
-      ),
     );
   }
 
@@ -157,7 +135,7 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
       return;
     }
 
-    unawaited(context.pushNamed(_routeForType(submission.type).name, queryParameters: {'q': query}));
+    unawaited(context.pushNamed(_routeForType(submission.type).name, queryParameters: {'q': query}, extra: ref.read(searchFiltersProvider)));
   }
 
   void _handleSearchSelection(SearchSelection selection) {
@@ -189,12 +167,12 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
   }
 
   void _ensureLoaded<T>(DataListSource<T> source) {
-    if (source.initialized || source.refreshing) {
+    if (source.initialized || source.refreshing || source.lastError != null) {
       return;
     }
 
     Future.microtask(() {
-      if (!mounted || source.initialized || source.refreshing) {
+      if (!mounted || source.initialized || source.refreshing || source.lastError != null) {
         return;
       }
       unawaited(source.refresh(true));
@@ -317,4 +295,35 @@ class _UserResultBody extends StatelessWidget {
       ],
     );
   }
+}
+
+class SearchResultPage extends ConsumerWidget {
+  const SearchResultPage({required this.type, required this.initialKeyword, this.initialFilters, super.key});
+  final SearchType type;
+  final String initialKeyword;
+  final SearchFiltersState? initialFilters;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => ProviderScope(
+    key: ValueKey((type, initialKeyword)),
+    overrides: [
+      searchDraftProvider.overrideWith(() => _ResultDraft(SearchDraftState(text: initialKeyword.trim(), type: type))),
+      searchFiltersProvider.overrideWith(() => _ResultFilters(initialFilters ?? ref.read(searchFiltersProvider))),
+    ],
+    child: _ScopedSearchResultPage(type: type, initialKeyword: initialKeyword),
+  );
+}
+
+class _ResultDraft extends SearchDraft {
+  _ResultDraft(this.initial);
+  final SearchDraftState initial;
+  @override
+  SearchDraftState build() => initial;
+}
+
+class _ResultFilters extends SearchFilters {
+  _ResultFilters(this.initial);
+  final SearchFiltersState initial;
+  @override
+  SearchFiltersState build() => initial;
 }

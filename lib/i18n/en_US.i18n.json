@@ -11,6 +11,9 @@
     "settings": "Settings"
   },
   "common": {
+    "apply": "Apply",
+    "reset": "Reset",
+    "discover": "Discover",
     "back": "Back",
     "cancel": "Cancel",
     "retry": "Retry",

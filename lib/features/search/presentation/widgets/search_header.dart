@@ -1,4 +1,6 @@
+import 'package:freepiv/shared/widgets/search_input.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/features/search/presentation/widgets/search_filter_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_box.dart';
@@ -13,6 +15,7 @@ class SearchHeader extends ConsumerWidget {
     this.showTypeSelector = true,
     this.compact = false,
     this.onBack,
+    this.onTypeChanged,
     this.searchBoxKey,
     super.key,
   });
@@ -24,52 +27,49 @@ class SearchHeader extends ConsumerWidget {
   final bool showTypeSelector;
   final bool compact;
   final VoidCallback? onBack;
+  final ValueChanged<SearchType>? onTypeChanged;
   final GlobalKey<SearchBoxState>? searchBoxKey;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: compact ? const EdgeInsets.fromLTRB(12, 4, 12, 4) : const EdgeInsets.fromLTRB(12, 6, 12, 7),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    return SearchInputRegion(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  if (showBackButton || reserveBackButtonSpace) ...[
-                    SizedBox.square(
-                      dimension: 44,
-                      child: showBackButton
-                          ? IconButton(tooltip: MaterialLocalizations.of(context).backButtonTooltip, onPressed: onBack, icon: const Icon(Icons.arrow_back))
-                          : const SizedBox.shrink(),
-                    ),
-                    const SizedBox(width: 4),
-                  ],
-                  Expanded(
-                    child: SearchBox(key: searchBoxKey, onSearch: onSearch, onSelected: onSelected),
-                  ),
-                ],
-              ),
-              if (showTypeSelector) ...[
-                const SizedBox(height: 8),
-                Padding(
-                  padding: EdgeInsetsDirectional.only(start: showBackButton || reserveBackButtonSpace ? 48 : 0),
-                  child: const Center(child: SearchTypeSelector()),
+              if (showBackButton || reserveBackButtonSpace) ...[
+                SizedBox.square(
+                  dimension: 44,
+                  child: showBackButton
+                      ? IconButton(tooltip: MaterialLocalizations.of(context).backButtonTooltip, onPressed: onBack, icon: const Icon(Icons.arrow_back))
+                      : const SizedBox.shrink(),
                 ),
+                const SizedBox(width: 4),
               ],
+              Expanded(
+                child: SearchBox(key: searchBoxKey, onSearch: onSearch, onSelected: onSelected),
+              ),
             ],
           ),
-        ),
+          if (showTypeSelector) ...[
+            const SizedBox(height: 8),
+            Padding(
+              padding: EdgeInsetsDirectional.only(start: showBackButton || reserveBackButtonSpace ? 48 : 0),
+              child: Center(child: SearchTypeSelector(onChanged: onTypeChanged)),
+            ),
+            const SearchFilterSummary(),
+          ],
+        ],
       ),
     );
   }
 }
 
 class SearchTypeSelector extends ConsumerWidget {
-  const SearchTypeSelector({super.key});
+  const SearchTypeSelector({this.onChanged, super.key});
+  final ValueChanged<SearchType>? onChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -86,7 +86,11 @@ class SearchTypeSelector extends ConsumerWidget {
         ],
         selected: {draft.type},
         onSelectionChanged: (selection) {
-          ref.read(searchDraftProvider.notifier).setDraft(draft.copyWith(type: selection.single));
+          if (onChanged case final callback?) {
+            callback(selection.single);
+          } else {
+            ref.read(searchDraftProvider.notifier).setDraft(draft.copyWith(type: selection.single));
+          }
         },
         style: SegmentedButton.styleFrom(visualDensity: VisualDensity.compact, textStyle: Theme.of(context).textTheme.labelSmall),
       ),

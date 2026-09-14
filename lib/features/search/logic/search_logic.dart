@@ -64,7 +64,7 @@ sealed class SearchResultRequest with _$SearchResultRequest {
   const factory SearchResultRequest({required String keyword, required SearchFilterState filter}) = _SearchResultRequest;
 }
 
-@Riverpod(keepAlive: true)
+@Riverpod(keepAlive: true, dependencies: [])
 class SearchDraft extends _$SearchDraft {
   @override
   SearchDraftState build() => const SearchDraftState();
@@ -77,10 +77,12 @@ class SearchDraft extends _$SearchDraft {
   }
 }
 
-@Riverpod(keepAlive: true)
+@Riverpod(keepAlive: true, dependencies: [])
 class SearchFilters extends _$SearchFilters {
   @override
   SearchFiltersState build() => const SearchFiltersState();
+
+  void apply(SearchFiltersState filters) => state = filters;
 
   void setFilter(SearchType type, SearchFilterState filter) {
     final next = switch (type) {
@@ -95,21 +97,21 @@ class SearchFilters extends _$SearchFilters {
   }
 }
 
-@Riverpod()
+@Riverpod(dependencies: [SearchDraft])
 SearchIllustListSource searchIllustResultSource(Ref ref, SearchResultRequest request) {
   final source = SearchIllustListSource(request: request);
   ref.onDispose(source.dispose);
   return source;
 }
 
-@Riverpod()
+@Riverpod(dependencies: [SearchDraft])
 SearchNovelListSource searchNovelResultSource(Ref ref, SearchResultRequest request) {
   final source = SearchNovelListSource(request: request);
   ref.onDispose(source.dispose);
   return source;
 }
 
-@Riverpod()
+@Riverpod(dependencies: [SearchDraft])
 SearchUserListSource searchUserResultSource(Ref ref, String keyword) {
   final source = SearchUserListSource(keyword: keyword);
   ref.onDispose(source.dispose);

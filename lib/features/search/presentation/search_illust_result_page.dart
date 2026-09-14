@@ -3,12 +3,13 @@ import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/search_result_page.dart';
 
 class SearchIllustResultPage extends StatelessWidget {
-  const SearchIllustResultPage({required this.keyword, super.key});
+  const SearchIllustResultPage({required this.keyword, this.initialFilters, super.key});
 
   final String keyword;
+  final SearchFiltersState? initialFilters;
 
   @override
   Widget build(BuildContext context) {
-    return SearchResultPage(type: SearchType.illust, initialKeyword: keyword);
+    return SearchResultPage(type: SearchType.illust, initialKeyword: keyword, initialFilters: initialFilters);
   }
 }

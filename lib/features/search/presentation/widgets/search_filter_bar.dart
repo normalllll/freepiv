@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/auto_scaffold.dart';
+import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
@@ -16,7 +18,7 @@ class SearchFilterButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dimension = compact ? 32.0 : 44.0;
+    final dimension = compact ? 36.0 : 44.0;
     final iconSize = compact ? 18.0 : 20.0;
     final tokens = FreepivThemeTokens.of(context);
     final colorScheme = Theme.of(context).colorScheme;
@@ -56,8 +58,11 @@ class SearchFilterButton extends ConsumerWidget {
   }
 
   Future<void> _showFilterPanel(BuildContext context) {
-    final mobile = MediaQuery.sizeOf(context).width < 600;
-    final panel = SearchFilterPanel(type: type, allowTypeSelection: allowTypeSelection);
+    final mobile = !AutoScaffold.usesDesktopShellOf(context);
+    final panel = UncontrolledProviderScope(
+      container: ProviderScope.containerOf(context, listen: false),
+      child: SearchFilterPanel(type: type, allowTypeSelection: allowTypeSelection),
+    );
 
     if (mobile) {
       return showModalBottomSheet<void>(
@@ -96,17 +101,33 @@ class SearchFilterButton extends ConsumerWidget {
   }
 }
 
-class SearchFilterPanel extends ConsumerWidget {
+class SearchFilterPanel extends ConsumerStatefulWidget {
   const SearchFilterPanel({required this.type, required this.allowTypeSelection, super.key});
 
   final SearchType type;
   final bool allowTypeSelection;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final filters = ref.watch(searchFiltersProvider);
-    final draft = ref.watch(searchDraftProvider);
-    final activeType = allowTypeSelection ? draft.type : type;
+  ConsumerState<SearchFilterPanel> createState() => _SearchFilterPanelState();
+}
+
+class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
+  late SearchFiltersState _filters;
+  late SearchDraftState _draft;
+
+  @override
+  void initState() {
+    super.initState();
+    _filters = ref.read(searchFiltersProvider);
+    _draft = ref.read(searchDraftProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filters = _filters;
+    final draft = _draft;
+    final allowTypeSelection = widget.allowTypeSelection;
+    final activeType = allowTypeSelection ? draft.type : widget.type;
     final activeFilter = switch (activeType) {
       SearchType.illust => filters.illust,
       SearchType.novel => filters.novel,
@@ -114,104 +135,169 @@ class SearchFilterPanel extends ConsumerWidget {
     };
 
     void setType(SearchType next) {
-      ref.read(searchDraftProvider.notifier).setDraft(draft.copyWith(type: next));
+      setState(() => _draft = draft.copyWith(type: next));
     }
 
     void setFilter(SearchFilterState next) {
-      ref.read(searchFiltersProvider.notifier).setFilter(activeType, next);
+      if (!mounted) return;
+      setState(
+        () => _filters = switch (activeType) {
+          SearchType.illust => _filters.copyWith(illust: next),
+          SearchType.novel => _filters.copyWith(novel: next),
+          SearchType.user => _filters,
+        },
+      );
     }
 
     final colorScheme = Theme.of(context).colorScheme;
 
     return SafeArea(
       top: false,
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Expanded(child: Text(context.t.search.filters.title, style: Theme.of(context).textTheme.titleLarge)),
-                IconButton(
-                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 180),
+        alignment: Alignment.topCenter,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: Text(context.t.search.filters.title, style: Theme.of(context).textTheme.titleLarge)),
+                  IconButton(
+                    tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              if (allowTypeSelection) ...[
+                const SizedBox(height: 14),
+                _SectionTitle(icon: Icons.category_outlined, label: context.t.common.type),
+                const SizedBox(height: 8),
+                SegmentedButton<SearchType>(
+                  showSelectedIcon: false,
+                  segments: [
+                    ButtonSegment(value: SearchType.illust, icon: const Icon(Icons.image_outlined), label: Text(context.t.search.type.illustManga)),
+                    ButtonSegment(value: SearchType.novel, icon: const Icon(Icons.menu_book_outlined), label: Text(context.t.search.type.novel)),
+                    ButtonSegment(value: SearchType.user, icon: const Icon(Icons.person_outline), label: Text(context.t.search.type.user)),
+                  ],
+                  selected: {activeType},
+                  onSelectionChanged: (selection) => setType(selection.single),
+                  style: SegmentedButton.styleFrom(visualDensity: VisualDensity.compact, textStyle: Theme.of(context).textTheme.labelMedium),
                 ),
               ],
-            ),
-            if (allowTypeSelection) ...[
-              const SizedBox(height: 14),
-              _SectionTitle(icon: Icons.category_outlined, label: context.t.common.type),
-              const SizedBox(height: 8),
-              SegmentedButton<SearchType>(
-                showSelectedIcon: false,
-                segments: [
-                  ButtonSegment(value: SearchType.illust, icon: const Icon(Icons.image_outlined), label: Text(context.t.search.type.illustManga)),
-                  ButtonSegment(value: SearchType.novel, icon: const Icon(Icons.menu_book_outlined), label: Text(context.t.search.type.novel)),
-                  ButtonSegment(value: SearchType.user, icon: const Icon(Icons.person_outline), label: Text(context.t.search.type.user)),
-                ],
-                selected: {activeType},
-                onSelectionChanged: (selection) => setType(selection.single),
-                style: SegmentedButton.styleFrom(visualDensity: VisualDensity.compact, textStyle: Theme.of(context).textTheme.labelMedium),
-              ),
-            ],
-            if (activeType != SearchType.user) ...[
-              const SizedBox(height: 20),
-              _SectionTitle(icon: Icons.sort_outlined, label: context.t.search.filters.sort),
-              const SizedBox(height: 8),
-              _ChoiceWrap<SearchSort>(
-                value: activeFilter.sort,
-                values: SearchSort.values,
-                labelBuilder: (value) => _sortLabel(context, value),
-                onSelected: (value) {
-                  setFilter(activeFilter.copyWith(sort: value));
-                },
-              ),
-              const SizedBox(height: 18),
-              _SectionTitle(icon: Icons.track_changes_outlined, label: context.t.search.filters.target),
-              const SizedBox(height: 8),
-              _ChoiceWrap<SearchTarget>(
-                value: activeFilter.target,
-                values: SearchTarget.values,
-                labelBuilder: (value) => _targetLabel(context, value),
-                onSelected: (value) {
-                  setFilter(activeFilter.copyWith(target: value));
-                },
-              ),
-              const SizedBox(height: 18),
-              _SectionTitle(icon: Icons.date_range_outlined, label: context.t.search.filters.date),
-              const SizedBox(height: 8),
-              _ChoiceWrap<SearchDatePreset>(
-                value: activeFilter.datePreset,
-                values: SearchDatePreset.values,
-                labelBuilder: (value) => _datePresetLabel(context, value),
-                onSelected: (value) {
-                  if (value == SearchDatePreset.custom) {
-                    _pickDateRange(context, activeFilter, setFilter);
-                    return;
-                  }
-                  setFilter(activeFilter.copyWith(datePreset: value, customStart: null, customEnd: null));
-                },
-              ),
-              if (activeFilter.datePreset == SearchDatePreset.custom && activeFilter.customStart != null && activeFilter.customEnd != null) ...[
+              if (activeType != SearchType.user) ...[
+                const SizedBox(height: 20),
+                _SectionTitle(icon: Icons.sort_outlined, label: context.t.search.filters.sort),
                 const SizedBox(height: 8),
-                Text(_dateLabel(context, activeFilter), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+                _ChoiceWrap<SearchSort>(
+                  value: activeFilter.sort,
+                  values: SearchSort.values,
+                  labelBuilder: (value) => _sortLabel(context, value),
+                  onSelected: (value) {
+                    setFilter(activeFilter.copyWith(sort: value));
+                  },
+                ),
+                const SizedBox(height: 18),
+                _SectionTitle(icon: Icons.track_changes_outlined, label: context.t.search.filters.target),
+                const SizedBox(height: 8),
+                _ChoiceWrap<SearchTarget>(
+                  value: activeFilter.target,
+                  values: SearchTarget.values,
+                  labelBuilder: (value) => _targetLabel(context, value),
+                  onSelected: (value) {
+                    setFilter(activeFilter.copyWith(target: value));
+                  },
+                ),
+                const SizedBox(height: 18),
+                _SectionTitle(icon: Icons.date_range_outlined, label: context.t.search.filters.date),
+                const SizedBox(height: 8),
+                AppSelect<SearchDatePreset>(
+                  value: activeFilter.datePreset,
+                  items: [for (final value in SearchDatePreset.values) AppSelectItem(value: value, label: _datePresetLabel(context, value))],
+                  onChanged: (value) {
+                    if (value == SearchDatePreset.custom) {
+                      _pickDateRange(context, activeFilter, setFilter);
+                      return;
+                    }
+                    setFilter(activeFilter.copyWith(datePreset: value, customStart: null, customEnd: null));
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(_dateLabel(context, activeFilter), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+                ),
+                const SizedBox(height: 18),
+                _SectionTitle(icon: Icons.bookmark_outline, label: context.t.search.filters.bookmarks),
+                const SizedBox(height: 8),
+                AppSelect<int>(
+                  value: activeFilter.bookmarkTotal ?? 0,
+                  items: [
+                    for (final value in searchBookmarkTotalOptions) AppSelectItem(value: value, label: _bookmarkLabel(context, value == 0 ? null : value)),
+                  ],
+                  onChanged: (value) {
+                    setFilter(activeFilter.copyWith(bookmarkTotal: value == 0 ? null : value));
+                  },
+                ),
               ],
-              const SizedBox(height: 18),
-              _SectionTitle(icon: Icons.bookmark_outline, label: context.t.search.filters.bookmarks),
-              const SizedBox(height: 8),
-              _ChoiceWrap<int>(
-                value: activeFilter.bookmarkTotal ?? 0,
-                values: searchBookmarkTotalOptions,
-                labelBuilder: (value) => _bookmarkLabel(context, value == 0 ? null : value),
-                onSelected: (value) {
-                  setFilter(activeFilter.copyWith(bookmarkTotal: value == 0 ? null : value));
-                },
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  TextButton(onPressed: () => setState(() => _filters = const SearchFiltersState()), child: Text(context.t.common.reset)),
+                  const Spacer(),
+                  TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(context.t.common.cancel)),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: () {
+                      ref.read(searchFiltersProvider.notifier).apply(_filters);
+                      if (allowTypeSelection) ref.read(searchDraftProvider.notifier).setDraft(_draft);
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(context.t.common.apply),
+                  ),
+                ],
               ),
             ],
-          ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class SearchFilterSummary extends ConsumerWidget {
+  const SearchFilterSummary({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final type = ref.watch(searchDraftProvider.select((draft) => draft.type));
+    final filters = ref.watch(searchFiltersProvider);
+    final filter = type == SearchType.novel ? filters.novel : filters.illust;
+    final labels = [
+      _sortLabel(context, filter.sort),
+      if (filter.target != SearchTarget.partialMatchForTags) _targetLabel(context, filter.target),
+      if (filter.datePreset != SearchDatePreset.any) _dateLabel(context, filter),
+      if (filter.bookmarkTotal != null) _bookmarkLabel(context, filter.bookmarkTotal),
+    ];
+    final summary = type == SearchType.user ? '' : labels.join(' · ');
+    return SizedBox(
+      height: MediaQuery.textScalerOf(context).scale(14) * 1.5 + 20,
+      child: Row(
+        children: [
+          Expanded(
+            child: Tooltip(
+              message: summary,
+              child: Text(summary, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall),
+            ),
+          ),
+          IconButton(
+            tooltip: context.t.common.reset,
+            onPressed: type == SearchType.user || filter == const SearchFilterState()
+                ? null
+                : () => ref.read(searchFiltersProvider.notifier).setFilter(type, const SearchFilterState()),
+            icon: const Icon(Icons.filter_alt_off_outlined, size: 18),
+          ),
+        ],
       ),
     );
   }

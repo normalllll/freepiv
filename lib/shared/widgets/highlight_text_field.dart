@@ -30,6 +30,7 @@ class HighlightTextEditingController extends TextEditingController {
   List<HighlightRule> get rules => List.unmodifiable(_rules);
 
   set rules(List<HighlightRule> value) {
+    if (listEquals(_rules, value)) return;
     _rules = List.of(value);
     notifyListeners();
   }
@@ -173,10 +174,18 @@ class _HighlightTextFieldState extends State<HighlightTextField> {
     );
   }
 
+  bool _rulesSyncScheduled = false;
+
   void _syncRules() {
-    if (!listEquals(widget.controller.rules, widget.rules)) {
+    if (_rulesSyncScheduled || listEquals(widget.controller.rules, widget.rules)) return;
+    _rulesSyncScheduled = true;
+    // The shared search chrome also listens to this controller. Notify only
+    // after mounting/updating the field, using the latest widget's rules.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _rulesSyncScheduled = false;
+      if (!mounted) return;
       widget.controller.rules = widget.rules;
-    }
+    });
   }
 }
 

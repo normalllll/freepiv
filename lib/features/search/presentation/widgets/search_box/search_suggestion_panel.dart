@@ -66,7 +66,7 @@ class SuggestionPanelBody extends StatelessWidget {
 
         return Column(
           children: [
-            SizedBox(height: 2, child: session.loading ? const LinearProgressIndicator(minHeight: 2) : null),
+            SizedBox(height: 2, child: session.loading ? const LoadingSkeletonBlock(width: double.infinity, height: 2) : null),
             if (error != null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 10, 10, 2),

@@ -94,6 +94,9 @@ class Translations$common$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+	String get apply => 'Apply';
+	String get reset => 'Reset';
+	String get discover => 'Discover';
 	String get back => 'Back';
 	String get cancel => 'Cancel';
 	String get retry => 'Retry';
@@ -1100,6 +1103,9 @@ extension on Translations {
 			'navigation.ranking' => 'Ranking',
 			'navigation.me' => 'Me',
 			'navigation.settings' => 'Settings',
+			'common.apply' => 'Apply',
+			'common.reset' => 'Reset',
+			'common.discover' => 'Discover',
 			'common.back' => 'Back',
 			'common.cancel' => 'Cancel',
 			'common.retry' => 'Retry',

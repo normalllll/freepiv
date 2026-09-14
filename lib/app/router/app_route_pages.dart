@@ -1,3 +1,4 @@
+import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/router/detail_transition_page.dart';
 import 'package:freepiv/features/about/presentation/about_page.dart';
@@ -54,15 +55,30 @@ Page<void> searchPage(BuildContext context, GoRouterState state) {
 }
 
 Page<void> searchIllustResultPage(BuildContext context, GoRouterState state) {
-  return NoTransitionPage(child: SearchIllustResultPage(keyword: state.uri.queryParameters['q'] ?? ''));
+  return NoTransitionPage(
+    child: SearchIllustResultPage(
+      keyword: state.uri.queryParameters['q'] ?? '',
+      initialFilters: state.extra is SearchFiltersState ? state.extra as SearchFiltersState : null,
+    ),
+  );
 }
 
 Page<void> searchNovelResultPage(BuildContext context, GoRouterState state) {
-  return NoTransitionPage(child: SearchNovelResultPage(keyword: state.uri.queryParameters['q'] ?? ''));
+  return NoTransitionPage(
+    child: SearchNovelResultPage(
+      keyword: state.uri.queryParameters['q'] ?? '',
+      initialFilters: state.extra is SearchFiltersState ? state.extra as SearchFiltersState : null,
+    ),
+  );
 }
 
 Page<void> searchUserResultPage(BuildContext context, GoRouterState state) {
-  return NoTransitionPage(child: SearchUserResultPage(keyword: state.uri.queryParameters['q'] ?? ''));
+  return NoTransitionPage(
+    child: SearchUserResultPage(
+      keyword: state.uri.queryParameters['q'] ?? '',
+      initialFilters: state.extra is SearchFiltersState ? state.extra as SearchFiltersState : null,
+    ),
+  );
 }
 
 Page<void> mePage(BuildContext context, GoRouterState state) {
