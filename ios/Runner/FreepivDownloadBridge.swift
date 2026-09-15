@@ -128,7 +128,7 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
         if self.tasksByJob[job.id] != nil {
           continue
         }
-        guard let url = requestUrl(for: job) else {
+        guard let url = self.requestUrl(for: job) else {
           self.states[job.id] = NativeDownloadState(jobId: job.id, status: "failed", saveState: "none", error: "Invalid URL")
           self.emit(["type": "failed", "jobId": job.id, "error": "Invalid URL"])
           continue
