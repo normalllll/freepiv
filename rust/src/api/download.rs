@@ -84,7 +84,7 @@ pub async fn download_to_file(
             .map_err(|_| format!("Invalid connection host: {connect_host}"))?;
     }
 
-    let mut client_builder = reqwest::Client::builder()
+    let mut client_builder = pixiv_rs::http::client_builder()
         .connect_timeout(Duration::from_secs(connect_timeout_seconds.max(1) as u64))
         .read_timeout(Duration::from_secs(receive_timeout_seconds.max(1) as u64))
         .danger_accept_invalid_certs(allow_invalid_certificates)
