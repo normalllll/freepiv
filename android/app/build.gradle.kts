@@ -1,5 +1,3 @@
-import com.android.build.api.dsl.ApplicationExtension
-
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -17,9 +15,10 @@ val hasReleaseSigning =
             !keyAliasArg.isNullOrBlank() &&
             !keyPasswordArg.isNullOrBlank()
 
-extensions.configure<ApplicationExtension> {
+android {
     namespace = "io.github.normalllll.freepiv"
-    compileSdk = flutter.compileSdkVersion
+    // OkHttp 5.5 requires API 37; Flutter currently defaults to API 36.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -94,6 +93,6 @@ flutter {
 }
 
 dependencies {
-    implementation("androidx.webkit:webkit:1.15.0")
-    implementation("com.squareup.okhttp3:okhttp:5.4.0")
+    implementation("androidx.webkit:webkit:1.17.0")
+    implementation("com.squareup.okhttp3:okhttp:5.5.0")
 }
