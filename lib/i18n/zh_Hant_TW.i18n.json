@@ -1,10 +1,12 @@
 {
-  "nativeWindow": {"minimize":"最小化","maximize":"最大化","restore":"還原","close":"關閉"},
+  "nativeWindow": {"minimize":"最小化","maximize":"最大化","restore":"還原","close":"關閉","illust":"插畫","manga":"漫畫","novel":"小說","workFallback":"$type：$id","workTitle":"$type：$id · $title","relatedTitle":"相似作品 · $title","user":"使用者","userFallback":"使用者：$id","viewerTitle":"$title · $page/$total"},
   "discover": {
     "searchHint": "搜尋 Pixiv",
     "history": "搜尋紀錄",
     "viewAll": "查看全部",
-    "clearHistory": "清除紀錄"
+    "clearHistory": "清除紀錄",
+    "deleteHistoryItem": "刪除這筆搜尋記錄",
+    "emptyHistory": "搜尋記錄會顯示在這裡"
   },
   "app": {
     "title": "freepiv"
@@ -16,9 +18,16 @@
     "newest": "最新",
     "ranking": "排行榜",
     "me": "我的",
-    "settings": "設定"
+    "settings": "設定",
+    "more": "更多",
+    "expand": "展開導覽",
+    "collapse": "收合導覽",
+    "downloads": "下載",
+    "about": "關於"
   },
+  "errors": {"generic": "內容載入失敗，請重試。", "connection": "請檢查網路連線後重試。", "session": "登入已過期，請重新登入。", "forbidden": "你暫無權限查看此內容。", "missing": "此內容已無法查看。"},
   "common": {
+    "viewLog": "查看日誌",
     "apply": "套用",
     "reset": "重設",
     "discover": "探索",
@@ -33,7 +42,10 @@
     "notFound": "找不到",
     "copy": "複製$label",
     "labelValue": "$label：$value",
-    "errorWithCause": "$message：$cause"
+    "errorWithCause": "$message：$cause",
+    "errorDetails": "錯誤詳情",
+    "copyDetails": "複製詳情",
+    "detailsCopied": "已複製錯誤詳情"
   },
   "refresh": {
     "pullToRefresh": "下拉重新整理",
@@ -71,10 +83,48 @@
   },
   "settings": {
     "theme": {
-      "title": "主題",
+      "title": "外觀",
+      "displayMode": "顯示模式",
+      "tone": "色調",
+      "neutral": "中性",
+      "cool": "冷色",
+      "warm": "暖色",
+      "systemNeutralHint": "跟隨系統時使用中性色",
+      "lightAccent": "淺色主色",
+      "darkAccent": "深色主色",
+      "systemEditingLight": "目前隨系統使用淺色主色",
+      "systemEditingDark": "目前隨系統使用深色主色",
+      "presetPink": "預設粉色",
+      "presetBlue": "蔚藍",
+      "presetTeal": "青綠",
+      "presetViolet": "紫羅蘭",
+      "presetAmber": "琥珀",
+      "presetOrange": "橘色",
+      "custom": "自訂",
+      "defaultAccent": "預設粉色",
+      "restoreDefault": "恢復預設粉色",
+      "editLightAccent": "自訂淺色主色",
+      "editDarkAccent": "自訂深色主色",
+      "hue": "色相",
+      "saturation": "飽和度",
+      "value": "明度",
+      "hex": "HEX 色彩",
+      "invalidHex": "請輸入六位 HEX 色彩",
+      "preview": "預覽",
+      "previewButton": "按鈕",
+      "rejectedLight": "此顏色與淺色背景過於接近，部分操作可能無法辨認。請選擇其他顏色。",
+      "rejectedDark": "此顏色與深色背景過於接近，部分操作可能無法辨認。請選擇其他顏色。",
+      "weakContrast": "此顏色在部分背景上的辨識度較弱。",
+      "applyAnyway": "仍要套用",
+      "useDefault": "使用預設粉色",
+      "saving": "儲存中…",
+      "saveFailed": "外觀儲存失敗，請重試。",
+      "unsaved": "外觀變更尚未儲存。",
       "system": "跟隨系統",
       "light": "淺色",
-      "dark": "深色"
+      "dark": "深色",
+      "reduceTransparency": "降低透明度",
+      "reduceTransparencyHint": "使用實色表面，不顯示模糊效果"
     },
     "language": {
       "title": "語言",
@@ -134,7 +184,10 @@
       "syncFailed": "下載狀態同步失敗",
       "actionFailed": "下載操作失敗",
       "expand": "展開",
-      "collapse": "收合"
+      "collapse": "收合",
+      "viewAll": "查看全部下載",
+      "badgeFailures": "失敗的下載：$count",
+      "badgeActive": "進行中的下載：$count"
     },
     "proxy": {
       "title": "網路代理",
@@ -154,6 +207,7 @@
       "helper": "IP 和連接埠分開填寫，例如 127.0.0.1 和 7890。",
       "save": "儲存",
       "saved": "代理設定已儲存",
+      "saveFailed": "代理設定儲存失敗",
       "required": "啟用代理前需要填寫 IP 和連接埠。",
       "invalid": "請輸入有效的 IP 和連接埠。",
       "hostRequired": "請輸入 IP。",
@@ -176,15 +230,14 @@
     }
   },
   "me": {
+    "profile": "個人主頁",
     "openProfile": "開啟個人頁",
     "following": "我的關注",
     "followers": "我的粉絲",
     "emptyFollowing": "尚無關注使用者",
     "emptyFollowers": "尚無粉絲",
     "about": "關於",
-    "aboutSubtitle": "版本、更新和專案連結",
-    "settings": "設定",
-    "settingsSubtitle": "主題、語言、圖片和下載"
+    "settings": "設定"
   },
   "about": {
     "title": "關於",
@@ -243,6 +296,7 @@
       "dayR18Ai": "AI 生成 R-18",
       "week": "每週",
       "weekR18": "每週 R-18",
+      "weekR18G": "每週 R-18G",
       "weekOriginal": "原創每週",
       "weekRookie": "新人每週",
       "month": "每月"
@@ -302,6 +356,7 @@
     }
   },
   "user": {
+    "noPublicWorks": "尚無公開作品",
     "tabs": {
       "illustrations": "插畫",
       "manga": "漫畫",
@@ -382,23 +437,30 @@
     "contextMenu": {
       "download": "下載",
       "downloadAll": "下載全部",
-      "copyImage": "複製圖像"
+      "copyImage": "複製圖像",
+      "copyLink": "複製作品連結",
+      "openOriginal": "在 Pixiv 開啟"
     },
     "imageLabels": {
       "original": "原圖",
-      "large": "大圖"
+      "large": "大圖",
+      "image": "圖片"
     },
     "toast": {
-      "downloadStarted": "開始下載圖片",
       "downloadAllQueued": "已加入下載佇列：$count 張圖片",
-      "downloadComplete": "下載完成：$path",
+      "downloadComplete": "已儲存 $name",
       "downloadFailed": "下載失敗",
       "copying": "正在複製$label",
       "copied": "已複製$label",
       "copiedValue": "已複製$label：$value",
-      "copyFailed": "複製$label失敗"
+      "copyFailed": "複製$label失敗",
+      "openFailed": "無法在 Pixiv 開啟作品",
+      "linkCopied": "已複製連結",
+      "linkCopyFailed": "無法複製連結",
+      "alreadyDownloading": "這一頁已在下載佇列中"
     },
     "tooltip": {
+      "play": "播放動畫",
       "previousImage": "上一張圖片",
       "nextImage": "下一張圖片",
       "backToDetail": "回到圖片詳細資訊",
@@ -431,7 +493,9 @@
     },
     "tags": {
       "none": "沒有標籤",
-      "tag": "標籤"
+      "tag": "標籤",
+      "showMore": "展開其餘 $count 個標籤",
+      "showLess": "收起標籤"
     },
     "comments": {
       "failed": "留言載入失敗",
@@ -439,6 +503,10 @@
       "moreAvailable": "還有更多留言",
       "hasReplies": "有回覆",
       "open": "開啟留言",
+      "discardDraftTitle": "離開留言？",
+      "discardDraftMessage": "尚未送出的留言將會遺失。",
+      "continueEditing": "繼續編輯",
+      "discardDraft": "捨棄草稿",
       "reply": "回覆",
       "replyingTo": "正在回覆 $name",
       "loadReplies": "載入回覆",
@@ -446,6 +514,7 @@
       "repliesFailed": "回覆載入失敗",
       "sendFailed": "留言傳送失敗",
       "delete": "刪除",
+      "deleteConfirm": "刪除這則留言？",
       "deleteFailed": "留言刪除失敗",
       "inputHint": "寫下留言",
       "replyInputHint": "回覆 $name",
@@ -468,6 +537,7 @@
       "series": "系列",
       "content": "正文",
       "startReading": "開始閱讀",
+      "continueReading": "繼續閱讀",
       "totalChars": "共 $count 字",
       "paragraphCount": "$count 段",
       "segmentCount": "$count 頁"
@@ -478,6 +548,8 @@
       "chapters": "章節",
       "settings": "閱讀設定",
       "emptyBody": "正文為空",
+      "embeddedImageUnavailable": "圖片暫時無法顯示",
+      "openEmbeddedWork": "開啟關聯作品",
       "totalChars": "共 $count 字",
       "pagePosition": "$current / $total 頁",
       "pageTotal": "$total 頁",
@@ -500,7 +572,7 @@
     "tooltipFollow": "關注使用者",
     "tooltipUnfollow": "取消關注",
     "followed": "已關注",
-    "notFollowed": "未關注"
+    "follow": "關注"
   },
   "richText": {
     "twitterUser": "Twitter：$username",
@@ -512,6 +584,7 @@
     "updateSession": "更新 Cookie",
     "title": "FANBOX",
     "home": "關注動態",
+    "feedGroup": "動態",
     "supporting": "贊助動態",
     "following": "關注的創作者",
     "recommended": "探索創作者",

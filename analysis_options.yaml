@@ -1,6 +1,15 @@
 analyzer:
   exclude:
     - lib/src/rust/frb_generated*.dart
+    - build/**
+    - android/**
+    - ios/**
+    - windows/**
+    - macos/**
+    - linux/**
+    - docs/**
+    - rust/**
+    - .dart_tool/**
 
 # This file configures the analyzer, which statically analyzes Dart code to
 # check for errors, warnings, and lints.

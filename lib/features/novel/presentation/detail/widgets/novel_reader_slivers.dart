@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
+import 'package:go_router/go_router.dart';
+import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_section.dart';
 import 'package:freepiv/features/novel/domain/novel_text_parser.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_detail_constraints.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
@@ -64,7 +70,70 @@ class NovelReaderBlockView extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Divider(color: dividerColor),
       ),
+      NovelTextImage(:final id, :final isPixivWork, :final url) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: _NovelEmbeddedMedia(id: id, isPixivWork: isPixivWork, url: url),
+      ),
     };
+  }
+}
+
+class _NovelEmbeddedMedia extends StatelessWidget {
+  const _NovelEmbeddedMedia({required this.id, required this.isPixivWork, required this.url});
+
+  final String id;
+  final bool isPixivWork;
+  final String? url;
+
+  @override
+  Widget build(BuildContext context) {
+    if (url case final imageUrl?) {
+      // Illustrations inside the text open in the image viewer like every
+      // other artwork, instead of being a dead end at a fixed 4:3 preview.
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: AspectRatio(
+          aspectRatio: 4 / 3,
+          child: Semantics(
+            label: t.novel.detail.images,
+            image: true,
+            button: true,
+            child: AppClickSurface(
+              feedback: AppClickFeedback.artwork,
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => context.pushNamed(
+                AppRoute.originalImageViewer.name,
+                extra: OriginalImageViewerArgs(
+                  title: t.novel.detail.images,
+                  initialIndex: 0,
+                  pages: [OriginalImagePage(url: imageUrl, previewUrl: imageUrl, downloadOrigin: DownloadOrigin.ofImageUrl(Uri.parse(imageUrl)))],
+                ),
+              ),
+              child: ContentImageMenuRegion(
+                actions: ContentImageActions.pixivHosted(url: imageUrl, headers: pixivImageHeaders, title: t.novel.detail.images),
+                child: PixivImage(url: imageUrl, fit: BoxFit.contain),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    // A work marker is `<id>` or `<id>-<page>`.
+    final workId = isPixivWork ? int.tryParse(id.split('-').first) : null;
+    if (workId != null) {
+      return OutlinedButton.icon(
+        onPressed: () => context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '$workId'}),
+        icon: const Icon(Icons.open_in_new),
+        label: Text(t.novel.reader.openEmbeddedWork),
+      );
+    }
+    return Row(
+      children: [
+        const Icon(Icons.broken_image_outlined),
+        const SizedBox(width: 8),
+        Expanded(child: Text(t.novel.reader.embeddedImageUnavailable)),
+      ],
+    );
   }
 }
 

@@ -1,9 +1,16 @@
+import 'package:freepiv/shared/widgets/app_tab_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/shared/widgets/form_controls.dart';
+import 'package:freepiv/shared/widgets/compact_message.dart';
+import 'package:freepiv/shared/data/data_list_source.dart';
+import 'package:freepiv/shared/widgets/load_state_switcher.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/search_input.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:freepiv/shared/widgets/data_refresh_view.dart';
 import 'package:freepiv/shared/widgets/refresh_indicator.dart';
 import 'package:freepiv/shared/widgets/floating_filter_sliver.dart';
@@ -23,10 +30,12 @@ class PixivisionPage extends ConsumerStatefulWidget {
   ConsumerState<PixivisionPage> createState() => _PixivisionPageState();
 }
 
-class _PixivisionPageState extends ConsumerState<PixivisionPage> {
+class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTickerProviderStateMixin {
   late final _search = TextEditingController(text: Uri.tryParse(widget.url ?? '')?.queryParameters['q'] ?? '');
   final _focus = FocusNode();
+  bool _searchExpanded = false;
   late PixivisionSection _section = _initialSection();
+  late final _tabController = TabController(length: PixivisionSection.values.length, initialIndex: _section.index, vsync: this);
   PixivisionSection _initialSection() {
     if (_isDirectory(widget.url)) return PixivisionSection.tags;
     final selection = ref.read(pixivisionBrowseSelectionProvider);
@@ -43,6 +52,7 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.url != widget.url) {
       _section = _isDirectory(widget.url) ? PixivisionSection.tags : PixivisionSection.articles;
+      _tabController.animateTo(_section.index, duration: Duration.zero);
       final query = Uri.tryParse(widget.url ?? '')?.queryParameters['q'] ?? '';
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && (Uri.tryParse(widget.url ?? '')?.queryParameters['q'] ?? '') == query && _search.text != query) _search.text = query;
@@ -52,6 +62,7 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> {
 
   @override
   void dispose() {
+    _tabController.dispose();
     _search.dispose();
     _focus.dispose();
     super.dispose();
@@ -70,58 +81,59 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> {
     void selectUrl(String next) {
       _focus.unfocus();
       setState(() => _section = PixivisionSection.articles);
+      _tabController.animateTo(_section.index, duration: Duration.zero);
       final path = GoRouterState.of(context).uri.path;
       ref.read(pixivisionBrowseSelectionProvider.notifier).select(url: next, section: PixivisionSection.articles);
       context.replace(Uri(path: path, queryParameters: {'url': next}).toString());
     }
 
-    final category = categories.where((item) => item.url == url).firstOrNull;
-    final selector = AppSelect<String>(
-      value: category?.url ?? home,
-      items: [
-        AppSelectItem(value: home, label: t.allCategories),
-        for (final item in categories) AppSelectItem(value: item.url, label: item.title),
-      ],
-      onChanged: selectUrl,
-    );
+    final query = Uri.parse(url).queryParameters['q'] ?? '';
     final filterSliver = FloatingFilterSliver(
       height: compactFilterHeight(context),
-      child: Material(
-        color: Theme.of(context).colorScheme.surface,
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final tabs = SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: SegmentedButton<PixivisionSection>(
-                      showSelectedIcon: false,
-                      segments: [
-                        ButtonSegment(value: PixivisionSection.articles, label: Text(t.latest)),
-                        ButtonSegment(value: PixivisionSection.ranking, label: Text(t.ranking)),
-                        ButtonSegment(value: PixivisionSection.recommended, label: Text(t.recommended)),
-                        ButtonSegment(value: PixivisionSection.tags, label: Text(t.tags)),
-                      ],
-                      selected: {_section},
-                      onSelectionChanged: (values) {
-                        ref.read(pixivisionBrowseSelectionProvider.notifier).select(url: widget.url, section: values.single);
-                        setState(() => _section = values.single);
-                      },
-                    ),
-                  );
-                  return Row(
-                    children: [
-                      Expanded(child: tabs),
-                      const SizedBox(width: 12),
-                      SizedBox(width: (constraints.maxWidth * .4).clamp(0, 200), child: selector),
+      // Tabs carry their label padding, so the row bleeds by it.
+      child: ContentColumn(
+        bleed: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: LayoutBuilder(
+            builder: (context, constraints) => Row(
+              children: [
+                Expanded(
+                  child: AppTabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    dividerColor: Colors.transparent,
+                    labelPadding: EdgeInsets.symmetric(horizontal: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
+                    tabs: [
+                      Tab(text: t.latest),
+                      Tab(text: t.ranking),
+                      Tab(text: t.recommended),
+                      Tab(text: t.tags),
                     ],
-                  );
-                },
-              ),
+                    onTap: (index) {
+                      final section = PixivisionSection.values[index];
+                      ref.read(pixivisionBrowseSelectionProvider.notifier).select(url: widget.url, section: section);
+                      setState(() => _section = section);
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Search results and tag pages are not in the list; the button
+                // then shows the first item, "All categories". At most half the
+                // row, like the FANBOX collection picker beside its tabs.
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: constraints.maxWidth / 2),
+                  child: AppValueMenuButton<String>(
+                    value: url,
+                    items: [
+                      AppSelectItem(value: home, label: t.allCategories),
+                      for (final item in categories) AppSelectItem(value: item.url, label: item.title),
+                    ],
+                    onSelected: selectUrl,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -130,20 +142,84 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> {
     return PixivisionScaffold(
       child: Column(
         children: [
-          SearchInputRegion(
-            child: SearchInput(
-              controller: _search,
-              focusNode: _focus,
-              hintText: t.searchHint,
-              onSubmitted: (query) {
-                final value = query.trim();
-                if (value.isNotEmpty) selectUrl(Uri.parse('${home}s/').replace(queryParameters: {'q': value}).toString());
-              },
-              onClear: () {
-                _search.clear();
-                if (Uri.parse(url).queryParameters.containsKey('q')) selectUrl(home);
-              },
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 600;
+              final search = SearchInput(
+                controller: _search,
+                focusNode: _focus,
+                hintText: t.searchHint,
+                onSubmitted: (value) {
+                  final trimmed = value.trim();
+                  if (trimmed.isNotEmpty) {
+                    selectUrl(Uri.parse('${home}s/').replace(queryParameters: {'q': trimmed}).toString());
+                    if (compact) setState(() => _searchExpanded = false);
+                  }
+                },
+                onClear: () {
+                  _search.clear();
+                  if (query.isNotEmpty) selectUrl(home);
+                },
+              );
+              return ContentColumn(
+                bleed: 12,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              query.isEmpty ? t.title : query,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                          ),
+                          if (compact)
+                            IconButton(
+                              tooltip: t.searchHint,
+                              onPressed: () {
+                                setState(() => _searchExpanded = !_searchExpanded);
+                                if (_searchExpanded) {
+                                  _focus.requestFocus();
+                                } else {
+                                  _focus.unfocus();
+                                }
+                              },
+                              icon: Icon(_searchExpanded ? Icons.close : Icons.search),
+                            )
+                          else
+                            SizedBox(width: (constraints.maxWidth * .42).clamp(240, 420), child: search),
+                        ],
+                      ),
+                      if (compact)
+                        AnimatedSize(
+                          duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 180),
+                          alignment: Alignment.topCenter,
+                          child: _searchExpanded
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Focus(
+                                    onKeyEvent: (_, event) {
+                                      if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+                                        _focus.unfocus();
+                                        setState(() => _searchExpanded = false);
+                                        return KeyEventResult.handled;
+                                      }
+                                      return KeyEventResult.ignored;
+                                    },
+                                    child: search,
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
           Expanded(
             child: _section == PixivisionSection.tags
@@ -169,67 +245,62 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> {
                         };
                         return PageStorage(
                           bucket: _pixivisionBrowseStorage,
-                          child: DataLoadingCustomScrollView(
-                            key: PageStorageKey((url, _section)),
-                            physics: physics,
-                            slivers: [
-                              filterSliver,
-                              ?locators.sliverHeader,
-                              if (url != home && _section == PixivisionSection.articles)
-                                SliverPadding(
-                                  padding: pixivisionPadding(constraints.maxWidth).copyWith(bottom: 0),
-                                  sliver: SliverToBoxAdapter(
-                                    child: Skeletonizer(
-                                      enabled: listing == null,
-                                      child: Text(
-                                        listing?.page.title ?? t.latest,
-                                        style: Theme.of(context).textTheme.titleLarge,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                          child: LoadStateSwitcher(
+                            phase: switch (items) {
+                              null when active.hasError => LoadPhase.error,
+                              null => LoadPhase.loading,
+                              _ => LoadPhase.content,
+                            },
+                            child: DataLoadingCustomScrollView(
+                              key: PageStorageKey((url, _section)),
+                              physics: physics,
+                              slivers: [
+                                filterSliver,
+                                ?locators.sliverHeader,
+                                if (items == null)
+                                  SliverPadding(
+                                    padding: pixivisionPadding(constraints.maxWidth),
+                                    sliver: SliverToBoxAdapter(
+                                      child: active.hasError
+                                          ? PixivisionError(
+                                              error: active.error,
+                                              retry: () => ref.invalidate(pixivisionBrowseProvider(_section == PixivisionSection.articles ? url : home)),
+                                            )
+                                          : const PixivisionCardSkeleton(),
+                                    ),
+                                  )
+                                else
+                                  SliverPagedDataList<ArticleSummary>(
+                                    key: ValueKey((url, _section)),
+                                    items: items,
+                                    hasMore: _section == PixivisionSection.articles && listing?.page.nextUrl != null,
+                                    loading: active.isLoading || listing!.loadingMore,
+                                    hasError: listing?.error != null,
+                                    onLoadMore: () async {
+                                      final provider = pixivisionBrowseProvider(url);
+                                      await ref.read(provider.notifier).loadMore();
+                                      return mounted && ref.read(provider).value?.error == null;
+                                    },
+                                    padding: pixivisionPadding(constraints.maxWidth),
+                                    itemBuilder: (context, article, index) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: PixivisionCard(article: article),
+                                    ),
+                                    footer: Column(
+                                      children: [
+                                        if (items.isEmpty) Padding(padding: const EdgeInsets.all(24), child: Text(t.empty)),
+                                        if (listing?.loadingMore ?? false) const PixivisionCardSkeleton(),
+                                        if (listing?.error case final error?)
+                                          CompactMessage.error(
+                                            error: error,
+                                            actionLabel: t.loadMore,
+                                            onAction: () => ref.read(pixivisionBrowseProvider(url).notifier).loadMore(),
+                                          ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                              if (items == null)
-                                SliverPadding(
-                                  padding: pixivisionPadding(constraints.maxWidth),
-                                  sliver: SliverToBoxAdapter(
-                                    child: active.hasError
-                                        ? PixivisionError(
-                                            retry: () => ref.invalidate(pixivisionBrowseProvider(_section == PixivisionSection.articles ? url : home)),
-                                          )
-                                        : const PixivisionCardSkeleton(),
-                                  ),
-                                )
-                              else
-                                SliverPagedDataList<ArticleSummary>(
-                                  key: ValueKey((url, _section)),
-                                  items: items,
-                                  hasMore: _section == PixivisionSection.articles && listing?.page.nextUrl != null,
-                                  loading: active.isLoading || listing!.loadingMore,
-                                  hasError: listing?.error != null,
-                                  onLoadMore: () async {
-                                    final provider = pixivisionBrowseProvider(url);
-                                    await ref.read(provider.notifier).loadMore();
-                                    return mounted && ref.read(provider).value?.error == null;
-                                  },
-                                  padding: pixivisionPadding(constraints.maxWidth),
-                                  itemBuilder: (context, article, index) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 12),
-                                    child: PixivisionCard(article: article),
-                                  ),
-                                  footer: Column(
-                                    children: [
-                                      if (items.isEmpty) Padding(padding: const EdgeInsets.all(24), child: Text(t.empty)),
-                                      if (listing?.loadingMore ?? false) const PixivisionCardSkeleton(),
-                                      if (listing?.error != null) ...[
-                                        Text(t.requestFailed),
-                                        OutlinedButton(onPressed: () => ref.read(pixivisionBrowseProvider(url).notifier).loadMore(), child: Text(t.loadMore)),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -270,7 +341,7 @@ class _TagDirectory extends ConsumerWidget {
                     ..._groups(context, directory.groups),
                     if (directory.groups.isEmpty) Text(context.t.pixivision.empty),
                   ] else if (state.hasError)
-                    PixivisionError(retry: () => ref.invalidate(pixivisionTagsProvider(language)))
+                    PixivisionError(error: state.error, retry: () => ref.invalidate(pixivisionTagsProvider(language)))
                   else
                     Skeletonizer(
                       child: Column(

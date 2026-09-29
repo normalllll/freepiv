@@ -61,8 +61,14 @@ class DriftDownloadStore implements DownloadStore {
           .insertOnConflictUpdate(
             DownloadJobsCompanion(
               id: Value(job.id),
-              illustId: Value(job.illustId),
-              pageIndex: Value(job.pageIndex),
+              illustId: Value(switch (job.origin) {
+                ArtworkPage(:final illustId) => illustId,
+                ContentImage() => null,
+              }),
+              pageIndex: Value(switch (job.origin) {
+                ArtworkPage(:final pageIndex) => pageIndex,
+                ContentImage() => null,
+              }),
               url: Value(job.url.toString()),
               filename: Value(job.filename),
               headersJson: Value(jsonEncode(job.networkOptions.headers)),
@@ -181,9 +187,7 @@ class DriftDownloadStore implements DownloadStore {
       return null;
     }
     return DownloadJob(
-      id: row.id,
-      illustId: row.illustId,
-      pageIndex: row.pageIndex,
+      origin: _originFrom(row.illustId, row.pageIndex, row.url),
       url: Uri.parse(row.url),
       filename: row.filename,
       networkOptions: _networkOptionsFromJson(row.networkOptionsJson, legacyHeadersJson: row.headersJson),
@@ -276,6 +280,7 @@ class DriftDownloadStore implements DownloadStore {
         j.id AS id,
         j.illust_id AS illust_id,
         j.page_index AS page_index,
+        j.url AS url,
         j.filename AS filename,
         j.title AS title,
         j.thumbnail_url AS thumbnail_url,
@@ -304,8 +309,7 @@ class DriftDownloadStore implements DownloadStore {
     final filename = row.read<String>('filename');
     return DownloadTaskSnapshot(
       id: row.read<String>('id'),
-      illustId: row.read<int>('illust_id'),
-      pageIndex: row.read<int>('page_index'),
+      origin: _originFrom(row.readNullable<int>('illust_id'), row.readNullable<int>('page_index'), row.read<String>('url')),
       title: row.readNullable<String>('title') ?? filename,
       filename: filename,
       thumbnailUrl: row.readNullable<String>('thumbnail_url'),
@@ -356,3 +360,9 @@ DownloadNetworkOptions _networkOptionsFromJson(String source, {required String l
   }
   return DownloadNetworkOptions(headers: _stringMapFromJson(legacyHeadersJson));
 }
+
+/// Rows without a work page are content images, identified by their address.
+DownloadOrigin _originFrom(int? illustId, int? pageIndex, String url) => switch ((illustId, pageIndex)) {
+  (final illustId?, final pageIndex?) => ArtworkPage(illustId: illustId, pageIndex: pageIndex),
+  _ => ContentImage.of(Uri.parse(url)),
+};

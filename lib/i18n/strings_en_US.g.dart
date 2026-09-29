@@ -45,6 +45,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$discover$en_US discover = Translations$discover$en_US.internal(_root);
 	late final Translations$app$en_US app = Translations$app$en_US.internal(_root);
 	late final Translations$navigation$en_US navigation = Translations$navigation$en_US.internal(_root);
+	late final Translations$errors$en_US errors = Translations$errors$en_US.internal(_root);
 	late final Translations$common$en_US common = Translations$common$en_US.internal(_root);
 	late final Translations$refresh$en_US refresh = Translations$refresh$en_US.internal(_root);
 	late final Translations$toast$en_US toast = Translations$toast$en_US.internal(_root);
@@ -76,6 +77,15 @@ class Translations$nativeWindow$en_US {
 	String get maximize => 'Maximize';
 	String get restore => 'Restore';
 	String get close => 'Close';
+	String get illust => 'Illust';
+	String get manga => 'Manga';
+	String get novel => 'Novel';
+	String workFallback({required Object type, required Object id}) => '${type}: ${id}';
+	String workTitle({required Object type, required Object id, required Object title}) => '${type}: ${id} · ${title}';
+	String relatedTitle({required Object title}) => 'Related works · ${title}';
+	String get user => 'User';
+	String userFallback({required Object id}) => 'User: ${id}';
+	String viewerTitle({required Object title, required Object page, required Object total}) => '${title} · ${page}/${total}';
 }
 
 // Path: discover
@@ -89,6 +99,8 @@ class Translations$discover$en_US {
 	String get history => 'Recent searches';
 	String get viewAll => 'View all';
 	String get clearHistory => 'Clear history';
+	String get deleteHistoryItem => 'Remove recent search';
+	String get emptyHistory => 'Your searches will appear here';
 }
 
 // Path: app
@@ -115,6 +127,25 @@ class Translations$navigation$en_US {
 	String get ranking => 'Ranking';
 	String get me => 'Me';
 	String get settings => 'Settings';
+	String get more => 'More';
+	String get expand => 'Expand navigation';
+	String get collapse => 'Collapse navigation';
+	String get downloads => 'Downloads';
+	String get about => 'About';
+}
+
+// Path: errors
+class Translations$errors$en_US {
+	Translations$errors$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get generic => 'Unable to load content. Please try again.';
+	String get connection => 'Check your connection and try again.';
+	String get session => 'Your session has expired. Please sign in again.';
+	String get forbidden => 'You do not have access to this content.';
+	String get missing => 'This content is no longer available.';
 }
 
 // Path: common
@@ -124,6 +155,7 @@ class Translations$common$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+	String get viewLog => 'View log';
 	String get apply => 'Apply';
 	String get reset => 'Reset';
 	String get discover => 'Discover';
@@ -139,6 +171,9 @@ class Translations$common$en_US {
 	String copy({required Object label}) => 'Copy ${label}';
 	String labelValue({required Object label, required Object value}) => '${label}: ${value}';
 	String errorWithCause({required Object message, required Object cause}) => '${message}: ${cause}';
+	String get errorDetails => 'Error details';
+	String get copyDetails => 'Copy details';
+	String get detailsCopied => 'Error details copied';
 }
 
 // Path: refresh
@@ -218,15 +253,14 @@ class Translations$me$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+	String get profile => 'My profile';
 	String get openProfile => 'Open profile';
 	String get following => 'My following';
 	String get followers => 'My followers';
 	String get emptyFollowing => 'No following users';
 	String get emptyFollowers => 'No followers';
 	String get about => 'About';
-	String get aboutSubtitle => 'Version, updates, and project links';
 	String get settings => 'Settings';
-	String get settingsSubtitle => 'Theme, language, images, and downloads';
 }
 
 // Path: about
@@ -324,6 +358,7 @@ class Translations$user$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+	String get noPublicWorks => 'No public works';
 	late final Translations$user$tabs$en_US tabs = Translations$user$tabs$en_US.internal(_root);
 	late final Translations$user$stats$en_US stats = Translations$user$stats$en_US.internal(_root);
 	late final Translations$user$bookmarks$en_US bookmarks = Translations$user$bookmarks$en_US.internal(_root);
@@ -391,7 +426,7 @@ class Translations$follow$en_US {
 	String get tooltipFollow => 'Follow user';
 	String get tooltipUnfollow => 'Unfollow';
 	String get followed => 'Following';
-	String get notFollowed => 'Not following';
+	String get follow => 'Follow';
 }
 
 // Path: richText
@@ -417,6 +452,7 @@ class Translations$fanbox$en_US {
 	String get updateSession => 'Update Cookie';
 	String get title => 'FANBOX';
 	String get home => 'Following feed';
+	String get feedGroup => 'Feed';
 	String get supporting => 'Supporting feed';
 	String get following => 'Following';
 	String get recommended => 'Discover';
@@ -537,10 +573,48 @@ class Translations$settings$theme$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
-	String get title => 'Theme';
+	String get title => 'Appearance';
+	String get displayMode => 'Display mode';
+	String get tone => 'Tone';
+	String get neutral => 'Neutral';
+	String get cool => 'Cool';
+	String get warm => 'Warm';
+	String get systemNeutralHint => 'System mode uses a neutral tone';
+	String get lightAccent => 'Light accent';
+	String get darkAccent => 'Dark accent';
+	String get systemEditingLight => 'Currently editing the light accent used by the system';
+	String get systemEditingDark => 'Currently editing the dark accent used by the system';
+	String get presetPink => 'Default pink';
+	String get presetBlue => 'Blue';
+	String get presetTeal => 'Teal';
+	String get presetViolet => 'Violet';
+	String get presetAmber => 'Amber';
+	String get presetOrange => 'Orange';
+	String get custom => 'Custom';
+	String get defaultAccent => 'Default pink';
+	String get restoreDefault => 'Restore default pink';
+	String get editLightAccent => 'Custom light accent';
+	String get editDarkAccent => 'Custom dark accent';
+	String get hue => 'Hue';
+	String get saturation => 'Saturation';
+	String get value => 'Brightness';
+	String get hex => 'HEX color';
+	String get invalidHex => 'Enter a six-digit HEX color';
+	String get preview => 'Preview';
+	String get previewButton => 'Button';
+	String get rejectedLight => 'This color is too close to light backgrounds. Choose another color.';
+	String get rejectedDark => 'This color is too close to dark backgrounds. Choose another color.';
+	String get weakContrast => 'This color may be difficult to distinguish on some backgrounds.';
+	String get applyAnyway => 'Apply anyway';
+	String get useDefault => 'Use default pink';
+	String get saving => 'Saving…';
+	String get saveFailed => 'Could not save appearance. Try again.';
+	String get unsaved => 'Appearance changes are not saved yet.';
 	String get system => 'System';
 	String get light => 'Light';
 	String get dark => 'Dark';
+	String get reduceTransparency => 'Reduce transparency';
+	String get reduceTransparencyHint => 'Use solid surfaces instead of blur';
 }
 
 // Path: settings.language
@@ -622,6 +696,9 @@ class Translations$settings$downloads$en_US {
 	String get actionFailed => 'Download action failed';
 	String get expand => 'Expand';
 	String get collapse => 'Collapse';
+	String get viewAll => 'View all downloads';
+	String badgeFailures({required Object count}) => 'Failed downloads: ${count}';
+	String badgeActive({required Object count}) => 'Active downloads: ${count}';
 }
 
 // Path: settings.proxy
@@ -648,6 +725,7 @@ class Translations$settings$proxy$en_US {
 	String get helper => 'Enter IP and port separately, for example 127.0.0.1 and 7890.';
 	String get save => 'Save';
 	String get saved => 'Proxy settings saved';
+	String get saveFailed => 'Could not save proxy settings';
 	String get required => 'Enter an IP and port before turning this on.';
 	String get invalid => 'Enter a valid IP and port.';
 	String get hostRequired => 'Enter an IP.';
@@ -705,6 +783,7 @@ class Translations$ranking$modes$en_US {
 	String get dayR18Ai => 'AI-generated R-18';
 	String get week => 'Weekly';
 	String get weekR18 => 'Weekly R-18';
+	String get weekR18G => 'Weekly R-18G';
 	String get weekOriginal => 'Weekly Original';
 	String get weekRookie => 'Weekly Rookie';
 	String get month => 'Monthly';
@@ -960,6 +1039,8 @@ class Translations$illust$contextMenu$en_US {
 	String get download => 'Download';
 	String get downloadAll => 'Download all';
 	String get copyImage => 'Copy image';
+	String get copyLink => 'Copy work link';
+	String get openOriginal => 'Open on Pixiv';
 }
 
 // Path: illust.imageLabels
@@ -971,6 +1052,7 @@ class Translations$illust$imageLabels$en_US {
 	// Translations
 	String get original => 'original image';
 	String get large => 'large image';
+	String get image => 'image';
 }
 
 // Path: illust.toast
@@ -980,14 +1062,17 @@ class Translations$illust$toast$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
-	String get downloadStarted => 'Downloading image';
 	String downloadAllQueued({required Object count}) => '${count} images added to the download queue';
-	String downloadComplete({required Object path}) => 'Download complete: ${path}';
+	String downloadComplete({required Object name}) => 'Saved ${name}';
 	String get downloadFailed => 'Download failed';
 	String copying({required Object label}) => 'Copying ${label}';
 	String copied({required Object label}) => 'Copied ${label}';
 	String copiedValue({required Object label, required Object value}) => 'Copied ${label}: ${value}';
 	String copyFailed({required Object label}) => 'Failed to copy ${label}';
+	String get openFailed => 'Could not open this work on Pixiv';
+	String get linkCopied => 'Link copied';
+	String get linkCopyFailed => 'Could not copy the link';
+	String get alreadyDownloading => 'This page is already in the download queue';
 }
 
 // Path: illust.tooltip
@@ -997,6 +1082,7 @@ class Translations$illust$tooltip$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+	String get play => 'Play animation';
 	String get previousImage => 'Previous image';
 	String get nextImage => 'Next image';
 	String get backToDetail => 'Back to image detail';
@@ -1065,6 +1151,8 @@ class Translations$illust$tags$en_US {
 	// Translations
 	String get none => 'No tags';
 	String get tag => 'tag';
+	String showMore({required Object count}) => 'Show ${count} more';
+	String get showLess => 'Show less';
 }
 
 // Path: illust.comments
@@ -1079,6 +1167,10 @@ class Translations$illust$comments$en_US {
 	String get moreAvailable => 'More comments available';
 	String get hasReplies => 'Has replies';
 	String get open => 'Open comments';
+	String get discardDraftTitle => 'Leave this comment?';
+	String get discardDraftMessage => 'Your unsent comment will be lost.';
+	String get continueEditing => 'Continue editing';
+	String get discardDraft => 'Discard draft';
 	String get reply => 'Reply';
 	String replyingTo({required Object name}) => 'Replying to ${name}';
 	String get loadReplies => 'Load replies';
@@ -1086,6 +1178,7 @@ class Translations$illust$comments$en_US {
 	String get repliesFailed => 'Failed to load replies';
 	String get sendFailed => 'Failed to send comment';
 	String get delete => 'Delete';
+	String get deleteConfirm => 'Delete this comment?';
 	String get deleteFailed => 'Failed to delete comment';
 	String get inputHint => 'Write a comment';
 	String replyInputHint({required Object name}) => 'Reply to ${name}';
@@ -1127,6 +1220,7 @@ class Translations$novel$detail$en_US {
 	String get series => 'Series';
 	String get content => 'Content';
 	String get startReading => 'Start reading';
+	String get continueReading => 'Continue reading';
 	String totalChars({required Object count}) => '${count} chars';
 	String paragraphCount({required Object count}) => '${count} paragraphs';
 	String segmentCount({required Object count}) => '${count} pages';
@@ -1144,6 +1238,8 @@ class Translations$novel$reader$en_US {
 	String get chapters => 'Chapters';
 	String get settings => 'Reading settings';
 	String get emptyBody => 'No body text';
+	String get embeddedImageUnavailable => 'This image is unavailable';
+	String get openEmbeddedWork => 'Open linked artwork';
 	String totalChars({required Object count}) => '${count} chars';
 	String pagePosition({required Object current, required Object total}) => '${current} / ${total} pages';
 	String pageTotal({required Object total}) => '${total} pages';
@@ -1174,10 +1270,21 @@ extension on Translations {
 			'nativeWindow.maximize' => 'Maximize',
 			'nativeWindow.restore' => 'Restore',
 			'nativeWindow.close' => 'Close',
+			'nativeWindow.illust' => 'Illust',
+			'nativeWindow.manga' => 'Manga',
+			'nativeWindow.novel' => 'Novel',
+			'nativeWindow.workFallback' => ({required Object type, required Object id}) => '${type}: ${id}',
+			'nativeWindow.workTitle' => ({required Object type, required Object id, required Object title}) => '${type}: ${id} · ${title}',
+			'nativeWindow.relatedTitle' => ({required Object title}) => 'Related works · ${title}',
+			'nativeWindow.user' => 'User',
+			'nativeWindow.userFallback' => ({required Object id}) => 'User: ${id}',
+			'nativeWindow.viewerTitle' => ({required Object title, required Object page, required Object total}) => '${title} · ${page}/${total}',
 			'discover.searchHint' => 'Search Pixiv',
 			'discover.history' => 'Recent searches',
 			'discover.viewAll' => 'View all',
 			'discover.clearHistory' => 'Clear history',
+			'discover.deleteHistoryItem' => 'Remove recent search',
+			'discover.emptyHistory' => 'Your searches will appear here',
 			'app.title' => 'freepiv',
 			'navigation.activity' => 'Activity',
 			'navigation.home' => 'Home',
@@ -1186,6 +1293,17 @@ extension on Translations {
 			'navigation.ranking' => 'Ranking',
 			'navigation.me' => 'Me',
 			'navigation.settings' => 'Settings',
+			'navigation.more' => 'More',
+			'navigation.expand' => 'Expand navigation',
+			'navigation.collapse' => 'Collapse navigation',
+			'navigation.downloads' => 'Downloads',
+			'navigation.about' => 'About',
+			'errors.generic' => 'Unable to load content. Please try again.',
+			'errors.connection' => 'Check your connection and try again.',
+			'errors.session' => 'Your session has expired. Please sign in again.',
+			'errors.forbidden' => 'You do not have access to this content.',
+			'errors.missing' => 'This content is no longer available.',
+			'common.viewLog' => 'View log',
 			'common.apply' => 'Apply',
 			'common.reset' => 'Reset',
 			'common.discover' => 'Discover',
@@ -1201,6 +1319,9 @@ extension on Translations {
 			'common.copy' => ({required Object label}) => 'Copy ${label}',
 			'common.labelValue' => ({required Object label, required Object value}) => '${label}: ${value}',
 			'common.errorWithCause' => ({required Object message, required Object cause}) => '${message}: ${cause}',
+			'common.errorDetails' => 'Error details',
+			'common.copyDetails' => 'Copy details',
+			'common.detailsCopied' => 'Error details copied',
 			'refresh.pullToRefresh' => 'Pull to refresh',
 			'refresh.releaseToRefresh' => 'Release to refresh',
 			'refresh.refreshing' => 'Refreshing',
@@ -1229,10 +1350,48 @@ extension on Translations {
 			'login.browserOpenUnsupported' => 'System browser opening is not implemented here.',
 			'login.browserOpenFailed' => ({required Object browser, required Object output}) => '${browser} failed to open the sign-in link: ${output}',
 			'login.proxyHint' => 'If you use a network proxy, set the proxy address here before signing in.',
-			'settings.theme.title' => 'Theme',
+			'settings.theme.title' => 'Appearance',
+			'settings.theme.displayMode' => 'Display mode',
+			'settings.theme.tone' => 'Tone',
+			'settings.theme.neutral' => 'Neutral',
+			'settings.theme.cool' => 'Cool',
+			'settings.theme.warm' => 'Warm',
+			'settings.theme.systemNeutralHint' => 'System mode uses a neutral tone',
+			'settings.theme.lightAccent' => 'Light accent',
+			'settings.theme.darkAccent' => 'Dark accent',
+			'settings.theme.systemEditingLight' => 'Currently editing the light accent used by the system',
+			'settings.theme.systemEditingDark' => 'Currently editing the dark accent used by the system',
+			'settings.theme.presetPink' => 'Default pink',
+			'settings.theme.presetBlue' => 'Blue',
+			'settings.theme.presetTeal' => 'Teal',
+			'settings.theme.presetViolet' => 'Violet',
+			'settings.theme.presetAmber' => 'Amber',
+			'settings.theme.presetOrange' => 'Orange',
+			'settings.theme.custom' => 'Custom',
+			'settings.theme.defaultAccent' => 'Default pink',
+			'settings.theme.restoreDefault' => 'Restore default pink',
+			'settings.theme.editLightAccent' => 'Custom light accent',
+			'settings.theme.editDarkAccent' => 'Custom dark accent',
+			'settings.theme.hue' => 'Hue',
+			'settings.theme.saturation' => 'Saturation',
+			'settings.theme.value' => 'Brightness',
+			'settings.theme.hex' => 'HEX color',
+			'settings.theme.invalidHex' => 'Enter a six-digit HEX color',
+			'settings.theme.preview' => 'Preview',
+			'settings.theme.previewButton' => 'Button',
+			'settings.theme.rejectedLight' => 'This color is too close to light backgrounds. Choose another color.',
+			'settings.theme.rejectedDark' => 'This color is too close to dark backgrounds. Choose another color.',
+			'settings.theme.weakContrast' => 'This color may be difficult to distinguish on some backgrounds.',
+			'settings.theme.applyAnyway' => 'Apply anyway',
+			'settings.theme.useDefault' => 'Use default pink',
+			'settings.theme.saving' => 'Saving…',
+			'settings.theme.saveFailed' => 'Could not save appearance. Try again.',
+			'settings.theme.unsaved' => 'Appearance changes are not saved yet.',
 			'settings.theme.system' => 'System',
 			'settings.theme.light' => 'Light',
 			'settings.theme.dark' => 'Dark',
+			'settings.theme.reduceTransparency' => 'Reduce transparency',
+			'settings.theme.reduceTransparencyHint' => 'Use solid surfaces instead of blur',
 			'settings.language.title' => 'Language',
 			'settings.language.systemDefault' => 'System default',
 			'settings.language.enUs' => 'English (United States)',
@@ -1287,6 +1446,9 @@ extension on Translations {
 			'settings.downloads.actionFailed' => 'Download action failed',
 			'settings.downloads.expand' => 'Expand',
 			'settings.downloads.collapse' => 'Collapse',
+			'settings.downloads.viewAll' => 'View all downloads',
+			'settings.downloads.badgeFailures' => ({required Object count}) => 'Failed downloads: ${count}',
+			'settings.downloads.badgeActive' => ({required Object count}) => 'Active downloads: ${count}',
 			'settings.proxy.title' => 'Network proxy',
 			'settings.proxy.shortTitle' => 'Proxy',
 			'settings.proxy.subtitle' => 'Pixiv API and image requests will use the selected proxy after saving.',
@@ -1304,6 +1466,7 @@ extension on Translations {
 			'settings.proxy.helper' => 'Enter IP and port separately, for example 127.0.0.1 and 7890.',
 			'settings.proxy.save' => 'Save',
 			'settings.proxy.saved' => 'Proxy settings saved',
+			'settings.proxy.saveFailed' => 'Could not save proxy settings',
 			'settings.proxy.required' => 'Enter an IP and port before turning this on.',
 			'settings.proxy.invalid' => 'Enter a valid IP and port.',
 			'settings.proxy.hostRequired' => 'Enter an IP.',
@@ -1321,15 +1484,14 @@ extension on Translations {
 			'settings.account.signedOutSubtitle' => 'Sign in to show your Pixiv account',
 			'settings.account.notSignedIn' => 'Not signed in',
 			'settings.account.signOut' => 'Sign out',
+			'me.profile' => 'My profile',
 			'me.openProfile' => 'Open profile',
 			'me.following' => 'My following',
 			'me.followers' => 'My followers',
 			'me.emptyFollowing' => 'No following users',
 			'me.emptyFollowers' => 'No followers',
 			'me.about' => 'About',
-			'me.aboutSubtitle' => 'Version, updates, and project links',
 			'me.settings' => 'Settings',
-			'me.settingsSubtitle' => 'Theme, language, images, and downloads',
 			'about.title' => 'About',
 			'about.appName' => 'freepiv',
 			'about.subtitle' => 'A lightweight client for browsing Pixiv content. Check the current version, look for updates, and open the project download page here.',
@@ -1379,6 +1541,7 @@ extension on Translations {
 			'ranking.modes.dayR18Ai' => 'AI-generated R-18',
 			'ranking.modes.week' => 'Weekly',
 			'ranking.modes.weekR18' => 'Weekly R-18',
+			'ranking.modes.weekR18G' => 'Weekly R-18G',
 			'ranking.modes.weekOriginal' => 'Weekly Original',
 			'ranking.modes.weekRookie' => 'Weekly Rookie',
 			'ranking.modes.month' => 'Monthly',
@@ -1417,6 +1580,7 @@ extension on Translations {
 			'search.empty.illustrations' => 'No illustrations found',
 			'search.empty.novels' => 'No novels found',
 			'search.empty.users' => 'No users found',
+			'user.noPublicWorks' => 'No public works',
 			'user.tabs.illustrations' => 'Illustrations',
 			'user.tabs.manga' => 'Manga',
 			'user.tabs.novels' => 'Novels',
@@ -1473,16 +1637,23 @@ extension on Translations {
 			'illust.contextMenu.download' => 'Download',
 			'illust.contextMenu.downloadAll' => 'Download all',
 			'illust.contextMenu.copyImage' => 'Copy image',
+			'illust.contextMenu.copyLink' => 'Copy work link',
+			'illust.contextMenu.openOriginal' => 'Open on Pixiv',
 			'illust.imageLabels.original' => 'original image',
 			'illust.imageLabels.large' => 'large image',
-			'illust.toast.downloadStarted' => 'Downloading image',
+			'illust.imageLabels.image' => 'image',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} images added to the download queue',
-			'illust.toast.downloadComplete' => ({required Object path}) => 'Download complete: ${path}',
+			'illust.toast.downloadComplete' => ({required Object name}) => 'Saved ${name}',
 			'illust.toast.downloadFailed' => 'Download failed',
 			'illust.toast.copying' => ({required Object label}) => 'Copying ${label}',
 			'illust.toast.copied' => ({required Object label}) => 'Copied ${label}',
 			'illust.toast.copiedValue' => ({required Object label, required Object value}) => 'Copied ${label}: ${value}',
 			'illust.toast.copyFailed' => ({required Object label}) => 'Failed to copy ${label}',
+			'illust.toast.openFailed' => 'Could not open this work on Pixiv',
+			'illust.toast.linkCopied' => 'Link copied',
+			'illust.toast.linkCopyFailed' => 'Could not copy the link',
+			'illust.toast.alreadyDownloading' => 'This page is already in the download queue',
+			'illust.tooltip.play' => 'Play animation',
 			'illust.tooltip.previousImage' => 'Previous image',
 			'illust.tooltip.nextImage' => 'Next image',
 			'illust.tooltip.backToDetail' => 'Back to image detail',
@@ -1506,11 +1677,17 @@ extension on Translations {
 			'illust.stats.pages' => 'Pages',
 			'illust.tags.none' => 'No tags',
 			'illust.tags.tag' => 'tag',
+			'illust.tags.showMore' => ({required Object count}) => 'Show ${count} more',
+			'illust.tags.showLess' => 'Show less',
 			'illust.comments.failed' => 'Failed to load comments',
 			'illust.comments.empty' => 'No comments yet',
 			'illust.comments.moreAvailable' => 'More comments available',
 			'illust.comments.hasReplies' => 'Has replies',
 			'illust.comments.open' => 'Open comments',
+			'illust.comments.discardDraftTitle' => 'Leave this comment?',
+			'illust.comments.discardDraftMessage' => 'Your unsent comment will be lost.',
+			'illust.comments.continueEditing' => 'Continue editing',
+			'illust.comments.discardDraft' => 'Discard draft',
 			'illust.comments.reply' => 'Reply',
 			'illust.comments.replyingTo' => ({required Object name}) => 'Replying to ${name}',
 			'illust.comments.loadReplies' => 'Load replies',
@@ -1518,6 +1695,7 @@ extension on Translations {
 			'illust.comments.repliesFailed' => 'Failed to load replies',
 			'illust.comments.sendFailed' => 'Failed to send comment',
 			'illust.comments.delete' => 'Delete',
+			'illust.comments.deleteConfirm' => 'Delete this comment?',
 			'illust.comments.deleteFailed' => 'Failed to delete comment',
 			'illust.comments.inputHint' => 'Write a comment',
 			'illust.comments.replyInputHint' => ({required Object name}) => 'Reply to ${name}',
@@ -1532,6 +1710,7 @@ extension on Translations {
 			'novel.detail.series' => 'Series',
 			'novel.detail.content' => 'Content',
 			'novel.detail.startReading' => 'Start reading',
+			'novel.detail.continueReading' => 'Continue reading',
 			'novel.detail.totalChars' => ({required Object count}) => '${count} chars',
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} paragraphs',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} pages',
@@ -1540,6 +1719,8 @@ extension on Translations {
 			'novel.reader.chapters' => 'Chapters',
 			'novel.reader.settings' => 'Reading settings',
 			'novel.reader.emptyBody' => 'No body text',
+			'novel.reader.embeddedImageUnavailable' => 'This image is unavailable',
+			'novel.reader.openEmbeddedWork' => 'Open linked artwork',
 			'novel.reader.totalChars' => ({required Object count}) => '${count} chars',
 			'novel.reader.pagePosition' => ({required Object current, required Object total}) => '${current} / ${total} pages',
 			'novel.reader.pageTotal' => ({required Object total}) => '${total} pages',
@@ -1559,7 +1740,7 @@ extension on Translations {
 			'follow.tooltipFollow' => 'Follow user',
 			'follow.tooltipUnfollow' => 'Unfollow',
 			'follow.followed' => 'Following',
-			'follow.notFollowed' => 'Not following',
+			'follow.follow' => 'Follow',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter: ${username}',
 			'richText.illustId' => ({required Object id}) => 'Illust ID: ${id}',
 			'richText.userId' => ({required Object id}) => 'User ID: ${id}',
@@ -1567,6 +1748,7 @@ extension on Translations {
 			'fanbox.updateSession' => 'Update Cookie',
 			'fanbox.title' => 'FANBOX',
 			'fanbox.home' => 'Following feed',
+			'fanbox.feedGroup' => 'Feed',
 			'fanbox.supporting' => 'Supporting feed',
 			'fanbox.following' => 'Following',
 			'fanbox.recommended' => 'Discover',
@@ -1596,6 +1778,8 @@ extension on Translations {
 			'fanbox.monthlyFee' => ({required Object fee}) => '¥${fee}/month',
 			'fanbox.supportOnWebsite' => 'View plan on FANBOX',
 			'fanbox.follow' => 'Follow',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.unfollow' => 'Unfollow',
 			'fanbox.like' => 'Like',
 			'fanbox.liked' => 'Liked',

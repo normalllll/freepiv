@@ -289,7 +289,7 @@ final class IllustRelatedWorksProvider
   }) : super(
          retry: null,
          name: r'illustRelatedWorksProvider',
-         isAutoDispose: false,
+         isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
@@ -328,7 +328,7 @@ final class IllustRelatedWorksProvider
 }
 
 String _$illustRelatedWorksHash() =>
-    r'b92fb5ae9132c1104098066bd96cc426d65a879f';
+    r'86d8f3962ec21325d70b237cfe623eed8bac0321';
 
 final class IllustRelatedWorksFamily extends $Family
     with
@@ -345,7 +345,7 @@ final class IllustRelatedWorksFamily extends $Family
         name: r'illustRelatedWorksProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
-        isAutoDispose: false,
+        isAutoDispose: true,
       );
 
   IllustRelatedWorksProvider call(int illustId) =>

@@ -1,8 +1,12 @@
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/shared/layout/fp_collapsing_header.dart';
 import 'package:freepiv/shared/widgets/refresh_indicator.dart';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:freepiv/core/utils/text_format.dart';
+import 'package:freepiv/shared/widgets/error.dart';
 import 'package:go_router/go_router.dart';
 import 'package:freepiv/shared/layout/auto_scaffold.dart';
+import 'package:freepiv/shared/layout/fp_page_header.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/energetic_card.dart';
 import 'image.dart';
@@ -10,7 +14,9 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'navigation.dart';
 
-EdgeInsets pixivisionPadding(double width) => EdgeInsets.symmetric(horizontal: math.max(12, (width - 900) / 2 + 12), vertical: 12);
+EdgeInsets pixivisionPadding(double width) => AppMetrics.columnPadding(width).copyWith(top: 12, bottom: 12);
+
+EdgeInsets pixivisionReadingPadding(double width) => AppMetrics.columnPadding(width, maxWidth: AppMetrics.readingMaxWidth).copyWith(top: 24, bottom: 24);
 
 class PixivisionScaffold extends StatelessWidget {
   const PixivisionScaffold({required this.child, this.title = 'pixivision', super.key});
@@ -19,34 +25,29 @@ class PixivisionScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AutoScaffold(
     builder: (context, layout, orientation, desktop) => Scaffold(
-      appBar: desktop
-          ? null
-          : AppBar(
-              title: Text(title),
-              leading: BackButton(onPressed: () => context.canPop() ? context.pop() : context.go('/search')),
-            ),
-      body: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(dragDevices: dataRefreshScrollBehavior.dragDevices),
-        child: SafeArea(bottom: false, child: child),
+      body: FpCollapsingHeader(
+        header: desktop ? null : FpPageHeader(title: Text(title), onBack: () => context.canPop() ? context.pop() : context.go('/search')),
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(dragDevices: dataRefreshScrollBehavior.dragDevices),
+          child: SafeArea(bottom: false, child: child),
+        ),
       ),
     ),
   );
 }
 
 class PixivisionError extends StatelessWidget {
-  const PixivisionError({required this.retry, super.key});
+  const PixivisionError({required this.retry, this.error, super.key});
   final VoidCallback retry;
+  final Object? error;
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(context.t.pixivision.requestFailed),
-        const SizedBox(height: 12),
-        OutlinedButton.icon(onPressed: retry, icon: const Icon(Icons.refresh), label: Text(context.t.common.retry)),
-      ],
-    ),
+  Widget build(BuildContext context) => ErrorContent(
+    message: context.t.pixivision.requestFailed,
+    details: switch (error) {
+      final error? => pixivErrorDetails(error),
+      null => null,
+    },
+    onRetry: retry,
   );
 }
 
@@ -62,44 +63,55 @@ class PixivisionCard extends StatelessWidget {
     enabled: article == null,
     child: EnergeticCard(
       onTap: article == null ? null : () => openPixivisionLink(context, article!.url, summary: article),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) => SizedBox(
-              height: preview ? constraints.maxWidth * 9 / 16 : (constraints.maxWidth * 9 / 16).clamp(160, 280),
-              child: Skeleton.replace(
-                width: double.infinity,
-                height: double.infinity,
-                child: article?.thumbnail == null
-                    ? ColoredBox(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        child: const Center(child: Icon(Icons.article_outlined)),
-                      )
-                    : PixivisionImage(url: article!.thumbnail!),
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(preview ? 12 : 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final horizontal = !preview && AutoScaffold.usesHorizontalLayoutOf(context) && constraints.maxWidth >= AppMetrics.gridExtent * 2;
+          final image = Skeleton.replace(
+            width: double.infinity,
+            height: double.infinity,
+            child: article?.thumbnail == null
+                ? ColoredBox(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: const Center(child: Icon(Icons.article_outlined)),
+                  )
+                : PixivisionImage(url: article!.thumbnail!),
+          );
+          final details = Padding(
+            padding: preview ? AppMetrics.contentSectionPadding : AppMetrics.panelPadding,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _CardTitle(article?.title ?? 'Article title'),
+                _CardTitle(pixivisionArticleTitle(article?.title ?? 'Article title')),
                 if (!preview) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppMetrics.compactSectionGap),
                   Row(
                     children: [
                       Expanded(child: Text(article?.category?.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis)),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppMetrics.compactSectionGap),
                       Flexible(child: Text(pixivisionDate(context, article?.publishDate ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis)),
                     ],
                   ),
                 ],
               ],
             ),
-          ),
-        ],
+          );
+          if (horizontal) {
+            return Row(
+              children: [
+                SizedBox(width: AppMetrics.gridExtent, height: AppMetrics.gridExtent * 9 / 16, child: image),
+                Expanded(child: details),
+              ],
+            );
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AspectRatio(aspectRatio: 16 / 9, child: image),
+              details,
+            ],
+          );
+        },
       ),
     ),
   );
@@ -145,3 +157,5 @@ double _cardTitleHeight(BuildContext context) {
   painter.dispose();
   return height;
 }
+
+String pixivisionArticleTitle(String value) => value.replaceFirst(RegExp(r'\s+-\s*$'), '').trim();

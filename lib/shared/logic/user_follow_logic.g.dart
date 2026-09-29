@@ -20,7 +20,7 @@ final class UserFollowProvider
   }) : super(
          retry: null,
          name: r'userFollowProvider',
-         isAutoDispose: false,
+         isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
@@ -58,7 +58,7 @@ final class UserFollowProvider
   }
 }
 
-String _$userFollowHash() => r'9217b7f3fb77a360fca5bfcd578c45e9a9c7fc3f';
+String _$userFollowHash() => r'00dd132a9e7bc55312c98e3ce94819a633c030a1';
 
 final class UserFollowFamily extends $Family
     with
@@ -75,7 +75,7 @@ final class UserFollowFamily extends $Family
         name: r'userFollowProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
-        isAutoDispose: false,
+        isAutoDispose: true,
       );
 
   UserFollowProvider call(UserFollowArgs args) =>

@@ -1,46 +1,68 @@
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:go_router/go_router.dart';
+import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
+import 'package:freepiv/app/theme/content_script.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_section.dart';
 import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
+import 'package:freepiv/features/novel/presentation/reader/novel_reading_session.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class NovelHeader extends StatelessWidget {
-  const NovelHeader({required this.novel, required this.webviewNovel, super.key});
+  const NovelHeader({required this.novel, required this.webviewNovel, required this.onStartReading, super.key});
 
   final Novel novel;
   final WebviewNovel webviewNovel;
+  final VoidCallback onStartReading;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1080),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final desktop = constraints.maxWidth >= 720;
-            final cover = LargeNovelCoverImage(url: novelCoverUrl(novel, webviewNovel), desktop: desktop);
-            final info = NovelHeaderInfo(novel: novel, webviewNovel: webviewNovel);
+    return ContentColumn(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final desktop = AutoScaffold.usesHorizontalLayoutOf(context) && constraints.maxWidth >= 720;
+          final coverUrl = novelCoverUrl(novel, webviewNovel);
+          final cover = coverUrl.isEmpty ? null : LargeNovelCoverImage(url: coverUrl, desktop: desktop);
+          final info = NovelHeaderInfo(novel: novel, webviewNovel: webviewNovel, onStartReading: onStartReading);
 
-            return Padding(
-              padding: EdgeInsets.fromLTRB(desktop ? 28 : 16, 16, desktop ? 28 : 16, 18),
-              child: desktop
-                  ? Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        cover,
-                        const SizedBox(width: 24),
-                        Expanded(child: info),
-                      ],
-                    )
-                  : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [cover, const SizedBox(height: 16), info]),
-            );
-          },
-        ),
+          return Padding(
+            padding: const EdgeInsets.only(top: 16, bottom: 18),
+            child: desktop
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (cover != null) ...[cover, const SizedBox(width: 24)],
+                      Expanded(child: info),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (cover != null) ...[cover, const SizedBox(width: 12)],
+                          Expanded(child: _NovelTitleGroup(novel: novel)),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _NovelReadButton(novel: novel, webviewNovel: webviewNovel, onStartReading: onStartReading),
+                      const SizedBox(height: 14),
+                      NovelHeaderInfo(novel: novel, webviewNovel: webviewNovel, onStartReading: onStartReading, supportingOnly: true),
+                    ],
+                  ),
+          );
+        },
       ),
     );
   }
@@ -55,26 +77,51 @@ class LargeNovelCoverImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final width = desktop ? 260.0 : double.infinity;
-    final height = desktop ? 360.0 : math.min(360.0, math.max(240.0, MediaQuery.sizeOf(context).width * 0.78));
+    final width = desktop ? 220.0 : 96.0;
+    final height = desktop ? 308.0 : 136.0;
     final borderRadius = BorderRadius.circular(8);
 
     return SizedBox(
       width: width,
       height: height,
       child: DecoratedBox(
-        decoration: BoxDecoration(color: colorScheme.surfaceContainerHighest, borderRadius: borderRadius),
-        child: PixivImage(url: url, fit: BoxFit.contain, borderRadius: borderRadius),
+        decoration: BoxDecoration(
+          color: (colorScheme.brightness == Brightness.light ? colorScheme.surfaceContainerLow : colorScheme.surfaceContainerHighest),
+          borderRadius: borderRadius,
+        ),
+        child: Semantics(
+          image: true,
+          button: true,
+          label: t.novel.detail.images,
+          child: AppClickSurface(
+            feedback: AppClickFeedback.artwork,
+            borderRadius: borderRadius,
+            onTap: () => context.pushNamed(
+              AppRoute.originalImageViewer.name,
+              extra: OriginalImageViewerArgs(
+                title: t.novel.detail.images,
+                initialIndex: 0,
+                pages: [OriginalImagePage(url: url, previewUrl: url, downloadOrigin: DownloadOrigin.ofImageUrl(Uri.parse(url)))],
+              ),
+            ),
+            child: ContentImageMenuRegion(
+              actions: ContentImageActions.pixivHosted(url: url, headers: pixivImageHeaders, title: t.novel.detail.images),
+              child: PixivImage(url: url, fit: BoxFit.contain, borderRadius: borderRadius),
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
 class NovelHeaderInfo extends StatelessWidget {
-  const NovelHeaderInfo({required this.novel, required this.webviewNovel, super.key});
+  const NovelHeaderInfo({required this.novel, required this.webviewNovel, required this.onStartReading, this.supportingOnly = false, super.key});
 
   final Novel novel;
   final WebviewNovel webviewNovel;
+  final VoidCallback onStartReading;
+  final bool supportingOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -84,43 +131,82 @@ class NovelHeaderInfo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(novel.title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
-            ),
-            const SizedBox(width: 12),
-            IllustBookmarkButton(illustId: novel.id, initialIsBookmarked: novel.isBookmarked, isNovel: true),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Text(novel.user.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 14),
-        NovelStatsStrip(novel: novel, webviewNovel: webviewNovel),
-        const SizedBox(height: 12),
-        NovelRestrictionBadges(novel: novel, webviewNovel: webviewNovel),
-        if (novel.tags.isNotEmpty) ...[
+        if (!supportingOnly) ...[
+          _NovelTitleGroup(novel: novel),
+          const SizedBox(height: AppMetrics.compactSectionGap),
+          _NovelReadButton(novel: novel, webviewNovel: webviewNovel, onStartReading: onStartReading),
           const SizedBox(height: 14),
-          IllustSectionTitle(title: translations.illust.section.tags, icon: Icons.tag_outlined),
-          const SizedBox(height: 7),
-          NovelTagChips(tags: novel.tags, maxTags: 12),
         ],
         if (caption.trim().isNotEmpty) ...[
-          const SizedBox(height: 14),
           IllustSectionTitle(title: translations.illust.section.caption, icon: Icons.notes_outlined),
           const SizedBox(height: 7),
           NovelCaptionBox(caption: caption),
+          const SizedBox(height: AppMetrics.compactSectionGap),
         ],
-        const SizedBox(height: 14),
-        IllustSectionTitle(title: translations.illust.section.details, icon: Icons.info_outline),
-        const SizedBox(height: 4),
-        NovelMetadataRow(label: translations.common.id, value: novel.id.toString()),
+        NovelTagChips(tags: novel.tags, maxTags: 3),
+        const SizedBox(height: AppMetrics.compactSectionGap),
+        NovelStatsStrip(novel: novel, webviewNovel: webviewNovel),
+        const SizedBox(height: 8),
+        NovelRestrictionBadges(novel: novel, webviewNovel: webviewNovel),
         if ((novel.series.title ?? '').isNotEmpty) NovelMetadataRow(label: translations.novel.detail.series, value: novel.series.title!),
-        if (novel.createDate.isNotEmpty) NovelMetadataRow(label: translations.illust.metadata.created, value: formatPixivDate(novel.createDate)),
+        ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          title: Text(translations.illust.section.details),
+          children: [
+            if (novel.tags.length > 3) NovelTagChips(tags: novel.tags, maxTags: novel.tags.length),
+            NovelMetadataRow(label: translations.common.id, value: novel.id.toString()),
+            if (novel.createDate.isNotEmpty) NovelMetadataRow(label: translations.illust.metadata.created, value: formatPixivDate(novel.createDate)),
+          ],
+        ),
       ],
     );
   }
+}
+
+class _NovelTitleGroup extends StatelessWidget {
+  const _NovelTitleGroup({required this.novel});
+
+  final Novel novel;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              novel.title,
+              style: contentTextStyle(context, novel.title, Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+            ),
+          ),
+          const SizedBox(width: 4),
+          IllustBookmarkButton(illustId: novel.id, initialIsBookmarked: novel.isBookmarked, isNovel: true),
+        ],
+      ),
+      const SizedBox(height: 6),
+      Text(novel.user.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleSmall),
+    ],
+  );
+}
+
+class _NovelReadButton extends StatelessWidget {
+  const _NovelReadButton({required this.novel, required this.webviewNovel, required this.onStartReading});
+
+  final Novel novel;
+  final WebviewNovel webviewNovel;
+  final VoidCallback onStartReading;
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    child: FilledButton.icon(
+      onPressed: webviewNovel.text.trim().isEmpty ? null : onStartReading,
+      icon: const Icon(Icons.menu_book_outlined),
+      label: Text(novelReadingPosition(context, novel.id) == null ? t.novel.detail.startReading : t.novel.detail.continueReading),
+    ),
+  );
 }
 
 class NovelStatsStrip extends StatelessWidget {
@@ -131,34 +217,21 @@ class NovelStatsStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      spacing: 18,
+      runSpacing: 8,
       children: [
-        Expanded(
-          child: NovelStatPill(
-            icon: Icons.text_fields,
-            label: t.user.meta.novelChars(count: novel.textLength),
-            value: formatCount(novel.textLength),
-          ),
+        NovelStatPill(
+          icon: Icons.text_fields,
+          label: t.user.meta.novelChars(count: novel.textLength),
+          value: formatCount(novel.textLength),
         ),
-        const SizedBox(width: 7),
-        Expanded(
-          child: NovelStatPill(
-            icon: Icons.visibility_outlined,
-            label: t.illust.stats.views,
-            value: formatCount(math.max(novel.totalView, webviewNovel.rating.view)),
-          ),
-        ),
-        const SizedBox(width: 7),
-        Expanded(
-          child: NovelStatPill(icon: Icons.favorite_border, label: t.illust.stats.bookmarks, value: formatCount(novel.totalBookmarks)),
-        ),
-        const SizedBox(width: 7),
-        Expanded(
-          child: NovelStatPill(
-            icon: Icons.menu_book_outlined,
-            label: t.user.meta.novelPages(count: novel.pageCount),
-            value: '${novel.pageCount}',
-          ),
+        NovelStatPill(icon: Icons.visibility_outlined, label: t.illust.stats.views, value: formatCount(math.max(novel.totalView, webviewNovel.rating.view))),
+        NovelStatPill(icon: Icons.favorite_border, label: t.illust.stats.bookmarks, value: formatCount(novel.totalBookmarks)),
+        NovelStatPill(
+          icon: Icons.menu_book_outlined,
+          label: t.user.meta.novelPages(count: novel.pageCount),
+          value: '${novel.pageCount}',
         ),
       ],
     );
@@ -178,29 +251,13 @@ class NovelStatPill extends StatelessWidget {
 
     return Tooltip(
       message: label,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: colorScheme.outlineVariant),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 15, color: colorScheme.onSurfaceVariant),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700, height: 1),
-              ),
-            ],
-          ),
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
+          const SizedBox(width: 5),
+          Text(value, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+        ],
       ),
     );
   }
@@ -239,7 +296,7 @@ class NovelInfoBadge extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(7)),
+      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         child: Row(
@@ -267,17 +324,7 @@ class NovelCaptionBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: HtmlRichText(caption, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurface, height: 1.35)),
-      ),
-    );
+    return HtmlRichText(caption, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface, height: 1.5));
   }
 }
 

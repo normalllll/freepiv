@@ -1,5 +1,7 @@
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 
 class RefreshDots extends StatefulWidget {
@@ -46,7 +48,7 @@ class _RefreshDotsState extends State<RefreshDots> with SingleTickerProviderStat
                 child: SizedBox.square(
                   dimension: 4,
                   child: DecoratedBox(
-                    decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: FreepivThemeTokens.of(context).textPrimary, shape: BoxShape.circle),
                   ),
                 ),
               ),
@@ -86,7 +88,7 @@ class _DotsRefreshIndicatorState extends State<DotsRefreshIndicator> {
         child: IgnorePointer(
           child: AnimatedOpacity(
             opacity: _visible ? 1 : 0,
-            duration: const Duration(milliseconds: 140),
+            duration: AppMotion.duration(context, AppMotion.feedback),
             child: Center(
               child: TickerMode(enabled: _visible, child: const RefreshDots()),
             ),

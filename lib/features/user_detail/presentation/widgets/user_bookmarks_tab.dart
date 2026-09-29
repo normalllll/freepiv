@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
@@ -72,8 +73,7 @@ class _UserBookmarksTabBodyState extends ConsumerState<UserBookmarksTabBody> imp
     return UserIllustGridBody(
       source: source,
       physics: physics,
-      sliverHeader: sliverHeader,
-      leadingSlivers: [_selectorSliver(context)],
+      sliverHeader: SliverMainAxisGroup(slivers: [?sliverHeader, _selectorSliver(context)]),
       emptyTitle: context.t.user.empty.bookmarkIllustrations,
     );
   }
@@ -82,8 +82,7 @@ class _UserBookmarksTabBodyState extends ConsumerState<UserBookmarksTabBody> imp
     return UserNovelListBody(
       source: source,
       physics: physics,
-      sliverHeader: sliverHeader,
-      leadingSlivers: [_selectorSliver(context)],
+      sliverHeader: SliverMainAxisGroup(slivers: [?sliverHeader, _selectorSliver(context)]),
       emptyTitle: context.t.user.empty.bookmarkNovels,
     );
   }
@@ -105,6 +104,7 @@ class _UserBookmarksTabBodyState extends ConsumerState<UserBookmarksTabBody> imp
   }
 
   void _ensureLoaded(UserBookmarkKind kind) {
+    if (!mounted) return;
     switch (kind) {
       case UserBookmarkKind.illustManga:
         _ensureSourceLoaded(ref.read(userIllustBookmarksProvider(userId: widget.detail.user.id)));
@@ -136,16 +136,14 @@ class _BookmarkKindSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final translations = t;
-    final colorScheme = Theme.of(context).colorScheme;
 
+    final inset = AppMetrics.browseInset(MediaQuery.sizeOf(context).width);
     return Material(
-      color: colorScheme.surface,
+      type: MaterialType.transparency,
       child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
-        ),
+        decoration: const BoxDecoration(),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          padding: EdgeInsets.fromLTRB(inset, 10, inset, 6),
           child: Align(
             alignment: AlignmentDirectional.centerStart,
             child: ConstrainedSegmentedButton<UserBookmarkKind>(
@@ -160,11 +158,6 @@ class _BookmarkKindSelector extends StatelessWidget {
               ],
               selected: {value},
               onSelectionChanged: (selection) => onChanged(selection.single),
-              style: SegmentedButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                textStyle: Theme.of(context).textTheme.labelLarge,
-              ),
             ),
           ),
         ),

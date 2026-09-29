@@ -8,16 +8,25 @@ import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleto
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 const _relatedWaterfallPadding = EdgeInsets.fromLTRB(12, 0, 12, 24);
-const _relatedWaterfallMaxCrossAxisExtent = 240.0;
 const _relatedWaterfallSpacing = 8.0;
 
 class IllustRelatedWaterfallView extends StatelessWidget {
-  const IllustRelatedWaterfallView({required this.source, required this.currentIllustId, required this.onIllustTap, this.topPadding = 12, super.key});
+  const IllustRelatedWaterfallView({
+    required this.source,
+    required this.currentIllustId,
+    required this.onIllustTap,
+    this.sourceIllust,
+    this.headerSliver,
+    this.topPadding = 12,
+    super.key,
+  });
 
   final IllustRelatedListSource source;
   final int currentIllustId;
-  final ValueChanged<Illust> onIllustTap;
+  final IllustOpener onIllustTap;
+  final Illust? sourceIllust;
   final double topPadding;
+  final Widget? headerSliver;
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +35,35 @@ class IllustRelatedWaterfallView extends StatelessWidget {
       builder: (context, child) {
         return DataLoadingCustomScrollView(
           slivers: [
+            ?headerSliver,
+            if (sourceIllust case final source?)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Row(
+                    children: [
+                      SizedBox.square(
+                        dimension: 40,
+                        child: PixivImage(url: source.imageUrls.squareMedium, fit: BoxFit.cover, borderRadius: BorderRadius.circular(8)),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Tooltip(
+                          message: source.title,
+                          child: Text(source.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ...IllustRelatedSlivers.build(
               context: context,
               source: source,
               currentIllustId: currentIllustId,
               onIllustTap: onIllustTap,
               topPadding: topPadding,
+              showTitle: headerSliver == null,
               fullScreen: true,
             ),
           ],
@@ -48,7 +80,7 @@ class IllustRelatedSlivers {
     required BuildContext context,
     required IllustRelatedListSource source,
     required int currentIllustId,
-    required ValueChanged<Illust> onIllustTap,
+    required IllustOpener onIllustTap,
     double topPadding = 0,
     bool showTitle = true,
     bool fullScreen = false,
@@ -68,12 +100,11 @@ class IllustRelatedSlivers {
           ]
         : <Widget>[SliverToBoxAdapter(child: SizedBox(height: topPadding))];
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
+    if (source.phase == LoadPhase.loading) {
       return [
         ...titleSliver,
         const SliverIllustWaterfallSkeleton(
           padding: _relatedWaterfallPadding,
-          maxCrossAxisExtent: _relatedWaterfallMaxCrossAxisExtent,
           crossAxisSpacing: _relatedWaterfallSpacing,
           mainAxisSpacing: _relatedWaterfallSpacing,
         ),
@@ -89,6 +120,7 @@ class IllustRelatedSlivers {
             child: CompactMessage(
               icon: Icons.error_outline,
               message: formatPixivError(lastError),
+              details: pixivErrorDetails(lastError),
               actionLabel: translations.common.retry,
               onAction: () => source.refresh(true),
             ),
@@ -114,7 +146,6 @@ class IllustRelatedSlivers {
       SliverDataWaterfallGrid<Illust>(
         source: source,
         padding: _relatedWaterfallPadding,
-        maxCrossAxisExtent: _relatedWaterfallMaxCrossAxisExtent,
         crossAxisSpacing: _relatedWaterfallSpacing,
         mainAxisSpacing: _relatedWaterfallSpacing,
         itemBuilder: (context, illust, index) {
@@ -122,7 +153,7 @@ class IllustRelatedSlivers {
             return const SizedBox.shrink();
           }
 
-          return IllustPreviewer(illust: illust, onTap: () => onIllustTap(illust));
+          return IllustPreviewer(illust: illust, onOpen: (heroTag) => onIllustTap(illust, heroTag));
         },
       ),
     ];

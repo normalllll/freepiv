@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/features/downloads/presentation/download_flight.dart';
+import 'package:path/path.dart' as p;
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -85,8 +87,8 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
     Widget content = GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: _startPlayback,
-      onSecondaryTapDown: widget.showContextMenu && isDesktopPlatform ? (details) => unawaited(_showContextMenu(context, details.globalPosition)) : null,
-      onLongPressStart: isDesktopPlatform ? null : (details) => unawaited(_showContextMenu(context, details.globalPosition)),
+      onSecondaryTapDown: widget.showContextMenu ? (details) => unawaited(_showContextMenu(context, details.globalPosition)) : null,
+      onLongPressStart: widget.showContextMenu ? (details) => unawaited(_showContextMenu(context, details.globalPosition)) : null,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -94,9 +96,24 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
             _UgoiraFramePlayer(frames: frames, delays: _delays ?? const <int>[])
           else
             PixivImage(url: widget.previewUrl, fit: BoxFit.contain),
+          if (widget.showContextMenu)
+            PositionedDirectional(
+              top: 16,
+              start: 16,
+              child: Builder(
+                builder: (buttonContext) => SurfaceIconButton(
+                  icon: Icons.more_horiz,
+                  tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+                  onPressed: () {
+                    final box = buttonContext.findRenderObject()! as RenderBox;
+                    unawaited(_showContextMenu(context, box.localToGlobal(box.size.bottomRight(Offset.zero))));
+                  },
+                ),
+              ),
+            ),
           if (_phase == _UgoiraPhase.idle || _phase == _UgoiraPhase.failed)
             Center(
-              child: IgnorePointer(child: _UgoiraPlayButton(failed: _phase == _UgoiraPhase.failed)),
+              child: _UgoiraPlayButton(failed: _phase == _UgoiraPhase.failed, onPressed: _startPlayback),
             ),
           if (_isBusyPhase(_phase))
             Align(
@@ -168,6 +185,7 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
     final renderBox = overlay.context.findRenderObject() as RenderBox;
     final action = await showMenu<_UgoiraAction>(
       context: context,
+      clipBehavior: Clip.antiAlias,
       position: RelativeRect.fromRect(Rect.fromPoints(position, position), Offset.zero & renderBox.size),
       items: [
         PopupMenuItem(
@@ -192,7 +210,7 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
 
     switch (action) {
       case _UgoiraAction.downloadGif:
-        unawaited(_downloadGif());
+        unawaited(_downloadGif(origin: Rect.fromCenter(center: position, width: 48, height: 48)));
         break;
       case _UgoiraAction.copyGif:
         unawaited(_copyGif());
@@ -202,25 +220,26 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
     }
   }
 
-  Future<void> _downloadGif() async {
+  /// [origin] is the pointer that asked for it; the flight to the download
+  /// badge stands in for a “started” notice (toasts report results only).
+  Future<void> _downloadGif({Rect? origin}) async {
     try {
       await downloadManager.ensureReadyForDownloads();
-      AppToast.info(t.illust.toast.downloadStarted);
+      DownloadFlight.launch(origin: origin, imageUrl: widget.previewUrl);
       await _ensurePlaybackStartedForExport();
       final gifBytes = await _ensureGifBytes();
       _setPhase(_UgoiraPhase.savingGif, progress: null);
       final zipUrl = _metadata?.zipUrls.medium;
       final zipUri = Uri.parse(zipUrl == null || zipUrl.isEmpty ? widget.fallbackDownloadUrl : zipUrl);
       final file = await downloadManager.saveBytes(
-        illustId: widget.illustId,
-        pageIndex: 0,
+        origin: ArtworkPage(illustId: widget.illustId, pageIndex: 0),
         bytes: gifBytes,
         sourceUrl: zipUri,
         filename: '${widget.illustId}.gif',
         thumbnailUrl: widget.previewUrl,
       );
       _setReadyAfterExport();
-      AppToast.success(t.illust.toast.downloadComplete(path: file.path));
+      AppToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
     } catch (error) {
       _setFailed(error);
       AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
@@ -448,7 +467,9 @@ List<int> _matchingDelays({required List<Uint8List> frameBytes, required List<Fr
 }
 
 class _UgoiraPlayButton extends StatelessWidget {
-  const _UgoiraPlayButton({required this.failed});
+  const _UgoiraPlayButton({required this.failed, required this.onPressed});
+
+  final VoidCallback onPressed;
 
   final bool failed;
 
@@ -462,9 +483,9 @@ class _UgoiraPlayButton extends StatelessWidget {
       shape: const CircleBorder(),
       child: IconButton(
         iconSize: 48,
-        tooltip: failed ? context.t.common.retry : null,
+        tooltip: failed ? context.t.common.retry : context.t.illust.tooltip.play,
         icon: Icon(failed ? Icons.refresh_outlined : Icons.play_arrow_rounded),
-        onPressed: null,
+        onPressed: onPressed,
       ),
     );
   }

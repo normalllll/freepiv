@@ -1,79 +1,124 @@
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/content_script.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/shared/ui/spring_builder.dart';
+import 'package:freepiv/shared/widgets/artwork_hero.dart';
 import 'package:freepiv/shared/widgets/energetic_card.dart';
 import 'package:freepiv/shared/widgets/illust_bookmark_button.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class IllustPreviewer extends ConsumerWidget {
-  const IllustPreviewer({required this.illust, required this.onTap, this.fit = BoxFit.cover, this.square = false, super.key});
+  const IllustPreviewer({required this.illust, required this.onOpen, this.fit = BoxFit.cover, this.square = false, this.rank, this.leadingBadge, super.key});
 
   final Illust illust;
   final BoxFit fit;
-  final VoidCallback? onTap;
+
+  /// Opens the work with this card's own hero tag, so its image flies into
+  /// the detail stage and back (see [openIllustDetail]).
+  final ValueChanged<ArtworkHeroTag> onOpen;
   final bool square;
+  final int? rank;
+
+  /// A badge over the image's top-start corner (a ranking number). It is
+  /// part of the image, so it flies with it rather than staying behind.
+  final Widget? leadingBadge;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final accent = _illustAccent(context);
-
-    return EnergeticCard(
-      accentColor: accent,
-      onTap: onTap,
-      child: square
-          ? _IllustPreviewImage(illust: illust, fit: fit, square: true, showBadges: false)
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _IllustPreviewImage(illust: illust, fit: fit),
-                _IllustPreviewFooter(illust: illust, accentColor: accent),
-              ],
-            ),
+    // Square tiles show the same uncropped preview as the feeds, cut to the
+    // square from its centre, so the work opens with its image already
+    // cached rather than loading apart from a separate square crop.
+    final previewUrl = illustPreviewImageUrl(illust.imageUrls, ref.watch(previewImageQualityProvider));
+    return ArtworkHeroSource(
+      illust: illust,
+      imageUrl: previewUrl,
+      sourceRadius: square ? BorderRadius.circular(AppMetrics.controlRadius) : const BorderRadius.vertical(top: Radius.circular(AppMetrics.controlRadius)),
+      builder: (context, heroTag) {
+        final image = ArtworkHero(
+          tag: heroTag,
+          child: _IllustPreviewImage(illust: illust, imageUrl: previewUrl, fit: fit, square: square, showBadges: !square, leadingBadge: leadingBadge),
+        );
+        return EnergeticCard(
+          feedback: square ? AppClickFeedback.artwork : AppClickFeedback.surface,
+          accentColor: accent,
+          onTap: () => onOpen(heroTag),
+          child: square
+              ? image
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    image,
+                    _IllustPreviewFooter(illust: illust, accentColor: accent, rank: rank),
+                  ],
+                ),
+        );
+      },
     );
   }
 }
 
-class _IllustPreviewImage extends ConsumerWidget {
-  const _IllustPreviewImage({required this.illust, required this.fit, this.square = false, this.showBadges = true});
+class _IllustPreviewImage extends StatelessWidget {
+  const _IllustPreviewImage({
+    required this.illust,
+    required this.imageUrl,
+    required this.fit,
+    required this.square,
+    required this.showBadges,
+    this.leadingBadge,
+  });
 
   final Illust illust;
+  final String imageUrl;
   final BoxFit fit;
   final bool square;
   final bool showBadges;
+  final Widget? leadingBadge;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final previewQuality = ref.watch(previewImageQualityProvider);
+  Widget build(BuildContext context) {
     final imageAspectRatio = illust.width > 0 && illust.height > 0 ? illust.width / illust.height : 1.0;
-    final imageUrl = square ? illust.imageUrls.squareMedium : illustPreviewImageUrl(illust.imageUrls, previewQuality);
 
     return AspectRatio(
       aspectRatio: square ? 1.0 : imageAspectRatio.clamp(0.6, 1.6),
       child: Stack(
         fit: StackFit.expand,
         children: [
+          // With a pointer over the card the picture leans in slightly,
+          // cropped by its own frame; the badges stay put.
           Positioned.fill(
-            child: PixivImage(url: imageUrl, fit: fit),
+            child: ClipRect(
+              child: SpringBuilder(
+                value: AppClickSurface.hoveredOf(context) ? AppMetrics.artworkHoverZoom : 1,
+                spring: AppMotion.standard,
+                builder: (context, zoom, child) => Transform.scale(scale: zoom, child: child),
+                child: PixivImage(url: imageUrl, fit: fit),
+              ),
+            ),
           ),
+          if (leadingBadge case final badge?) PositionedDirectional(start: 8, top: 8, child: badge),
           if (showBadges && _isUgoiraIllust(illust))
             const PositionedDirectional(
               top: 8,
               start: 8,
-              child: _LabelBadge(label: 'GIF', backgroundColor: Color(0xFF111827)),
+              child: _LabelBadge(label: 'GIF', backgroundColor: Color(0xCC242428)),
             ),
           if (showBadges && illust.xRestrict > 0)
             const PositionedDirectional(
               top: 8,
               end: 8,
-              child: _LabelBadge(label: 'R-18', backgroundColor: Color(0xFFE53935)),
+              child: _LabelBadge(label: 'R-18', backgroundColor: Color(0xCC242428)),
             ),
           if (showBadges && illust.illustAiType == 2)
             const PositionedDirectional(
               start: 8,
               bottom: 8,
-              child: _LabelBadge(label: 'AI', backgroundColor: Color(0xFF2563EB)),
+              child: _LabelBadge(label: 'AI', backgroundColor: Color(0xCC242428)),
             ),
           if (showBadges && illust.pageCount > 1) PositionedDirectional(end: 8, bottom: 8, child: _PageCountBadge(pageCount: illust.pageCount)),
         ],
@@ -87,7 +132,9 @@ bool _isUgoiraIllust(Illust illust) {
 }
 
 class _IllustPreviewFooter extends StatelessWidget {
-  const _IllustPreviewFooter({required this.illust, required this.accentColor});
+  const _IllustPreviewFooter({required this.illust, required this.accentColor, this.rank});
+
+  final int? rank;
 
   final Illust illust;
   final Color accentColor;
@@ -97,7 +144,7 @@ class _IllustPreviewFooter extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 9, 8, 9),
+      padding: AppMetrics.artworkFooterPadding,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -105,21 +152,21 @@ class _IllustPreviewFooter extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(illust.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  rank == null ? illust.title : '#$rank  ${illust.title}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: contentTextStyle(context, illust.title, Theme.of(context).textTheme.titleSmall),
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(color: accentColor, shape: BoxShape.circle),
-                      child: const SizedBox.square(dimension: 6),
-                    ),
-                    const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         illust.user.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w400),
                       ),
                     ),
                   ],
@@ -158,7 +205,7 @@ class _LabelBadge extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         child: Text(
           label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w700, height: 1),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w400, height: 1),
         ),
       ),
     );
@@ -195,7 +242,7 @@ class _PageCountBadge extends StatelessWidget {
               '$pageCount',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: Colors.white,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w400,
                 height: 1,
                 shadows: const [Shadow(color: Colors.black, blurRadius: 4)],
               ),

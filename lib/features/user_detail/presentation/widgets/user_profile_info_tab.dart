@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -20,62 +22,31 @@ class UserProfileInfoBody extends StatelessWidget {
       slivers: [
         ?sliverHeader,
         if (entries.isEmpty)
-          _ProfileViewportLockSliver(
-            centerInViewport: true,
+          SliverFillRemaining(
+            hasScrollBody: false,
             child: EmptyContent(icon: Icons.info_outline, title: context.t.user.empty.profile),
           )
         else
-          _ProfileViewportLockSliver(
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 900),
-                    child: Material(
-                      color: Theme.of(context).colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(12),
-                      clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          for (var index = 0; index < entries.length; index++) ...[
-                            if (index > 0) const Divider(height: 1),
-                            _ProfileInfoTile(entry: entries[index]),
-                          ],
-                        ],
-                      ),
-                    ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: ContentColumn(
+                child: FpSurface(
+                  role: FpSurfaceRole.glassPanel,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (var index = 0; index < entries.length; index++) ...[
+                        if (index > 0) const Divider(height: 1),
+                        _ProfileInfoTile(entry: entries[index]),
+                      ],
+                    ],
                   ),
                 ),
               ),
             ),
           ),
       ],
-    );
-  }
-}
-
-class _ProfileViewportLockSliver extends StatelessWidget {
-  const _ProfileViewportLockSliver({required this.child, this.centerInViewport = false});
-
-  final Widget child;
-  final bool centerInViewport;
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverLayoutBuilder(
-      builder: (context, constraints) {
-        final viewportExtent = constraints.viewportMainAxisExtent;
-
-        return SliverToBoxAdapter(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: viewportExtent),
-            child: centerInViewport ? SizedBox(height: viewportExtent, child: child) : child,
-          ),
-        );
-      },
     );
   }
 }

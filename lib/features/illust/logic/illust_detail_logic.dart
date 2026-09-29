@@ -86,7 +86,7 @@ class IllustUserWorks extends _$IllustUserWorks {
   }
 }
 
-@Riverpod(keepAlive: true)
+@riverpod
 class IllustRelatedWorks extends _$IllustRelatedWorks {
   @override
   IllustRelatedListSource build(int illustId) {

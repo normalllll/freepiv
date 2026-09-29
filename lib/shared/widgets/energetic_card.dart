@@ -1,5 +1,8 @@
+import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:freepiv/shared/ui/fp_surface.dart';
 
 class EnergeticCard extends StatelessWidget {
   const EnergeticCard({
@@ -8,8 +11,8 @@ class EnergeticCard extends StatelessWidget {
     this.padding,
     this.margin = EdgeInsets.zero,
     this.accentColor,
-    this.borderRadius = 8,
-    this.clipBehavior = Clip.antiAlias,
+    this.borderRadius = AppMetrics.controlRadius,
+    this.feedback = AppClickFeedback.surface,
     super.key,
   });
 
@@ -19,13 +22,11 @@ class EnergeticCard extends StatelessWidget {
   final EdgeInsetsGeometry margin;
   final Color? accentColor;
   final double borderRadius;
-  final Clip clipBehavior;
+  final AppClickFeedback feedback;
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
     final radius = BorderRadius.circular(borderRadius);
-    final accent = accentColor ?? tokens.brand;
 
     Widget content = child;
     final padding = this.padding;
@@ -36,39 +37,12 @@ class EnergeticCard extends StatelessWidget {
     final onTap = this.onTap;
     content = Material(
       type: MaterialType.transparency,
-      child: onTap == null
-          ? content
-          : InkWell(
-              borderRadius: radius,
-              onTap: onTap,
-              splashColor: accent.withValues(alpha: 0.06),
-              highlightColor: accent.withValues(alpha: 0.035),
-              child: content,
-            ),
+      child: onTap == null ? content : AppClickSurface(feedback: feedback, borderRadius: radius, onTap: onTap, child: content),
     );
-
-    content = ClipRRect(borderRadius: radius, clipBehavior: clipBehavior, child: content);
 
     return Padding(
       padding: margin,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: tokens.surfaceRaised,
-          gradient: LinearGradient(
-            begin: AlignmentDirectional.topStart,
-            end: AlignmentDirectional.bottomEnd,
-            colors: [
-              Color.alphaBlend(accent.withValues(alpha: 0.018), tokens.surfaceRaised),
-              Color.alphaBlend(tokens.surfaceTint.withValues(alpha: 0.20), tokens.surfaceRaised),
-              tokens.surfaceRaised,
-            ],
-            stops: const [0, 0.62, 1],
-          ),
-          borderRadius: radius,
-          boxShadow: [BoxShadow(color: tokens.shadow, blurRadius: 12, offset: const Offset(0, 4))],
-        ),
-        child: content,
-      ),
+      child: FpSurface(role: FpSurfaceRole.panel, borderRadius: radius, child: content),
     );
   }
 }
@@ -93,14 +67,13 @@ class EnergeticPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = FreepivThemeTokens.of(context);
     final colorScheme = Theme.of(context).colorScheme;
-    final accent = accentColor ?? tokens.brand;
-    final foreground = selected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant;
+    final foreground = selected ? tokens.selectionInk : colorScheme.onSurfaceVariant;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: selected ? accent : Color.alphaBlend(accent.withValues(alpha: 0.08), tokens.surfaceRaised),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: selected ? accent : Color.alphaBlend(accent.withValues(alpha: 0.18), tokens.line)),
+        color: selected ? tokens.selectionSurface : tokens.surfaceMuted,
+        borderRadius: BorderRadius.circular(AppMetrics.controlRadius),
+        border: Border.all(color: tokens.line.withValues(alpha: .35)),
       ),
       child: Padding(
         padding: padding,
@@ -111,7 +84,7 @@ class EnergeticPill extends StatelessWidget {
             Flexible(
               fit: FlexFit.loose,
               child: DefaultTextStyle.merge(
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: foreground, fontWeight: FontWeight.w700),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: foreground, fontWeight: FontWeight.w600),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 child: child,

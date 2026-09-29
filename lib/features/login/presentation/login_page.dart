@@ -2,16 +2,19 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/widgets/error.dart';
+import 'package:freepiv/shared/layout/fp_page_header.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/app_links/app_links.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:go_router/go_router.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -29,6 +32,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _isCompletingLogin = false;
   String? _status;
   String? _error;
+  String? _errorDetails;
 
   @override
   void initState() {
@@ -59,7 +63,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       return;
     }
 
-    setState(() => _error = formatPixivError(error));
+    setState(() {
+      _error = formatPixivError(error);
+      _errorDetails = pixivErrorDetails(error);
+    });
   }
 
   Future<void> _openLogin() async {
@@ -73,6 +80,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _isOpeningLogin = true;
       _status = null;
       _error = null;
+      _errorDetails = null;
     });
 
     try {
@@ -88,7 +96,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (!mounted) {
         return;
       }
-      setState(() => _error = formatPixivError(error));
+      setState(() {
+        _error = formatPixivError(error);
+        _errorDetails = pixivErrorDetails(error);
+      });
     } finally {
       if (mounted) {
         setState(() => _isOpeningLogin = false);
@@ -97,6 +108,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _handlePixivAuthCallback(AppLinkRequest request) async {
+    if (!mounted || _isCompletingLogin) return;
     final rawUri = request.uri.toString();
     if (!_handledAuthCallbacks.add(rawUri)) {
       return;
@@ -104,7 +116,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     final code = request.pixivAuthCode;
     if (code == null) {
-      setState(() => _error = t.login.callbackMissingCode(uri: rawUri));
+      setState(() => _error = t.login.callbackMissingCode(uri: request.uri.scheme));
       return;
     }
 
@@ -112,20 +124,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _isCompletingLogin = true;
       _status = t.login.callbackReceived;
       _error = null;
+      _errorDetails = null;
     });
 
     try {
       final account = await pixivApi.initAccountAuthToken(code: code);
+      if (!mounted) return;
       setPixivAccount(account);
-
-      if (!mounted) {
-        return;
-      }
       setState(() {
         _account = account;
         _isCompletingLogin = false;
         _status = t.login.signedInAs(name: account.user.name);
         _error = null;
+        _errorDetails = null;
       });
     } catch (error) {
       if (!mounted) {
@@ -134,6 +145,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       setState(() {
         _isCompletingLogin = false;
         _error = formatPixivError(error);
+        _errorDetails = pixivErrorDetails(error);
       });
     }
   }
@@ -143,68 +155,60 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final account = _account ?? (appServicesInitialized ? pixivApi.account() : null);
     final isBusy = _isOpeningLogin || _isCompletingLogin;
     final translations = t;
-    final tokens = FreepivThemeTokens.of(context);
     final proxySettings = ref.watch(proxySettingsProvider);
 
     return Scaffold(
-      appBar: AutoScaffold.usesDesktopShellOf(context)
-          ? null
-          : AppBar(
-              title: Text(translations.login.title),
-              actions: [TextButton(onPressed: () => context.go('/fanbox'), child: Text(translations.fanbox.title))],
-            ),
+      appBar: AutoScaffold.usesHorizontalLayoutOf(context) ? null : FpPageHeader(title: Text(translations.login.title)),
       body: SingleChildScrollView(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: EnergeticCard(
-                accentColor: tokens.brand,
-                padding: const EdgeInsets.all(22),
-                child: AnimatedSize(
-                  duration: const Duration(milliseconds: 180),
-                  alignment: Alignment.topCenter,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (AutoScaffold.usesDesktopShellOf(context))
-                        Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          child: TextButton(onPressed: () => context.go('/fanbox'), child: Text(translations.fanbox.title)),
-                        ),
-                      Icon(Icons.auto_awesome, color: tokens.brand, size: 32),
-                      const SizedBox(height: 12),
-                      Text(
-                        account == null ? translations.login.notSignedIn : translations.login.signedInAs(name: account.user.name),
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      _LoginProxyNotice(settings: proxySettings, onTap: () => showProxySettingsDialog(context)),
-                      const SizedBox(height: 14),
-                      FilledButton(
-                        onPressed: isBusy ? null : _openLogin,
-                        child: Text(
-                          _isOpeningLogin
-                              ? translations.login.openingBrowser
-                              : account == null
-                              ? translations.login.signInToPixiv
-                              : translations.login.signInAgain,
-                        ),
-                      ),
-                      if (_isCompletingLogin) ...[const SizedBox(height: 12), const LoadingSkeletonBlock(width: double.infinity, height: 4)],
-                      if (_status != null) ...[const SizedBox(height: 16), Text(_status!, textAlign: TextAlign.center)],
-                      if (_error != null) ...[
-                        const SizedBox(height: 16),
+              child: FpSurface(
+                role: FpSurfaceRole.glassPanel,
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: AnimatedSize(
+                    duration: AppMotion.duration(context, const Duration(milliseconds: 180)),
+                    alignment: Alignment.topCenter,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Icon(Icons.account_circle_outlined, color: Theme.of(context).colorScheme.onSurface, size: 32),
+                        const SizedBox(height: 12),
                         Text(
-                          _error!,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                          account == null ? translations.login.notSignedIn : translations.login.signedInAs(name: account.user.name),
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
                           textAlign: TextAlign.center,
                         ),
+                        const SizedBox(height: 24),
+                        _LoginProxyNotice(settings: proxySettings, onTap: () => showProxySettingsDialog(context)),
+                        const SizedBox(height: 14),
+                        FilledButton(
+                          onPressed: isBusy ? null : _openLogin,
+                          child: Text(
+                            _isOpeningLogin
+                                ? translations.login.openingBrowser
+                                : account == null
+                                ? translations.login.signInToPixiv
+                                : translations.login.signInAgain,
+                          ),
+                        ),
+                        if (_isCompletingLogin) ...[const SizedBox(height: 12), const LoadingSkeletonBlock(width: double.infinity, height: 4)],
+                        if (_status != null) ...[const SizedBox(height: 16), Text(_status!, textAlign: TextAlign.center)],
+                        if (_error != null) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            _error!,
+                            style: TextStyle(color: Theme.of(context).colorScheme.error),
+                            textAlign: TextAlign.center,
+                          ),
+                          if (_errorDetails case final details?) ...[const SizedBox(height: 8), ErrorDetails(details: details)],
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -232,9 +236,9 @@ class _LoginProxyNotice extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Color.alphaBlend((active ? tokens.brand : tokens.surfaceTint).withValues(alpha: active ? 0.08 : 0.34), tokens.surfaceRaised),
+        color: tokens.surfaceRaised,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: active ? tokens.brand.withValues(alpha: 0.20) : tokens.line.withValues(alpha: 0.52)),
+        border: Border.all(color: tokens.line.withValues(alpha: 0.35)),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
@@ -244,7 +248,11 @@ class _LoginProxyNotice extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(active ? Icons.hub : Icons.hub_outlined, color: active ? tokens.brand : colorScheme.onSurfaceVariant, size: 20),
+                Icon(
+                  active ? Icons.hub : Icons.hub_outlined,
+                  color: active ? tokens.keyGraphicOn(tokens.surfaceRaised) : colorScheme.onSurfaceVariant,
+                  size: 20,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(

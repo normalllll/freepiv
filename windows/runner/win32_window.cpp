@@ -198,7 +198,11 @@ Win32Window::MessageHandler(HWND hwnd,
       return 0;
     }
     case WM_SIZE: {
+      // A minimized window reports its iconic client size, not a usable
+      // application viewport. Keep the last layout until Windows restores it.
+      if (wparam == SIZE_MINIMIZED) return 0;
       RECT rect = GetClientArea();
+      if (rect.right <= rect.left || rect.bottom <= rect.top) return 0;
       if (child_content_ != nullptr) {
         // Size and position the child window.
         MoveWindow(child_content_, rect.left, rect.top, rect.right - rect.left,

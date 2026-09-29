@@ -1,10 +1,17 @@
+import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/app_dialog.dart';
+import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
 import 'package:flutter/services.dart';
 import 'package:freepiv/core/utils/utils.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class UserCollapsibleHeaderSliver extends StatelessWidget {
@@ -26,14 +33,18 @@ class UserCollapsibleHeaderSliver extends StatelessWidget {
   }
 
   static double expandedHeightFor(BuildContext context, double width, UserDetailResult detail) {
-    final layout = UserCollapsibleHeaderLayout.forWidth(width);
-    return layout.expandedHeight(commentHeight: placeholderCommentHeightFor(context, width), statsHeight: statsHeightFor(context));
+    final layout = UserCollapsibleHeaderLayout.forWidth(width, textScale: MediaQuery.textScalerOf(context).scale(14) / 14);
+    final hasComment = detail.user.comment?.trim().isNotEmpty ?? false;
+    return layout.expandedHeight(
+      commentHeight: hasComment ? placeholderCommentHeightFor(context, width) : 0,
+      statsHeight: statsHeightFor(context, width, profile: detail.profile),
+    );
   }
 
   static double skeletonExpandedHeightFor(BuildContext context, double width) {
-    final layout = UserCollapsibleHeaderLayout.forWidth(width);
+    final layout = UserCollapsibleHeaderLayout.forWidth(width, textScale: MediaQuery.textScalerOf(context).scale(14) / 14);
 
-    return layout.expandedHeight(commentHeight: placeholderCommentHeightFor(context, width), statsHeight: statsHeightFor(context));
+    return layout.expandedHeight(commentHeight: placeholderCommentHeightFor(context, width), statsHeight: statsHeightFor(context, width));
   }
 
   static double collapsedHeightFor(double width, BuildContext context) {
@@ -60,30 +71,72 @@ class UserCollapsibleHeaderSliver extends StatelessWidget {
     );
   }
 
-  static double statsHeightFor(BuildContext context) {
-    final translations = t;
-    final labels = [translations.user.stats.illustrations, translations.user.stats.manga, translations.user.stats.novels, translations.user.stats.following];
-    final defaultStyle = DefaultTextStyle.of(context).style;
-    final countStyle = Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700) ?? defaultStyle.copyWith(fontWeight: FontWeight.w700);
-    final labelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant) ?? defaultStyle;
-    final countHeight = _measureTextHeight(
-      context,
-      TextSpan(text: '0', style: countStyle),
-      maxWidth: double.infinity,
-      textScaler: MediaQuery.textScalerOf(context),
-    );
-    final labelHeight = labels
-        .map(
-          (label) => _measureTextHeight(
-            context,
-            TextSpan(text: label, style: labelStyle),
-            maxWidth: double.infinity,
-            textScaler: MediaQuery.textScalerOf(context),
-          ),
-        )
-        .fold(0.0, math.max);
+  /// Height of the stats block. The four stats wrap onto further lines when
+  /// they do not fit [width] (large text), so the row count is simulated here
+  /// with the same spacing [_UserStatsRow] lays out with; the skeleton and the
+  /// loaded header then agree on the height. Without a [profile] the counts
+  /// are measured as four digits.
+  static double statsHeightFor(BuildContext context, double width, {UserProfile? profile}) {
+    final labels = _statLabels();
+    final countStyle = _statCountStyle(context);
+    final labelStyle = _statLabelStyle(context);
+    final textScaler = MediaQuery.textScalerOf(context);
+    final counts = [
+      profile?.totalIllusts,
+      profile?.totalManga,
+      profile?.totalNovels,
+      profile?.totalFollowUsers,
+    ].map((value) => value == null ? '9999' : formatCount(value)).toList();
+    var rowHeight = 0.0;
+    final widths = <double>[];
+    for (var index = 0; index < labels.length; index++) {
+      final countPainter =
+          TextPainter(
+              text: TextSpan(text: counts[index], style: countStyle),
+              textDirection: Directionality.of(context),
+              textScaler: textScaler,
+            )
+            ..locale = Localizations.maybeLocaleOf(context)
+            ..layout();
+      final labelPainter =
+          TextPainter(
+              text: TextSpan(text: labels[index], style: labelStyle),
+              textDirection: Directionality.of(context),
+              textScaler: textScaler,
+            )
+            ..locale = Localizations.maybeLocaleOf(context)
+            ..layout();
+      widths.add(countPainter.width + _UserStatsRow.statInnerGap + labelPainter.width);
+      rowHeight = math.max(rowHeight, math.max(countPainter.height, labelPainter.height));
+    }
 
-    return (math.max(countHeight, labelHeight) + UserCollapsibleHeaderLayout.statVerticalPadding * 2).ceilToDouble();
+    final maxWidth = UserCollapsibleHeaderLayout.forWidth(width).bodyContentWidth;
+    var rows = 1;
+    var used = 0.0;
+    for (final itemWidth in widths) {
+      if (used > 0 && used + _UserStatsRow.spacing + itemWidth > maxWidth) {
+        rows++;
+        used = itemWidth;
+      } else {
+        used += (used > 0 ? _UserStatsRow.spacing : 0) + itemWidth;
+      }
+    }
+    rowHeight = (rowHeight + UserCollapsibleHeaderLayout.statVerticalPadding * 2).ceilToDouble();
+    return rowHeight * rows + _UserStatsRow.runSpacing * (rows - 1);
+  }
+
+  static List<String> _statLabels() {
+    final translations = t;
+    return [translations.user.stats.illustrations, translations.user.stats.manga, translations.user.stats.novels, translations.user.stats.following];
+  }
+
+  static TextStyle _statCountStyle(BuildContext context) {
+    return Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700) ??
+        DefaultTextStyle.of(context).style.copyWith(fontWeight: FontWeight.w700);
+  }
+
+  static TextStyle _statLabelStyle(BuildContext context) {
+    return Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant) ?? DefaultTextStyle.of(context).style;
   }
 
   static double _measureTextHeight(
@@ -105,14 +158,18 @@ class UserCollapsibleHeaderSliver extends StatelessWidget {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final width = mediaQuery.size.width;
+    // The tab bar's glass continues this header's glass edge to edge. Whole
+    // physical pixels keep that join from landing mid-pixel, where both
+    // anti-aliased edges would let the content beneath show through.
+    double snap(double value) => (value * mediaQuery.devicePixelRatio).roundToDouble() / mediaQuery.devicePixelRatio;
 
     return SliverPersistentHeader(
       pinned: true,
       delegate: _UserHeaderDelegate(
         detail: detail,
-        topPadding: includeTopPadding ? mediaQuery.padding.top : 0,
-        expandedHeight: expandedHeightFor(context, width, detail),
-        collapsedHeight: collapsedHeightFor(width, context),
+        topPadding: includeTopPadding ? snap(mediaQuery.padding.top) : 0,
+        expandedHeight: snap(expandedHeightFor(context, width, detail)),
+        collapsedHeight: snap(collapsedHeightFor(width, context)),
         overlapsContent: overlapsContent,
         showBackButton: showBackButton,
       ),
@@ -124,46 +181,60 @@ class UserCollapsibleHeaderLayout {
   const UserCollapsibleHeaderLayout({
     required this.availableWidth,
     required this.compact,
-    required this.contentWidth,
     required this.horizontalPadding,
     required this.backgroundHeight,
     required this.avatarSize,
     required this.bodyTopPadding,
+    required this.nameHeight,
   });
 
-  static const maxContentWidth = 980.0;
   static const stackedHeaderExtraHeight = 58.0;
   static const expandedNameStartGap = 14.0;
   static const expandedNameTopOffset = 8.0;
+
+  /// How far the follow button rises above the name row, onto the cover: its
+  /// top sits this much higher, so it straddles the cover's lower edge like
+  /// the avatar beside it.
+  static const followLift = 22.0;
+
+  /// The follow button in the collapsed bar is a size smaller than the one on
+  /// the cover, so it stays secondary to the name and the tabs.
+  static const collapsedFollowHeight = 28.0;
   static const commentStatsGap = 12.0;
-  static const statVerticalPadding = 7.0;
+  static const statVerticalPadding = 0.0;
   static const flexOverflowGuard = 1.0;
 
   final double availableWidth;
   final bool compact;
-  final double contentWidth;
   final double horizontalPadding;
   final double backgroundHeight;
   final double avatarSize;
   final double bodyTopPadding;
+  final double nameHeight;
 
-  static UserCollapsibleHeaderLayout forWidth(double availableWidth) {
+  // One geometry whether or not the user has a cover image: the skeleton
+  // cannot know in advance, and a header that changes height after loading
+  // makes the whole page jump. Users without a cover get a soft wash of their
+  // avatar in the same band.
+  static UserCollapsibleHeaderLayout forWidth(double availableWidth, {double textScale = 1}) {
     final compact = availableWidth < 620;
-    final contentWidth = math.min(availableWidth, maxContentWidth);
+    final avatarSize = compact ? 84.0 : 98.0;
 
     return UserCollapsibleHeaderLayout(
       availableWidth: availableWidth,
       compact: compact,
-      contentWidth: contentWidth,
-      horizontalPadding: math.max(16.0, (availableWidth - contentWidth) / 2 + (compact ? 16 : 20)),
+      // Name, stats and tabs share the pages' content column.
+      horizontalPadding: AppMetrics.columnPadding(availableWidth).left,
       backgroundHeight: compact ? 148.0 : 172.0,
-      avatarSize: compact ? 84.0 : 98.0,
+      avatarSize: avatarSize,
       bodyTopPadding: compact ? 10.0 : 12.0,
+      nameHeight: (18 + 12) * textScale * 1.2 + 8,
     );
   }
 
   double get avatarTop => backgroundHeight - avatarSize / 2;
-  double get stackedHeaderHeight => backgroundHeight + stackedHeaderExtraHeight;
+  double get nameTop => backgroundHeight + expandedNameTopOffset;
+  double get stackedHeaderHeight => math.max(backgroundHeight + stackedHeaderExtraHeight, nameTop + nameHeight + 8);
   double get bodyContentWidth => math.max(0.0, availableWidth - horizontalPadding * 2);
   double get collapsedHeight => compact ? 64.0 : 52.0;
 
@@ -176,7 +247,7 @@ class UserCollapsibleHeaderLayout {
   }
 
   double expandedHeight({required double commentHeight, required double statsHeight}) {
-    return (stackedHeaderHeight + bodyTopPadding + commentHeight + commentStatsGap + statsHeight + flexOverflowGuard).ceilToDouble();
+    return (stackedHeaderHeight + bodyTopPadding + commentHeight + (commentHeight > 0 ? commentStatsGap : 0) + statsHeight + flexOverflowGuard).ceilToDouble();
   }
 
   @override
@@ -184,15 +255,15 @@ class UserCollapsibleHeaderLayout {
     return other is UserCollapsibleHeaderLayout &&
         other.availableWidth == availableWidth &&
         other.compact == compact &&
-        other.contentWidth == contentWidth &&
         other.horizontalPadding == horizontalPadding &&
         other.backgroundHeight == backgroundHeight &&
         other.avatarSize == avatarSize &&
-        other.bodyTopPadding == bodyTopPadding;
+        other.bodyTopPadding == bodyTopPadding &&
+        other.nameHeight == nameHeight;
   }
 
   @override
-  int get hashCode => Object.hash(availableWidth, compact, contentWidth, horizontalPadding, backgroundHeight, avatarSize, bodyTopPadding);
+  int get hashCode => Object.hash(availableWidth, compact, horizontalPadding, backgroundHeight, avatarSize, bodyTopPadding, nameHeight);
 }
 
 class _UserHeaderDelegate extends SliverPersistentHeaderDelegate {
@@ -220,18 +291,22 @@ class _UserHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final colorScheme = Theme.of(context).colorScheme;
     final progress = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
     final size = MediaQuery.sizeOf(context);
     final expandedOpacity = (1 - progress * 1.7).clamp(0.0, 1.0);
     final collapsedOpacity = ((progress - 0.58) / 0.42).clamp(0.0, 1.0);
 
+    // Transparent over the ambient backdrop while expanded; the glass fades
+    // in as the header collapses and works start passing beneath it.
     return Material(
-      color: colorScheme.surface,
-      elevation: this.overlapsContent || overlapsContent ? 1 : 0,
+      type: MaterialType.transparency,
       child: Stack(
         fit: StackFit.expand,
         children: [
+          // The tab bar pinned below continues this glass as one outline.
+          Positioned.fill(
+            child: PinnedChromeGlass(opacity: math.max(progress, this.overlapsContent ? 1.0 : 0.0), animate: false, corners: PinnedChromeCorners.top),
+          ),
           Positioned.fill(
             top: topPadding,
             child: IgnorePointer(
@@ -252,11 +327,6 @@ class _UserHeaderDelegate extends SliverPersistentHeaderDelegate {
               ),
             ),
           ),
-          Positioned.fill(
-            child: IgnorePointer(
-              child: ColoredBox(color: colorScheme.surface.withValues(alpha: progress * 0.96)),
-            ),
-          ),
           PositionedDirectional(
             top: topPadding,
             start: 0,
@@ -274,7 +344,11 @@ class _UserHeaderDelegate extends SliverPersistentHeaderDelegate {
             PositionedDirectional(
               top: topPadding + 8,
               start: 8,
-              child: SurfaceIconButton(icon: Icons.arrow_back, tooltip: t.common.back, onPressed: () => Navigator.of(context).maybePop()),
+              child: SurfaceIconButton(
+                icon: Icons.arrow_back,
+                tooltip: t.common.back,
+                onPressed: ShellNavigationScope.maybeOf(context)?.goBack ?? () => Navigator.of(context).maybePop(),
+              ),
             ),
         ],
       ),
@@ -293,23 +367,29 @@ class _UserHeaderDelegate extends SliverPersistentHeaderDelegate {
 }
 
 class _HeaderBackground extends StatelessWidget {
-  const _HeaderBackground({required this.url, required this.hasBackground, required this.opacity});
+  const _HeaderBackground({required this.coverUrl, required this.avatarUrl});
 
-  final String? url;
-  final bool hasBackground;
-  final double opacity;
+  final String? coverUrl;
+  final String avatarUrl;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    if (!hasBackground) {
-      return ColoredBox(color: colorScheme.surfaceContainerHighest);
+    if (coverUrl case final url? when url.isNotEmpty) {
+      return PixivImage(url: url, fit: BoxFit.cover);
     }
 
-    return Opacity(
-      opacity: opacity,
-      child: PixivImage(url: url!, fit: BoxFit.cover),
+    // No cover: the avatar blurred into a soft wash fills the same band, so
+    // the header keeps one geometry for every user.
+    return RepaintBoundary(
+      child: ClipRect(
+        child: Opacity(
+          opacity: FreepivThemeTokens.of(context).isDark ? .40 : .50,
+          child: ImageFiltered(
+            imageFilter: ui.ImageFilter.blur(sigmaX: 40, sigmaY: 40, tileMode: TileMode.clamp),
+            child: PixivImage(url: avatarUrl, fit: BoxFit.cover),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -323,13 +403,10 @@ class _ExpandedUserHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final layout = UserCollapsibleHeaderLayout.forWidth(availableWidth);
+    final layout = UserCollapsibleHeaderLayout.forWidth(availableWidth, textScale: MediaQuery.textScalerOf(context).scale(14) / 14);
     final rawComment = detail.user.comment?.trim();
     final hasComment = rawComment != null && rawComment.isNotEmpty;
-    final comment = hasComment ? rawComment : t.user.empty.comment;
-    final commentStyle = Theme.of(
-      context,
-    ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant.withValues(alpha: hasComment ? 1 : 0.68), height: 1.25);
+    final commentStyle = Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant, height: 1.25);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,28 +418,38 @@ class _ExpandedUserHeader extends StatelessWidget {
             children: [
               Positioned.fill(
                 bottom: UserCollapsibleHeaderLayout.stackedHeaderExtraHeight,
-                child: _HeaderBackground(
-                  url: detail.profile.backgroundImageUrl,
-                  hasBackground: detail.profile.backgroundImageUrl?.isNotEmpty ?? false,
-                  opacity: 1,
-                ),
+                child: _HeaderBackground(coverUrl: detail.profile.backgroundImageUrl, avatarUrl: detail.user.profileImageUrls.medium),
               ),
               PositionedDirectional(
                 start: layout.horizontalPadding,
                 top: layout.avatarTop,
                 child: _HeaderAvatar(url: detail.user.profileImageUrls.medium, size: layout.avatarSize),
               ),
+              // The follow button shares the name's row but starts higher, on
+              // the cover; the name keeps its place below the cover's edge.
               PositionedDirectional(
-                top: layout.backgroundHeight + UserCollapsibleHeaderLayout.expandedNameTopOffset,
+                top: layout.nameTop - UserCollapsibleHeaderLayout.followLift,
                 start: layout.horizontalPadding + layout.avatarSize + UserCollapsibleHeaderLayout.expandedNameStartGap,
                 end: layout.horizontalPadding,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: _ExpandedNameBlock(detail: detail)),
-                    const SizedBox(width: 10),
-                    UserFollowButton(userId: detail.user.id, initialIsFollowed: detail.user.isFollowed),
-                  ],
+                child: LayoutBuilder(
+                  // The button never takes more than half the row, so a long
+                  // label at large text shrinks instead of squeezing the name out.
+                  builder: (context, box) => Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: UserCollapsibleHeaderLayout.followLift),
+                          child: _ExpandedNameBlock(detail: detail),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: box.maxWidth / 2),
+                        child: UserFollowButton(userId: detail.user.id, initialIsFollowed: detail.user.isFollowed, dense: true),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -373,8 +460,10 @@ class _ExpandedUserHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _UserCommentPreview(comment: comment, plainComment: rawComment, style: commentStyle),
-              const SizedBox(height: UserCollapsibleHeaderLayout.commentStatsGap),
+              if (hasComment) ...[
+                _UserCommentPreview(comment: rawComment, style: commentStyle),
+                const SizedBox(height: UserCollapsibleHeaderLayout.commentStatsGap),
+              ],
               _UserStatsRow(profile: detail.profile),
             ],
           ),
@@ -385,28 +474,26 @@ class _ExpandedUserHeader extends StatelessWidget {
 }
 
 class _UserCommentPreview extends StatelessWidget {
-  const _UserCommentPreview({required this.comment, required this.plainComment, required this.style});
+  const _UserCommentPreview({required this.comment, required this.style});
 
   final String comment;
-  final String? plainComment;
   final TextStyle? style;
 
   @override
   Widget build(BuildContext context) {
-    final hasComment = plainComment != null && plainComment!.isNotEmpty;
     final preview = SizedBox(
       width: double.infinity,
       height: UserCollapsibleHeaderSliver.placeholderCommentHeightFor(context, MediaQuery.sizeOf(context).width),
       child: _CommentPreviewText(comment: comment, style: style),
     );
 
-    if (!hasComment) {
-      return preview;
-    }
-
     return Material(
       type: MaterialType.transparency,
-      child: InkWell(borderRadius: BorderRadius.circular(6), onTap: () => _showUserCommentDialog(context, comment), child: preview),
+      child: AppClickSurface(
+        borderRadius: BorderRadius.circular(AppMetrics.controlRadius),
+        onTap: () => _showUserCommentDialog(context, comment),
+        child: preview,
+      ),
     );
   }
 }
@@ -558,7 +645,7 @@ TextSpan _truncateTextSpan(TextSpan text, int maxCodeUnits) {
 }
 
 void _showUserCommentDialog(BuildContext context, String comment) {
-  showDialog<void>(
+  showAppDialog<void>(
     context: context,
     builder: (context) {
       final colorScheme = Theme.of(context).colorScheme;
@@ -642,34 +729,47 @@ class _CollapsedUserHeader extends StatelessWidget {
     final avatarSize = 40.0;
     final start = UserCollapsibleHeaderLayout.forWidth(MediaQuery.sizeOf(context).width).collapsedLeadingPadding(showBackButton: showBackButton);
 
-    return Row(
-      children: [
-        SizedBox(width: start),
-        _HeaderAvatar(url: detail.user.profileImageUrls.medium, size: avatarSize),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                detail.user.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w700, height: 1.08),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '@${detail.user.account}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant, height: 1.1),
-              ),
-            ],
+    return LayoutBuilder(
+      builder: (context, box) => Row(
+        children: [
+          SizedBox(width: start),
+          _HeaderAvatar(url: detail.user.profileImageUrls.medium, size: avatarSize),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  detail.user.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w700, height: 1.08),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '@${detail.user.account}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant, height: 1.1),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 16),
-      ],
+          const SizedBox(width: 10),
+          // Stays in the bar once the cover has scrolled away.
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: box.maxWidth * .4),
+            child: UserFollowButton(
+              userId: detail.user.id,
+              initialIsFollowed: detail.user.isFollowed,
+              dense: true,
+              height: UserCollapsibleHeaderLayout.collapsedFollowHeight,
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
+      ),
     );
   }
 }
@@ -703,26 +803,26 @@ class _HeaderAvatar extends StatelessWidget {
 class _UserStatsRow extends StatelessWidget {
   const _UserStatsRow({required this.profile});
 
+  static const spacing = 16.0;
+  static const runSpacing = 4.0;
+  static const statInnerGap = 5.0;
+
   final UserProfile profile;
 
   @override
   Widget build(BuildContext context) {
     final translations = t;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      clipBehavior: Clip.none,
-      child: Row(
-        children: [
-          _UserHeaderStat(value: profile.totalIllusts, label: translations.user.stats.illustrations),
-          const SizedBox(width: 8),
-          _UserHeaderStat(value: profile.totalManga, label: translations.user.stats.manga),
-          const SizedBox(width: 8),
-          _UserHeaderStat(value: profile.totalNovels, label: translations.user.stats.novels),
-          const SizedBox(width: 8),
-          _UserHeaderStat(value: profile.totalFollowUsers, label: translations.user.stats.following),
-        ],
-      ),
+    // Wraps instead of scrolling, so large text never clips the last stat.
+    return Wrap(
+      spacing: spacing,
+      runSpacing: runSpacing,
+      children: [
+        _UserHeaderStat(value: profile.totalIllusts, label: translations.user.stats.illustrations),
+        _UserHeaderStat(value: profile.totalManga, label: translations.user.stats.manga),
+        _UserHeaderStat(value: profile.totalNovels, label: translations.user.stats.novels),
+        _UserHeaderStat(value: profile.totalFollowUsers, label: translations.user.stats.following),
+      ],
     );
   }
 }
@@ -737,23 +837,13 @@ class _UserHeaderStat extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(formatCount(value), style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
-            const SizedBox(width: 5),
-            Text(label, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-          ],
-        ),
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(formatCount(value), style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
+        const SizedBox(width: _UserStatsRow.statInnerGap),
+        Text(label, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+      ],
     );
   }
 }

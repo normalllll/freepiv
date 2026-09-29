@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:freepiv/features/search/logic/search_history_logic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
@@ -31,6 +32,7 @@ class SearchBoxState extends ConsumerState<SearchBox> {
   OverlayEntry? _overlayEntry;
   String _lastPublishedText = '';
   SearchType _lastPublishedType = SearchType.illust;
+  int _selectedSuggestionIndex = -1;
 
   @override
   void initState() {
@@ -88,10 +90,34 @@ class SearchBoxState extends ConsumerState<SearchBox> {
 
     final activeType = widget.fixedType ?? type;
 
-    return CompositedTransformTarget(
-      link: _layerLink,
-      child: SearchField(type: activeType, session: _session, onSubmitted: _handleSubmitted, showFilters: widget.showFilters),
+    return Focus(
+      onKeyEvent: _handleKeyEvent,
+      child: CompositedTransformTarget(
+        link: _layerLink,
+        child: SearchField(type: activeType, session: _session, onSubmitted: _handleSubmitted, showFilters: widget.showFilters),
+      ),
     );
+  }
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent || _session.isComposing) return KeyEventResult.ignored;
+    if (event.logicalKey == LogicalKeyboardKey.escape && _overlayEntry != null) {
+      _hideSuggestionOverlay();
+      return KeyEventResult.handled;
+    }
+    final count = _session.suggestions.length;
+    if (_overlayEntry == null || count == 0) return KeyEventResult.ignored;
+    if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+      _selectedSuggestionIndex = (_selectedSuggestionIndex + 1) % count;
+      _overlayEntry?.markNeedsBuild();
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+      _selectedSuggestionIndex = (_selectedSuggestionIndex - 1 + count) % count;
+      _overlayEntry?.markNeedsBuild();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   void _handleFocusChanged() {
@@ -108,6 +134,7 @@ class SearchBoxState extends ConsumerState<SearchBox> {
   }
 
   void _handleSessionChanged() {
+    if (_session.suggestions.length <= _selectedSuggestionIndex) _selectedSuggestionIndex = -1;
     _publishDraftIfNeeded();
 
     if (mounted && _session.focusNode.hasFocus) {
@@ -165,7 +192,12 @@ class SearchBoxState extends ConsumerState<SearchBox> {
                 child: SizedBox(
                   width: width,
                   child: TextFieldTapRegion(
-                    child: SuggestionSurface(session: _session, maxHeight: geometry.maxHeight, onSelected: _handleSuggestionSelected),
+                    child: SuggestionSurface(
+                      session: _session,
+                      maxHeight: geometry.maxHeight,
+                      selectedIndex: _selectedSuggestionIndex,
+                      onSelected: _handleSuggestionSelected,
+                    ),
                   ),
                 ),
               ),
@@ -181,9 +213,16 @@ class SearchBoxState extends ConsumerState<SearchBox> {
   void _hideSuggestionOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
+    _selectedSuggestionIndex = -1;
   }
 
   void _handleSubmitted(String value) {
+    if (_session.isComposing) return;
+    final suggestions = _session.suggestions;
+    if (_overlayEntry != null && _selectedSuggestionIndex >= 0 && _selectedSuggestionIndex < suggestions.length) {
+      _handleSuggestionSelected(suggestions[_selectedSuggestionIndex]);
+      return;
+    }
     final query = _session.searchText;
     if (query.isEmpty) {
       return;

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/app_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -32,7 +33,7 @@ class _FanboxLoginPanelState extends ConsumerState<FanboxLoginPanel> {
   }
 
   Future<void> _manual() async {
-    final success = await showDialog<bool>(context: context, builder: (_) => const _FanboxCookieDialog());
+    final success = await showAppDialog<bool>(context: context, builder: (_) => const _FanboxCookieDialog());
     if (success == true && mounted) widget.onSignedIn?.call();
   }
 
@@ -42,7 +43,7 @@ class _FanboxLoginPanelState extends ConsumerState<FanboxLoginPanel> {
     try {
       if (Platform.isWindows && !await fanboxBrowserAvailable()) {
         if (!mounted) return;
-        final choice = await showDialog<_RuntimeChoice>(context: context, builder: (_) => const _FanboxRuntimeDialog());
+        final choice = await showAppDialog<_RuntimeChoice>(context: context, builder: (_) => const _FanboxRuntimeDialog());
         if (!mounted) return;
         if (choice != _RuntimeChoice.ready) {
           _login.cancel();

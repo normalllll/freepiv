@@ -8,6 +8,9 @@ import 'package:freepiv/shared/widgets/search_input.dart';
 import 'navigation.dart';
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -40,6 +43,7 @@ class FanboxPage extends ConsumerStatefulWidget {
 class _FanboxPageState extends ConsumerState<FanboxPage> {
   final _search = TextEditingController();
   final _searchFocus = FocusNode();
+  late bool _searchExpanded = widget.location.query.isNotEmpty;
   @override
   void initState() {
     super.initState();
@@ -66,12 +70,26 @@ class _FanboxPageState extends ConsumerState<FanboxPage> {
     context.replace(Uri(path: path, queryParameters: {'section': section.name, if (query.isNotEmpty) 'q': query}).toString());
   }
 
+  void _toggleSearch() {
+    setState(() => _searchExpanded = !_searchExpanded);
+    if (_searchExpanded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _searchFocus.requestFocus();
+      });
+    } else {
+      _searchFocus.unfocus();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.t.fanbox;
     final session = ref.watch(fanboxSessionProvider);
     return FanboxScaffold(
       title: t.title,
+      actions: session.asData?.value == null
+          ? null
+          : [IconButton(tooltip: t.searchHint, onPressed: _toggleSearch, icon: Icon(_searchExpanded ? Icons.close : Icons.search))],
 
       body: session.when(
         loading: () => const FanboxHomeSkeleton(),
@@ -80,40 +98,57 @@ class _FanboxPageState extends ConsumerState<FanboxPage> {
             ? const FanboxLoginPanel()
             : Column(
                 children: [
-                  SearchInputRegion(
-                    child: SearchInput(
-                      controller: _search,
-                      focusNode: _searchFocus,
-                      hintText: t.searchHint,
-                      onSubmitted: (value) {
-                        if (value.trim().isNotEmpty) {
-                          _select(
-                            widget.location.section == FanboxSection.searchTags ? FanboxSection.searchTags : FanboxSection.searchCreators,
-                            query: value.trim(),
-                          );
-                        }
-                      },
-                      actions: [
-                        PopupMenuButton<FanboxSection>(
-                          tooltip: context.t.common.type,
-                          icon: const Icon(Icons.tune, size: 18),
-                          onSelected: (value) {
-                            final query = _search.text.trim();
-                            if (value == FanboxSection.creatorPosts) {
-                              if (RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(query)) openFanboxCreator(context, query);
-                            } else {
-                              _select(value, query: query);
-                            }
-                          },
-                          itemBuilder: (_) => [
-                            PopupMenuItem(value: FanboxSection.creatorPosts, child: Text(t.creatorId)),
-                            for (final section in [FanboxSection.searchCreators, FanboxSection.searchTags])
-                              PopupMenuItem(value: section, child: Text(fanboxSectionLabel(context, section))),
+                  if (MediaQuery.sizeOf(context).width >= 600)
+                    FanboxContent(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                        child: Row(
+                          children: [
+                            Expanded(child: Text(t.title, style: Theme.of(context).textTheme.titleLarge)),
+                            IconButton(tooltip: t.searchHint, onPressed: _toggleSearch, icon: Icon(_searchExpanded ? Icons.close : Icons.search)),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  if (_searchExpanded)
+                    SearchInputRegion(
+                      child: SearchInput(
+                        controller: _search,
+                        focusNode: _searchFocus,
+                        hintText: t.searchHint,
+                        onSubmitted: (value) {
+                          if (value.trim().isNotEmpty) {
+                            _select(
+                              widget.location.section == FanboxSection.searchTags ? FanboxSection.searchTags : FanboxSection.searchCreators,
+                              query: value.trim(),
+                            );
+                          }
+                        },
+                        actions: [
+                          AppMenuAnchor(
+                            menuChildren: [
+                              for (final (section, label) in [
+                                (FanboxSection.creatorPosts, t.creatorId),
+                                for (final section in [FanboxSection.searchCreators, FanboxSection.searchTags]) (section, fanboxSectionLabel(context, section)),
+                              ])
+                                AppMenuItem(
+                                  onPressed: () {
+                                    final query = _search.text.trim();
+                                    if (section == FanboxSection.creatorPosts) {
+                                      if (RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(query)) openFanboxCreator(context, query);
+                                    } else {
+                                      _select(section, query: query);
+                                    }
+                                  },
+                                  child: Text(label),
+                                ),
+                            ],
+                            builder: (context, focusNode, toggle) =>
+                                IconButton(focusNode: focusNode, tooltip: context.t.common.type, onPressed: toggle, icon: const Icon(Icons.tune, size: 18)),
+                          ),
+                        ],
+                      ),
+                    ),
                   Expanded(
                     child: PageStorage(
                       bucket: _fanboxBrowseStorage,
@@ -121,14 +156,13 @@ class _FanboxPageState extends ConsumerState<FanboxPage> {
                         key: ValueKey(widget.location),
                         location: widget.location,
                         filterSliver: FloatingFilterSliver(
-                          height: compactFilterHeight(context),
-                          child: Material(
-                            color: Theme.of(context).colorScheme.surface,
-                            child: FanboxContent(
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(12, 12, 12, 2),
-                                child: FanboxSectionNavigation(section: widget.location.section, onSelected: _select),
-                              ),
+                          height: fanboxNavigationHeight(context),
+                          // Tabs carry their label padding, so the row bleeds by it.
+                          child: ContentColumn(
+                            bleed: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 12, 0, 2),
+                              child: FanboxSectionNavigation(section: widget.location.section, onSelected: _select),
                             ),
                           ),
                         ),
@@ -166,6 +200,13 @@ class FanboxCollectionView extends ConsumerWidget {
             physics: physics,
             slivers: [
               ?filterSliver,
+              if (header == null && location.query.isNotEmpty)
+                SliverPadding(
+                  padding: fanboxScrollPadding(constraints.maxWidth).copyWith(bottom: 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Text('${fanboxSectionLabel(context, location.section)} · ${location.query}', style: Theme.of(context).textTheme.bodyMedium),
+                  ),
+                ),
               if (header != null)
                 SliverPadding(
                   padding: fanboxScrollPadding(constraints.maxWidth).copyWith(bottom: 0),
@@ -180,6 +221,11 @@ class FanboxCollectionView extends ConsumerWidget {
                         ? FanboxErrorView(state.error!, retry: () => ref.invalidate(provider))
                         : FanboxCollectionSkeleton(section: location.section),
                   ),
+                )
+              else if (entries.isEmpty && !data.hasMore && data.error == null && !data.loadingMore)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: EmptyContent(icon: Icons.inbox_outlined, title: context.t.fanbox.empty),
                 )
               else
                 SliverPagedDataList<FanboxEntry>(
@@ -198,7 +244,6 @@ class FanboxCollectionView extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Column(
                       children: [
-                        if (data.entries.isEmpty) Text(context.t.fanbox.empty),
                         if (data.loadingMore) FanboxCollectionSkeleton(section: location.section),
                         if (data.error != null) ...[
                           Text(fanboxError(context, data.error!)),

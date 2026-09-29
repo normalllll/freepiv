@@ -1,4 +1,7 @@
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'download_bulk_actions.dart';
+import 'download_dock_button.dart';
+import 'download_flight.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'fanbox_download_tasks.dart';
@@ -6,22 +9,29 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/spring_builder.dart';
+import 'package:flutter/services.dart';
 import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
+import 'package:freepiv/shared/ui/fp_surface.dart';
+import 'package:freepiv/i18n/strings.g.dart';
 
 class MobileDownloadFloatingWindow extends ConsumerStatefulWidget {
-  const MobileDownloadFloatingWindow({required this.child, super.key});
+  const MobileDownloadFloatingWindow({required this.child, this.taskStream, super.key});
 
   final Widget child;
+  final Stream<List<DownloadTaskSnapshot>>? taskStream;
 
   @override
   ConsumerState<MobileDownloadFloatingWindow> createState() => _MobileDownloadFloatingWindowState();
 }
 
-class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFloatingWindow> {
+class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFloatingWindow>
+    with SingleTickerProviderStateMixin, DownloadLandingBounce<MobileDownloadFloatingWindow>
+    implements DownloadFlightTarget {
   static const _buttonSize = 56.0;
   static const _panelMaxWidth = 380.0;
   static const _panelMaxHeight = 430.0;
@@ -30,22 +40,94 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
 
   Offset? _position;
   bool _expanded = false;
-  late final _tasks = downloadManager.watchTasks();
+  final _buttonFocusNode = FocusNode();
+  final _closeFocusNode = FocusNode();
+  late final _tasks = widget.taskStream ?? downloadManager.watchTasks();
+
+  /// The badge's slot in this layer while the phone layout shows the
+  /// floating button, known even before the first task makes it appear.
+  Rect? _badgeSlot;
+
+  @override
+  void initState() {
+    super.initState();
+    DownloadFlight.attach(this);
+  }
+
+  @override
+  Rect? get badgeRect {
+    final slot = _badgeSlot;
+    final box = mounted ? context.findRenderObject() : null;
+    if (slot == null || box is! RenderBox || !box.hasSize) return null;
+    return slot.shift(box.localToGlobal(Offset.zero));
+  }
+
+  @override
+  void land() => bounce();
+
+  @override
+  void dispose() {
+    DownloadFlight.detach(this);
+    _buttonFocusNode.dispose();
+    _closeFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _openPanel() {
+    setState(() => _expanded = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _expanded) _closeFocusNode.requestFocus();
+    });
+  }
+
+  void _closePanel({bool restoreFocus = true}) {
+    if (!_expanded) return;
+    setState(() => _expanded = false);
+    if (restoreFocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_expanded) _buttonFocusNode.requestFocus();
+      });
+    }
+  }
+
+  KeyEventResult _handlePanelKey(FocusNode node, KeyEvent event) {
+    if (_expanded && event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+      _closePanel();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
 
   @override
   Widget build(BuildContext context) {
     final fanbox = ref.watch(fanboxDownloadsProvider);
-    final usesDesktopShell = AutoScaffold.usesDesktopShellOf(context);
-    if (usesDesktopShell) {
+    final usesHorizontalLayout = AutoScaffold.usesHorizontalLayoutOf(context);
+    if (usesHorizontalLayout) {
+      _badgeSlot = null;
       return widget.child;
     }
 
     return Stack(
       children: [
-        widget.child,
+        ExcludeFocus(excluding: _expanded, child: widget.child),
         Positioned.fill(
           child: LayoutBuilder(
             builder: (context, constraints) {
+              final viewPadding = MediaQuery.viewPaddingOf(context);
+              final windowSize = _windowSizeFor(constraints.biggest);
+              final position = _clampedPosition(
+                _position ?? _defaultPosition(constraints.biggest, windowSize, viewPadding),
+                constraints.biggest,
+                windowSize,
+                viewPadding,
+              );
+              final geometry = downloadDockButtonGeometry(context, size: _buttonSize);
+              _badgeSlot = Rect.fromLTWH(
+                position.dx + windowSize.width - 22,
+                position.dy + windowSize.height - geometry.footprint.height,
+                22,
+                geometry.badgeHeight,
+              );
               return StreamBuilder<List<DownloadTaskSnapshot>>(
                 stream: _tasks,
                 builder: (context, snapshot) {
@@ -65,7 +147,7 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
                           ignoring: !_expanded,
                           child: GestureDetector(
                             behavior: HitTestBehavior.opaque,
-                            onTap: () => setState(() => _expanded = false),
+                            onTap: _closePanel,
                             child: const ColoredBox(color: Colors.transparent),
                           ),
                         ),
@@ -85,6 +167,8 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
   Widget _buildPositionedWindow(BuildContext context, BoxConstraints constraints, DownloadSummary summary, List<DownloadTaskSnapshot> panelTasks) {
     final viewPadding = MediaQuery.viewPaddingOf(context);
     final windowSize = _windowSizeFor(constraints.biggest);
+    final textScale = (MediaQuery.textScalerOf(context).scale(14) / 14).clamp(1.0, 2.0);
+    final panelFits = windowSize.width >= 220 + 120 * (textScale - 1) && windowSize.height >= 220 + 100 * (textScale - 1);
     final position = _clampedPosition(
       _position ?? _defaultPosition(constraints.biggest, windowSize, viewPadding),
       constraints.biggest,
@@ -100,12 +184,29 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
       height: windowSize.height,
       child: _DraggableDownloadWindow(
         expanded: _expanded,
+        buttonFocusNode: _buttonFocusNode,
+        closeFocusNode: _closeFocusNode,
+        onPanelKeyEvent: _handlePanelKey,
         summary: summary,
         tasks: panelTasks,
         onDragDelta: (delta) => _moveBy(delta, constraints.biggest, windowSize, viewPadding),
-        onToggleExpanded: () => setState(() => _expanded = !_expanded),
-        onClose: () => setState(() => _expanded = false),
-        onTaskTap: _openTask,
+        onToggleExpanded: () {
+          if (!panelFits) {
+            _closePanel(restoreFocus: false);
+            unawaited(AppRouter.router.pushNamed(AppRoute.downloads.name));
+          } else if (_expanded) {
+            _closePanel();
+          } else {
+            _openPanel();
+          }
+        },
+        onClose: _closePanel,
+        onViewAll: () {
+          _closePanel(restoreFocus: false);
+          unawaited(AppRouter.router.pushNamed(AppRoute.downloads.name));
+        },
+        onOpenWork: _openTask,
+        wrapButton: landingScale,
       ),
     );
   }
@@ -137,30 +238,42 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
     });
   }
 
-  void _openTask(DownloadTaskSnapshot task) {
-    setState(() => _expanded = false);
-    unawaited(AppRouter.router.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': task.illustId.toString()}));
+  void _openTask(ArtworkPage work) {
+    _closePanel(restoreFocus: false);
+    unawaited(AppRouter.router.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': work.illustId.toString()}));
   }
 }
 
 class _DraggableDownloadWindow extends StatelessWidget {
   const _DraggableDownloadWindow({
     required this.expanded,
+    required this.buttonFocusNode,
+    required this.closeFocusNode,
+    required this.onPanelKeyEvent,
     required this.summary,
     required this.tasks,
     required this.onDragDelta,
     required this.onToggleExpanded,
     required this.onClose,
-    required this.onTaskTap,
+    required this.onViewAll,
+    required this.onOpenWork,
+    required this.wrapButton,
   });
 
   final bool expanded;
+  final FocusNode buttonFocusNode;
+  final FocusNode closeFocusNode;
+  final FocusOnKeyEventCallback onPanelKeyEvent;
   final DownloadSummary summary;
   final List<DownloadTaskSnapshot> tasks;
   final ValueChanged<Offset> onDragDelta;
   final VoidCallback onToggleExpanded;
   final VoidCallback onClose;
-  final ValueChanged<DownloadTaskSnapshot> onTaskTap;
+  final VoidCallback onViewAll;
+  final ValueChanged<ArtworkPage> onOpenWork;
+
+  /// Wraps the collapsed button, for the landing bounce of a download flight.
+  final Widget Function({required Widget child}) wrapButton;
 
   @override
   Widget build(BuildContext context) {
@@ -169,19 +282,28 @@ class _DraggableDownloadWindow extends StatelessWidget {
         Positioned.fill(
           child: IgnorePointer(
             ignoring: !expanded,
-            child: AnimatedOpacity(
-              opacity: expanded ? 1 : 0,
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOutCubic,
-              child: AnimatedScale(
-                scale: expanded ? 1 : 0.82,
-                alignment: Alignment.bottomRight,
-                duration: const Duration(milliseconds: 260),
-                curve: Curves.easeOutBack,
+            child: FocusScope(
+              canRequestFocus: expanded,
+              descendantsAreFocusable: expanded,
+              onKeyEvent: onPanelKeyEvent,
+              // The panel grows out of the button's corner while the button
+              // shrinks away into it, and the reverse on closing.
+              child: SpringReveal(
+                shown: expanded,
+                alignment: AlignmentDirectional.bottomEnd,
+                hiddenScale: .82,
                 child: RepaintBoundary(
                   child: TickerMode(
                     enabled: expanded,
-                    child: _DownloadFloatingPanel(summary: summary, tasks: tasks, onDragDelta: onDragDelta, onClose: onClose, onTaskTap: onTaskTap),
+                    child: _DownloadFloatingPanel(
+                      closeFocusNode: closeFocusNode,
+                      summary: summary,
+                      tasks: tasks,
+                      onDragDelta: onDragDelta,
+                      onClose: onClose,
+                      onViewAll: onViewAll,
+                      onOpenWork: onOpenWork,
+                    ),
                   ),
                 ),
               ),
@@ -191,19 +313,24 @@ class _DraggableDownloadWindow extends StatelessWidget {
         PositionedDirectional(
           end: 0,
           bottom: 0,
-          width: _MobileDownloadFloatingWindowState._buttonSize,
-          height: _MobileDownloadFloatingWindowState._buttonSize,
           child: IgnorePointer(
             ignoring: expanded,
-            child: AnimatedOpacity(
-              opacity: expanded ? 0 : 1,
-              duration: const Duration(milliseconds: 260),
-              curve: Curves.easeInOutCubic,
-              child: AnimatedScale(
-                scale: expanded ? 0.82 : 1,
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeInOutCubic,
-                child: _DownloadFloatingButton(summary: summary, expanded: expanded, onDragDelta: onDragDelta, onPressed: onToggleExpanded),
+            child: ExcludeFocus(
+              excluding: expanded,
+              child: SpringReveal(
+                shown: !expanded,
+                alignment: Alignment.center,
+                hiddenScale: .82,
+                child: wrapButton(
+                  child: DownloadDockButton(
+                    focusNode: buttonFocusNode,
+                    summary: summary,
+                    expanded: expanded,
+                    size: _MobileDownloadFloatingWindowState._buttonSize,
+                    onDragDelta: onDragDelta,
+                    onPressed: onToggleExpanded,
+                  ),
+                ),
               ),
             ),
           ),
@@ -213,107 +340,37 @@ class _DraggableDownloadWindow extends StatelessWidget {
   }
 }
 
-class _DownloadFloatingButton extends StatelessWidget {
-  const _DownloadFloatingButton({required this.summary, required this.expanded, required this.onDragDelta, required this.onPressed});
-
-  final DownloadSummary summary;
-  final bool expanded;
-  final ValueChanged<Offset> onDragDelta;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final active = summary.queued + summary.running + summary.savePending;
-    final failures = summary.failed + summary.saveFailed;
-    final badgeLabel = failures > 0
-        ? failures.toString()
-        : active > 0
-        ? active.toString()
-        : summary.total.toString();
-    final badgeColor = failures > 0 ? colorScheme.error : colorScheme.primary;
-
-    return GestureDetector(
-      onPanUpdate: (details) => onDragDelta(details.delta),
-      child: Material(
-        color: colorScheme.primaryContainer,
-        shape: const CircleBorder(),
-        elevation: 6,
-        shadowColor: Colors.black.withValues(alpha: 0.22),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onPressed,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Center(
-                child: AnimatedRotation(
-                  turns: expanded ? 0.5 : 0,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOutCubic,
-                  child: Icon(Icons.downloading_outlined, color: colorScheme.onPrimaryContainer),
-                ),
-              ),
-              PositionedDirectional(
-                end: -1,
-                top: -1,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(color: badgeColor, shape: BoxShape.circle),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        child: Text(
-                          badgeLabel,
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _DownloadFloatingPanel extends StatelessWidget {
-  const _DownloadFloatingPanel({required this.summary, required this.tasks, required this.onDragDelta, required this.onClose, required this.onTaskTap});
+  const _DownloadFloatingPanel({
+    required this.closeFocusNode,
+    required this.summary,
+    required this.tasks,
+    required this.onDragDelta,
+    required this.onClose,
+    required this.onViewAll,
+    required this.onOpenWork,
+  });
 
   final DownloadSummary summary;
+  final FocusNode closeFocusNode;
   final List<DownloadTaskSnapshot> tasks;
   final ValueChanged<Offset> onDragDelta;
   final VoidCallback onClose;
-  final ValueChanged<DownloadTaskSnapshot> onTaskTap;
+  final VoidCallback onViewAll;
+  final ValueChanged<ArtworkPage> onOpenWork;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth < 180 || constraints.maxHeight < 160) {
-          return _DownloadFloatingPanelFallback(summary: summary, onDragDelta: onDragDelta, onClose: onClose);
-        }
-
-        final colorScheme = Theme.of(context).colorScheme;
-        return Material(
-          elevation: 14,
-          color: colorScheme.surface,
-          shadowColor: Colors.black.withValues(alpha: 0.24),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: colorScheme.outlineVariant),
-          ),
-          clipBehavior: Clip.antiAlias,
+        return FpSurface(
+          role: FpSurfaceRole.overlay,
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _DownloadFloatingPanelHeader(summary: summary, onDragDelta: onDragDelta, onClose: onClose),
+                _DownloadFloatingPanelHeader(summary: summary, tasks: tasks, onDragDelta: onDragDelta, onClose: onClose, closeFocusNode: closeFocusNode),
                 const SizedBox(height: 8),
                 const Divider(height: 1),
                 Expanded(
@@ -322,13 +379,26 @@ class _DownloadFloatingPanel extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const AnimatedSize(duration: Duration(milliseconds: 180), alignment: Alignment.topCenter, child: FanboxDownloadTasks()),
+                        AnimatedSize(
+                          duration: AppMotion.duration(context, const Duration(milliseconds: 180)),
+                          alignment: Alignment.topCenter,
+                          child: const FanboxDownloadTasks(),
+                        ),
                         if (tasks.isNotEmpty) ...[
                           const Text('Pixiv'),
-                          DownloadTaskList(tasks: tasks, compact: true, showTooltips: false, onTaskTap: onTaskTap),
+                          DownloadTaskList(tasks: tasks, compact: true, showTooltips: false, onOpenWork: onOpenWork),
                         ],
                       ],
                     ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: TextButton.icon(
+                    onPressed: onViewAll,
+                    icon: const Icon(Icons.open_in_full_outlined),
+                    label: Text(context.t.settings.downloads.viewAll),
                   ),
                 ),
               ],
@@ -340,68 +410,21 @@ class _DownloadFloatingPanel extends StatelessWidget {
   }
 }
 
-class _DownloadFloatingPanelFallback extends StatelessWidget {
-  const _DownloadFloatingPanelFallback({required this.summary, required this.onDragDelta, required this.onClose});
-
-  final DownloadSummary summary;
-  final ValueChanged<Offset> onDragDelta;
-  final VoidCallback onClose;
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final active = summary.queued + summary.running + summary.savePending;
-    final failures = summary.failed + summary.saveFailed;
-    final badgeLabel = failures > 0
-        ? failures.toString()
-        : active > 0
-        ? active.toString()
-        : summary.total.toString();
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onPanUpdate: (details) => onDragDelta(details.delta),
-      onTap: onClose,
-      child: Material(
-        color: colorScheme.primaryContainer,
-        shape: const CircleBorder(),
-        elevation: 6,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Center(child: Icon(Icons.downloading_outlined, color: colorScheme.onPrimaryContainer)),
-            PositionedDirectional(
-              end: -1,
-              top: -1,
-              child: DecoratedBox(
-                decoration: BoxDecoration(color: failures > 0 ? colorScheme.error : colorScheme.primary, shape: BoxShape.circle),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: Text(
-                        badgeLabel,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _DownloadFloatingPanelHeader extends StatelessWidget {
-  const _DownloadFloatingPanelHeader({required this.summary, required this.onDragDelta, required this.onClose});
+  const _DownloadFloatingPanelHeader({
+    required this.summary,
+    required this.tasks,
+    required this.onDragDelta,
+    required this.onClose,
+    required this.closeFocusNode,
+  });
 
   final DownloadSummary summary;
+  final List<DownloadTaskSnapshot> tasks;
   final ValueChanged<Offset> onDragDelta;
 
   final VoidCallback onClose;
+  final FocusNode closeFocusNode;
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -411,8 +434,13 @@ class _DownloadFloatingPanelHeader extends StatelessWidget {
         final actions = Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const DownloadBulkActions(),
-            IconButton(icon: const Icon(Icons.close_outlined), onPressed: onClose),
+            DownloadBulkActions(compact: true, tasks: tasks),
+            IconButton(
+              focusNode: closeFocusNode,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              icon: const Icon(Icons.close_outlined),
+              onPressed: onClose,
+            ),
           ],
         );
 

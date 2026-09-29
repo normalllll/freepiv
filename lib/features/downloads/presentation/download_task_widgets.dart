@@ -1,18 +1,26 @@
+import 'package:freepiv/shared/widgets/form_controls.dart';
+import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/app_dialog.dart';
 import 'package:flutter/services.dart';
+import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 
 class DownloadSummaryView extends StatelessWidget {
-  const DownloadSummaryView({required this.summary, this.compact = false, super.key});
+  const DownloadSummaryView({required this.summary, this.compact = false, this.showHeading = true, this.trailing, super.key});
 
   final DownloadSummary summary;
   final bool compact;
+  final bool showHeading;
+
+  /// Actions placed at the end of the heading row.
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -26,51 +34,47 @@ class DownloadSummaryView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            Icon(Icons.download_for_offline_outlined, color: colorScheme.primary),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(_summaryTitle(summary), maxLines: 1, overflow: TextOverflow.ellipsis, style: compact ? textTheme.titleSmall : textTheme.titleMedium),
-            ),
-            Text('${(progress * 100).round()}%', maxLines: 1, softWrap: false, style: textTheme.labelLarge),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _AnimatedRoundedProgressIndicator(value: summary.total == 0 ? 0 : progress, minHeight: compact ? 5 : 6),
-        const SizedBox(height: 8),
-        if (compact)
-          Column(
+        if (showHeading) ...[
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _SummaryPill(icon: Icons.list_alt_outlined, label: '${t.settings.downloads.total}: ${summary.total}', expanded: true),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _SummaryPill(icon: Icons.downloading_outlined, label: '${t.settings.downloads.active}: $active', expanded: true),
-                  ),
-                ],
+              Icon(Icons.download_for_offline_outlined, color: FreepivThemeTokens.of(context).textPrimary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  _summaryTitle(summary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: compact ? textTheme.titleSmall : textTheme.titleMedium,
+                ),
               ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Expanded(
-                    child: _SummaryPill(icon: Icons.check_circle_outline, label: '${t.settings.downloads.saved}: ${summary.saved}', expanded: true),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _SummaryPill(
-                      icon: Icons.error_outline,
-                      label: '${t.settings.downloads.failed}: $failures',
-                      expanded: true,
-                      color: failures > 0 ? colorScheme.error : null,
-                    ),
-                  ),
-                ],
-              ),
+              Text('${(progress * 100).round()}%', maxLines: 1, softWrap: false, style: textTheme.labelLarge),
+              if (trailing case final trailing?) ...[const SizedBox(width: 4), trailing],
             ],
+          ),
+          SizedBox(height: compact ? 8 : 12),
+        ],
+        if (summary.total > 0) ...[
+          _AnimatedRoundedProgressIndicator(value: summary.total == 0 ? 0 : progress, minHeight: compact ? 5 : 6),
+          const SizedBox(height: 8),
+        ],
+        if (compact)
+          // One quiet metadata line; only failures draw attention.
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text:
+                      '${t.settings.downloads.total} ${summary.total} · ${t.settings.downloads.active} $active · ${t.settings.downloads.saved} ${summary.saved}',
+                ),
+                if (failures > 0)
+                  TextSpan(
+                    text: ' · ${t.settings.downloads.failed} $failures',
+                    style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.w600),
+                  ),
+              ],
+            ),
+            maxLines: 2,
+            style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
           )
         else
           Wrap(
@@ -89,13 +93,13 @@ class DownloadSummaryView extends StatelessWidget {
 }
 
 class DownloadTaskList extends StatelessWidget {
-  const DownloadTaskList({required this.tasks, this.compact = false, this.maxItems, this.showTooltips = true, this.onTaskTap, super.key});
+  const DownloadTaskList({required this.tasks, this.compact = false, this.maxItems, this.showTooltips = true, this.onOpenWork, super.key});
 
   final List<DownloadTaskSnapshot> tasks;
   final bool compact;
   final int? maxItems;
   final bool showTooltips;
-  final ValueChanged<DownloadTaskSnapshot>? onTaskTap;
+  final ValueChanged<ArtworkPage>? onOpenWork;
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +113,7 @@ class DownloadTaskList extends StatelessWidget {
       children: [
         for (var index = 0; index < visibleTasks.length; index += 1) ...[
           if (index > 0) const Divider(height: 1),
-          DownloadTaskTile(task: visibleTasks[index], compact: compact, showTooltips: showTooltips, onTaskTap: onTaskTap),
+          DownloadTaskTile(task: visibleTasks[index], compact: compact, showTooltips: showTooltips, onOpenWork: onOpenWork),
         ],
       ],
     );
@@ -117,12 +121,12 @@ class DownloadTaskList extends StatelessWidget {
 }
 
 class DownloadTaskTile extends StatelessWidget {
-  const DownloadTaskTile({required this.task, this.compact = false, this.showTooltips = true, this.onTaskTap, super.key});
+  const DownloadTaskTile({required this.task, this.compact = false, this.showTooltips = true, this.onOpenWork, super.key});
 
   final DownloadTaskSnapshot task;
   final bool compact;
   final bool showTooltips;
-  final ValueChanged<DownloadTaskSnapshot>? onTaskTap;
+  final ValueChanged<ArtworkPage>? onOpenWork;
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +164,7 @@ class DownloadTaskTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text('${(progress * 100).round()}%', style: textTheme.labelMedium?.copyWith(color: colorScheme.primary)),
+                      Text('${(progress * 100).round()}%', style: textTheme.labelMedium?.copyWith(color: FreepivThemeTokens.of(context).textPrimary)),
                     ],
                   ),
                   SizedBox(height: compact ? 4 : 6),
@@ -170,16 +174,23 @@ class DownloadTaskTile extends StatelessWidget {
                   ),
                   SizedBox(height: compact ? 4 : 6),
                   if (compact)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                    // Status first, then quiet metadata, on one line.
+                    Row(
                       children: [
                         _AnimatedStatusLabel(task: task, status: status, compact: true),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${context.t.common.id} ${task.illustId} · ${_bytesLabel(task)}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                        const SizedBox(width: 8),
+                        // Size first: it is what changes while downloading, and
+                        // an ellipsis shortens the ID after it before the size.
+                        Expanded(
+                          child: Text(
+                            switch (task.origin) {
+                              ArtworkPage(:final illustId) => '${_bytesLabel(task)} · ${context.t.common.id} $illustId',
+                              ContentImage() => _bytesLabel(task),
+                            },
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                          ),
                         ),
                       ],
                     )
@@ -190,7 +201,8 @@ class DownloadTaskTile extends StatelessWidget {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         _AnimatedStatusLabel(task: task, status: status, compact: compact),
-                        Text('${context.t.common.id} ${task.illustId}', style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+                        if (task.origin case ArtworkPage(:final illustId))
+                          Text('${context.t.common.id} $illustId', style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
                         Text(_bytesLabel(task), style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
                       ],
                     ),
@@ -215,20 +227,11 @@ class DownloadTaskTile extends StatelessWidget {
       ),
     );
 
-    final onTaskTap = this.onTaskTap;
-    if (onTaskTap == null || !_canOpenIllust(task)) {
-      return child;
+    // Only a finished work page opens its work; a content image has none.
+    if ((onOpenWork, task.origin) case (final open?, final ArtworkPage work) when _isFinished(task)) {
+      return AppClickSurface(onTap: () => open(work), child: child);
     }
-
-    return InkWell(
-      overlayColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.pressed)) return colorScheme.onSurface.withValues(alpha: .10);
-        if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) return colorScheme.onSurface.withValues(alpha: .05);
-        return Colors.transparent;
-      }),
-      onTap: () => onTaskTap(task),
-      child: child,
-    );
+    return child;
   }
 }
 
@@ -241,48 +244,44 @@ class _DownloadTaskActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final actionSize = compact ? 24.0 : 30.0;
     final primaryAction = _primaryActionFor(task, showTooltips: showTooltips);
-
-    return SizedBox(
-      width: actionSize,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox.square(
-            dimension: actionSize,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 160),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: _fadeScaleTransition,
-              child: primaryAction ?? SizedBox.square(key: const ValueKey<String>('empty-action'), dimension: actionSize),
-            ),
+    // The primary slot only exists while there is an action (cancel or
+    // retry); it eases closed when a task finishes instead of leaving a gap
+    // before the menu button.
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedSize(
+          duration: AppMotion.duration(context, AppMotion.expand),
+          curve: Curves.easeInOutCubic,
+          child: AnimatedSwitcher(
+            duration: AppMotion.duration(context, AppMotion.hover),
+            child: primaryAction == null
+                ? const SizedBox.shrink()
+                : SizedBox.square(key: primaryAction.key, dimension: AppMetrics.compactTargetHeight, child: primaryAction),
           ),
-          SizedBox(height: compact ? 2 : 4),
-          SizedBox.square(
-            dimension: actionSize,
-            child: _SmallActionIcon(
-              key: const ValueKey<String>('delete'),
-              tooltip: showTooltips ? t.settings.downloads.deleteTask : null,
-              icon: const Icon(Icons.delete_outline),
+        ),
+        AppMenuAnchor(
+          menuChildren: [
+            AppMenuItem(
+              autofocus: true,
               onPressed: () => unawaited(_runAction(() => downloadManager.deleteTask(task.id))),
+              leadingIcon: const Icon(Icons.delete_outline),
+              child: Text(t.settings.downloads.deleteTask),
             ),
-          ),
-          if (task.log != null && task.log!.isNotEmpty) ...[
-            SizedBox(height: compact ? 2 : 4),
-            SizedBox.square(
-              dimension: actionSize,
-              child: _SmallActionIcon(
-                key: const ValueKey<String>('log'),
-                tooltip: showTooltips ? 'View log' : null,
-                icon: const Icon(Icons.article_outlined),
-                onPressed: () => _showTaskLog(context, task),
-              ),
-            ),
+            if (task.log != null && task.log!.isNotEmpty)
+              AppMenuItem(onPressed: () => _showTaskLog(context, task), leadingIcon: const Icon(Icons.article_outlined), child: Text(t.common.viewLog)),
           ],
-        ],
-      ),
+          builder: (context, focusNode, toggle) => IconButton(
+            focusNode: focusNode,
+            tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+            onPressed: toggle,
+            icon: const Icon(Icons.more_horiz),
+            constraints: const BoxConstraints.tightFor(width: AppMetrics.compactTargetHeight, height: AppMetrics.compactTargetHeight),
+            padding: EdgeInsets.zero,
+          ),
+        ),
+      ],
     );
   }
 
@@ -317,13 +316,6 @@ class _DownloadTaskActions extends StatelessWidget {
     return null;
   }
 
-  Widget _fadeScaleTransition(Widget child, Animation<double> animation) {
-    return FadeTransition(
-      opacity: animation,
-      child: ScaleTransition(scale: Tween<double>(begin: 0.92, end: 1).animate(animation), child: child),
-    );
-  }
-
   Future<void> _runAction(Future<void> Function() action) async {
     try {
       await action();
@@ -339,12 +331,12 @@ void _showTaskLog(BuildContext context, DownloadTaskSnapshot task) {
     return;
   }
 
-  showDialog<void>(
+  showAppDialog<void>(
     context: context,
     builder: (context) {
       final colorScheme = Theme.of(context).colorScheme;
       return AlertDialog(
-        title: Text('Download log', style: Theme.of(context).textTheme.titleMedium),
+        title: Text(t.common.viewLog, style: Theme.of(context).textTheme.titleMedium),
         content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 720, maxHeight: 460),
           child: DecoratedBox(
@@ -357,8 +349,10 @@ void _showTaskLog(BuildContext context, DownloadTaskSnapshot task) {
               padding: const EdgeInsets.all(12),
               child: SelectableText(
                 'jobId=${task.id}\n'
-                'illustId=${task.illustId}\n'
-                'pageIndex=${task.pageIndex}\n'
+                'origin=${switch (task.origin) {
+                  ArtworkPage(:final illustId, :final pageIndex) => 'illust $illustId page $pageIndex',
+                  ContentImage(:final address) => 'image $address',
+                }}\n'
                 'filename=${task.filename}\n'
                 'status=${task.status.name}\n'
                 'saveState=${task.saveState.name}\n'
@@ -376,9 +370,9 @@ void _showTaskLog(BuildContext context, DownloadTaskSnapshot task) {
               Clipboard.setData(ClipboardData(text: log));
               Navigator.of(context).pop();
             },
-            child: const Text('Copy'),
+            child: Text(t.common.copy(label: t.common.viewLog)),
           ),
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Close')),
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(MaterialLocalizations.of(context).closeButtonTooltip)),
         ],
       );
     },
@@ -395,14 +389,9 @@ class _SmallActionIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final child = InkResponse(
+    final child = AppClickSurface(
       onTap: onPressed,
-      splashColor: colorScheme.onSurface.withValues(alpha: .10),
-      highlightColor: colorScheme.onSurface.withValues(alpha: .05),
-      hoverColor: colorScheme.onSurface.withValues(alpha: .05),
-      focusColor: colorScheme.onSurface.withValues(alpha: .05),
-      radius: 15,
-      containedInkWell: false,
+
       child: IconTheme.merge(
         data: IconThemeData(size: 18, color: colorScheme.onSurfaceVariant),
         child: Center(child: icon),
@@ -461,6 +450,8 @@ class _AnimatedStatusLabel extends StatelessWidget {
         duration: const Duration(milliseconds: 170),
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
+        // Keep the status on the text's start edge instead of centring it.
+        layoutBuilder: (current, previous) => Stack(alignment: AlignmentDirectional.centerStart, children: [...previous, ?current]),
         transitionBuilder: (child, animation) {
           return FadeTransition(
             opacity: animation,
@@ -494,10 +485,12 @@ class _AnimatedTaskDetailText extends StatelessWidget {
       duration: const Duration(milliseconds: 180),
       switchInCurve: Curves.easeOutCubic,
       switchOutCurve: Curves.easeInCubic,
+      // Paths and errors read from the text's start edge, never centred.
+      layoutBuilder: (current, previous) => Stack(alignment: AlignmentDirectional.topStart, children: [...previous, ?current]),
       transitionBuilder: (child, animation) {
         return SizeTransition(
           sizeFactor: animation,
-          alignment: Alignment.topCenter,
+          alignment: AlignmentDirectional.topStart,
           child: FadeTransition(opacity: animation, child: child),
         );
       },
@@ -505,7 +498,10 @@ class _AnimatedTaskDetailText extends StatelessWidget {
           ? Padding(
               key: ValueKey<String>(text),
               padding: const EdgeInsets.only(top: 6),
-              child: Text(text, maxLines: maxLines, overflow: TextOverflow.ellipsis, style: style),
+              child: SizedBox(
+                width: double.infinity,
+                child: Text(text, maxLines: maxLines, overflow: TextOverflow.ellipsis, style: style),
+              ),
             )
           : const SizedBox.shrink(key: ValueKey<String>('empty-detail')),
     );
@@ -525,7 +521,7 @@ class _DownloadThumbnail extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(AppMetrics.controlRadius),
       child: SizedBox(
         width: size,
         height: size,
@@ -541,12 +537,11 @@ class _DownloadThumbnail extends StatelessWidget {
 }
 
 class _SummaryPill extends StatelessWidget {
-  const _SummaryPill({required this.icon, required this.label, this.color, this.expanded = false});
+  const _SummaryPill({required this.icon, required this.label, this.color});
 
   final IconData icon;
   final String label;
   final Color? color;
-  final bool expanded;
 
   @override
   Widget build(BuildContext context) {
@@ -556,17 +551,7 @@ class _SummaryPill extends StatelessWidget {
       children: [
         Icon(icon, size: 15, color: color),
         const SizedBox(width: 4),
-        if (expanded)
-          Expanded(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color),
-            ),
-          )
-        else
-          Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color)),
+        Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color)),
       ],
     );
   }
@@ -641,33 +626,21 @@ Color _statusColor(BuildContext context, DownloadTaskSnapshot task) {
   if (task.status == DownloadStatus.failed || task.saveState == SaveState.failed) {
     return colorScheme.error;
   }
-  if (task.status == DownloadStatus.running || task.saveState == SaveState.saving) {
-    return colorScheme.primary;
-  }
-  if (task.saveState == SaveState.saved) {
-    return colorScheme.tertiary;
+  if (task.status == DownloadStatus.running || task.saveState == SaveState.saving || task.saveState == SaveState.saved) {
+    return FreepivThemeTokens.of(context).textPrimary;
   }
   return colorScheme.onSurfaceVariant;
 }
 
 String _bytesLabel(DownloadTaskSnapshot task) {
   final total = task.totalBytes;
-  final received = _formatBytes(task.receivedBytes);
-  if (total == null || total <= 0) {
+  final received = formatByteSize(task.receivedBytes);
+  if (total == null || total <= 0 || task.receivedBytes >= total) {
     return received;
   }
-  return '$received / ${_formatBytes(total)}';
+  return '$received / ${formatByteSize(total)}';
 }
 
-String _formatBytes(int bytes) {
-  if (bytes <= 0) return '0.00 B';
-
-  const units = ['B', 'KB', 'MB', 'GB'];
-  final exponent = math.min((math.log(bytes) / math.log(1024)).floor(), units.length - 1);
-  final value = bytes / math.pow(1024, exponent);
-  return '${value.toStringAsFixed(2)} ${units[exponent]}';
-}
-
-bool _canOpenIllust(DownloadTaskSnapshot task) {
+bool _isFinished(DownloadTaskSnapshot task) {
   return task.status == DownloadStatus.downloaded || task.saveState == SaveState.saved;
 }

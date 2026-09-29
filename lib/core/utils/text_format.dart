@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 
 String formatCount(int value) {
@@ -37,21 +39,39 @@ String plainTextFromHtml(String value) {
       .trim();
 }
 
-String formatPixivError(Object error) {
-  if (error is PixivError) {
-    final buffer = StringBuffer(error.message);
+String formatPixivError(Object error) => switch (error) {
+  PixivError(status: 401) || PixivError(kind: PixivErrorKind.missingAccount) => t.errors.session,
+  PixivError(status: 403) => t.errors.forbidden,
+  PixivError(status: 404) => t.errors.missing,
+  PixivError(kind: PixivErrorKind.httpClient) => t.errors.connection,
+  _ => t.errors.generic,
+};
 
-    final body = error.body;
-    if (body != null && body.trim().isNotEmpty) {
-      buffer
-        ..write('\n\nResponse body:\n')
-        ..write(body);
-    }
+/// One-line technical cause for toasts and inline messages, e.g.
+/// "HTTP 404 · Not Found" or "httpClient · connection refused".
+String pixivErrorBrief(Object error) {
+  final text = switch (error) {
+    PixivError(:final status?, :final message) => 'HTTP $status · $message',
+    PixivError(:final kind, :final message) => '${kind.name} · $message',
+    _ => error.toString(),
+  };
+  final line = text.split('\n').first.trim();
+  return line.length > 160 ? '${line.substring(0, 157)}...' : line;
+}
 
-    return buffer.toString();
-  }
-
-  return error.toString();
+/// Full technical detail of an error for display and copying. freepiv is open
+/// source, so nothing is withheld: kind, HTTP status, message, request URL and
+/// the start of the response body.
+String pixivErrorDetails(Object error) {
+  if (error is! PixivError) return error.toString();
+  final body = error.body?.trim() ?? '';
+  return [
+    'kind: ${error.kind.name}',
+    if (error.status case final status?) 'status: $status',
+    if (error.message.trim().isNotEmpty) 'message: ${error.message.trim()}',
+    if (error.url case final url? when url.isNotEmpty) 'url: $url',
+    if (body.isNotEmpty) 'body: ${body.length > 2000 ? '${body.substring(0, 2000)}…' : body}',
+  ].join('\n');
 }
 
 String? pixivErrorUrl(Object? error) {
@@ -75,4 +95,13 @@ String formatPixivErrorUrlForDisplay(String url) {
 
     return '${url.substring(0, queryIndex)}${fragmentIndex >= 0 ? url.substring(fragmentIndex) : ''}';
   }
+}
+
+String formatByteSize(int bytes) {
+  if (bytes <= 0) return '0.00 B';
+
+  const units = ['B', 'KB', 'MB', 'GB'];
+  final exponent = math.min((math.log(bytes) / math.log(1024)).floor(), units.length - 1);
+  final value = bytes / math.pow(1024, exponent);
+  return '${value.toStringAsFixed(2)} ${units[exponent]}';
 }

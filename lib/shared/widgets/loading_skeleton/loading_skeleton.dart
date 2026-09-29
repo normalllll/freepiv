@@ -1,3 +1,4 @@
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -6,7 +7,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 
 /// Small action placeholders also keep the original control's occupied space.
 class LoadingSkeletonBlock extends StatelessWidget {
-  const LoadingSkeletonBlock({this.width = 16, this.height = 16, this.radius = 4, super.key});
+  const LoadingSkeletonBlock({this.width = 16, this.height = 16, this.radius = AppMetrics.badgeRadius, super.key});
   final double width;
   final double height;
   final double radius;
@@ -55,29 +56,14 @@ class ImageLoadingSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Skeletonizer.zone(
-      child: Bone(width: double.infinity, height: double.infinity, borderRadius: borderRadius ?? BorderRadius.circular(6)),
+      child: Bone(width: double.infinity, height: double.infinity, borderRadius: borderRadius ?? BorderRadius.circular(AppMetrics.controlRadius)),
     );
   }
 }
 
-class CommentsLoadingSkeleton extends StatelessWidget {
-  const CommentsLoadingSkeleton({this.itemCount, super.key});
-
-  final int? itemCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final count = itemCount ?? (MediaQuery.sizeOf(context).height / 38).ceil() + 1;
-    return Skeletonizer.zone(
-      child: Column(
-        children: [
-          for (var index = 0; index < count; index++) ...[const _CommentSkeletonTile(), if (index != count - 1) const SizedBox(height: 8)],
-        ],
-      ),
-    );
-  }
-}
-
+/// Mirrors PixivCommentTile's geometry (avatar slot, row padding, name and
+/// date row, body lines, actions) and the 1px separators between comments,
+/// so the loaded list replaces the skeleton without a jump.
 class _SkeletonGrid extends StatelessWidget {
   const _SkeletonGrid({required this.itemCount, required this.maxWidth, required this.itemPadding});
 
@@ -135,14 +121,14 @@ class _WorkCardSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
       child: Padding(
         padding: itemPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(6)),
+              child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
             ),
             const SizedBox(height: 10),
             const Bone.text(width: double.infinity),
@@ -151,33 +137,6 @@ class _WorkCardSkeleton extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _CommentSkeletonTile extends StatelessWidget {
-  const _CommentSkeletonTile();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Bone.circle(size: 30),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Bone.text(width: 120),
-              SizedBox(height: 7),
-              Bone.text(width: double.infinity),
-              SizedBox(height: 5),
-              Bone.text(width: 180),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

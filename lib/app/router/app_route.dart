@@ -19,6 +19,7 @@ enum AppRoute {
   downloads('/downloads'),
   originalImageViewer('/image-viewer'),
   illustDetail('/illust/:id'),
+  illustRelated('/illust/:id/related'),
   illustComments('/illust/:id/comments'),
   novelDetail('/novel/:id'),
   novelReader('/novel/:id/read'),

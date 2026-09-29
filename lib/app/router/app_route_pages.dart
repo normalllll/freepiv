@@ -1,3 +1,4 @@
+import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/router/detail_transition_page.dart';
@@ -7,6 +8,7 @@ import 'package:freepiv/features/comments/presentation/work_comments_page.dart';
 import 'package:freepiv/features/downloads/presentation/downloads_page.dart';
 import 'package:freepiv/features/home/presentation/home_page.dart';
 import 'package:freepiv/features/illust/presentation/illust_detail_page.dart';
+import 'package:freepiv/features/illust/presentation/illust_related_page.dart';
 import 'package:freepiv/features/login/presentation/login_page.dart';
 import 'package:freepiv/features/me/presentation/me_page.dart';
 import 'package:freepiv/features/newest/presentation/page/newest_page.dart';
@@ -21,6 +23,7 @@ import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/layout/auto_scaffold.dart';
+import 'package:freepiv/shared/widgets/artwork_hero.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -124,8 +127,13 @@ Page<void> originalImageViewerPage(BuildContext context, GoRouterState state) {
 }
 
 Page<void> illustDetailPage(BuildContext context, GoRouterState state) {
-  final extra = state.extra;
-  final illust = extra is Illust ? extra : null;
+  // A card opening the work passes its own hero tag with it, so exactly that
+  // card's image flies into the stage (see ArtworkHeroTag).
+  final (Illust? illust, ArtworkHeroTag? heroTag) = switch (state.extra) {
+    (illust: final Illust illust, heroTag: final ArtworkHeroTag heroTag) => (illust, heroTag),
+    final Illust illust => (illust, null),
+    _ => (null, null),
+  };
   final illustId = int.tryParse(state.pathParameters['id'] ?? '');
 
   if (illustId == null && illust == null) {
@@ -134,7 +142,11 @@ Page<void> illustDetailPage(BuildContext context, GoRouterState state) {
 
   return detailTransitionPage(
     key: state.pageKey,
-    child: IllustDetailPage(illustId: illustId, illust: illust),
+    heroLed: heroTag != null,
+    child: ArtworkHeroScope(
+      tag: heroTag,
+      child: IllustDetailPage(illustId: illustId, illust: illust),
+    ),
   );
 }
 
@@ -147,6 +159,15 @@ Page<void> illustCommentsPage(BuildContext context, GoRouterState state) {
   return detailTransitionPage(
     key: state.pageKey,
     child: WorkCommentsPage(workType: CommentWorkType.illust, workId: illustId, totalComments: _commentCountFromExtra(state.extra)),
+  );
+}
+
+Page<void> illustRelatedPage(BuildContext context, GoRouterState state) {
+  final illustId = int.tryParse(state.pathParameters['id'] ?? '');
+  if (illustId == null) return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
+  return detailTransitionPage(
+    key: state.pageKey,
+    child: IllustRelatedPage(illustId: illustId, sourceIllust: state.extra is Illust ? state.extra as Illust : null),
   );
 }
 
@@ -198,7 +219,10 @@ Page<void> userDetailPage(BuildContext context, GoRouterState state) {
   if (extra is UserDetailResult) {
     return detailTransitionPage(
       key: state.pageKey,
-      child: UserDetailPage(userDetail: extra),
+      child: UserDetailPage(
+        userDetail: extra,
+        initialTab: state.uri.queryParameters['tab'] == 'bookmarks' ? UserContentTabKind.bookmarks : UserContentTabKind.illust,
+      ),
     );
   }
 
@@ -209,7 +233,10 @@ Page<void> userDetailPage(BuildContext context, GoRouterState state) {
 
   return detailTransitionPage(
     key: state.pageKey,
-    child: UserDetailPage(userId: userId),
+    child: UserDetailPage(
+      userId: userId,
+      initialTab: state.uri.queryParameters['tab'] == 'bookmarks' ? UserContentTabKind.bookmarks : UserContentTabKind.illust,
+    ),
   );
 }
 
@@ -221,9 +248,9 @@ Page<void> _missingRoutePage({required LocalKey key, required String message}) {
   return detailTransitionPage(
     key: key,
     child: AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool shouldUseDesktopShell) {
+      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
-          appBar: shouldUseDesktopShell ? null : AppBar(title: Text(context.t.common.notFound)),
+          appBar: useHorizontalLayout ? null : AppBar(title: Text(context.t.common.notFound)),
           body: Center(child: Text(message)),
         );
       },

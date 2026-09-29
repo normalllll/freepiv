@@ -9,14 +9,17 @@ Future<void> runOptimisticMutation<T>({
   required Future<void> Function() mutate,
   required T Function(T current) settle,
   required T Function(T previous) rollback,
+  bool Function()? canCommit,
 }) async {
+  bool active() => canCommit?.call() ?? true;
+  if (!active()) return;
   write(optimistic);
 
   try {
     await mutate();
-    write(settle(read()));
+    if (active()) write(settle(read()));
   } catch (_) {
-    write(rollback(previous));
+    if (active()) write(rollback(previous));
     rethrow;
   }
 }

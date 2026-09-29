@@ -87,11 +87,6 @@ final class DefaultDownloadManager implements DownloadManager {
     _mediaSaver ??= components.mediaSaver;
     _permissionGuard ??= components.permissionGuard;
     await _activeEngine.initialize();
-    // Remove only records completed in an earlier session, before queue recovery
-    // can finish any of this session's pending work. Saved files are untouched.
-    for (final task in await _activeStore.listTasks()) {
-      if (task.isCompleted) await _activeStore.deleteTask(task.id);
-    }
     _engineSubscription = _activeEngine.events
         .asyncMap(_handleEngineEvent)
         .listen(
@@ -182,8 +177,7 @@ final class DefaultDownloadManager implements DownloadManager {
 
   @override
   Future<DownloadedFile> download({
-    required int illustId,
-    required int pageIndex,
+    required DownloadOrigin origin,
     required Uri url,
     String? filename,
     DownloadNetworkOptions networkOptions = const DownloadNetworkOptions(),
@@ -193,10 +187,9 @@ final class DefaultDownloadManager implements DownloadManager {
   }) async {
     await _ensureInitialized();
     final job = DownloadJob.create(
-      illustId: illustId,
-      pageIndex: pageIndex,
+      origin: origin,
       url: url,
-      filename: filename ?? illustDownloadFilename(illustId: illustId, pageIndex: pageIndex, sourceUrl: url),
+      filename: filename ?? safeDownloadFilename(origin.defaultFilename(url)),
       networkOptions: networkOptions,
       validation: validation,
       saveTarget: _defaultSaveTarget(),
@@ -216,8 +209,7 @@ final class DefaultDownloadManager implements DownloadManager {
 
   @override
   Future<DownloadedFile> saveBytes({
-    required int illustId,
-    required int pageIndex,
+    required DownloadOrigin origin,
     required Uint8List bytes,
     required Uri sourceUrl,
     String? filename,
@@ -228,10 +220,9 @@ final class DefaultDownloadManager implements DownloadManager {
     await _ensureInitialized();
     await _activePermissionGuard.ensureReadyForDownload();
     final job = DownloadJob.create(
-      illustId: illustId,
-      pageIndex: pageIndex,
+      origin: origin,
       url: sourceUrl,
-      filename: filename ?? illustDownloadFilename(illustId: illustId, pageIndex: pageIndex, sourceUrl: sourceUrl),
+      filename: filename ?? safeDownloadFilename(origin.defaultFilename(sourceUrl)),
       validation: validation,
       saveTarget: _defaultSaveTarget(),
       title: title,
@@ -665,10 +656,13 @@ final class DefaultDownloadManager implements DownloadManager {
       return task;
     }
 
-    final illustTasks = await _activeStore.listTasks(illustId: job.illustId);
-    for (final illustTask in illustTasks) {
-      if (illustTask.pageIndex == job.pageIndex && _isActiveDownloadTask(illustTask)) {
-        return illustTask;
+    // A work page may already be saving under another quality's task; a
+    // content image is only ever its own task.
+    if (job.origin case ArtworkPage(:final illustId)) {
+      for (final illustTask in await _activeStore.listTasks(illustId: illustId)) {
+        if (illustTask.origin == job.origin && _isActiveDownloadTask(illustTask)) {
+          return illustTask;
+        }
       }
     }
     return null;

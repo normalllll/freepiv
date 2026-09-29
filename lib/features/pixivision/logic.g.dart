@@ -205,7 +205,7 @@ final class PixivisionArticleProvider extends $FunctionalProvider<AsyncValue<Pix
   }
 }
 
-String _$pixivisionArticleHash() => r'2e4d3b522d6ae74e53b767a591b515aaed4ae187';
+String _$pixivisionArticleHash() => r'7f0f60be10f9ef8b45f27ff82717a98041fc2c2b';
 
 final class PixivisionArticleFamily extends $Family with $FunctionalFamilyOverride<FutureOr<PixivisionDocument>, String> {
   PixivisionArticleFamily._()

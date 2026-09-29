@@ -1,15 +1,20 @@
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/app_dialog.dart';
+import 'package:freepiv/app/theme/content_script.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/novel/domain/novel_text_parser.dart';
+import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_not_found_page.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_reader_slivers.dart';
+import 'package:freepiv/features/novel/presentation/reader/novel_reading_session.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/error.dart';
@@ -52,10 +57,11 @@ class NovelReaderContent extends StatefulWidget {
   State<NovelReaderContent> createState() => _NovelReaderContentState();
 }
 
-class _NovelReaderContentState extends State<NovelReaderContent> {
-  final PageController _pageController = PageController();
+class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBindingObserver {
+  late final PageController _pageController;
   final FocusNode _shortcutFocusNode = FocusNode(debugLabel: 'novel-reader-shortcuts');
   final Map<int, ScrollController> _segmentScrollControllers = {};
+  final Map<int, List<GlobalKey>> _blockKeys = {};
 
   late List<NovelTextSegment> _segments;
   late int _totalTextCharacters;
@@ -63,7 +69,8 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
   int _pageIndex = 0;
   double _fontSize = 18;
   double _lineHeight = 1.78;
-  bool _chromeVisible = false;
+  bool _chromeVisible = true;
+  NovelReadingPosition? _pendingRestore;
 
   Novel get _novel => widget.detail.novel;
 
@@ -74,10 +81,14 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _rebuildReaderModel();
+    _restoreSession();
+    _pageController = PageController(initialPage: _pageIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _shortcutFocusNode.requestFocus();
+        _restoreScrollPosition();
       }
     });
   }
@@ -86,15 +97,23 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
   void didUpdateWidget(covariant NovelReaderContent oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.detail.novel.id != widget.detail.novel.id || oldWidget.detail.webviewNovel.text != widget.detail.webviewNovel.text) {
-      _pageIndex = 0;
+      _saveSession(novelId: oldWidget.detail.novel.id);
       _disposeSegmentScrollControllers();
+      _blockKeys.clear();
       _rebuildReaderModel();
-      WidgetsBinding.instance.addPostFrameCallback((_) => _jumpControllerToPage(0));
+      _restoreSession();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _jumpControllerToPage(_pageIndex);
+        _restoreScrollPosition();
+      });
     }
   }
 
   @override
   void dispose() {
+    _saveSession();
+    WidgetsBinding.instance.removeObserver(this);
     _disposeSegmentScrollControllers();
     _shortcutFocusNode.dispose();
     _pageController.dispose();
@@ -106,10 +125,10 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
     final palette = _ReaderPalette.resolve(context);
 
     return AutoScaffold(
-      builder: (context, layout, orientation, shouldUseDesktopShell) {
+      builder: (context, layout, orientation, useHorizontalLayout) {
         final pageIndex = _currentPageIndex;
-        final useDesktopLayout = shouldUseDesktopShell;
-        final shortcutsEnabled = useDesktopLayout && isDesktopPlatform;
+        final useDesktopLayout = useHorizontalLayout;
+        const shortcutsEnabled = true;
 
         if (useDesktopLayout) {
           final reader = _DesktopNovelReaderLayout(
@@ -122,6 +141,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
             lineHeight: _lineHeight,
             palette: palette,
             scrollControllerForSegment: _scrollControllerForSegment,
+            blockKeysForSegment: _blockKeysForSegment,
             shortcutsEnabled: shortcutsEnabled,
             chromeVisible: _chromeVisible,
             onBack: _closeReader,
@@ -132,41 +152,181 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
             onShowSettings: _showSettingsSheet,
           );
 
-          if (!shortcutsEnabled) {
-            return reader;
-          }
-
           return Focus(focusNode: _shortcutFocusNode, autofocus: true, onKeyEvent: _handleShortcutKeyEvent, child: reader);
         }
 
-        return _MobileNovelReaderLayout(
-          novel: _novel,
-          segments: _segments,
-          totalTextCharacters: _totalTextCharacters,
-          pageController: _pageController,
-          pageIndex: pageIndex,
-          fontSize: _fontSize,
-          lineHeight: _lineHeight,
-          palette: palette,
-          scrollControllerForSegment: _scrollControllerForSegment,
-          shortcutsEnabled: false,
-          chromeVisible: _chromeVisible,
-          onBack: _closeReader,
-          onToggleChrome: _toggleChrome,
-          onPageChanged: _handlePageChanged,
-          onPageRequested: _goToPage,
-          onProgressChanged: _jumpToProgress,
-          onShowSettings: _showSettingsSheet,
+        return Focus(
+          focusNode: _shortcutFocusNode,
+          autofocus: true,
+          onKeyEvent: _handleShortcutKeyEvent,
+          child: _MobileNovelReaderLayout(
+            novel: _novel,
+            segments: _segments,
+            totalTextCharacters: _totalTextCharacters,
+            pageController: _pageController,
+            pageIndex: pageIndex,
+            fontSize: _fontSize,
+            lineHeight: _lineHeight,
+            palette: palette,
+            scrollControllerForSegment: _scrollControllerForSegment,
+            blockKeysForSegment: _blockKeysForSegment,
+            shortcutsEnabled: shortcutsEnabled,
+            chromeVisible: _chromeVisible,
+            onBack: _closeReader,
+            onToggleChrome: _toggleChrome,
+            onPageChanged: _handlePageChanged,
+            onPageRequested: _goToPage,
+            onProgressChanged: _jumpToProgress,
+            onShowSettings: _showSettingsSheet,
+          ),
         );
       },
     );
   }
 
   void _rebuildReaderModel() {
-    final blocks = parseNovelText(_webviewNovel.text);
+    final blocks = parseNovelText(_webviewNovel.text, imageUrls: novelEmbeddedImageUrls(_webviewNovel));
     _segments = segmentNovelTextBlocks(blocks);
     _totalTextCharacters = _segments.isEmpty ? 0 : _segments.last.endOffset;
     _pageIndex = _clampPageIndex(_pageIndex);
+  }
+
+  void _restoreSession() {
+    _pageIndex = 0;
+    _pendingRestore = null;
+    final saved = novelReadingPosition(context, _novel.id);
+    if (saved == null) return;
+    _pendingRestore = saved;
+    _fontSize = saved.fontSize.clamp(15, 26).toDouble();
+    _lineHeight = saved.lineHeight.clamp(1.45, 2.2).toDouble();
+    final matchingIndex = _segments.indexWhere((segment) => segment.endOffset > saved.textOffset);
+    final segmentAtSavedIndex = saved.segmentIndex >= 0 && saved.segmentIndex < _segments.length ? _segments[saved.segmentIndex] : null;
+    final index = segmentAtSavedIndex != null && segmentAtSavedIndex.startOffset <= saved.textOffset && segmentAtSavedIndex.endOffset >= saved.textOffset
+        ? saved.segmentIndex
+        : matchingIndex;
+    _pageIndex = _clampPageIndex(index < 0 ? _segments.length - 1 : index);
+  }
+
+  double _currentScrollFraction() {
+    final controller = _segmentScrollControllers[_currentPageIndex];
+    if (controller == null || !controller.hasClients || controller.position.maxScrollExtent <= 0) return 0;
+    return (controller.offset / controller.position.maxScrollExtent).clamp(0, 1).toDouble();
+  }
+
+  void _saveSession({int? novelId}) {
+    if (_segments.isEmpty) return;
+    final segment = _segments[_currentPageIndex];
+    final anchor = _pendingRestore ?? _currentReadingPosition();
+    novelReadingSessions.writeState(
+      context,
+      NovelReadingPosition(
+        segmentIndex: _currentPageIndex,
+        textOffset: anchor.textOffset.clamp(segment.startOffset, segment.endOffset),
+        segmentFraction: anchor.segmentFraction,
+        blockIndex: anchor.blockIndex,
+        blockFraction: anchor.blockFraction,
+        fontSize: _fontSize,
+        lineHeight: _lineHeight,
+      ),
+      identifier: novelId ?? _novel.id,
+    );
+  }
+
+  void _restoreScrollPosition() {
+    final saved = _pendingRestore;
+    if (saved == null) return;
+    final controller = _segmentScrollControllers[_currentPageIndex];
+    if (controller == null || !controller.hasClients) return;
+    final segment = _segments[_currentPageIndex];
+    final blockIndex = saved.segmentIndex == _currentPageIndex
+        ? saved.blockIndex.clamp(0, segment.blocks.length - 1)
+        : _blockIndexAtTextOffset(segment, saved.textOffset);
+    final blockOffset = _blockScrollOffset(_currentPageIndex, blockIndex);
+    final blockExtent = _blockExtent(_currentPageIndex, blockIndex);
+    final target = blockOffset == null || blockExtent == null
+        ? controller.position.maxScrollExtent * saved.segmentFraction.clamp(0, 1)
+        : blockOffset + blockExtent * saved.blockFraction.clamp(0, 1);
+    controller.jumpTo(target.clamp(controller.position.minScrollExtent, controller.position.maxScrollExtent));
+    _pendingRestore = null;
+  }
+
+  void _rememberCurrentPosition() {
+    if (_pendingRestore != null) return;
+    _pendingRestore = _currentReadingPosition();
+  }
+
+  NovelReadingPosition _currentReadingPosition() {
+    final segment = _segments[_currentPageIndex];
+    final controller = _segmentScrollControllers[_currentPageIndex];
+    final scrollOffset = controller != null && controller.hasClients ? controller.offset : 0.0;
+    var blockIndex = 0;
+    var blockOffset = 0.0;
+    for (var index = 0; index < segment.blocks.length; index++) {
+      final offset = _blockScrollOffset(_currentPageIndex, index);
+      if (offset == null || offset > scrollOffset + 1) break;
+      blockIndex = index;
+      blockOffset = offset;
+    }
+    final blockExtent = _blockExtent(_currentPageIndex, blockIndex);
+    final blockFraction = blockExtent == null || blockExtent <= 0 ? 0.0 : ((scrollOffset - blockOffset) / blockExtent).clamp(0, 1).toDouble();
+    var textOffset = segment.startOffset;
+    for (var index = 0; index < blockIndex; index++) {
+      textOffset += novelTextBlockCharacterCount(segment.blocks[index]);
+    }
+    textOffset += (novelTextBlockCharacterCount(segment.blocks[blockIndex]) * blockFraction).round();
+    return NovelReadingPosition(
+      segmentIndex: _currentPageIndex,
+      textOffset: textOffset,
+      segmentFraction: _currentScrollFraction(),
+      blockIndex: blockIndex,
+      blockFraction: blockFraction,
+      fontSize: _fontSize,
+      lineHeight: _lineHeight,
+    );
+  }
+
+  int _blockIndexAtTextOffset(NovelTextSegment segment, int textOffset) {
+    var cursor = segment.startOffset;
+    for (var index = 0; index < segment.blocks.length; index++) {
+      cursor += novelTextBlockCharacterCount(segment.blocks[index]);
+      if (cursor > textOffset) return index;
+    }
+    return segment.blocks.length - 1;
+  }
+
+  List<GlobalKey> _blockKeysForSegment(int index) =>
+      _blockKeys.putIfAbsent(index, () => List<GlobalKey>.generate(_segments[index].blocks.length, (_) => GlobalKey()));
+
+  double? _blockScrollOffset(int segmentIndex, int blockIndex) {
+    final keys = _blockKeys[segmentIndex];
+    if (keys == null || blockIndex < 0 || blockIndex >= keys.length) return null;
+    final renderObject = keys[blockIndex].currentContext?.findRenderObject();
+    if (renderObject == null || !renderObject.attached) return null;
+    return RenderAbstractViewport.of(renderObject).getOffsetToReveal(renderObject, 0).offset;
+  }
+
+  double? _blockExtent(int segmentIndex, int blockIndex) {
+    final keys = _blockKeys[segmentIndex];
+    if (keys == null || blockIndex < 0 || blockIndex >= keys.length) return null;
+    final renderObject = keys[blockIndex].currentContext?.findRenderObject();
+    return renderObject is RenderBox && renderObject.hasSize ? renderObject.size.height : null;
+  }
+
+  @override
+  void didChangeMetrics() {
+    if (!mounted || _segments.isEmpty) return;
+    _rememberCurrentPosition();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _restoreScrollPosition();
+    });
+  }
+
+  void _reflowAtCurrentPosition(VoidCallback change) {
+    _rememberCurrentPosition();
+    setState(change);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _restoreScrollPosition();
+    });
   }
 
   int _clampPageIndex(int value) {
@@ -185,16 +345,23 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
     setState(() {
       _pageIndex = pageIndex;
     });
+    _saveSession();
   }
 
   void _goToPage(int pageIndex) {
     final nextPage = _clampPageIndex(pageIndex);
+    _saveSession();
     setState(() {
       _pageIndex = nextPage;
     });
+    _saveSession();
 
     if (_pageController.hasClients) {
-      _pageController.animateToPage(nextPage, duration: const Duration(milliseconds: 220), curve: Curves.easeOutCubic);
+      _pageController.animateToPage(
+        nextPage,
+        duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+      );
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) => _jumpControllerToPage(nextPage));
     }
@@ -205,6 +372,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
     setState(() {
       _pageIndex = nextPage;
     });
+    _saveSession();
     _jumpControllerToPage(nextPage);
   }
 
@@ -217,25 +385,28 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
   }
 
   void _setFontSize(double value) {
-    setState(() {
+    _reflowAtCurrentPosition(() {
       _fontSize = value.clamp(15, 26).toDouble();
     });
   }
 
   void _setLineHeight(double value) {
-    setState(() {
+    _reflowAtCurrentPosition(() {
       _lineHeight = value.clamp(1.45, 2.2).toDouble();
     });
   }
 
   void _toggleChrome() {
+    _shortcutFocusNode.requestFocus();
     setState(() {
       _chromeVisible = !_chromeVisible;
     });
   }
 
   void _closeReader() {
-    Navigator.of(context).maybePop();
+    if (ModalRoute.of(context)?.isCurrent == true && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
   }
 
   KeyEventResult _handleShortcutKeyEvent(FocusNode node, KeyEvent event) {
@@ -243,6 +414,20 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
       return KeyEventResult.ignored;
     }
 
+    if (event.logicalKey == LogicalKeyboardKey.escape) {
+      if (ModalRoute.of(context)?.isCurrent != true) return KeyEventResult.ignored;
+      _closeReader();
+      return KeyEventResult.handled;
+    }
+
+    if (FocusManager.instance.primaryFocus != _shortcutFocusNode) return KeyEventResult.ignored;
+
+    if (FocusManager.instance.primaryFocus?.context?.findAncestorWidgetOfExactType<EditableText>() != null ||
+        HardwareKeyboard.instance.isControlPressed ||
+        HardwareKeyboard.instance.isMetaPressed ||
+        HardwareKeyboard.instance.isAltPressed) {
+      return KeyEventResult.ignored;
+    }
     final key = event.logicalKey;
     if (_previousPageKeys.contains(key)) {
       _goToPage(_currentPageIndex - 1);
@@ -262,7 +447,13 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
   }
 
   ScrollController _scrollControllerForSegment(int index) {
-    return _segmentScrollControllers.putIfAbsent(index, ScrollController.new);
+    return _segmentScrollControllers.putIfAbsent(index, () {
+      final controller = ScrollController();
+      controller.addListener(() {
+        if (index == _currentPageIndex && _pendingRestore == null) _saveSession();
+      });
+      return controller;
+    });
   }
 
   void _scrollCurrentPage(double delta) {
@@ -273,7 +464,11 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
 
     final position = controller.position;
     final target = (position.pixels + delta).clamp(position.minScrollExtent, position.maxScrollExtent).toDouble();
-    controller.animateTo(target, duration: const Duration(milliseconds: 160), curve: Curves.easeOutCubic);
+    controller.animateTo(
+      target,
+      duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 160),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   void _disposeSegmentScrollControllers() {
@@ -284,35 +479,49 @@ class _NovelReaderContentState extends State<NovelReaderContent> {
   }
 
   void _showSettingsSheet() {
-    showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      backgroundColor: _ReaderPalette.resolve(context).surface,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, modalSetState) {
-            final palette = _ReaderPalette.resolve(context);
+    Widget settings(BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, modalSetState) {
+          final palette = _ReaderPalette.resolve(context);
 
-            void updateSheet(VoidCallback action) {
-              action();
-              modalSetState(() {});
-            }
+          void updateSheet(VoidCallback action) {
+            action();
+            modalSetState(() {});
+          }
 
-            return _ReaderSheetSurface(
+          return _ReaderSheetSurface(
+            palette: palette,
+            title: t.novel.reader.settings,
+            child: _ReaderSettingsPanel(
+              fontSize: _fontSize,
+              lineHeight: _lineHeight,
               palette: palette,
-              title: t.novel.reader.settings,
-              child: _ReaderSettingsPanel(
-                fontSize: _fontSize,
-                lineHeight: _lineHeight,
-                palette: palette,
-                onFontSizeChanged: (value) => updateSheet(() => _setFontSize(value)),
-                onLineHeightChanged: (value) => updateSheet(() => _setLineHeight(value)),
-              ),
-            );
-          },
-        );
-      },
-    );
+              onFontSizeChanged: (value) => updateSheet(() => _setFontSize(value)),
+              onLineHeightChanged: (value) => updateSheet(() => _setLineHeight(value)),
+            ),
+          );
+        },
+      );
+    }
+
+    if (AutoScaffold.usesHorizontalLayoutOf(context)) {
+      showAppDialog<void>(
+        context: context,
+        builder: (context) => Dialog(
+          backgroundColor: _ReaderPalette.resolve(context).surface,
+          child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 480), child: settings(context)),
+        ),
+      );
+    } else {
+      showModalBottomSheet<void>(
+        context: context,
+        sheetAnimationStyle: appSheetAnimationStyle(context),
+        useSafeArea: true,
+        isScrollControlled: true,
+        backgroundColor: _ReaderPalette.resolve(context).surface,
+        builder: settings,
+      );
+    }
   }
 }
 
@@ -327,6 +536,7 @@ class _DesktopNovelReaderLayout extends StatelessWidget {
     required this.lineHeight,
     required this.palette,
     required this.scrollControllerForSegment,
+    required this.blockKeysForSegment,
     required this.shortcutsEnabled,
     required this.chromeVisible,
     required this.onBack,
@@ -346,6 +556,7 @@ class _DesktopNovelReaderLayout extends StatelessWidget {
   final double lineHeight;
   final _ReaderPalette palette;
   final ScrollController Function(int index) scrollControllerForSegment;
+  final List<GlobalKey> Function(int index) blockKeysForSegment;
   final bool shortcutsEnabled;
   final bool chromeVisible;
   final VoidCallback onBack;
@@ -360,9 +571,17 @@ class _DesktopNovelReaderLayout extends StatelessWidget {
     return Scaffold(
       backgroundColor: palette.background,
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            Positioned.fill(
+            Align(
+              alignment: Alignment.topCenter,
+              child: _ReaderChromeVisibility(
+                visible: chromeVisible,
+                slideOffset: const Offset(0, -0.08),
+                child: _ReaderTopChrome(novel: novel, palette: palette, compact: false, onBack: onBack, onShowSettings: onShowSettings),
+              ),
+            ),
+            Expanded(
               child: _ReaderStage(
                 segments: segments,
                 pageController: pageController,
@@ -372,17 +591,10 @@ class _DesktopNovelReaderLayout extends StatelessWidget {
                 lineHeight: lineHeight,
                 palette: palette,
                 scrollControllerForSegment: scrollControllerForSegment,
+                blockKeysForSegment: blockKeysForSegment,
                 desktop: true,
                 onTap: onToggleChrome,
                 onPageChanged: onPageChanged,
-              ),
-            ),
-            Align(
-              alignment: Alignment.topCenter,
-              child: _ReaderChromeVisibility(
-                visible: chromeVisible,
-                slideOffset: const Offset(0, -0.08),
-                child: _ReaderTopChrome(novel: novel, palette: palette, compact: false, onBack: onBack, onShowSettings: onShowSettings),
               ),
             ),
             Align(
@@ -420,6 +632,7 @@ class _MobileNovelReaderLayout extends StatelessWidget {
     required this.lineHeight,
     required this.palette,
     required this.scrollControllerForSegment,
+    required this.blockKeysForSegment,
     required this.shortcutsEnabled,
     required this.chromeVisible,
     required this.onBack,
@@ -439,6 +652,7 @@ class _MobileNovelReaderLayout extends StatelessWidget {
   final double lineHeight;
   final _ReaderPalette palette;
   final ScrollController Function(int index) scrollControllerForSegment;
+  final List<GlobalKey> Function(int index) blockKeysForSegment;
   final bool shortcutsEnabled;
   final bool chromeVisible;
   final VoidCallback onBack;
@@ -453,9 +667,17 @@ class _MobileNovelReaderLayout extends StatelessWidget {
     return Scaffold(
       backgroundColor: palette.background,
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            Positioned.fill(
+            Align(
+              alignment: Alignment.topCenter,
+              child: _ReaderChromeVisibility(
+                visible: chromeVisible,
+                slideOffset: const Offset(0, -0.08),
+                child: _ReaderTopChrome(novel: novel, palette: palette, compact: true, onBack: onBack, onShowSettings: onShowSettings),
+              ),
+            ),
+            Expanded(
               child: _ReaderStage(
                 segments: segments,
                 pageController: pageController,
@@ -465,17 +687,10 @@ class _MobileNovelReaderLayout extends StatelessWidget {
                 lineHeight: lineHeight,
                 palette: palette,
                 scrollControllerForSegment: scrollControllerForSegment,
+                blockKeysForSegment: blockKeysForSegment,
                 desktop: false,
                 onTap: onToggleChrome,
                 onPageChanged: onPageChanged,
-              ),
-            ),
-            Align(
-              alignment: Alignment.topCenter,
-              child: _ReaderChromeVisibility(
-                visible: chromeVisible,
-                slideOffset: const Offset(0, -0.08),
-                child: _ReaderTopChrome(novel: novel, palette: palette, compact: true, onBack: onBack, onShowSettings: onShowSettings),
               ),
             ),
             Align(
@@ -512,6 +727,7 @@ class _ReaderStage extends StatelessWidget {
     required this.lineHeight,
     required this.palette,
     required this.scrollControllerForSegment,
+    required this.blockKeysForSegment,
     required this.desktop,
     required this.onTap,
     required this.onPageChanged,
@@ -525,6 +741,7 @@ class _ReaderStage extends StatelessWidget {
   final double lineHeight;
   final _ReaderPalette palette;
   final ScrollController Function(int index) scrollControllerForSegment;
+  final List<GlobalKey> Function(int index) blockKeysForSegment;
   final bool desktop;
   final VoidCallback? onTap;
   final ValueChanged<int> onPageChanged;
@@ -560,6 +777,7 @@ class _ReaderStage extends StatelessWidget {
             lineHeight: lineHeight,
             palette: palette,
             scrollController: scrollControllerForSegment(index),
+            blockKeys: blockKeysForSegment(index),
             desktop: desktop,
           );
         },
@@ -568,91 +786,16 @@ class _ReaderStage extends StatelessWidget {
   }
 }
 
-class _ReaderTapListener extends StatefulWidget {
+class _ReaderTapListener extends StatelessWidget {
   const _ReaderTapListener({required this.child, required this.onTap});
 
   final Widget child;
   final VoidCallback? onTap;
 
   @override
-  State<_ReaderTapListener> createState() => _ReaderTapListenerState();
-}
-
-class _ReaderTapListenerState extends State<_ReaderTapListener> {
-  int? _pointer;
-  Offset? _downPosition;
-  Duration? _downTime;
-  bool _moved = false;
-
-  @override
   Widget build(BuildContext context) {
-    if (widget.onTap == null) {
-      return widget.child;
-    }
-
-    return Listener(
-      behavior: HitTestBehavior.opaque,
-      onPointerDown: _handlePointerDown,
-      onPointerMove: _handlePointerMove,
-      onPointerCancel: _resetPointer,
-      onPointerUp: _handlePointerUp,
-      child: widget.child,
-    );
-  }
-
-  void _handlePointerDown(PointerDownEvent event) {
-    if (_pointer != null) {
-      return;
-    }
-
-    _pointer = event.pointer;
-    _downPosition = event.position;
-    _downTime = event.timeStamp;
-    _moved = false;
-  }
-
-  void _handlePointerMove(PointerMoveEvent event) {
-    if (event.pointer != _pointer) {
-      return;
-    }
-
-    final downPosition = _downPosition;
-    if (downPosition == null) {
-      return;
-    }
-
-    if ((event.position - downPosition).distance > _readerTapSlop) {
-      _moved = true;
-    }
-  }
-
-  void _handlePointerUp(PointerUpEvent event) {
-    if (event.pointer != _pointer) {
-      return;
-    }
-
-    final downPosition = _downPosition;
-    final downTime = _downTime;
-    final distance = downPosition == null ? double.infinity : (event.position - downPosition).distance;
-    final elapsed = downTime == null ? Duration.zero : event.timeStamp - downTime;
-    final isTap = !_moved && distance <= _readerTapSlop && elapsed <= _readerTapMaxDuration;
-
-    _resetPointer(event);
-
-    if (isTap) {
-      widget.onTap?.call();
-    }
-  }
-
-  void _resetPointer(PointerEvent event) {
-    if (event.pointer != _pointer) {
-      return;
-    }
-
-    _pointer = null;
-    _downPosition = null;
-    _downTime = null;
-    _moved = false;
+    if (onTap == null) return child;
+    return GestureDetector(behavior: HitTestBehavior.opaque, onTap: onTap, child: child);
   }
 }
 
@@ -664,6 +807,7 @@ class _ReaderSegmentView extends StatelessWidget {
     required this.lineHeight,
     required this.palette,
     required this.scrollController,
+    required this.blockKeys,
     required this.desktop,
   });
 
@@ -673,16 +817,26 @@ class _ReaderSegmentView extends StatelessWidget {
   final double lineHeight;
   final _ReaderPalette palette;
   final ScrollController scrollController;
+  final List<GlobalKey> blockKeys;
   final bool desktop;
 
   @override
   Widget build(BuildContext context) {
-    final paragraphStyle = Theme.of(
+    // One script decision per segment from its opening paragraphs, so the
+    // whole page uses one regional glyph set without scanning every block.
+    final sample = segment.blocks.whereType<NovelTextParagraph>().take(12).map((block) => block.text).join();
+    final paragraphStyle = contentTextStyle(
       context,
-    ).textTheme.bodyLarge?.copyWith(color: palette.onBackground, fontSize: fontSize, height: lineHeight, letterSpacing: 0);
-    final chapterStyle = Theme.of(
+      sample,
+      Theme.of(context).textTheme.bodyLarge?.copyWith(color: palette.onBackground, fontSize: fontSize, height: lineHeight, letterSpacing: 0),
+    );
+    final chapterStyle = contentTextStyle(
       context,
-    ).textTheme.titleLarge?.copyWith(color: palette.onBackground, fontSize: fontSize + 4, fontWeight: FontWeight.w700, height: 1.35, letterSpacing: 0);
+      sample,
+      Theme.of(
+        context,
+      ).textTheme.titleLarge?.copyWith(color: palette.onBackground, fontSize: fontSize + 4, fontWeight: FontWeight.w700, height: 1.35, letterSpacing: 0),
+    );
 
     return ColoredBox(
       color: palette.background,
@@ -690,16 +844,24 @@ class _ReaderSegmentView extends StatelessWidget {
         controller: scrollController,
         child: SingleChildScrollView(
           controller: scrollController,
-          padding: EdgeInsets.fromLTRB(desktop ? 36 : 22, desktop ? 56 : 30, desktop ? 36 : 22, desktop ? 88 : 68),
+          padding: EdgeInsets.fromLTRB(desktop ? 36 : 22, AppMetrics.pageInset, desktop ? 36 : 22, AppMetrics.pageInset),
           child: Center(
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: desktop ? 680 : 620),
+              constraints: const BoxConstraints(maxWidth: AppMetrics.readingMaxWidth),
               child: SelectionArea(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (final block in segment.blocks)
-                      NovelReaderBlockView(block: block, paragraphStyle: paragraphStyle, chapterStyle: chapterStyle, dividerColor: palette.line),
+                    for (var index = 0; index < segment.blocks.length; index++)
+                      KeyedSubtree(
+                        key: blockKeys[index],
+                        child: NovelReaderBlockView(
+                          block: segment.blocks[index],
+                          paragraphStyle: paragraphStyle,
+                          chapterStyle: chapterStyle,
+                          dividerColor: palette.line,
+                        ),
+                      ),
                     const SizedBox(height: 18),
                     Align(
                       alignment: AlignmentDirectional.centerEnd,
@@ -732,7 +894,7 @@ class _ReaderTopChrome extends StatelessWidget {
   Widget build(BuildContext context) {
     final content = DecoratedBox(
       decoration: BoxDecoration(
-        color: palette.surface.withValues(alpha: 0.94),
+        color: palette.surface,
         borderRadius: compact ? BorderRadius.zero : BorderRadius.circular(8),
         border: Border.all(color: palette.line.withValues(alpha: compact ? 1 : 0.72)),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, 8))],
@@ -780,7 +942,10 @@ class _ReaderTopChrome extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 760), child: content),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: AppMetrics.readingMaxWidth),
+        child: content,
+      ),
     );
   }
 }
@@ -796,12 +961,7 @@ class _ReaderChromeVisibility extends StatelessWidget {
   Widget build(BuildContext context) {
     return IgnorePointer(
       ignoring: !visible,
-      child: AnimatedSlide(
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutCubic,
-        offset: visible ? Offset.zero : slideOffset,
-        child: AnimatedOpacity(duration: const Duration(milliseconds: 160), curve: Curves.easeOutCubic, opacity: visible ? 1 : 0, child: child),
-      ),
+      child: AnimatedOpacity(duration: AppMotion.duration(context, AppMotion.expand), opacity: visible ? 1 : 0, child: child),
     );
   }
 }
@@ -836,7 +996,7 @@ class _ReaderBottomChrome extends StatelessWidget {
 
     final content = DecoratedBox(
       decoration: BoxDecoration(
-        color: palette.surface.withValues(alpha: 0.94),
+        color: palette.surface,
         borderRadius: compact ? BorderRadius.zero : BorderRadius.circular(8),
         border: Border.all(color: palette.line.withValues(alpha: compact ? 1 : 0.72)),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, -8))],
@@ -874,16 +1034,6 @@ class _ReaderBottomChrome extends StatelessWidget {
               ],
             ),
             _ReaderProgressSlider(pageIndex: pageIndex, pageCount: pageCount, palette: palette, onProgressChanged: onProgressChanged),
-            if (!compact && shortcutsEnabled) ...[
-              const SizedBox(height: 2),
-              Text(
-                t.novel.reader.shortcutsHelp,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.muted, height: 1.3),
-              ),
-            ],
           ],
         ),
       ),
@@ -895,7 +1045,10 @@ class _ReaderBottomChrome extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 760), child: content),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: AppMetrics.readingMaxWidth),
+        child: content,
+      ),
     );
   }
 }
@@ -921,9 +1074,10 @@ class _ReaderQuietIconButton extends StatelessWidget {
         color: color,
         disabledColor: color,
         style: IconButton.styleFrom(
+          overlayColor: Colors.transparent,
           backgroundColor: Colors.transparent,
-          fixedSize: const Size(38, 38),
-          minimumSize: const Size(38, 38),
+          fixedSize: const Size.square(AppMetrics.controlHeight),
+          minimumSize: const Size.square(AppMetrics.controlHeight),
           padding: EdgeInsets.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -952,7 +1106,7 @@ class _ReaderProgressSlider extends StatelessWidget {
         activeTrackColor: palette.accent,
         inactiveTrackColor: palette.line,
         thumbColor: palette.accent,
-        overlayColor: palette.accent.withValues(alpha: 0.16),
+        overlayColor: Colors.transparent,
         tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 1.2),
         activeTickMarkColor: palette.surface,
         inactiveTickMarkColor: palette.muted.withValues(alpha: 0.42),
@@ -1000,6 +1154,8 @@ class _ReaderSettingsPanel extends StatelessWidget {
           label: t.novel.reader.fontSize,
           value: fontSize.round().toString(),
           palette: palette,
+          canDecrease: fontSize > 15,
+          canIncrease: fontSize < 26,
           onDecrease: () => onFontSizeChanged(fontSize - 1),
           onIncrease: () => onFontSizeChanged(fontSize + 1),
         ),
@@ -1009,9 +1165,13 @@ class _ReaderSettingsPanel extends StatelessWidget {
           label: t.novel.reader.lineHeight,
           value: lineHeight.toStringAsFixed(2),
           palette: palette,
+          canDecrease: lineHeight > 1.45,
+          canIncrease: lineHeight < 2.2,
           onDecrease: () => onLineHeightChanged(lineHeight - 0.08),
           onIncrease: () => onLineHeightChanged(lineHeight + 0.08),
         ),
+        const SizedBox(height: 16),
+        Text(t.novel.reader.shortcutsHelp, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.muted)),
       ],
     );
   }
@@ -1023,6 +1183,8 @@ class _ReaderStepper extends StatelessWidget {
     required this.label,
     required this.value,
     required this.palette,
+    required this.canDecrease,
+    required this.canIncrease,
     required this.onDecrease,
     required this.onIncrease,
   });
@@ -1031,6 +1193,8 @@ class _ReaderStepper extends StatelessWidget {
   final String label;
   final String value;
   final _ReaderPalette palette;
+  final bool canDecrease;
+  final bool canIncrease;
   final VoidCallback onDecrease;
   final VoidCallback onIncrease;
 
@@ -1044,24 +1208,59 @@ class _ReaderStepper extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        child: Row(
-          children: [
-            Icon(icon, size: 18, color: palette.muted),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: palette.onBackground)),
-            ),
-            IconButton(icon: const Icon(Icons.remove), tooltip: t.novel.reader.decrease, color: palette.onBackground, onPressed: onDecrease),
-            SizedBox(
-              width: 44,
-              child: Text(
-                value,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700),
-              ),
-            ),
-            IconButton(icon: const Icon(Icons.add), tooltip: t.novel.reader.increase, color: palette.onBackground, onPressed: onIncrease),
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final caption = Row(
+              children: [
+                Icon(icon, size: 18, color: palette.muted),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: palette.onBackground)),
+                ),
+              ],
+            );
+            final controls = Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.remove),
+                  tooltip: t.novel.reader.decrease,
+                  color: palette.onBackground,
+                  onPressed: canDecrease ? onDecrease : null,
+                ),
+                SizedBox(
+                  width: 56,
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  tooltip: t.novel.reader.increase,
+                  color: palette.onBackground,
+                  onPressed: canIncrease ? onIncrease : null,
+                ),
+              ],
+            );
+            if (constraints.maxWidth < 380 || MediaQuery.textScalerOf(context).scale(14) > 20) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  caption,
+                  const SizedBox(height: 4),
+                  Align(alignment: AlignmentDirectional.centerEnd, child: controls),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: caption),
+                controls,
+              ],
+            );
+          },
         ),
       ),
     );
@@ -1077,11 +1276,12 @@ class _ReaderSheetSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: math.min(MediaQuery.sizeOf(context).height * 0.78, 560),
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.78),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
@@ -1101,7 +1301,7 @@ class _ReaderSheetSurface extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Expanded(child: child),
+            Flexible(child: SingleChildScrollView(child: child)),
           ],
         ),
       ),
@@ -1115,15 +1315,15 @@ class _ReaderLoadingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
-      builder: (context, layout, orientation, shouldUseDesktopShell) {
-        final desktop = shouldUseDesktopShell;
+      builder: (context, layout, orientation, useHorizontalLayout) {
+        final desktop = useHorizontalLayout;
         return Scaffold(
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(desktop ? 36 : 22, desktop ? 56 : 30, desktop ? 36 : 22, desktop ? 88 : 68),
+              padding: EdgeInsets.fromLTRB(desktop ? 36 : 22, AppMetrics.pageInset, desktop ? 36 : 22, AppMetrics.pageInset),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: desktop ? 680 : 620),
+                  constraints: const BoxConstraints(maxWidth: AppMetrics.readingMaxWidth),
                   child: Skeletonizer.zone(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1176,7 +1376,7 @@ class _ReaderPalette {
       onBackground: colorScheme.onSurface,
       muted: colorScheme.onSurfaceVariant,
       line: tokens.line,
-      accent: tokens.brand,
+      accent: tokens.keyGraphicOn(tokens.surfaceRaised),
     );
   }
 }
@@ -1200,10 +1400,6 @@ final _scrollUpKeys = {LogicalKeyboardKey.arrowUp, LogicalKeyboardKey.keyW};
 final _scrollDownKeys = {LogicalKeyboardKey.arrowDown, LogicalKeyboardKey.keyS};
 
 const _keyboardScrollExtent = 320.0;
-
-const _readerTapSlop = 12.0;
-
-const _readerTapMaxDuration = Duration(milliseconds: 700);
 
 bool _isNotFoundError(Object error) {
   return error is PixivError && error.status == 404;

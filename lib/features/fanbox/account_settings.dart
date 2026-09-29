@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/app_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'logic.dart';
 import 'login_panel.dart';
@@ -28,7 +30,7 @@ class FanboxAccountSettings extends ConsumerWidget {
             OutlinedButton(
               onPressed: session.isLoading || operation.isLoading
                   ? null
-                  : () => showDialog<void>(
+                  : () => showAppDialog<void>(
                       context: context,
                       builder: (dialogContext) => Dialog(
                         child: ConstrainedBox(
@@ -57,7 +59,13 @@ class FanboxAccountSettings extends ConsumerWidget {
               ),
           ],
         ),
-        SizedBox(height: 40, child: operation.hasError ? Text(fanboxLoginError(context.t, operation.error!)) : null),
+        AnimatedSize(
+          duration: AppMotion.duration(context, AppMotion.navigation),
+          alignment: Alignment.topCenter,
+          child: operation.hasError
+              ? Padding(padding: const EdgeInsets.only(top: 12), child: Text(fanboxLoginError(context.t, operation.error!)))
+              : const SizedBox.shrink(),
+        ),
       ],
     );
   }

@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
+import 'package:freepiv/features/comments/presentation/widgets/comments_skeleton.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/shared/layout/fp_page_header.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class NovelDetailSkeletonPage extends StatelessWidget {
@@ -8,22 +13,25 @@ class NovelDetailSkeletonPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool shouldUseDesktopShell) {
+      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
           body: SafeArea(
             bottom: false,
             child: CustomScrollView(
               slivers: [
-                if (!shouldUseDesktopShell)
+                if (!useHorizontalLayout)
                   SliverAppBar(
                     pinned: true,
-                    automaticallyImplyLeading: !shouldUseDesktopShell,
-                    leading: shouldUseDesktopShell ? const SizedBox.shrink() : null,
-                    leadingWidth: shouldUseDesktopShell ? 64 : null,
+                    backgroundColor: Colors.transparent,
+                    surfaceTintColor: Colors.transparent,
+                    flexibleSpace: const PinnedChromeGlass(opacity: 1),
+                    automaticallyImplyLeading: false,
+                    leading: FpPageHeader.leadingFor(context),
+                    leadingWidth: FpPageHeader.leadingWidth,
+                    titleSpacing: FpPageHeader.titleSpacingOf(context),
                     title: const _TitleSkeleton(),
                   ),
                 const SliverToBoxAdapter(child: _HeaderSkeleton()),
-                const SliverToBoxAdapter(child: _ReaderSkeleton()),
                 const SliverToBoxAdapter(child: _BottomSkeleton()),
               ],
             ),
@@ -48,40 +56,57 @@ class _HeaderSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1080),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final desktop = constraints.maxWidth >= 720;
+    return ContentColumn(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final desktop = AutoScaffold.usesHorizontalLayoutOf(context) && constraints.maxWidth >= 720;
 
-            final cover = Skeletonizer.zone(
-              child: Bone(width: desktop ? 260 : double.infinity, height: desktop ? 360 : 320, borderRadius: BorderRadius.circular(8)),
-            );
-            final info = const _InfoSkeleton();
+          final cover = Skeletonizer.zone(
+            child: Bone(width: desktop ? 220 : 96, height: desktop ? 308 : 136, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+          );
+          final info = const _InfoSkeleton(includeSupporting: false);
 
-            return Padding(
-              padding: EdgeInsets.fromLTRB(desktop ? 28 : 16, 16, desktop ? 28 : 16, 18),
-              child: desktop
-                  ? Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        cover,
-                        const SizedBox(width: 24),
-                        const Expanded(child: _InfoSkeleton()),
-                      ],
-                    )
-                  : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [cover, const SizedBox(height: 16), info]),
-            );
-          },
-        ),
+          return Padding(
+            padding: const EdgeInsets.only(top: 16, bottom: 18),
+            child: desktop
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      cover,
+                      const SizedBox(width: 24),
+                      const Expanded(child: _InfoSkeleton(includeSupporting: true)),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          cover,
+                          const SizedBox(width: 12),
+                          Expanded(child: info),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Skeletonizer.zone(
+                        child: Bone(width: 180, height: AppMetrics.controlHeight, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+                      ),
+                      const SizedBox(height: 14),
+                      const _SupportingSkeleton(),
+                    ],
+                  ),
+          );
+        },
       ),
     );
   }
 }
 
 class _InfoSkeleton extends StatelessWidget {
-  const _InfoSkeleton();
+  const _InfoSkeleton({required this.includeSupporting});
+
+  final bool includeSupporting;
 
   @override
   Widget build(BuildContext context) {
@@ -92,55 +117,41 @@ class _InfoSkeleton extends StatelessWidget {
           const Bone.text(width: double.infinity, fontSize: 24),
           const SizedBox(height: 10),
           const Bone.text(width: 180),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              for (var index = 0; index < 4; index++) ...[
-                Expanded(child: Bone(height: 52, borderRadius: BorderRadius.circular(8))),
-                if (index != 3) const SizedBox(width: 8),
-              ],
-            ],
-          ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              for (final width in const [80.0, 126.0, 94.0, 150.0, 108.0]) Bone(width: width, height: 28, borderRadius: BorderRadius.circular(999)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Bone(height: 86, borderRadius: BorderRadius.circular(8)),
+          if (includeSupporting) ...[
+            const SizedBox(height: 14),
+            Bone(width: 180, height: AppMetrics.controlHeight, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+            const SizedBox(height: 14),
+            const _SupportingSkeleton(),
+          ],
         ],
       ),
     );
   }
 }
 
-class _ReaderSkeleton extends StatelessWidget {
-  const _ReaderSkeleton();
+class _SupportingSkeleton extends StatelessWidget {
+  const _SupportingSkeleton();
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 820),
-        child: Skeletonizer.zone(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Bone.text(width: 132, fontSize: 18),
-                const SizedBox(height: 18),
-                for (var index = 0; index < 10; index++) ...[Bone.text(width: index.isEven ? double.infinity : 620), const SizedBox(height: 12)],
-              ],
-            ),
-          ),
+  Widget build(BuildContext context) => Skeletonizer.zone(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Bone.text(width: 240),
+        const SizedBox(height: 8),
+        const Bone.text(width: double.infinity),
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 8,
+          children: [
+            for (final width in [80.0, 100.0, 76.0]) Bone(width: width, height: 24, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+          ],
         ),
-      ),
-    );
-  }
+        const SizedBox(height: 14),
+        const Bone.text(width: 280),
+      ],
+    ),
+  );
 }
 
 class _BottomSkeleton extends StatelessWidget {
@@ -148,41 +159,39 @@ class _BottomSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 820),
-        child: Skeletonizer.zone(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 48),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: const [
-                    Bone.circle(size: 44),
-                    SizedBox(width: 12),
-                    Expanded(child: Bone.text(width: 160)),
-                    UserFollowButtonPlaceholder(),
+    return ContentColumn(
+      bleed: 20,
+      child: Skeletonizer.zone(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 48),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: const [
+                  Bone.circle(size: 44),
+                  SizedBox(width: 12),
+                  Expanded(child: Bone.text(width: 160)),
+                  UserFollowButtonPlaceholder(),
+                ],
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                height: 96,
+                child: Row(
+                  children: [
+                    for (var index = 0; index < 4; index++) ...[
+                      Bone(width: 68, height: 96, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+                      if (index != 3) const SizedBox(width: 8),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  height: 96,
-                  child: Row(
-                    children: [
-                      for (var index = 0; index < 4; index++) ...[
-                        Bone(width: 68, height: 96, borderRadius: BorderRadius.circular(6)),
-                        if (index != 3) const SizedBox(width: 8),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Bone.text(width: 150),
-                const SizedBox(height: 12),
-                const CommentsLoadingSkeleton(itemCount: 2),
-              ],
-            ),
+              ),
+              const SizedBox(height: 20),
+              const Bone.text(width: 150),
+              const SizedBox(height: 12),
+              const CommentsLoadingSkeleton(itemCount: 2, preview: true),
+            ],
           ),
         ),
       ),

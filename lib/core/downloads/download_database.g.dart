@@ -25,9 +25,9 @@ class $DownloadJobsTable extends DownloadJobs
   late final GeneratedColumn<int> illustId = GeneratedColumn<int>(
     'illust_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _pageIndexMeta = const VerificationMeta(
     'pageIndex',
@@ -36,10 +36,9 @@ class $DownloadJobsTable extends DownloadJobs
   late final GeneratedColumn<int> pageIndex = GeneratedColumn<int>(
     'page_index',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultValue: const Constant(0),
   );
   static const VerificationMeta _urlMeta = const VerificationMeta('url');
   @override
@@ -189,8 +188,6 @@ class $DownloadJobsTable extends DownloadJobs
         _illustIdMeta,
         illustId.isAcceptableOrUnknown(data['illust_id']!, _illustIdMeta),
       );
-    } else if (isInserting) {
-      context.missing(_illustIdMeta);
     }
     if (data.containsKey('page_index')) {
       context.handle(
@@ -297,11 +294,11 @@ class $DownloadJobsTable extends DownloadJobs
       illustId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}illust_id'],
-      )!,
+      ),
       pageIndex: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}page_index'],
-      )!,
+      ),
       url: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}url'],
@@ -353,8 +350,11 @@ class $DownloadJobsTable extends DownloadJobs
 
 class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   final String id;
-  final int illustId;
-  final int pageIndex;
+
+  /// The work page downloaded; both null for a content image (see
+  /// DownloadOrigin), which is identified by its [url].
+  final int? illustId;
+  final int? pageIndex;
   final String url;
   final String filename;
   final String headersJson;
@@ -367,8 +367,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   final int updatedAt;
   const DownloadJob({
     required this.id,
-    required this.illustId,
-    required this.pageIndex,
+    this.illustId,
+    this.pageIndex,
     required this.url,
     required this.filename,
     required this.headersJson,
@@ -384,8 +384,12 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['illust_id'] = Variable<int>(illustId);
-    map['page_index'] = Variable<int>(pageIndex);
+    if (!nullToAbsent || illustId != null) {
+      map['illust_id'] = Variable<int>(illustId);
+    }
+    if (!nullToAbsent || pageIndex != null) {
+      map['page_index'] = Variable<int>(pageIndex);
+    }
     map['url'] = Variable<String>(url);
     map['filename'] = Variable<String>(filename);
     map['headers_json'] = Variable<String>(headersJson);
@@ -406,8 +410,12 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   DownloadJobsCompanion toCompanion(bool nullToAbsent) {
     return DownloadJobsCompanion(
       id: Value(id),
-      illustId: Value(illustId),
-      pageIndex: Value(pageIndex),
+      illustId: illustId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(illustId),
+      pageIndex: pageIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pageIndex),
       url: Value(url),
       filename: Value(filename),
       headersJson: Value(headersJson),
@@ -432,8 +440,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DownloadJob(
       id: serializer.fromJson<String>(json['id']),
-      illustId: serializer.fromJson<int>(json['illustId']),
-      pageIndex: serializer.fromJson<int>(json['pageIndex']),
+      illustId: serializer.fromJson<int?>(json['illustId']),
+      pageIndex: serializer.fromJson<int?>(json['pageIndex']),
       url: serializer.fromJson<String>(json['url']),
       filename: serializer.fromJson<String>(json['filename']),
       headersJson: serializer.fromJson<String>(json['headersJson']),
@@ -453,8 +461,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'illustId': serializer.toJson<int>(illustId),
-      'pageIndex': serializer.toJson<int>(pageIndex),
+      'illustId': serializer.toJson<int?>(illustId),
+      'pageIndex': serializer.toJson<int?>(pageIndex),
       'url': serializer.toJson<String>(url),
       'filename': serializer.toJson<String>(filename),
       'headersJson': serializer.toJson<String>(headersJson),
@@ -470,8 +478,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
 
   DownloadJob copyWith({
     String? id,
-    int? illustId,
-    int? pageIndex,
+    Value<int?> illustId = const Value.absent(),
+    Value<int?> pageIndex = const Value.absent(),
     String? url,
     String? filename,
     String? headersJson,
@@ -484,8 +492,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     int? updatedAt,
   }) => DownloadJob(
     id: id ?? this.id,
-    illustId: illustId ?? this.illustId,
-    pageIndex: pageIndex ?? this.pageIndex,
+    illustId: illustId.present ? illustId.value : this.illustId,
+    pageIndex: pageIndex.present ? pageIndex.value : this.pageIndex,
     url: url ?? this.url,
     filename: filename ?? this.filename,
     headersJson: headersJson ?? this.headersJson,
@@ -582,8 +590,8 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
 
 class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   final Value<String> id;
-  final Value<int> illustId;
-  final Value<int> pageIndex;
+  final Value<int?> illustId;
+  final Value<int?> pageIndex;
   final Value<String> url;
   final Value<String> filename;
   final Value<String> headersJson;
@@ -613,7 +621,7 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   });
   DownloadJobsCompanion.insert({
     required String id,
-    required int illustId,
+    this.illustId = const Value.absent(),
     this.pageIndex = const Value.absent(),
     required String url,
     required String filename,
@@ -627,7 +635,6 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     required int updatedAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       illustId = Value(illustId),
        url = Value(url),
        filename = Value(filename),
        createdAt = Value(createdAt),
@@ -669,8 +676,8 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
 
   DownloadJobsCompanion copyWith({
     Value<String>? id,
-    Value<int>? illustId,
-    Value<int>? pageIndex,
+    Value<int?>? illustId,
+    Value<int?>? pageIndex,
     Value<String>? url,
     Value<String>? filename,
     Value<String>? headersJson,
@@ -1468,8 +1475,8 @@ abstract class _$DownloadDatabase extends GeneratedDatabase {
 typedef $$DownloadJobsTableCreateCompanionBuilder =
     DownloadJobsCompanion Function({
       required String id,
-      required int illustId,
-      Value<int> pageIndex,
+      Value<int?> illustId,
+      Value<int?> pageIndex,
       required String url,
       required String filename,
       Value<String> headersJson,
@@ -1485,8 +1492,8 @@ typedef $$DownloadJobsTableCreateCompanionBuilder =
 typedef $$DownloadJobsTableUpdateCompanionBuilder =
     DownloadJobsCompanion Function({
       Value<String> id,
-      Value<int> illustId,
-      Value<int> pageIndex,
+      Value<int?> illustId,
+      Value<int?> pageIndex,
       Value<String> url,
       Value<String> filename,
       Value<String> headersJson,
@@ -1815,8 +1822,8 @@ class $$DownloadJobsTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<int> illustId = const Value.absent(),
-                Value<int> pageIndex = const Value.absent(),
+                Value<int?> illustId = const Value.absent(),
+                Value<int?> pageIndex = const Value.absent(),
                 Value<String> url = const Value.absent(),
                 Value<String> filename = const Value.absent(),
                 Value<String> headersJson = const Value.absent(),
@@ -1847,8 +1854,8 @@ class $$DownloadJobsTableTableManager
           createCompanionCallback:
               ({
                 required String id,
-                required int illustId,
-                Value<int> pageIndex = const Value.absent(),
+                Value<int?> illustId = const Value.absent(),
+                Value<int?> pageIndex = const Value.absent(),
                 required String url,
                 required String filename,
                 Value<String> headersJson = const Value.absent(),

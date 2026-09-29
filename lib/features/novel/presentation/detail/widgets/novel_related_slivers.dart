@@ -1,3 +1,4 @@
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/core/core.dart';
@@ -30,7 +31,7 @@ class NovelRelatedSlivers {
     ];
     final lastError = source.lastError;
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
+    if (source.phase == LoadPhase.loading) {
       return [...titleSlivers, const SliverPadding(padding: EdgeInsets.fromLTRB(16, 0, 16, 24), sliver: NovelRelatedListSkeleton())];
     }
 
@@ -44,6 +45,7 @@ class NovelRelatedSlivers {
               child: CompactMessage(
                 icon: Icons.error_outline,
                 message: formatPixivError(lastError),
+                details: pixivErrorDetails(lastError),
                 actionLabel: t.common.retry,
                 onAction: () => source.refresh(true),
               ),
@@ -104,7 +106,7 @@ class NovelRelatedTile extends StatelessWidget {
           children: [
             SizedBox.square(
               dimension: 92,
-              child: PixivImage(url: novel.imageUrls.squareMedium, fit: BoxFit.cover, borderRadius: BorderRadius.circular(6)),
+              child: PixivImage(url: novel.imageUrls.squareMedium, fit: BoxFit.cover, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -154,10 +156,7 @@ class SmallNovelStatPill extends StatelessWidget {
     final tokens = FreepivThemeTokens.of(context);
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Color.alphaBlend(tokens.brand.withValues(alpha: 0.060), colorScheme.surfaceContainerHighest),
-        borderRadius: BorderRadius.circular(6),
-      ),
+      decoration: BoxDecoration(color: tokens.surfaceRaised, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
         child: Row(
@@ -190,27 +189,25 @@ class NovelRelatedListSkeleton extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 8),
           child: NovelDetailWidthLimiter(
             child: Skeletonizer.zone(
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      Bone(width: 92, height: 92, borderRadius: BorderRadius.circular(6)),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Bone.text(width: double.infinity),
-                            SizedBox(height: 10),
-                            Bone.text(width: 150),
-                            SizedBox(height: 22),
-                            Bone.text(width: 180),
-                          ],
-                        ),
+              child: EnergeticCard(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  children: [
+                    Bone(width: 92, height: 92, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Bone.text(width: double.infinity),
+                          SizedBox(height: 10),
+                          Bone.text(width: 150),
+                          SizedBox(height: 22),
+                          Bone.text(width: 180),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

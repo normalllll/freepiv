@@ -1,17 +1,20 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
+import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
 import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_collapsible_header.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
 import 'package:freepiv/shared/widgets/surface_icon_button.dart';
+import 'package:freepiv/shared/widgets/user_follow_button.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class UserDetailLoadingSkeleton extends StatelessWidget {
-  const UserDetailLoadingSkeleton({required this.shouldUseDesktopShell, super.key});
+  const UserDetailLoadingSkeleton({required this.useHorizontalLayout, super.key});
 
-  final bool shouldUseDesktopShell;
+  final bool useHorizontalLayout;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +24,7 @@ class UserDetailLoadingSkeleton extends StatelessWidget {
   Widget _buildContent(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final width = mediaQuery.size.width;
-    final layout = UserCollapsibleHeaderLayout.forWidth(width);
+    final layout = UserCollapsibleHeaderLayout.forWidth(width, textScale: MediaQuery.textScalerOf(context).scale(14) / 14);
     final topPadding = mediaQuery.padding.top;
     final expandedHeaderHeight = UserCollapsibleHeaderSliver.skeletonExpandedHeightFor(context, width);
     final collapsedHeaderHeight = UserCollapsibleHeaderSliver.collapsedHeightFor(width, context);
@@ -39,7 +42,7 @@ class UserDetailLoadingSkeleton extends StatelessWidget {
                   expandedHeight: expandedHeaderHeight,
                   collapsedHeight: collapsedHeaderHeight,
                   layout: layout,
-                  showBackButton: !shouldUseDesktopShell,
+                  showBackButton: !useHorizontalLayout && !(ShellNavigationScope.maybeOf(context)?.ownsBackControl ?? false),
                 ),
               ),
               const SliverPersistentHeader(pinned: true, delegate: _SkeletonTabBarDelegate()),
@@ -78,11 +81,10 @@ class _SkeletonHeaderDelegate extends SliverPersistentHeaderDelegate {
     final progress = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
     final expandedOpacity = (1 - progress * 1.7).clamp(0.0, 1.0);
     final collapsedOpacity = ((progress - 0.58) / 0.42).clamp(0.0, 1.0);
-    final colorScheme = Theme.of(context).colorScheme;
 
+    // Transparent at rest like the loaded header.
     return Material(
-      color: colorScheme.surface,
-      elevation: overlapsContent ? 1 : 0,
+      type: MaterialType.transparency,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -106,7 +108,7 @@ class _SkeletonHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
           ),
           Positioned.fill(
-            child: ColoredBox(color: colorScheme.surface.withValues(alpha: progress * 0.96)),
+            child: PinnedChromeGlass(opacity: math.max(progress, overlapsContent ? 1.0 : 0.0), animate: false, corners: PinnedChromeCorners.top),
           ),
           PositionedDirectional(
             top: topPadding,
@@ -168,17 +170,20 @@ class _ExpandedSkeletonHeader extends StatelessWidget {
                 child: Bone.circle(size: layout.avatarSize),
               ),
               PositionedDirectional(
-                top: layout.backgroundHeight + UserCollapsibleHeaderLayout.expandedNameTopOffset,
+                top: layout.backgroundHeight + UserCollapsibleHeaderLayout.expandedNameTopOffset - UserCollapsibleHeaderLayout.followLift,
                 start: layout.horizontalPadding + layout.avatarSize + UserCollapsibleHeaderLayout.expandedNameStartGap,
                 end: layout.horizontalPadding,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: _NameBlockSkeleton(height: layout.compact ? 36 : 42, width: layout.compact ? 168 : 210),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: UserCollapsibleHeaderLayout.followLift),
+                        child: _NameBlockSkeleton(height: layout.compact ? 36 : 42, width: layout.compact ? 168 : 210),
+                      ),
                     ),
                     const SizedBox(width: 10),
-                    Bone(width: 82, height: 34, borderRadius: BorderRadius.circular(8)),
+                    Bone(width: 82, height: FollowToggleButton.denseHeight, borderRadius: BorderRadius.circular(8)),
                   ],
                 ),
               ),
@@ -196,16 +201,12 @@ class _ExpandedSkeletonHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               const SizedBox(height: UserCollapsibleHeaderLayout.commentStatsGap),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (var index = 0; index < 4; index++) ...[
-                      Bone(width: index == 0 ? 104 : 92, height: UserCollapsibleHeaderSliver.statsHeightFor(context), borderRadius: BorderRadius.circular(8)),
-                      if (index != 3) const SizedBox(width: 8),
-                    ],
-                  ],
-                ),
+              // One block as tall as the (possibly wrapped) stats, so the
+              // header does not change height when the content arrives.
+              Bone(
+                width: math.min(layout.bodyContentWidth, 104 + 92 * 3 + 24),
+                height: UserCollapsibleHeaderSliver.statsHeightFor(context, layout.availableWidth),
+                borderRadius: BorderRadius.circular(8),
               ),
             ],
           ),
@@ -267,15 +268,10 @@ class _SkeletonTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Material(
-      color: colorScheme.surface,
-      elevation: overlapsContent ? 1 : 0,
+      type: MaterialType.transparency,
       child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.42))),
-        ),
+        decoration: const BoxDecoration(),
         child: SizedBox(
           height: UserDetailTabBarSliver.height,
           child: SingleChildScrollView(

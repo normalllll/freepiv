@@ -1,11 +1,19 @@
+import 'package:freepiv/shared/widgets/app_tab_bar.dart';
+import 'dart:math' as math;
+
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/shared/widgets/content_shelf.dart';
+import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/core/core.dart';
+import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/error.dart';
+import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -23,12 +31,19 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
   static const _homeTypes = [HomeType.illustrations, HomeType.manga, HomeType.novels, HomeType.users];
 
   late final TabController _homeTabController;
+  final _scrollKeys = List.generate(4, (_) => GlobalKey<NestedScrollViewState>());
+  ValueListenable<({AppRoute route, int sequence})>? _primaryReselection;
 
   @override
   void initState() {
     super.initState();
 
-    _homeTabController = TabController(length: _homeTypes.length, initialIndex: _homeTypeIndex(ref.read(homeProvider)), vsync: this);
+    _homeTabController = TabController(
+      length: _homeTypes.length,
+      initialIndex: _homeTypeIndex(ref.read(homeProvider)),
+      animationDuration: AppMotion.navigation,
+      vsync: this,
+    );
     _homeTabController.addListener(_handleHomeTabChanged);
 
     Future.microtask(() {
@@ -50,7 +65,31 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final next = ShellNavigationScope.maybeOf(context)?.primaryReselection;
+    if (identical(next, _primaryReselection)) return;
+    _primaryReselection?.removeListener(_handlePrimaryReselection);
+    _primaryReselection = next;
+    next?.addListener(_handlePrimaryReselection);
+  }
+
+  void _handlePrimaryReselection() {
+    final signal = _primaryReselection?.value;
+    if (signal == null || signal.route != AppRoute.home || signal.sequence == 0) return;
+    final scroll = _scrollKeys[_homeTabController.index].currentState?.innerController;
+    if (scroll == null || !scroll.hasClients) return;
+    final duration = AppMotion.duration(context, AppMotion.navigation);
+    if (duration == Duration.zero) {
+      scroll.jumpTo(0);
+    } else {
+      scroll.animateTo(0, duration: duration, curve: Curves.easeOutCubic);
+    }
+  }
+
+  @override
   void dispose() {
+    _primaryReselection?.removeListener(_handlePrimaryReselection);
     _homeTabController.removeListener(_handleHomeTabChanged);
     _homeTabController.dispose();
     super.dispose();
@@ -75,37 +114,37 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
     return Scaffold(
       body: PageStorage(
         bucket: _homePageStorageBucket,
-        child: Column(
-          children: [
-            SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                child: _HomeTypeSelector(
-                  controller: _homeTabController,
-                  onTypeChanged: (type) {
-                    ref.read(homeProvider.notifier).setType(type);
-                  },
-                ),
+        // The type tabs float over the feed; artwork scrolls beneath them.
+        child: FpPinnedChrome(
+          extent: MediaQuery.paddingOf(context).top + kTextTabBarHeight,
+          chrome: SafeArea(
+            bottom: false,
+            child: LayoutBuilder(
+              builder: (context, constraints) => Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppMetrics.pageTabInset(constraints.maxWidth)),
+                child: _HomeTypeSelector(controller: _homeTabController, onTypeChanged: (type) => ref.read(homeProvider.notifier).setType(type)),
               ),
             ),
-            Expanded(
-              child: AnimatedBuilder(
-                animation: Listenable.merge([illustSource, mangaSource, novelSource, userSource]),
-                builder: (context, child) {
-                  return TabBarView(
-                    controller: _homeTabController,
-                    children: [
-                      _IllustHomeTab(key: const PageStorageKey('home-illustrations'), source: illustSource, homeType: HomeType.illustrations),
-                      _IllustHomeTab(key: const PageStorageKey('home-manga'), source: mangaSource, homeType: HomeType.manga),
-                      _NovelHomeTab(key: const PageStorageKey('home-novels'), source: novelSource),
-                      _UserHomeTab(key: const PageStorageKey('home-users'), source: userSource),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+          ),
+          body: AnimatedBuilder(
+            animation: Listenable.merge([illustSource, mangaSource, novelSource, userSource]),
+            builder: (context, child) {
+              return TabBarView(
+                controller: _homeTabController,
+                children: [
+                  _IllustHomeTab(
+                    key: const PageStorageKey('home-illustrations'),
+                    scrollKey: _scrollKeys[0],
+                    source: illustSource,
+                    homeType: HomeType.illustrations,
+                  ),
+                  _IllustHomeTab(key: const PageStorageKey('home-manga'), scrollKey: _scrollKeys[1], source: mangaSource, homeType: HomeType.manga),
+                  _NovelHomeTab(key: const PageStorageKey('home-novels'), scrollKey: _scrollKeys[2], source: novelSource),
+                  _UserHomeTab(key: const PageStorageKey('home-users'), scrollKey: _scrollKeys[3], source: userSource),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -122,8 +161,9 @@ abstract class _KeepAliveHomeTabState<T extends StatefulWidget> extends State<T>
 }
 
 class _IllustHomeTab extends StatefulWidget {
-  const _IllustHomeTab({super.key, required this.source, required this.homeType});
+  const _IllustHomeTab({super.key, required this.scrollKey, required this.source, required this.homeType});
 
+  final GlobalKey<NestedScrollViewState> scrollKey;
   final HomeIllustListSource source;
   final HomeType homeType;
 
@@ -140,7 +180,7 @@ class _IllustHomeTabState extends _KeepAliveHomeTabState<_IllustHomeTab> {
       onRefresh: () => widget.source.refresh(widget.source.isEmpty),
       builder: (context, refresh) {
         return NestedScrollView(
-          key: PageStorageKey<String>('home-${widget.homeType.name}-nested-scroll'),
+          key: widget.scrollKey,
           controller: refresh.scrollController,
           physics: refresh.physics,
           headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -158,8 +198,9 @@ class _IllustHomeTabState extends _KeepAliveHomeTabState<_IllustHomeTab> {
 }
 
 class _NovelHomeTab extends StatefulWidget {
-  const _NovelHomeTab({super.key, required this.source});
+  const _NovelHomeTab({super.key, required this.scrollKey, required this.source});
 
+  final GlobalKey<NestedScrollViewState> scrollKey;
   final HomeNovelListSource source;
 
   @override
@@ -175,7 +216,7 @@ class _NovelHomeTabState extends _KeepAliveHomeTabState<_NovelHomeTab> {
       onRefresh: () => widget.source.refresh(widget.source.isEmpty),
       builder: (context, refresh) {
         return NestedScrollView(
-          key: const PageStorageKey<String>('home-novels-nested-scroll'),
+          key: widget.scrollKey,
           controller: refresh.scrollController,
           physics: refresh.physics,
           headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -193,8 +234,9 @@ class _NovelHomeTabState extends _KeepAliveHomeTabState<_NovelHomeTab> {
 }
 
 class _UserHomeTab extends StatefulWidget {
-  const _UserHomeTab({super.key, required this.source});
+  const _UserHomeTab({super.key, required this.scrollKey, required this.source});
 
+  final GlobalKey<NestedScrollViewState> scrollKey;
   final HomeUserListSource source;
 
   @override
@@ -210,7 +252,7 @@ class _UserHomeTabState extends _KeepAliveHomeTabState<_UserHomeTab> {
       onRefresh: () => widget.source.refresh(widget.source.isEmpty),
       builder: (context, refresh) {
         return NestedScrollView(
-          key: const PageStorageKey<String>('home-users-nested-scroll'),
+          key: widget.scrollKey,
           controller: refresh.scrollController,
           physics: refresh.physics,
           headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -236,17 +278,20 @@ class _IllustHomeBody extends StatelessWidget {
   final DataRefreshLocators locators;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+
+  Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
+    if (source.phase == LoadPhase.loading) {
       return DataLoadingCustomScrollView(
         physics: physics,
         slivers: [
+          const FpChromeSpacer(),
           ?locators.sliverHeader,
           const _IllustRankingPreviewSkeleton(),
-          const _HomeSectionHeaderSkeleton(),
-          const _SliverHomeIllustPreviewerSkeletonWaterfall(),
+          const _HomeSectionHeader(skeleton: true),
+          const SliverIllustWaterfallSkeleton(),
         ],
       );
     }
@@ -271,19 +316,14 @@ class _IllustHomeBody extends StatelessWidget {
       key: PageStorageKey<String>('home-${homeType.name}-body-scroll'),
       physics: physics,
       slivers: [
+        const FpChromeSpacer(),
         ?locators.sliverHeader,
         _IllustRankingPreviewSection(items: source.rankingIllusts, homeType: homeType),
         const _HomeSectionHeader(),
         SliverDataWaterfallGrid<Illust>(
           source: source,
-          padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
           itemBuilder: (context, illust, index) {
-            return IllustPreviewer(
-              illust: illust,
-              onTap: () {
-                context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '${illust.id}'}, extra: illust);
-              },
-            );
+            return IllustPreviewer(illust: illust, onOpen: (heroTag) => openIllustDetail(context, illust, heroTag));
           },
         ),
       ],
@@ -299,13 +339,21 @@ class _NovelHomeBody extends StatelessWidget {
   final DataRefreshLocators locators;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+
+  Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
+    if (source.phase == LoadPhase.loading) {
       return DataLoadingCustomScrollView(
         physics: physics,
-        slivers: [?locators.sliverHeader, const _NovelRankingPreviewSkeleton(), const _HomeSectionHeaderSkeleton(), const _SliverNovelPreviewerSkeletonList()],
+        slivers: [
+          const FpChromeSpacer(),
+          ?locators.sliverHeader,
+          const _NovelRankingPreviewSkeleton(),
+          const _HomeSectionHeader(alignToNovelList: true, skeleton: true),
+          const _SliverNovelPreviewerSkeletonList(),
+        ],
       );
     }
 
@@ -329,12 +377,13 @@ class _NovelHomeBody extends StatelessWidget {
       key: const PageStorageKey<String>('home-novels-body-scroll'),
       physics: physics,
       slivers: [
+        const FpChromeSpacer(),
         ?locators.sliverHeader,
         _NovelRankingPreviewSection(items: source.rankingNovels),
-        const _HomeSectionHeader(),
+        const _HomeSectionHeader(alignToNovelList: true),
         SliverDataList<Novel>(
           source: source,
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          padding: _homeListPadding(context),
           itemBuilder: (context, novel, index) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -360,17 +409,13 @@ class _UserHomeBody extends StatelessWidget {
   final DataRefreshLocators locators;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+
+  Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
-      return DataLoadingCustomScrollView(
-        physics: physics,
-        slivers: [
-          ?locators.sliverHeader,
-          const SliverPadding(padding: EdgeInsets.fromLTRB(12, 0, 12, 12), sliver: SliverUserPreviewerSkeletonList()),
-        ],
-      );
+    if (source.phase == LoadPhase.loading) {
+      return DataLoadingCustomScrollView(physics: physics, slivers: [const FpChromeSpacer(), ?locators.sliverHeader, const SliverUserPreviewerSkeletonGrid()]);
     }
 
     if (!source.initialized && lastError != null) {
@@ -393,20 +438,20 @@ class _UserHomeBody extends StatelessWidget {
       key: const PageStorageKey<String>('home-users-body-scroll'),
       physics: physics,
       slivers: [
+        const FpChromeSpacer(),
         ?locators.sliverHeader,
-        SliverDataList<UserPreview>(
-          source: source,
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          itemBuilder: (context, userPreview, index) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: UserPreviewer(userPreview: userPreview),
-            );
-          },
-        ),
+        SliverUserPreviewGrid(source: source),
       ],
     );
   }
+}
+
+/// Square ranking tiles that fill the row with whole items at any width.
+double _rankingTileExtent(double width) {
+  final inset = AppMetrics.browseInset(width);
+  final available = width - inset * 2;
+  final count = math.max(1, ((available + AppMetrics.itemGap) / (190 + AppMetrics.itemGap)).floor());
+  return ContentShelf.fillingExtent(width: available, count: count, min: 150, max: 220);
 }
 
 class _IllustRankingPreviewSection extends StatelessWidget {
@@ -414,7 +459,6 @@ class _IllustRankingPreviewSection extends StatelessWidget {
 
   final List<Illust> items;
   final HomeType homeType;
-  static const itemSize = 178.0;
 
   @override
   Widget build(BuildContext context) {
@@ -423,54 +467,45 @@ class _IllustRankingPreviewSection extends StatelessWidget {
     }
 
     final translations = context.t;
+    final extent = _rankingTileExtent(MediaQuery.sizeOf(context).width);
 
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 0, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: 12),
-              child: Row(
-                children: [
-                  Expanded(child: Text(translations.home.rankings, style: Theme.of(context).textTheme.titleMedium)),
-                  TextButton(
-                    onPressed: () {
-                      context.push(_rankingRoutePath(homeType));
-                    },
-                    child: Text(translations.home.seeMore),
-                  ),
-                ],
-              ),
-            ),
+      child: ContentShelf(
+        title: translations.home.rankings,
+        itemCount: items.length,
+        itemExtent: extent,
+        height: extent,
+        action: TextButton(onPressed: () => context.push(_rankingRoutePath(homeType)), child: Text(translations.home.seeMore)),
+        itemBuilder: (context, index) {
+          final illust = items[index];
+          return IllustPreviewer(
+            illust: illust,
+            square: true,
+            leadingBadge: _RankBadge(rank: index + 1),
+            onOpen: (heroTag) => openIllustDetail(context, illust, heroTag),
+          );
+        },
+      ),
+    );
+  }
+}
 
-            SizedBox(
-              height: itemSize,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsetsDirectional.only(end: 16),
-                itemCount: items.length,
-                separatorBuilder: (context, index) {
-                  return const SizedBox(width: 12);
-                },
-                itemBuilder: (context, index) {
-                  final illust = items[index];
+class _RankBadge extends StatelessWidget {
+  const _RankBadge({required this.rank});
 
-                  return SizedBox.square(
-                    dimension: itemSize,
-                    child: IllustPreviewer(
-                      illust: illust,
-                      square: true,
-                      onTap: () {
-                        context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '${illust.id}'}, extra: illust);
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+  final int rank;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: Colors.black.withValues(alpha: .6), borderRadius: BorderRadius.circular(AppMetrics.badgeRadius)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+          child: Text(
+            '$rank',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+          ),
         ),
       ),
     );
@@ -480,31 +515,29 @@ class _IllustRankingPreviewSection extends StatelessWidget {
 class _IllustRankingPreviewSkeleton extends StatelessWidget {
   const _IllustRankingPreviewSkeleton();
 
-  static const itemSize = _IllustRankingPreviewSection.itemSize;
-
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final extent = _rankingTileExtent(width);
+    final inset = AppMetrics.browseInset(width);
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 0, 8),
-        child: Skeletonizer.zone(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const _HomeSectionTitleRowSkeleton(),
-              SizedBox(
-                height: itemSize,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsetsDirectional.only(end: 16),
-                  itemCount: 6,
-                  separatorBuilder: (context, index) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) => const SizedBox.square(dimension: itemSize, child: _IllustRankingCardSkeleton()),
-                ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ContentShelfHeader(title: context.t.home.rankings, inset: inset, skeleton: true),
+          SizedBox(
+            height: extent,
+            child: Skeletonizer.zone(
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: inset),
+                itemCount: 8,
+                separatorBuilder: (context, index) => const SizedBox(width: AppMetrics.itemGap),
+                itemBuilder: (context, index) => SizedBox.square(dimension: extent, child: const _IllustRankingCardSkeleton()),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -515,71 +548,34 @@ class _IllustRankingCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(8)),
+    return EnergeticCard(
+      child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
     );
   }
 }
 
-const _homeIllustSkeletonRatios = <double>[1.32, 0.78, 1.08, 1.58, 0.92, 1.22, 1.44, 0.86, 1.16, 0.88, 1.42, 1.02];
+/// The novel tab is a centred reading column; its shelf, title and list all
+/// share that column instead of the shelf spanning the window.
+class _NovelColumn extends StatelessWidget {
+  const _NovelColumn({required this.child});
 
-class _SliverHomeIllustPreviewerSkeletonWaterfall extends StatelessWidget {
-  const _SliverHomeIllustPreviewerSkeletonWaterfall();
+  final Widget child;
 
-  @override
-  Widget build(BuildContext context) {
-    return SliverWaterfallGrid<double>(
-      items: _homeIllustSkeletonRatios,
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-      itemBuilder: (context, ratio, index) => _HomeIllustPreviewerSkeleton(aspectRatio: ratio),
-    );
-  }
-}
-
-class _HomeIllustPreviewerSkeleton extends StatelessWidget {
-  const _HomeIllustPreviewerSkeleton({required this.aspectRatio});
-
-  final double aspectRatio;
+  static double inset(BuildContext context) => AppMetrics.browseInset(MediaQuery.sizeOf(context).width);
 
   @override
   Widget build(BuildContext context) {
-    return Skeletonizer.zone(
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AspectRatio(
-              aspectRatio: aspectRatio,
-              child: const Bone(width: double.infinity, height: double.infinity),
-            ),
-            const Padding(
-              padding: EdgeInsets.all(10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Bone.text(width: double.infinity),
-                        SizedBox(height: 7),
-                        Bone.text(width: 96),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Bone.circle(size: 40),
-                ],
-              ),
-            ),
-          ],
-        ),
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: AppMetrics.contentMaxWidth),
+        child: child,
       ),
     );
   }
 }
+
+double _novelShelfCardWidth(BuildContext context) => (MediaQuery.sizeOf(context).width * 0.86).clamp(0.0, 420.0);
 
 class _NovelRankingPreviewSection extends StatelessWidget {
   const _NovelRankingPreviewSection({required this.items});
@@ -593,54 +589,27 @@ class _NovelRankingPreviewSection extends StatelessWidget {
     }
 
     final translations = context.t;
-    final width = (MediaQuery.sizeOf(context).width * 0.86).clamp(0.0, 420.0);
+    final width = _novelShelfCardWidth(context);
 
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 0, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: 12),
-              child: Row(
-                children: [
-                  Expanded(child: Text(translations.home.rankings, style: Theme.of(context).textTheme.titleMedium)),
-                  TextButton(
-                    onPressed: () {
-                      context.push(_rankingRoutePath(HomeType.novels));
-                    },
-                    child: Text(translations.home.seeMore),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: NovelPreviewer.contentHeight(context) + 24,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsetsDirectional.only(end: 16),
-                itemCount: items.length,
-                separatorBuilder: (context, index) {
-                  return const SizedBox(width: 12);
-                },
-                itemBuilder: (context, index) {
-                  final novel = items[index];
-
-                  return SizedBox(
-                    width: width,
-                    child: NovelPreviewer(
-                      novel: novel,
-                      maxWidth: width,
-                      onTap: () {
-                        context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': '${novel.id}'}, extra: novel);
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+      child: _NovelColumn(
+        child: ContentShelf(
+          title: translations.home.rankings,
+          inset: _NovelColumn.inset(context),
+          itemCount: items.length,
+          itemExtent: width,
+          height: NovelPreviewer.contentHeight(context) + 24,
+          action: TextButton(onPressed: () => context.push(_rankingRoutePath(HomeType.novels)), child: Text(translations.home.seeMore)),
+          itemBuilder: (context, index) {
+            final novel = items[index];
+            return NovelPreviewer(
+              novel: novel,
+              maxWidth: width,
+              onTap: () {
+                context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': '${novel.id}'}, extra: novel);
+              },
+            );
+          },
         ),
       ),
     );
@@ -652,33 +621,31 @@ class _NovelRankingPreviewSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = (MediaQuery.sizeOf(context).width * 0.86).clamp(0.0, 420.0);
+    final width = _novelShelfCardWidth(context);
+    final inset = _NovelColumn.inset(context);
 
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 0, 8),
-        child: Skeletonizer.zone(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const _HomeSectionTitleRowSkeleton(),
-              SizedBox(
-                height: NovelPreviewer.contentHeight(context) + 24,
+      child: _NovelColumn(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ContentShelfHeader(title: context.t.home.rankings, inset: inset, skeleton: true),
+            SizedBox(
+              height: NovelPreviewer.contentHeight(context) + 24,
+              child: Skeletonizer.zone(
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsetsDirectional.only(end: 16),
+                  padding: EdgeInsets.symmetric(horizontal: inset),
                   itemCount: 4,
-                  separatorBuilder: (context, index) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    return SizedBox(
-                      width: width,
-                      child: _NovelPreviewerSkeleton(maxWidth: width),
-                    );
-                  },
+                  separatorBuilder: (context, index) => const SizedBox(width: AppMetrics.itemGap),
+                  itemBuilder: (context, index) => SizedBox(
+                    width: width,
+                    child: _NovelPreviewerSkeleton(maxWidth: width),
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -686,52 +653,22 @@ class _NovelRankingPreviewSkeleton extends StatelessWidget {
 }
 
 class _HomeSectionHeader extends StatelessWidget {
-  const _HomeSectionHeader();
+  const _HomeSectionHeader({this.alignToNovelList = false, this.skeleton = false});
+
+  final bool alignToNovelList;
+  final bool skeleton;
 
   @override
   Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-        child: Text(context.t.home.recommended, style: Theme.of(context).textTheme.titleMedium),
-      ),
-    );
+    final header = ContentShelfHeader(title: context.t.home.recommended, inset: AppMetrics.browseInset(MediaQuery.sizeOf(context).width), skeleton: skeleton);
+    return SliverToBoxAdapter(child: alignToNovelList ? _NovelColumn(child: header) : header);
   }
 }
 
-class _HomeSectionHeaderSkeleton extends StatelessWidget {
-  const _HomeSectionHeaderSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-        child: Skeletonizer.zone(child: Text(context.t.home.recommended, style: Theme.of(context).textTheme.titleMedium)),
-      ),
-    );
-  }
-}
-
-class _HomeSectionTitleRowSkeleton extends StatelessWidget {
-  const _HomeSectionTitleRowSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    final translations = context.t;
-
-    return Skeletonizer.zone(
-      child: Padding(
-        padding: const EdgeInsetsDirectional.only(end: 12),
-        child: Row(
-          children: [
-            Expanded(child: Text(translations.home.rankings, style: Theme.of(context).textTheme.titleMedium)),
-            TextButton(onPressed: () {}, child: Text(translations.home.seeMore)),
-          ],
-        ),
-      ),
-    );
-  }
+/// The novel list and its skeleton on the shared content column.
+EdgeInsets _homeListPadding(BuildContext context) {
+  final width = MediaQuery.sizeOf(context).width;
+  return AppMetrics.columnPadding(width).copyWith(top: 4, bottom: AppMetrics.browseInset(width));
 }
 
 class _SliverNovelPreviewerSkeletonList extends StatelessWidget {
@@ -742,7 +679,7 @@ class _SliverNovelPreviewerSkeletonList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      padding: _homeListPadding(context),
       sliver: SliverList.builder(
         itemCount: itemCount,
         itemBuilder: (context, index) {
@@ -795,7 +732,7 @@ class _SliverFillBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataSliverFillBody(physics: physics, sliverHeader: sliverHeader, child: child);
+    return DataSliverFillBody(physics: physics, sliverHeader: sliverHeader, leadingSlivers: const [FpChromeSpacer()], child: child);
   }
 }
 
@@ -808,35 +745,19 @@ class _HomeTypeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final translations = context.t;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = isDesktopPlatform && constraints.maxWidth > 560 ? 560.0 : constraints.maxWidth;
-
-        return Align(
-          alignment: isDesktopPlatform ? AlignmentDirectional.center : AlignmentDirectional.centerStart,
-          child: SizedBox(
-            width: width,
-            height: 44,
-            child: TabBar(
-              controller: controller,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              dividerColor: Colors.transparent,
-              labelPadding: const EdgeInsets.symmetric(horizontal: 12),
-              tabs: [
-                Tab(child: Text(translations.home.illustrations)),
-                Tab(child: Text(translations.home.manga)),
-                Tab(child: Text(translations.home.novels)),
-                Tab(child: Text(translations.home.users)),
-              ],
-              onTap: (index) {
-                onTypeChanged(_HomePageState._homeTypeForIndex(index));
-              },
-            ),
-          ),
-        );
-      },
+    return AppTabBar(
+      controller: controller,
+      isScrollable: true,
+      tabAlignment: TabAlignment.start,
+      dividerColor: Colors.transparent,
+      labelPadding: EdgeInsets.symmetric(horizontal: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
+      tabs: [
+        Tab(text: translations.home.illustrations),
+        Tab(text: translations.home.manga),
+        Tab(text: translations.home.novels),
+        Tab(text: translations.home.users),
+      ],
+      onTap: (index) => onTypeChanged(_HomePageState._homeTypeForIndex(index)),
     );
   }
 }

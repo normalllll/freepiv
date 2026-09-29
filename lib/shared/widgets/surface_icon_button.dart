@@ -1,3 +1,4 @@
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 
@@ -17,10 +18,17 @@ class SurfaceIconButton extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: tokens.surfaceRaised.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [BoxShadow(color: tokens.shadow, blurRadius: 14, offset: const Offset(0, 6))],
+        shape: BoxShape.circle,
+        border: Border.all(color: tokens.line.withValues(alpha: .65)),
       ),
-      child: IconButton(tooltip: tooltip, onPressed: onPressed, iconSize: iconSize, color: colorScheme.onSurfaceVariant, icon: Icon(icon)),
+      child: IconButton(
+        constraints: const BoxConstraints(minWidth: AppMetrics.controlHeight, minHeight: AppMetrics.controlHeight),
+        tooltip: tooltip,
+        onPressed: onPressed,
+        iconSize: iconSize ?? AppMetrics.iconSize,
+        color: colorScheme.onSurfaceVariant,
+        icon: Icon(icon),
+      ),
     );
   }
 }

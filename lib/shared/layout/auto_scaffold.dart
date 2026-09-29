@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/core/platform/platform_info.dart';
 
-typedef AutoScaffoldBuilder = Widget Function(BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool shouldUseDesktopShell);
+typedef AutoScaffoldBuilder = Widget Function(BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout);
 
 class AutoScaffold extends StatelessWidget {
   const AutoScaffold({required this.builder, this.mobileBreakpoint = 600, this.tabletBreakpoint = 900, this.desktopBreakpoint = 1200, super.key});
@@ -11,8 +10,8 @@ class AutoScaffold extends StatelessWidget {
   final double tabletBreakpoint;
   final double desktopBreakpoint;
 
-  static bool usesDesktopShellOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<_ShellLayout>()?.desktop ?? _shouldUseDesktopShell(MediaQuery.sizeOf(context));
+  static bool usesHorizontalLayoutOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_ShellLayout>()?.horizontal ?? isHorizontalSize(MediaQuery.sizeOf(context));
 
   @override
   Widget build(BuildContext context) {
@@ -26,19 +25,19 @@ class AutoScaffold extends StatelessWidget {
       desktopBreakpoint: desktopBreakpoint,
     );
 
-    final desktop = usesDesktopShellOf(context);
-    return _ShellLayout(desktop: desktop, child: builder(context, layout, orientation, desktop));
+    final horizontal = usesHorizontalLayoutOf(context);
+    return _ShellLayout(horizontal: horizontal, child: builder(context, layout, orientation, horizontal));
   }
 }
 
 // Descendants use the window's navigation mode even after ContentViewport
 // subtracts the sidebar or a detail pane constrains the available content width.
 class _ShellLayout extends InheritedWidget {
-  const _ShellLayout({required this.desktop, required super.child});
-  final bool desktop;
+  const _ShellLayout({required this.horizontal, required super.child});
+  final bool horizontal;
 
   @override
-  bool updateShouldNotify(_ShellLayout oldWidget) => desktop != oldWidget.desktop;
+  bool updateShouldNotify(_ShellLayout oldWidget) => horizontal != oldWidget.horizontal;
 }
 
 enum AutoScaffoldSizeClass { compact, medium, expanded, large }
@@ -76,14 +75,14 @@ class AutoScaffoldLayout {
   bool get isLarge => sizeClass == AutoScaffoldSizeClass.large;
 }
 
-bool _shouldUseDesktopShell(Size layout) {
-  if (!isDesktopPlatform && layout.shortestSide < 600) {
-    return false;
-  }
+/// Navigation responds to window width, even in a short or landscape window.
+bool isHorizontalSize(Size size) => size.width >= 600;
 
-  if (isDesktopPlatform) {
-    return layout.width >= 840;
-  }
+/// Install above the router so nested viewports and keyboards cannot change mode.
+class AppLayoutScope extends StatelessWidget {
+  const AppLayoutScope({required this.child, super.key});
+  final Widget child;
 
-  return layout.width >= 900;
+  @override
+  Widget build(BuildContext context) => _ShellLayout(horizontal: isHorizontalSize(MediaQuery.sizeOf(context)), child: child);
 }

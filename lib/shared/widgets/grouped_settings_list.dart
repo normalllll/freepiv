@@ -1,54 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/shared/ui/fp_grouped_rows.dart';
 
 class GroupedSettingsList extends StatelessWidget {
-  const GroupedSettingsList({required this.groups, super.key});
+  const GroupedSettingsList({required this.groups, this.horizontalPadding, super.key});
 
   final List<List<Widget>> groups;
 
+  /// Defaults to the shared content column; a split settings pane passes the
+  /// part of the column its list occupies.
+  final EdgeInsets? horizontalPadding;
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final wideLayout = MediaQuery.sizeOf(context).width >= 600;
-    final horizontalPadding = wideLayout ? 24.0 : 16.0;
-    final topPadding = wideLayout ? 24.0 : 16.0;
+    final topPadding = MediaQuery.sizeOf(context).width >= 600 ? AppMetrics.sectionGap : AppMetrics.pageInset;
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final contentInset = (constraints.maxWidth - 760).clamp(0.0, double.infinity) / 2;
+        final horizontal = horizontalPadding ?? AppMetrics.columnPadding(constraints.maxWidth, maxWidth: AppMetrics.settingsMaxWidth);
         return ListView.separated(
           primary: false,
           padding: EdgeInsets.fromLTRB(
-            contentInset + horizontalPadding,
+            horizontal.left,
             topPadding + MediaQuery.paddingOf(context).top,
-            contentInset + horizontalPadding,
+            horizontal.right,
             28 + MediaQuery.paddingOf(context).bottom,
           ),
           itemCount: groups.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 12),
+          separatorBuilder: (_, _) => const SizedBox(height: AppMetrics.itemGap),
           itemBuilder: (context, groupIndex) {
             final items = groups[groupIndex];
-            return Card(
-              margin: EdgeInsets.zero,
-              clipBehavior: Clip.antiAlias,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: colorScheme.outlineVariant),
-              ),
-              child: ListTileTheme.merge(
-                tileColor: Colors.transparent,
-                shape: const RoundedRectangleBorder(),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (var index = 0; index < items.length; index++) ...[
-                      items[index],
-                      if (index < items.length - 1) Divider(height: 9, thickness: 1, indent: 56, endIndent: 16, color: colorScheme.outlineVariant),
-                    ],
-                  ],
-                ),
-              ),
-            );
+            return FpGroupedRows(children: items);
           },
         );
       },

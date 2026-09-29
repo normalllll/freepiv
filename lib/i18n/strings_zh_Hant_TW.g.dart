@@ -43,6 +43,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$discover$zh_Hant_TW discover = Translations$discover$zh_Hant_TW.internal(_root);
 	@override late final Translations$app$zh_Hant_TW app = Translations$app$zh_Hant_TW.internal(_root);
 	@override late final Translations$navigation$zh_Hant_TW navigation = Translations$navigation$zh_Hant_TW.internal(_root);
+	@override late final Translations$errors$zh_Hant_TW errors = Translations$errors$zh_Hant_TW.internal(_root);
 	@override late final Translations$common$zh_Hant_TW common = Translations$common$zh_Hant_TW.internal(_root);
 	@override late final Translations$refresh$zh_Hant_TW refresh = Translations$refresh$zh_Hant_TW.internal(_root);
 	@override late final Translations$toast$zh_Hant_TW toast = Translations$toast$zh_Hant_TW.internal(_root);
@@ -74,6 +75,15 @@ class Translations$nativeWindow$zh_Hant_TW extends Translations$nativeWindow$en_
 	@override String get maximize => '最大化';
 	@override String get restore => '還原';
 	@override String get close => '關閉';
+	@override String get illust => '插畫';
+	@override String get manga => '漫畫';
+	@override String get novel => '小說';
+	@override String workFallback({required Object type, required Object id}) => '${type}：${id}';
+	@override String workTitle({required Object type, required Object id, required Object title}) => '${type}：${id} · ${title}';
+	@override String relatedTitle({required Object title}) => '相似作品 · ${title}';
+	@override String get user => '使用者';
+	@override String userFallback({required Object id}) => '使用者：${id}';
+	@override String viewerTitle({required Object title, required Object page, required Object total}) => '${title} · ${page}/${total}';
 }
 
 // Path: discover
@@ -87,6 +97,8 @@ class Translations$discover$zh_Hant_TW extends Translations$discover$en_US {
 	@override String get history => '搜尋紀錄';
 	@override String get viewAll => '查看全部';
 	@override String get clearHistory => '清除紀錄';
+	@override String get deleteHistoryItem => '刪除這筆搜尋記錄';
+	@override String get emptyHistory => '搜尋記錄會顯示在這裡';
 }
 
 // Path: app
@@ -113,6 +125,25 @@ class Translations$navigation$zh_Hant_TW extends Translations$navigation$en_US {
 	@override String get ranking => '排行榜';
 	@override String get me => '我的';
 	@override String get settings => '設定';
+	@override String get more => '更多';
+	@override String get expand => '展開導覽';
+	@override String get collapse => '收合導覽';
+	@override String get downloads => '下載';
+	@override String get about => '關於';
+}
+
+// Path: errors
+class Translations$errors$zh_Hant_TW extends Translations$errors$en_US {
+	Translations$errors$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get generic => '內容載入失敗，請重試。';
+	@override String get connection => '請檢查網路連線後重試。';
+	@override String get session => '登入已過期，請重新登入。';
+	@override String get forbidden => '你暫無權限查看此內容。';
+	@override String get missing => '此內容已無法查看。';
 }
 
 // Path: common
@@ -122,6 +153,7 @@ class Translations$common$zh_Hant_TW extends Translations$common$en_US {
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
+	@override String get viewLog => '查看日誌';
 	@override String get apply => '套用';
 	@override String get reset => '重設';
 	@override String get discover => '探索';
@@ -137,6 +169,9 @@ class Translations$common$zh_Hant_TW extends Translations$common$en_US {
 	@override String copy({required Object label}) => '複製${label}';
 	@override String labelValue({required Object label, required Object value}) => '${label}：${value}';
 	@override String errorWithCause({required Object message, required Object cause}) => '${message}：${cause}';
+	@override String get errorDetails => '錯誤詳情';
+	@override String get copyDetails => '複製詳情';
+	@override String get detailsCopied => '已複製錯誤詳情';
 }
 
 // Path: refresh
@@ -216,15 +251,14 @@ class Translations$me$zh_Hant_TW extends Translations$me$en_US {
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
+	@override String get profile => '個人主頁';
 	@override String get openProfile => '開啟個人頁';
 	@override String get following => '我的關注';
 	@override String get followers => '我的粉絲';
 	@override String get emptyFollowing => '尚無關注使用者';
 	@override String get emptyFollowers => '尚無粉絲';
 	@override String get about => '關於';
-	@override String get aboutSubtitle => '版本、更新和專案連結';
 	@override String get settings => '設定';
-	@override String get settingsSubtitle => '主題、語言、圖片和下載';
 }
 
 // Path: about
@@ -322,6 +356,7 @@ class Translations$user$zh_Hant_TW extends Translations$user$en_US {
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
+	@override String get noPublicWorks => '尚無公開作品';
 	@override late final Translations$user$tabs$zh_Hant_TW tabs = Translations$user$tabs$zh_Hant_TW.internal(_root);
 	@override late final Translations$user$stats$zh_Hant_TW stats = Translations$user$stats$zh_Hant_TW.internal(_root);
 	@override late final Translations$user$bookmarks$zh_Hant_TW bookmarks = Translations$user$bookmarks$zh_Hant_TW.internal(_root);
@@ -389,7 +424,7 @@ class Translations$follow$zh_Hant_TW extends Translations$follow$en_US {
 	@override String get tooltipFollow => '關注使用者';
 	@override String get tooltipUnfollow => '取消關注';
 	@override String get followed => '已關注';
-	@override String get notFollowed => '未關注';
+	@override String get follow => '關注';
 }
 
 // Path: richText
@@ -415,6 +450,7 @@ class Translations$fanbox$zh_Hant_TW extends Translations$fanbox$en_US {
 	@override String get updateSession => '更新 Cookie';
 	@override String get title => 'FANBOX';
 	@override String get home => '關注動態';
+	@override String get feedGroup => '動態';
 	@override String get supporting => '贊助動態';
 	@override String get following => '關注的創作者';
 	@override String get recommended => '探索創作者';
@@ -535,10 +571,48 @@ class Translations$settings$theme$zh_Hant_TW extends Translations$settings$theme
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => '主題';
+	@override String get title => '外觀';
+	@override String get displayMode => '顯示模式';
+	@override String get tone => '色調';
+	@override String get neutral => '中性';
+	@override String get cool => '冷色';
+	@override String get warm => '暖色';
+	@override String get systemNeutralHint => '跟隨系統時使用中性色';
+	@override String get lightAccent => '淺色主色';
+	@override String get darkAccent => '深色主色';
+	@override String get systemEditingLight => '目前隨系統使用淺色主色';
+	@override String get systemEditingDark => '目前隨系統使用深色主色';
+	@override String get presetPink => '預設粉色';
+	@override String get presetBlue => '蔚藍';
+	@override String get presetTeal => '青綠';
+	@override String get presetViolet => '紫羅蘭';
+	@override String get presetAmber => '琥珀';
+	@override String get presetOrange => '橘色';
+	@override String get custom => '自訂';
+	@override String get defaultAccent => '預設粉色';
+	@override String get restoreDefault => '恢復預設粉色';
+	@override String get editLightAccent => '自訂淺色主色';
+	@override String get editDarkAccent => '自訂深色主色';
+	@override String get hue => '色相';
+	@override String get saturation => '飽和度';
+	@override String get value => '明度';
+	@override String get hex => 'HEX 色彩';
+	@override String get invalidHex => '請輸入六位 HEX 色彩';
+	@override String get preview => '預覽';
+	@override String get previewButton => '按鈕';
+	@override String get rejectedLight => '此顏色與淺色背景過於接近，部分操作可能無法辨認。請選擇其他顏色。';
+	@override String get rejectedDark => '此顏色與深色背景過於接近，部分操作可能無法辨認。請選擇其他顏色。';
+	@override String get weakContrast => '此顏色在部分背景上的辨識度較弱。';
+	@override String get applyAnyway => '仍要套用';
+	@override String get useDefault => '使用預設粉色';
+	@override String get saving => '儲存中…';
+	@override String get saveFailed => '外觀儲存失敗，請重試。';
+	@override String get unsaved => '外觀變更尚未儲存。';
 	@override String get system => '跟隨系統';
 	@override String get light => '淺色';
 	@override String get dark => '深色';
+	@override String get reduceTransparency => '降低透明度';
+	@override String get reduceTransparencyHint => '使用實色表面，不顯示模糊效果';
 }
 
 // Path: settings.language
@@ -620,6 +694,9 @@ class Translations$settings$downloads$zh_Hant_TW extends Translations$settings$d
 	@override String get actionFailed => '下載操作失敗';
 	@override String get expand => '展開';
 	@override String get collapse => '收合';
+	@override String get viewAll => '查看全部下載';
+	@override String badgeFailures({required Object count}) => '失敗的下載：${count}';
+	@override String badgeActive({required Object count}) => '進行中的下載：${count}';
 }
 
 // Path: settings.proxy
@@ -646,6 +723,7 @@ class Translations$settings$proxy$zh_Hant_TW extends Translations$settings$proxy
 	@override String get helper => 'IP 和連接埠分開填寫，例如 127.0.0.1 和 7890。';
 	@override String get save => '儲存';
 	@override String get saved => '代理設定已儲存';
+	@override String get saveFailed => '代理設定儲存失敗';
 	@override String get required => '啟用代理前需要填寫 IP 和連接埠。';
 	@override String get invalid => '請輸入有效的 IP 和連接埠。';
 	@override String get hostRequired => '請輸入 IP。';
@@ -703,6 +781,7 @@ class Translations$ranking$modes$zh_Hant_TW extends Translations$ranking$modes$e
 	@override String get dayR18Ai => 'AI 生成 R-18';
 	@override String get week => '每週';
 	@override String get weekR18 => '每週 R-18';
+	@override String get weekR18G => '每週 R-18G';
 	@override String get weekOriginal => '原創每週';
 	@override String get weekRookie => '新人每週';
 	@override String get month => '每月';
@@ -958,6 +1037,8 @@ class Translations$illust$contextMenu$zh_Hant_TW extends Translations$illust$con
 	@override String get download => '下載';
 	@override String get downloadAll => '下載全部';
 	@override String get copyImage => '複製圖像';
+	@override String get copyLink => '複製作品連結';
+	@override String get openOriginal => '在 Pixiv 開啟';
 }
 
 // Path: illust.imageLabels
@@ -969,6 +1050,7 @@ class Translations$illust$imageLabels$zh_Hant_TW extends Translations$illust$ima
 	// Translations
 	@override String get original => '原圖';
 	@override String get large => '大圖';
+	@override String get image => '圖片';
 }
 
 // Path: illust.toast
@@ -978,14 +1060,17 @@ class Translations$illust$toast$zh_Hant_TW extends Translations$illust$toast$en_
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
-	@override String get downloadStarted => '開始下載圖片';
 	@override String downloadAllQueued({required Object count}) => '已加入下載佇列：${count} 張圖片';
-	@override String downloadComplete({required Object path}) => '下載完成：${path}';
+	@override String downloadComplete({required Object name}) => '已儲存 ${name}';
 	@override String get downloadFailed => '下載失敗';
 	@override String copying({required Object label}) => '正在複製${label}';
 	@override String copied({required Object label}) => '已複製${label}';
 	@override String copiedValue({required Object label, required Object value}) => '已複製${label}：${value}';
 	@override String copyFailed({required Object label}) => '複製${label}失敗';
+	@override String get openFailed => '無法在 Pixiv 開啟作品';
+	@override String get linkCopied => '已複製連結';
+	@override String get linkCopyFailed => '無法複製連結';
+	@override String get alreadyDownloading => '這一頁已在下載佇列中';
 }
 
 // Path: illust.tooltip
@@ -995,6 +1080,7 @@ class Translations$illust$tooltip$zh_Hant_TW extends Translations$illust$tooltip
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
+	@override String get play => '播放動畫';
 	@override String get previousImage => '上一張圖片';
 	@override String get nextImage => '下一張圖片';
 	@override String get backToDetail => '回到圖片詳細資訊';
@@ -1063,6 +1149,8 @@ class Translations$illust$tags$zh_Hant_TW extends Translations$illust$tags$en_US
 	// Translations
 	@override String get none => '沒有標籤';
 	@override String get tag => '標籤';
+	@override String showMore({required Object count}) => '展開其餘 ${count} 個標籤';
+	@override String get showLess => '收起標籤';
 }
 
 // Path: illust.comments
@@ -1077,6 +1165,10 @@ class Translations$illust$comments$zh_Hant_TW extends Translations$illust$commen
 	@override String get moreAvailable => '還有更多留言';
 	@override String get hasReplies => '有回覆';
 	@override String get open => '開啟留言';
+	@override String get discardDraftTitle => '離開留言？';
+	@override String get discardDraftMessage => '尚未送出的留言將會遺失。';
+	@override String get continueEditing => '繼續編輯';
+	@override String get discardDraft => '捨棄草稿';
 	@override String get reply => '回覆';
 	@override String replyingTo({required Object name}) => '正在回覆 ${name}';
 	@override String get loadReplies => '載入回覆';
@@ -1084,6 +1176,7 @@ class Translations$illust$comments$zh_Hant_TW extends Translations$illust$commen
 	@override String get repliesFailed => '回覆載入失敗';
 	@override String get sendFailed => '留言傳送失敗';
 	@override String get delete => '刪除';
+	@override String get deleteConfirm => '刪除這則留言？';
 	@override String get deleteFailed => '留言刪除失敗';
 	@override String get inputHint => '寫下留言';
 	@override String replyInputHint({required Object name}) => '回覆 ${name}';
@@ -1125,6 +1218,7 @@ class Translations$novel$detail$zh_Hant_TW extends Translations$novel$detail$en_
 	@override String get series => '系列';
 	@override String get content => '正文';
 	@override String get startReading => '開始閱讀';
+	@override String get continueReading => '繼續閱讀';
 	@override String totalChars({required Object count}) => '共 ${count} 字';
 	@override String paragraphCount({required Object count}) => '${count} 段';
 	@override String segmentCount({required Object count}) => '${count} 頁';
@@ -1142,6 +1236,8 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 	@override String get chapters => '章節';
 	@override String get settings => '閱讀設定';
 	@override String get emptyBody => '正文為空';
+	@override String get embeddedImageUnavailable => '圖片暫時無法顯示';
+	@override String get openEmbeddedWork => '開啟關聯作品';
 	@override String totalChars({required Object count}) => '共 ${count} 字';
 	@override String pagePosition({required Object current, required Object total}) => '${current} / ${total} 頁';
 	@override String pageTotal({required Object total}) => '${total} 頁';
@@ -1172,10 +1268,21 @@ extension on TranslationsZhHantTw {
 			'nativeWindow.maximize' => '最大化',
 			'nativeWindow.restore' => '還原',
 			'nativeWindow.close' => '關閉',
+			'nativeWindow.illust' => '插畫',
+			'nativeWindow.manga' => '漫畫',
+			'nativeWindow.novel' => '小說',
+			'nativeWindow.workFallback' => ({required Object type, required Object id}) => '${type}：${id}',
+			'nativeWindow.workTitle' => ({required Object type, required Object id, required Object title}) => '${type}：${id} · ${title}',
+			'nativeWindow.relatedTitle' => ({required Object title}) => '相似作品 · ${title}',
+			'nativeWindow.user' => '使用者',
+			'nativeWindow.userFallback' => ({required Object id}) => '使用者：${id}',
+			'nativeWindow.viewerTitle' => ({required Object title, required Object page, required Object total}) => '${title} · ${page}/${total}',
 			'discover.searchHint' => '搜尋 Pixiv',
 			'discover.history' => '搜尋紀錄',
 			'discover.viewAll' => '查看全部',
 			'discover.clearHistory' => '清除紀錄',
+			'discover.deleteHistoryItem' => '刪除這筆搜尋記錄',
+			'discover.emptyHistory' => '搜尋記錄會顯示在這裡',
 			'app.title' => 'freepiv',
 			'navigation.activity' => '動態',
 			'navigation.home' => '首頁',
@@ -1184,6 +1291,17 @@ extension on TranslationsZhHantTw {
 			'navigation.ranking' => '排行榜',
 			'navigation.me' => '我的',
 			'navigation.settings' => '設定',
+			'navigation.more' => '更多',
+			'navigation.expand' => '展開導覽',
+			'navigation.collapse' => '收合導覽',
+			'navigation.downloads' => '下載',
+			'navigation.about' => '關於',
+			'errors.generic' => '內容載入失敗，請重試。',
+			'errors.connection' => '請檢查網路連線後重試。',
+			'errors.session' => '登入已過期，請重新登入。',
+			'errors.forbidden' => '你暫無權限查看此內容。',
+			'errors.missing' => '此內容已無法查看。',
+			'common.viewLog' => '查看日誌',
 			'common.apply' => '套用',
 			'common.reset' => '重設',
 			'common.discover' => '探索',
@@ -1199,6 +1317,9 @@ extension on TranslationsZhHantTw {
 			'common.copy' => ({required Object label}) => '複製${label}',
 			'common.labelValue' => ({required Object label, required Object value}) => '${label}：${value}',
 			'common.errorWithCause' => ({required Object message, required Object cause}) => '${message}：${cause}',
+			'common.errorDetails' => '錯誤詳情',
+			'common.copyDetails' => '複製詳情',
+			'common.detailsCopied' => '已複製錯誤詳情',
 			'refresh.pullToRefresh' => '下拉重新整理',
 			'refresh.releaseToRefresh' => '放開重新整理',
 			'refresh.refreshing' => '正在重新整理',
@@ -1227,10 +1348,48 @@ extension on TranslationsZhHantTw {
 			'login.browserOpenUnsupported' => '目前環境尚未實作系統瀏覽器開啟功能。',
 			'login.browserOpenFailed' => ({required Object browser, required Object output}) => '${browser} 無法開啟登入連結：${output}',
 			'login.proxyHint' => '如果你使用了網路代理，請在此設定代理地址再進行登入。',
-			'settings.theme.title' => '主題',
+			'settings.theme.title' => '外觀',
+			'settings.theme.displayMode' => '顯示模式',
+			'settings.theme.tone' => '色調',
+			'settings.theme.neutral' => '中性',
+			'settings.theme.cool' => '冷色',
+			'settings.theme.warm' => '暖色',
+			'settings.theme.systemNeutralHint' => '跟隨系統時使用中性色',
+			'settings.theme.lightAccent' => '淺色主色',
+			'settings.theme.darkAccent' => '深色主色',
+			'settings.theme.systemEditingLight' => '目前隨系統使用淺色主色',
+			'settings.theme.systemEditingDark' => '目前隨系統使用深色主色',
+			'settings.theme.presetPink' => '預設粉色',
+			'settings.theme.presetBlue' => '蔚藍',
+			'settings.theme.presetTeal' => '青綠',
+			'settings.theme.presetViolet' => '紫羅蘭',
+			'settings.theme.presetAmber' => '琥珀',
+			'settings.theme.presetOrange' => '橘色',
+			'settings.theme.custom' => '自訂',
+			'settings.theme.defaultAccent' => '預設粉色',
+			'settings.theme.restoreDefault' => '恢復預設粉色',
+			'settings.theme.editLightAccent' => '自訂淺色主色',
+			'settings.theme.editDarkAccent' => '自訂深色主色',
+			'settings.theme.hue' => '色相',
+			'settings.theme.saturation' => '飽和度',
+			'settings.theme.value' => '明度',
+			'settings.theme.hex' => 'HEX 色彩',
+			'settings.theme.invalidHex' => '請輸入六位 HEX 色彩',
+			'settings.theme.preview' => '預覽',
+			'settings.theme.previewButton' => '按鈕',
+			'settings.theme.rejectedLight' => '此顏色與淺色背景過於接近，部分操作可能無法辨認。請選擇其他顏色。',
+			'settings.theme.rejectedDark' => '此顏色與深色背景過於接近，部分操作可能無法辨認。請選擇其他顏色。',
+			'settings.theme.weakContrast' => '此顏色在部分背景上的辨識度較弱。',
+			'settings.theme.applyAnyway' => '仍要套用',
+			'settings.theme.useDefault' => '使用預設粉色',
+			'settings.theme.saving' => '儲存中…',
+			'settings.theme.saveFailed' => '外觀儲存失敗，請重試。',
+			'settings.theme.unsaved' => '外觀變更尚未儲存。',
 			'settings.theme.system' => '跟隨系統',
 			'settings.theme.light' => '淺色',
 			'settings.theme.dark' => '深色',
+			'settings.theme.reduceTransparency' => '降低透明度',
+			'settings.theme.reduceTransparencyHint' => '使用實色表面，不顯示模糊效果',
 			'settings.language.title' => '語言',
 			'settings.language.systemDefault' => '跟隨系統',
 			'settings.language.enUs' => 'English (United States)',
@@ -1285,6 +1444,9 @@ extension on TranslationsZhHantTw {
 			'settings.downloads.actionFailed' => '下載操作失敗',
 			'settings.downloads.expand' => '展開',
 			'settings.downloads.collapse' => '收合',
+			'settings.downloads.viewAll' => '查看全部下載',
+			'settings.downloads.badgeFailures' => ({required Object count}) => '失敗的下載：${count}',
+			'settings.downloads.badgeActive' => ({required Object count}) => '進行中的下載：${count}',
 			'settings.proxy.title' => '網路代理',
 			'settings.proxy.shortTitle' => '代理',
 			'settings.proxy.subtitle' => '儲存後 Pixiv API 和圖片請求會使用所選代理。',
@@ -1302,6 +1464,7 @@ extension on TranslationsZhHantTw {
 			'settings.proxy.helper' => 'IP 和連接埠分開填寫，例如 127.0.0.1 和 7890。',
 			'settings.proxy.save' => '儲存',
 			'settings.proxy.saved' => '代理設定已儲存',
+			'settings.proxy.saveFailed' => '代理設定儲存失敗',
 			'settings.proxy.required' => '啟用代理前需要填寫 IP 和連接埠。',
 			'settings.proxy.invalid' => '請輸入有效的 IP 和連接埠。',
 			'settings.proxy.hostRequired' => '請輸入 IP。',
@@ -1319,15 +1482,14 @@ extension on TranslationsZhHantTw {
 			'settings.account.signedOutSubtitle' => '登入後顯示 Pixiv 帳號',
 			'settings.account.notSignedIn' => '尚未登入',
 			'settings.account.signOut' => '登出',
+			'me.profile' => '個人主頁',
 			'me.openProfile' => '開啟個人頁',
 			'me.following' => '我的關注',
 			'me.followers' => '我的粉絲',
 			'me.emptyFollowing' => '尚無關注使用者',
 			'me.emptyFollowers' => '尚無粉絲',
 			'me.about' => '關於',
-			'me.aboutSubtitle' => '版本、更新和專案連結',
 			'me.settings' => '設定',
-			'me.settingsSubtitle' => '主題、語言、圖片和下載',
 			'about.title' => '關於',
 			'about.appName' => 'freepiv',
 			'about.subtitle' => '用於瀏覽 Pixiv 內容的輕量客戶端。你可以在這裡查看目前版本、檢查更新並開啟專案下載頁面。',
@@ -1377,6 +1539,7 @@ extension on TranslationsZhHantTw {
 			'ranking.modes.dayR18Ai' => 'AI 生成 R-18',
 			'ranking.modes.week' => '每週',
 			'ranking.modes.weekR18' => '每週 R-18',
+			'ranking.modes.weekR18G' => '每週 R-18G',
 			'ranking.modes.weekOriginal' => '原創每週',
 			'ranking.modes.weekRookie' => '新人每週',
 			'ranking.modes.month' => '每月',
@@ -1415,6 +1578,7 @@ extension on TranslationsZhHantTw {
 			'search.empty.illustrations' => '找不到插畫',
 			'search.empty.novels' => '找不到小說',
 			'search.empty.users' => '找不到使用者',
+			'user.noPublicWorks' => '尚無公開作品',
 			'user.tabs.illustrations' => '插畫',
 			'user.tabs.manga' => '漫畫',
 			'user.tabs.novels' => '小說',
@@ -1471,16 +1635,23 @@ extension on TranslationsZhHantTw {
 			'illust.contextMenu.download' => '下載',
 			'illust.contextMenu.downloadAll' => '下載全部',
 			'illust.contextMenu.copyImage' => '複製圖像',
+			'illust.contextMenu.copyLink' => '複製作品連結',
+			'illust.contextMenu.openOriginal' => '在 Pixiv 開啟',
 			'illust.imageLabels.original' => '原圖',
 			'illust.imageLabels.large' => '大圖',
-			'illust.toast.downloadStarted' => '開始下載圖片',
+			'illust.imageLabels.image' => '圖片',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下載佇列：${count} 張圖片',
-			'illust.toast.downloadComplete' => ({required Object path}) => '下載完成：${path}',
+			'illust.toast.downloadComplete' => ({required Object name}) => '已儲存 ${name}',
 			'illust.toast.downloadFailed' => '下載失敗',
 			'illust.toast.copying' => ({required Object label}) => '正在複製${label}',
 			'illust.toast.copied' => ({required Object label}) => '已複製${label}',
 			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '已複製${label}：${value}',
 			'illust.toast.copyFailed' => ({required Object label}) => '複製${label}失敗',
+			'illust.toast.openFailed' => '無法在 Pixiv 開啟作品',
+			'illust.toast.linkCopied' => '已複製連結',
+			'illust.toast.linkCopyFailed' => '無法複製連結',
+			'illust.toast.alreadyDownloading' => '這一頁已在下載佇列中',
+			'illust.tooltip.play' => '播放動畫',
 			'illust.tooltip.previousImage' => '上一張圖片',
 			'illust.tooltip.nextImage' => '下一張圖片',
 			'illust.tooltip.backToDetail' => '回到圖片詳細資訊',
@@ -1504,11 +1675,17 @@ extension on TranslationsZhHantTw {
 			'illust.stats.pages' => '頁數',
 			'illust.tags.none' => '沒有標籤',
 			'illust.tags.tag' => '標籤',
+			'illust.tags.showMore' => ({required Object count}) => '展開其餘 ${count} 個標籤',
+			'illust.tags.showLess' => '收起標籤',
 			'illust.comments.failed' => '留言載入失敗',
 			'illust.comments.empty' => '尚無留言',
 			'illust.comments.moreAvailable' => '還有更多留言',
 			'illust.comments.hasReplies' => '有回覆',
 			'illust.comments.open' => '開啟留言',
+			'illust.comments.discardDraftTitle' => '離開留言？',
+			'illust.comments.discardDraftMessage' => '尚未送出的留言將會遺失。',
+			'illust.comments.continueEditing' => '繼續編輯',
+			'illust.comments.discardDraft' => '捨棄草稿',
 			'illust.comments.reply' => '回覆',
 			'illust.comments.replyingTo' => ({required Object name}) => '正在回覆 ${name}',
 			'illust.comments.loadReplies' => '載入回覆',
@@ -1516,6 +1693,7 @@ extension on TranslationsZhHantTw {
 			'illust.comments.repliesFailed' => '回覆載入失敗',
 			'illust.comments.sendFailed' => '留言傳送失敗',
 			'illust.comments.delete' => '刪除',
+			'illust.comments.deleteConfirm' => '刪除這則留言？',
 			'illust.comments.deleteFailed' => '留言刪除失敗',
 			'illust.comments.inputHint' => '寫下留言',
 			'illust.comments.replyInputHint' => ({required Object name}) => '回覆 ${name}',
@@ -1530,6 +1708,7 @@ extension on TranslationsZhHantTw {
 			'novel.detail.series' => '系列',
 			'novel.detail.content' => '正文',
 			'novel.detail.startReading' => '開始閱讀',
+			'novel.detail.continueReading' => '繼續閱讀',
 			'novel.detail.totalChars' => ({required Object count}) => '共 ${count} 字',
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} 段',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} 頁',
@@ -1538,6 +1717,8 @@ extension on TranslationsZhHantTw {
 			'novel.reader.chapters' => '章節',
 			'novel.reader.settings' => '閱讀設定',
 			'novel.reader.emptyBody' => '正文為空',
+			'novel.reader.embeddedImageUnavailable' => '圖片暫時無法顯示',
+			'novel.reader.openEmbeddedWork' => '開啟關聯作品',
 			'novel.reader.totalChars' => ({required Object count}) => '共 ${count} 字',
 			'novel.reader.pagePosition' => ({required Object current, required Object total}) => '${current} / ${total} 頁',
 			'novel.reader.pageTotal' => ({required Object total}) => '${total} 頁',
@@ -1557,7 +1738,7 @@ extension on TranslationsZhHantTw {
 			'follow.tooltipFollow' => '關注使用者',
 			'follow.tooltipUnfollow' => '取消關注',
 			'follow.followed' => '已關注',
-			'follow.notFollowed' => '未關注',
+			'follow.follow' => '關注',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
 			'richText.illustId' => ({required Object id}) => '插畫 ID：${id}',
 			'richText.userId' => ({required Object id}) => '使用者 ID：${id}',
@@ -1565,6 +1746,7 @@ extension on TranslationsZhHantTw {
 			'fanbox.updateSession' => '更新 Cookie',
 			'fanbox.title' => 'FANBOX',
 			'fanbox.home' => '關注動態',
+			'fanbox.feedGroup' => '動態',
 			'fanbox.supporting' => '贊助動態',
 			'fanbox.following' => '關注的創作者',
 			'fanbox.recommended' => '探索創作者',
@@ -1594,6 +1776,8 @@ extension on TranslationsZhHantTw {
 			'fanbox.monthlyFee' => ({required Object fee}) => '¥${fee}／月',
 			'fanbox.supportOnWebsite' => '在 FANBOX 查看方案',
 			'fanbox.follow' => '關注',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.unfollow' => '取消關注',
 			'fanbox.like' => '按讚',
 			'fanbox.liked' => '已按讚',

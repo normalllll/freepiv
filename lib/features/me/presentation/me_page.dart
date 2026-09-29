@@ -1,97 +1,130 @@
+import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:freepiv/shared/layout/fp_collapsing_header.dart';
+import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'dart:async';
-import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/features/fanbox/logic.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/shared/layout/fp_page_header.dart';
+import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
+import 'package:freepiv/shared/ui/fp_grouped_rows.dart';
 import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
 
-class MePage extends ConsumerStatefulWidget {
+class MePage extends StatefulWidget {
   const MePage({super.key});
 
   @override
-  ConsumerState<MePage> createState() => _MePageState();
+  State<MePage> createState() => _MePageState();
 }
 
-class _MePageState extends ConsumerState<MePage> {
+class _MePageState extends State<MePage> {
+  final _scrollController = ScrollController();
+  ValueListenable<({AppRoute route, int sequence})>? _primaryReselection;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final next = ShellNavigationScope.maybeOf(context)?.primaryReselection;
+    if (identical(next, _primaryReselection)) return;
+    _primaryReselection?.removeListener(_handlePrimaryReselection);
+    _primaryReselection = next;
+    next?.addListener(_handlePrimaryReselection);
+  }
+
+  void _handlePrimaryReselection() {
+    final signal = _primaryReselection?.value;
+    if (signal == null || signal.route != AppRoute.me || signal.sequence == 0 || !_scrollController.hasClients) return;
+    final duration = AppMotion.duration(context, AppMotion.navigation);
+    if (duration == Duration.zero) {
+      _scrollController.jumpTo(0);
+    } else {
+      unawaited(_scrollController.animateTo(0, duration: duration, curve: Curves.easeOutCubic));
+    }
+  }
+
+  @override
+  void dispose() {
+    _primaryReselection?.removeListener(_handlePrimaryReselection);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final translations = context.t;
-    final tokens = FreepivThemeTokens.of(context);
 
     return AutoScaffold(
-      builder: (context, layout, orientation, shouldUseDesktopShell) {
+      builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
-          backgroundColor: tokens.surface,
-          appBar: shouldUseDesktopShell ? null : AppBar(title: Text(translations.navigation.me)),
           body: SafeArea(
-            top: shouldUseDesktopShell,
             child: ValueListenableBuilder<UserAccountResult?>(
               valueListenable: pixivAccountNotifier,
               builder: (context, account, child) {
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    final minHeight = math.max(0.0, constraints.maxHeight - 24);
-
-                    return SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: 560, minHeight: minHeight),
-                          child: IntrinsicHeight(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                _MeAccountCard(account: account, onSignOut: _signOut),
-                                const SizedBox(height: 12),
-                                _MeNavigationEntry(
-                                  icon: Icons.person_add_alt_1_outlined,
-                                  title: translations.me.following,
-                                  enabled: account != null,
-                                  onTap: () => context.pushNamed(AppRoute.meFollowing.name),
-                                ),
-                                const SizedBox(height: 8),
-                                _MeNavigationEntry(
-                                  icon: Icons.people_outline,
-                                  title: translations.me.followers,
-                                  enabled: account != null,
-                                  onTap: () => context.pushNamed(AppRoute.meFollowers.name),
-                                ),
-                                const SizedBox(height: 8),
-                                _MeNavigationEntry(
-                                  icon: Icons.article_outlined,
-                                  title: translations.fanbox.title,
-                                  enabled: true,
-                                  onTap: () {
-                                    final selection = ref.read(fanboxBrowseSelectionProvider);
-                                    context.push(
-                                      Uri(
-                                        path: '/fanbox/browse',
-                                        queryParameters: {'section': selection.section.name, if (selection.query.isNotEmpty) 'q': selection.query},
-                                      ).toString(),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 24),
-                                _MeAboutEntry(onTap: _openAbout),
-                                const SizedBox(height: 8),
-                                _MeSettingsEntry(onTap: _openSettings),
-                              ],
-                            ),
-                          ),
+                return SingleChildScrollView(
+                  key: const PageStorageKey('me-overview'),
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: _MeColumns(
+                    account: [
+                      _MeAccountCard(account: account),
+                      if (account == null) ...[
+                        const SizedBox(height: 12),
+                        FilledButton.icon(
+                          onPressed: () => context.pushNamed(AppRoute.login.name),
+                          icon: const Icon(Icons.login),
+                          label: Text(translations.login.signInToPixiv),
                         ),
+                      ],
+                    ],
+                    groups: [
+                      FpGroupedRows(
+                        children: [
+                          _MeNavigationEntry(
+                            icon: Icons.bookmarks_outlined,
+                            title: translations.user.tabs.bookmarks,
+                            enabled: int.tryParse(account?.user.id ?? '') != null,
+                            onTap: () =>
+                                context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': account!.user.id}, queryParameters: {'tab': 'bookmarks'}),
+                          ),
+                          _MeNavigationEntry(
+                            icon: Icons.person_add_alt_1_outlined,
+                            title: translations.me.following,
+                            enabled: account != null,
+                            onTap: () => context.pushNamed(AppRoute.meFollowing.name),
+                          ),
+                          _MeNavigationEntry(
+                            icon: Icons.people_outline,
+                            title: translations.me.followers,
+                            enabled: account != null,
+                            onTap: () => context.pushNamed(AppRoute.meFollowers.name),
+                          ),
+                        ],
                       ),
-                    );
-                  },
+                      FpGroupedRows(
+                        children: [
+                          _MeNavigationEntry(
+                            icon: Icons.download_outlined,
+                            title: translations.settings.downloads.tasksTitle,
+                            enabled: true,
+                            onTap: () => context.pushNamed(AppRoute.downloads.name),
+                          ),
+                          _MeNavigationEntry(icon: Icons.info_outline, title: translations.me.about, enabled: true, onTap: _openAbout),
+                          _MeNavigationEntry(icon: Icons.settings_outlined, title: translations.me.settings, enabled: true, onTap: _openSettings),
+                        ],
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
@@ -99,13 +132,6 @@ class _MePageState extends ConsumerState<MePage> {
         );
       },
     );
-  }
-
-  void _signOut() {
-    setPixivAccount(null);
-    if (mounted) {
-      context.go(AppRoute.login.path);
-    }
   }
 
   void _openSettings() {
@@ -170,32 +196,44 @@ class _MeUserListPageState extends State<MeUserListPage> {
     final source = _source;
 
     return AutoScaffold(
-      builder: (context, layout, orientation, shouldUseDesktopShell) {
+      builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
-          backgroundColor: FreepivThemeTokens.of(context).surface,
-          appBar: shouldUseDesktopShell ? null : AppBar(title: Text(title)),
-          body: SafeArea(
-            top: shouldUseDesktopShell,
-            child: source == null
-                ? EmptyContent(
-                    icon: Icons.account_circle_outlined,
-                    title: translations.settings.account.notSignedIn,
-                    message: translations.settings.account.signedOutSubtitle,
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (shouldUseDesktopShell) ...[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(4, 18, 4, 10),
-                          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+          body: FpCollapsingHeader(
+            header: windowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout) ? null : FpPageHeader(title: Text(title)),
+            child: SafeArea(
+              child: source == null
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          EmptyContent(
+                            icon: Icons.account_circle_outlined,
+                            title: translations.settings.account.notSignedIn,
+                            message: translations.settings.account.signedOutSubtitle,
+                          ),
+                          FilledButton.icon(
+                            onPressed: () => context.pushNamed(AppRoute.login.name),
+                            icon: const Icon(Icons.login),
+                            label: Text(translations.login.signInToPixiv),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (useHorizontalLayout) ...[
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(4, 18, 4, 10),
+                            child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+                          ),
+                        ],
+                        Expanded(
+                          child: _MeUserListPane(source: source, emptyIcon: emptyIcon, emptyTitle: emptyTitle),
                         ),
                       ],
-                      Expanded(
-                        child: _MeUserListPane(source: source, emptyIcon: emptyIcon, emptyTitle: emptyTitle),
-                      ),
-                    ],
-                  ),
+                    ),
+            ),
           ),
         );
       },
@@ -238,10 +276,9 @@ class _MeUserListPageState extends State<MeUserListPage> {
 }
 
 class _MeAccountCard extends StatelessWidget {
-  const _MeAccountCard({required this.account, required this.onSignOut});
+  const _MeAccountCard({required this.account});
 
   final UserAccountResult? account;
-  final VoidCallback onSignOut;
 
   @override
   Widget build(BuildContext context) {
@@ -249,72 +286,71 @@ class _MeAccountCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final user = account?.user;
     final userId = int.tryParse(user?.id ?? '');
-    final subtitle = user == null
-        ? translations.settings.account.signedOutSubtitle
-        : user.mailAddress.isEmpty
-        ? '@${user.account}'
-        : user.mailAddress;
+    // Name first, then the public @account, then the private e-mail as the
+    // quietest line.
+    final secondary = Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant);
 
-    return EnergeticCard(
-      accentColor: FreepivThemeTokens.of(context).brand,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _MeAccountAvatar(
-                imageUrl: user?.profileImageUrls.px170X170 ?? user?.profileImageUrls.px50X50,
-                onTap: userId == null
-                    ? null
-                    : () {
-                        context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '$userId'});
-                      },
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user?.name ?? translations.settings.account.notSignedIn,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
-                    ),
-                    if (user != null) ...[
-                      const SizedBox(height: 6),
+    return FpSurface(
+      role: FpSurfaceRole.glassPanel,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _MeAccountAvatar(
+                  imageUrl: user?.profileImageUrls.px170X170 ?? user?.profileImageUrls.px50X50,
+                  onTap: userId == null
+                      ? null
+                      : () {
+                          context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '$userId'});
+                        },
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        '@${user.account}',
+                        user?.name ?? translations.settings.account.notSignedIn,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                       ),
+                      const SizedBox(height: 3),
+                      Text(
+                        user == null ? translations.settings.account.signedOutSubtitle : '@${user.account}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: secondary,
+                      ),
+                      if (user != null && user.mailAddress.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          user.mailAddress,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: TextButton.icon(
-              onPressed: account == null ? null : onSignOut,
-              icon: const Icon(Icons.logout),
-              label: Text(translations.settings.account.signOut),
-              style: TextButton.styleFrom(foregroundColor: colorScheme.error),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 14),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: TextButton.icon(
+                onPressed: userId == null ? null : () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '$userId'}),
+                icon: const Icon(Icons.account_circle_outlined),
+                label: Text(translations.me.profile),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -334,7 +370,7 @@ class _MeAccountAvatar extends StatelessWidget {
     Widget avatar = DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: tokens.brand.withValues(alpha: 0.56), width: 2),
+        border: Border.all(color: tokens.line.withValues(alpha: 0.55)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(2),
@@ -360,7 +396,7 @@ class _MeAccountAvatar extends StatelessWidget {
 
     avatar = Tooltip(
       message: context.t.me.openProfile,
-      child: InkWell(customBorder: const CircleBorder(), onTap: onTap, child: avatar),
+      child: AppClickSurface(customBorder: const CircleBorder(), onTap: onTap, child: avatar),
     );
 
     return Semantics(button: true, label: context.t.me.openProfile, child: avatar);
@@ -386,11 +422,7 @@ class _MeNavigationEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EnergeticCard(
-      onTap: enabled ? onTap : null,
-      padding: EdgeInsets.zero,
-      child: ListTile(enabled: enabled, leading: Icon(icon), title: Text(title), trailing: const Icon(Icons.chevron_right)),
-    );
+    return ListTile(enabled: enabled, onTap: enabled ? onTap : null, leading: Icon(icon), title: Text(title), trailing: const Icon(Icons.chevron_right));
   }
 }
 
@@ -427,55 +459,42 @@ class _MeUserListPaneState extends State<_MeUserListPane> {
       builder: (context, physics, locators) {
         return AnimatedBuilder(
           animation: widget.source,
-          builder: (context, child) {
-            final source = widget.source;
-            final lastError = source.lastError;
-
-            if (!source.initialized && source.refreshing && source.isEmpty) {
-              return DataLoadingCustomScrollView(
-                physics: physics,
-                slivers: [
-                  ?locators.sliverHeader,
-                  const SliverPadding(padding: EdgeInsets.only(top: 12), sliver: SliverUserPreviewerSkeletonList(scrollIllustPreviews: false)),
-                ],
-              );
-            }
-
-            if (!source.initialized && lastError != null) {
-              return DataSliverFillBody(
-                physics: physics,
-                sliverHeader: locators.sliverHeader,
-                child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
-              );
-            }
-
-            if (source.initialized && source.isEmpty) {
-              return DataSliverFillBody(
-                physics: physics,
-                sliverHeader: locators.sliverHeader,
-                child: EmptyContent(icon: widget.emptyIcon, title: widget.emptyTitle),
-              );
-            }
-
-            return DataLoadingCustomScrollView(
-              physics: physics,
-              slivers: [
-                ?locators.sliverHeader,
-                SliverDataList<UserPreview>(
-                  source: source,
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                  itemBuilder: (context, userPreview, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: UserPreviewer(userPreview: userPreview, scrollIllustPreviews: false),
-                    );
-                  },
-                ),
-              ],
-            );
-          },
+          builder: (context, child) => LoadStateSwitcher(phase: widget.source.phase, child: _buildPhase(context, physics, locators)),
         );
       },
+    );
+  }
+
+  Widget _buildPhase(BuildContext context, ScrollPhysics? physics, DataRefreshLocators locators) {
+    final source = widget.source;
+    final lastError = source.lastError;
+
+    if (source.phase == LoadPhase.loading) {
+      return DataLoadingCustomScrollView(physics: physics, slivers: [?locators.sliverHeader, const SliverUserPreviewerSkeletonGrid()]);
+    }
+
+    if (!source.initialized && lastError != null) {
+      return DataSliverFillBody(
+        physics: physics,
+        sliverHeader: locators.sliverHeader,
+        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+      );
+    }
+
+    if (source.initialized && source.isEmpty) {
+      return DataSliverFillBody(
+        physics: physics,
+        sliverHeader: locators.sliverHeader,
+        child: EmptyContent(icon: widget.emptyIcon, title: widget.emptyTitle),
+      );
+    }
+
+    return DataLoadingCustomScrollView(
+      physics: physics,
+      slivers: [
+        ?locators.sliverHeader,
+        SliverUserPreviewGrid(source: source),
+      ],
     );
   }
 
@@ -485,50 +504,6 @@ class _MeUserListPaneState extends State<_MeUserListPane> {
     }
 
     unawaited(widget.source.refresh(true));
-  }
-}
-
-class _MeSettingsEntry extends StatelessWidget {
-  const _MeSettingsEntry({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final translations = context.t;
-
-    return EnergeticCard(
-      onTap: onTap,
-      padding: EdgeInsets.zero,
-      child: ListTile(
-        leading: const Icon(Icons.settings_outlined),
-        title: Text(translations.me.settings),
-        subtitle: Text(translations.me.settingsSubtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-        trailing: const Icon(Icons.chevron_right),
-      ),
-    );
-  }
-}
-
-class _MeAboutEntry extends StatelessWidget {
-  const _MeAboutEntry({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final translations = context.t;
-
-    return EnergeticCard(
-      onTap: onTap,
-      padding: EdgeInsets.zero,
-      child: ListTile(
-        leading: const Icon(Icons.info_outline),
-        title: Text(translations.me.about),
-        subtitle: Text(translations.me.aboutSubtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-        trailing: const Icon(Icons.chevron_right),
-      ),
-    );
   }
 }
 
@@ -561,5 +536,47 @@ class _MeUserListSource extends NextUrlListSource<UserPreview, UserPageResult> {
   @override
   List<UserPreview> itemsFromPage(UserPageResult page) {
     return page.userPreviews;
+  }
+}
+
+/// The account card heads the page; the entry groups follow in one column,
+/// or side by side once the content area is wide enough. The groups have the
+/// same number of rows, so side by side they share one top and bottom edge
+/// instead of leaving the account card stranded in a column of its own.
+class _MeColumns extends StatelessWidget {
+  const _MeColumns({required this.account, required this.groups});
+
+  final List<Widget> account;
+  final List<Widget> groups;
+
+  static const _sideBySideWidth = 960.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return ContentColumn(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final sideBySide = constraints.maxWidth >= _sideBySideWidth;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ...account,
+              const SizedBox(height: 24),
+              if (sideBySide)
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final (index, group) in groups.indexed) ...[if (index > 0) const SizedBox(width: 24), Expanded(child: group)],
+                    ],
+                  ),
+                )
+              else
+                for (final (index, group) in groups.indexed) ...[if (index > 0) const SizedBox(height: 24), group],
+            ],
+          );
+        },
+      ),
+    );
   }
 }

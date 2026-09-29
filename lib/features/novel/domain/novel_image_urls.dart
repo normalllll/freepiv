@@ -17,7 +17,13 @@ String novelCoverUrl(Novel novel, WebviewNovel webviewNovel) {
   return novel.imageUrls.large.isNotEmpty ? novel.imageUrls.large : novel.imageUrls.medium;
 }
 
-// final _uploadedImagePattern = RegExp(r'\[uploadedimage:([^\]]+)\]');
+/// The image for each `[uploadedimage:<id>]` and `[pixivimage:<id>]` marker
+/// in the text, keyed by the marker's payload.
+Map<String, String> novelEmbeddedImageUrls(WebviewNovel webviewNovel) => {
+  for (final image in webviewNovel.images)
+    if (_bestNovelImageUrl(image) case final url? when _isImageUrl(url)) image.novelImageId: url,
+  ...novelEmbeddedWorkUrls(webviewNovel),
+};
 
 /// Pixiv works embedded with `[pixivimage:<id>]` or `[pixivimage:<id>-<page>]`,
 /// keyed like the marker. The webview reports them as one JSON object, which

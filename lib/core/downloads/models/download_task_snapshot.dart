@@ -1,10 +1,10 @@
 import 'download_enums.dart';
+import 'download_origin.dart';
 
 class DownloadTaskSnapshot {
   const DownloadTaskSnapshot({
     required this.id,
-    required this.illustId,
-    required this.pageIndex,
+    required this.origin,
     required this.title,
     required this.filename,
     required this.status,
@@ -22,8 +22,7 @@ class DownloadTaskSnapshot {
   });
 
   final String id;
-  final int illustId;
-  final int pageIndex;
+  final DownloadOrigin origin;
   final String title;
   final String filename;
   final String? thumbnailUrl;

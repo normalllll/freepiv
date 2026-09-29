@@ -18,7 +18,7 @@ class SearchAutocompleteSession extends ChangeNotifier {
   }
 
   static final _numericPattern = RegExp(r'^\d+$');
-  static const _debounceDuration = Duration(milliseconds: 360);
+  static const _debounceDuration = Duration(milliseconds: 250);
 
   final controller = HighlightTextEditingController();
   final focusNode = FocusNode();
@@ -40,6 +40,8 @@ class SearchAutocompleteSession extends ChangeNotifier {
   String get rawText => controller.text;
 
   String get searchText => rawText.trim();
+
+  bool get isComposing => _isComposing(controller.value);
 
   SearchType get type => _type;
 

@@ -1,6 +1,8 @@
 import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/core/utils/text_format.dart';
+import 'package:freepiv/shared/widgets/error.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/core/media/logic.dart';
@@ -9,6 +11,8 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
+import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
+import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'logic.dart';
 
 Future<void> openFanboxLink(BuildContext context, String value) async {
@@ -37,6 +41,12 @@ String fanboxDate(BuildContext context, String date) {
 }
 
 String fanboxFee(BuildContext context, int fee) => MaterialLocalizations.of(context).formatDecimal(fee);
+
+/// FANBOX serves images to its own pages, and its own hosts need the session.
+Map<String, String> fanboxImageHeaders(Uri uri, String? session) => {
+  'Referer': 'https://www.fanbox.cc/',
+  if (session != null && (uri.host == 'fanbox.cc' || uri.host.endsWith('.fanbox.cc'))) 'Cookie': 'FANBOXSESSID=$session',
+};
 
 class FanboxImageView extends ConsumerWidget {
   const FanboxImageView(this.url, {this.height, this.fit = BoxFit.cover, super.key});
@@ -68,15 +78,7 @@ class FanboxImageView extends ConsumerWidget {
           ),
           data: (session) => ExtendedImage(
             image: RustExtendedNetworkImageProvider(
-              request: MediaRequest(
-                url: url!,
-                allowDiskCache: false,
-                accountKey: session ?? '',
-                headers: {
-                  'Referer': 'https://www.fanbox.cc/',
-                  if (session != null && (uri.host == 'fanbox.cc' || uri.host.endsWith('.fanbox.cc'))) 'Cookie': 'FANBOXSESSID=$session',
-                },
-              ),
+              request: MediaRequest(url: url!, allowDiskCache: false, accountKey: session ?? '', headers: fanboxImageHeaders(uri, session)),
               mediaStream: ref.watch(rustMediaTransportProvider).stream,
             ),
             height: height,
@@ -107,13 +109,14 @@ class FanboxErrorView extends ConsumerWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(fanboxError(context, error)),
+        Text(fanboxError(context, error), textAlign: TextAlign.center),
         const SizedBox(height: 12),
         Wrap(
           spacing: 12,
           runSpacing: 12,
+          alignment: WrapAlignment.center,
           children: [
-            OutlinedButton(onPressed: retry, child: Text(context.t.fanbox.retry)),
+            FilledButton(onPressed: retry, child: Text(context.t.fanbox.retry)),
             if (error is FanboxSignedOut || error is PixivError && (error as PixivError).status == 401)
               TextButton(
                 onPressed: () async {
@@ -124,7 +127,47 @@ class FanboxErrorView extends ConsumerWidget {
               ),
           ],
         ),
+        if (error is! FanboxSignedOut)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: ErrorDetails(details: pixivErrorDetails(error)),
+            ),
+          ),
       ],
     ),
   );
+}
+
+/// A FANBOX image with the artwork image menu (download, copy on desktop).
+/// It downloads through FANBOX's own downloads, which carry the session
+/// without storing it, into the FANBOX folder as [filename].
+class FanboxImageMenu extends ConsumerWidget {
+  const FanboxImageMenu({required this.url, required this.child, this.filename, super.key});
+
+  final String url;
+
+  /// Defaults to the image's own file name.
+  final String? filename;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(fanboxSessionProvider).value;
+    final uri = Uri.parse(url);
+    return ContentImageMenuRegion(
+      actions: ContentImageActions(
+        url: url,
+        headers: fanboxImageHeaders(uri, session),
+        download: (origin) async {
+          final downloads = ref.read(fanboxDownloadsProvider.notifier);
+          final directory = await fanboxDownloadDirectory();
+          DownloadFlight.launch(origin: origin);
+          await downloads.downloadPosts(directory: directory, media: [(url: url, filename: filename ?? uri.pathSegments.last)]);
+        },
+      ),
+      child: child,
+    );
+  }
 }

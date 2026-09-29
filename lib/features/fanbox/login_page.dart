@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/shared/layout/fp_page_header.dart';
 import 'package:freepiv/shared/widgets/refresh_dots.dart';
 import 'package:freepiv/src/rust/api/fanbox_login.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -169,7 +170,9 @@ class _FanboxWebLoginPageState extends ConsumerState<FanboxWebLoginPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(t.login),
-          leading: BackButton(onPressed: _back),
+          leading: CompactBackButton(onPressed: _back),
+          leadingWidth: FpPageHeader.leadingWidth,
+          titleSpacing: FpPageHeader.titleSpacingAfterBack,
           actions: [IconButton(tooltip: t.cancel, icon: const Icon(Icons.close), onPressed: () => _close(false))],
         ),
         body: SafeArea(

@@ -1,10 +1,12 @@
 {
-  "nativeWindow": {"minimize":"最小化","maximize":"最大化","restore":"还原","close":"关闭"},
+  "nativeWindow": {"minimize":"最小化","maximize":"最大化","restore":"还原","close":"关闭","illust":"插画","manga":"漫画","novel":"小说","workFallback":"$type：$id","workTitle":"$type：$id · $title","relatedTitle":"相似作品 · $title","user":"用户","userFallback":"用户：$id","viewerTitle":"$title · $page/$total"},
   "discover": {
     "searchHint": "搜索 Pixiv",
     "history": "搜索历史",
     "viewAll": "查看全部",
-    "clearHistory": "清空历史"
+    "clearHistory": "清空历史",
+    "deleteHistoryItem": "删除这条搜索记录",
+    "emptyHistory": "搜索记录会显示在这里"
   },
   "app": {
     "title": "freepiv"
@@ -16,9 +18,16 @@
     "newest": "最新",
     "ranking": "排行榜",
     "me": "我的",
-    "settings": "设置"
+    "settings": "设置",
+    "more": "更多",
+    "expand": "展开导航",
+    "collapse": "收起导航",
+    "downloads": "下载",
+    "about": "关于"
   },
+  "errors": {"generic": "内容加载失败，请重试。", "connection": "请检查网络连接后重试。", "session": "登录已过期，请重新登录。", "forbidden": "你暂无权限查看此内容。", "missing": "此内容已不可用。"},
   "common": {
+    "viewLog": "查看日志",
     "apply": "应用",
     "reset": "重置",
     "discover": "发现",
@@ -33,7 +42,10 @@
     "notFound": "未找到",
     "copy": "复制$label",
     "labelValue": "$label：$value",
-    "errorWithCause": "$message：$cause"
+    "errorWithCause": "$message：$cause",
+    "errorDetails": "错误详情",
+    "copyDetails": "复制详情",
+    "detailsCopied": "已复制错误详情"
   },
   "refresh": {
     "pullToRefresh": "下拉刷新",
@@ -71,10 +83,48 @@
   },
   "settings": {
     "theme": {
-      "title": "主题",
+      "title": "外观",
+      "displayMode": "显示模式",
+      "tone": "色调",
+      "neutral": "中性",
+      "cool": "冷色",
+      "warm": "暖色",
+      "systemNeutralHint": "跟随系统时使用中性色",
+      "lightAccent": "浅色主色",
+      "darkAccent": "深色主色",
+      "systemEditingLight": "当前随系统使用浅色主色",
+      "systemEditingDark": "当前随系统使用深色主色",
+      "presetPink": "默认粉色",
+      "presetBlue": "蔚蓝",
+      "presetTeal": "青绿",
+      "presetViolet": "紫罗兰",
+      "presetAmber": "琥珀",
+      "presetOrange": "橙色",
+      "custom": "自定义",
+      "defaultAccent": "默认粉色",
+      "restoreDefault": "恢复默认粉色",
+      "editLightAccent": "自定义浅色主色",
+      "editDarkAccent": "自定义深色主色",
+      "hue": "色相",
+      "saturation": "饱和度",
+      "value": "明度",
+      "hex": "HEX 颜色",
+      "invalidHex": "请输入六位 HEX 颜色",
+      "preview": "预览",
+      "previewButton": "按钮",
+      "rejectedLight": "此颜色与浅色背景过于接近，部分操作可能无法辨认。请选择其他颜色。",
+      "rejectedDark": "此颜色与深色背景过于接近，部分操作可能无法辨认。请选择其他颜色。",
+      "weakContrast": "此颜色在部分背景上的辨识度较弱。",
+      "applyAnyway": "仍然应用",
+      "useDefault": "使用默认粉色",
+      "saving": "正在保存…",
+      "saveFailed": "外观保存失败，请重试。",
+      "unsaved": "外观更改尚未保存。",
       "system": "跟随系统",
       "light": "浅色",
-      "dark": "深色"
+      "dark": "深色",
+      "reduceTransparency": "减少透明度",
+      "reduceTransparencyHint": "使用实色表面，不显示模糊效果"
     },
     "language": {
       "title": "语言",
@@ -134,7 +184,10 @@
       "syncFailed": "下载状态同步失败",
       "actionFailed": "下载操作失败",
       "expand": "展开",
-      "collapse": "收起"
+      "collapse": "收起",
+      "viewAll": "查看全部下载",
+      "badgeFailures": "失败的下载：$count",
+      "badgeActive": "进行中的下载：$count"
     },
     "proxy": {
       "title": "网络代理",
@@ -154,6 +207,7 @@
       "helper": "IP 和端口分开填写，例如 127.0.0.1 和 7890。",
       "save": "保存",
       "saved": "代理设置已保存",
+      "saveFailed": "代理设置保存失败",
       "required": "启用代理前需要填写 IP 和端口。",
       "invalid": "请输入有效的 IP 和端口。",
       "hostRequired": "请输入 IP。",
@@ -176,15 +230,14 @@
     }
   },
   "me": {
+    "profile": "个人主页",
     "openProfile": "打开个人主页",
     "following": "我的关注",
     "followers": "我的粉丝",
     "emptyFollowing": "暂无关注用户",
     "emptyFollowers": "暂无粉丝",
     "about": "关于",
-    "aboutSubtitle": "版本、更新和项目链接",
-    "settings": "设置",
-    "settingsSubtitle": "主题、语言、图片和下载"
+    "settings": "设置"
   },
   "about": {
     "title": "关于",
@@ -243,6 +296,7 @@
       "dayR18Ai": "AI 生成 R-18",
       "week": "每周",
       "weekR18": "每周 R-18",
+      "weekR18G": "每周 R-18G",
       "weekOriginal": "原创每周",
       "weekRookie": "新人每周",
       "month": "每月"
@@ -302,6 +356,7 @@
     }
   },
   "user": {
+    "noPublicWorks": "暂无公开作品",
     "tabs": {
       "illustrations": "插画",
       "manga": "漫画",
@@ -382,23 +437,30 @@
     "contextMenu": {
       "download": "下载",
       "downloadAll": "下载全部",
-      "copyImage": "复制图片"
+      "copyImage": "复制图片",
+      "copyLink": "复制作品链接",
+      "openOriginal": "在 Pixiv 打开"
     },
     "imageLabels": {
       "original": "原图",
-      "large": "大图"
+      "large": "大图",
+      "image": "图片"
     },
     "toast": {
-      "downloadStarted": "开始下载图片",
       "downloadAllQueued": "已加入下载队列：$count 张图片",
-      "downloadComplete": "下载完成：$path",
+      "downloadComplete": "已保存 $name",
       "downloadFailed": "下载失败",
       "copying": "正在复制$label",
       "copied": "已复制$label",
       "copiedValue": "已复制$label：$value",
-      "copyFailed": "复制$label失败"
+      "copyFailed": "复制$label失败",
+      "openFailed": "无法在 Pixiv 打开作品",
+      "linkCopied": "已复制链接",
+      "linkCopyFailed": "无法复制链接",
+      "alreadyDownloading": "这一页已在下载队列中"
     },
     "tooltip": {
+      "play": "播放动画",
       "previousImage": "上一张图片",
       "nextImage": "下一张图片",
       "backToDetail": "回到图片详情",
@@ -431,7 +493,9 @@
     },
     "tags": {
       "none": "没有标签",
-      "tag": "标签"
+      "tag": "标签",
+      "showMore": "展开其余 $count 个标签",
+      "showLess": "收起标签"
     },
     "comments": {
       "failed": "评论加载失败",
@@ -439,6 +503,10 @@
       "moreAvailable": "还有更多评论",
       "hasReplies": "有回复",
       "open": "打开评论",
+      "discardDraftTitle": "离开评论？",
+      "discardDraftMessage": "尚未发送的评论将会丢失。",
+      "continueEditing": "继续编辑",
+      "discardDraft": "丢弃草稿",
       "reply": "回复",
       "replyingTo": "正在回复 $name",
       "loadReplies": "加载回复",
@@ -446,6 +514,7 @@
       "repliesFailed": "回复加载失败",
       "sendFailed": "评论发送失败",
       "delete": "删除",
+      "deleteConfirm": "删除这条评论？",
       "deleteFailed": "评论删除失败",
       "inputHint": "写下评论",
       "replyInputHint": "回复 $name",
@@ -468,6 +537,7 @@
       "series": "系列",
       "content": "正文",
       "startReading": "开始阅读",
+      "continueReading": "继续阅读",
       "totalChars": "共 $count 字",
       "paragraphCount": "$count 段",
       "segmentCount": "$count 页"
@@ -478,6 +548,8 @@
       "chapters": "章节",
       "settings": "阅读设置",
       "emptyBody": "正文为空",
+      "embeddedImageUnavailable": "图片暂时无法显示",
+      "openEmbeddedWork": "打开关联作品",
       "totalChars": "共 $count 字",
       "pagePosition": "$current / $total 页",
       "pageTotal": "$total 页",
@@ -500,7 +572,7 @@
     "tooltipFollow": "关注用户",
     "tooltipUnfollow": "取消关注",
     "followed": "已关注",
-    "notFollowed": "未关注"
+    "follow": "关注"
   },
   "richText": {
     "twitterUser": "Twitter：$username",
@@ -512,6 +584,7 @@
     "updateSession": "更新 Cookie",
     "title": "FANBOX",
     "home": "关注动态",
+    "feedGroup": "动态",
     "supporting": "赞助动态",
     "following": "关注的创作者",
     "recommended": "发现创作者",

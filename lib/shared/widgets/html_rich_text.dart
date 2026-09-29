@@ -1,5 +1,7 @@
+import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/content_script.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:go_router/go_router.dart';
@@ -71,8 +73,14 @@ TextSpan buildHtmlTextSpan(
   final colorScheme = Theme.of(context).colorScheme;
   final builder = _HtmlTextSpanBuilder(context, tapRecognizer: tapRecognizer);
 
+  // Captions and comments are user content: draw CJK in the content's own
+  // regional glyphs rather than the interface language's.
   return TextSpan(
-    style: style ?? Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurface, height: 1.35) ?? TextStyle(color: colorScheme.onSurface),
+    style: contentTextStyle(
+      context,
+      htmlString,
+      style ?? Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurface, height: 1.35) ?? TextStyle(color: colorScheme.onSurface),
+    ),
     children: [for (final node in document.nodes) builder.buildNode(node)],
   );
 }
@@ -128,7 +136,7 @@ class _HtmlTextSpanBuilder {
     if (twitterUsername != null) {
       return TextSpan(
         text: context.t.richText.twitterUser(username: twitterUsername),
-        style: _knownLinkStyle(isStrong),
+        style: _knownLinkStyle(context, isStrong),
         recognizer: tapRecognizer?.call(() {
           _openTwitterUser(twitterUsername, fallbackUrl: href);
         }),
@@ -139,7 +147,7 @@ class _HtmlTextSpanBuilder {
     if (illustId != null) {
       return TextSpan(
         text: context.t.richText.illustId(id: illustId),
-        style: _knownLinkStyle(isStrong),
+        style: _knownLinkStyle(context, isStrong),
         recognizer: tapRecognizer?.call(() {
           context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': illustId});
         }),
@@ -150,7 +158,7 @@ class _HtmlTextSpanBuilder {
     if (novelId != null) {
       return TextSpan(
         text: 'Novel ID: $novelId',
-        style: _knownLinkStyle(isStrong),
+        style: _knownLinkStyle(context, isStrong),
         recognizer: tapRecognizer?.call(() {
           context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': novelId});
         }),
@@ -161,7 +169,7 @@ class _HtmlTextSpanBuilder {
     if (userId != null) {
       return TextSpan(
         text: context.t.richText.userId(id: userId),
-        style: _knownLinkStyle(isStrong),
+        style: _knownLinkStyle(context, isStrong),
         recognizer: tapRecognizer?.call(() {
           context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': userId});
         }),
@@ -170,7 +178,7 @@ class _HtmlTextSpanBuilder {
 
     return TextSpan(
       text: text.isEmpty ? href : text,
-      style: _genericLinkStyle(isStrong),
+      style: _genericLinkStyle(context, isStrong),
       recognizer: tapRecognizer?.call(() {
         _openExternalUrl(href);
       }),
@@ -182,7 +190,7 @@ class _HtmlTextSpanBuilder {
     if (twitterUsername != null) {
       return TextSpan(
         text: context.t.richText.twitterUser(username: twitterUsername),
-        style: _knownLinkStyle(true),
+        style: _knownLinkStyle(context, true),
         recognizer: tapRecognizer?.call(() {
           _openTwitterUser(twitterUsername);
         }),
@@ -208,12 +216,12 @@ class _HtmlTextSpanBuilder {
 
 const _strongStyle = TextStyle(fontWeight: FontWeight.w700);
 
-TextStyle _genericLinkStyle(bool isStrong) {
-  return TextStyle(color: Colors.blue, fontWeight: isStrong ? FontWeight.w700 : null);
+TextStyle _genericLinkStyle(BuildContext context, bool isStrong) {
+  return TextStyle(color: FreepivThemeTokens.of(context).selectionInk, decoration: TextDecoration.underline, fontWeight: isStrong ? FontWeight.w700 : null);
 }
 
-TextStyle _knownLinkStyle(bool isStrong) {
-  return TextStyle(color: Colors.pinkAccent, fontWeight: isStrong ? FontWeight.w700 : null);
+TextStyle _knownLinkStyle(BuildContext context, bool isStrong) {
+  return TextStyle(color: FreepivThemeTokens.of(context).selectionInk, decoration: TextDecoration.underline, fontWeight: isStrong ? FontWeight.w700 : null);
 }
 
 Future<void> _openTwitterUser(String username, {String? fallbackUrl}) async {

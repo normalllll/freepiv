@@ -18,6 +18,14 @@ final class NovelTextPageBreak extends NovelTextBlock {
   const NovelTextPageBreak();
 }
 
+final class NovelTextImage extends NovelTextBlock {
+  const NovelTextImage({required this.id, required this.isPixivWork, this.url});
+
+  final String id;
+  final bool isPixivWork;
+  final String? url;
+}
+
 final class NovelTextSegment {
   const NovelTextSegment({required this.index, required this.blocks, required this.startOffset, required this.endOffset, required this.chapterTitle});
 
@@ -30,7 +38,7 @@ final class NovelTextSegment {
   int get charCount => endOffset - startOffset;
 }
 
-List<NovelTextBlock> parseNovelText(String value) {
+List<NovelTextBlock> parseNovelText(String value, {Map<String, String> imageUrls = const {}}) {
   final blocks = <NovelTextBlock>[];
   final paragraph = StringBuffer();
   final lines = value.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
@@ -77,6 +85,10 @@ List<NovelTextBlock> parseNovelText(String value) {
         blocks.add(NovelTextChapter(payload));
       } else if (kind == 'newpage') {
         blocks.add(const NovelTextPageBreak());
+      } else if ((kind == 'uploadedimage' || kind == 'pixivimage') && payload.isNotEmpty) {
+        blocks.add(NovelTextImage(id: payload, isPixivWork: kind == 'pixivimage', url: imageUrls[payload]));
+      } else {
+        paragraph.write(match.group(0));
       }
 
       cursor = match.end;
@@ -141,6 +153,8 @@ List<NovelTextSegment> segmentNovelTextBlocks(List<NovelTextBlock> blocks, {int 
     switch (block) {
       case NovelTextPageBreak():
         flushSegment();
+      case NovelTextImage():
+        addBlock(block);
       case NovelTextChapter(:final title):
         if (currentBlocks.isNotEmpty) {
           flushSegment();
@@ -172,6 +186,7 @@ int novelTextBlockCharacterCount(NovelTextBlock block) {
     NovelTextParagraph(:final text) => text.trim().length,
     NovelTextChapter(:final title) => title.trim().length,
     NovelTextPageBreak() => 0,
+    NovelTextImage() => 0,
   };
 }
 
@@ -179,7 +194,6 @@ String _normalizeInlineNovelText(String value) {
   return value
       .replaceAllMapped(RegExp(r'\[\[rb:([^\s\]]+)\s*>\s*([^\]]+)\]\]'), (match) => match.group(1) ?? '')
       .replaceAllMapped(RegExp(r'\[\[jumpuri:([^\s\]]+)\s*>\s*([^\]]+)\]\]'), (match) => match.group(2) ?? match.group(1) ?? '')
-      .replaceAll(RegExp(r'\[(pixivimage|uploadedimage):[^\]]+\]'), '')
       .trimRight();
 }
 

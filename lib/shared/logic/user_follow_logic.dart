@@ -6,18 +6,19 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'user_follow_logic.g.dart';
 
 class UserFollowArgs {
-  const UserFollowArgs({required this.userId, required this.isFollowed});
+  const UserFollowArgs({required this.userId, required this.isFollowed, this.accountId});
 
   final int userId;
   final bool isFollowed;
+  final String? accountId;
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) || other is UserFollowArgs && other.userId == userId;
+    return identical(this, other) || other is UserFollowArgs && other.userId == userId && other.accountId == accountId;
   }
 
   @override
-  int get hashCode => userId.hashCode;
+  int get hashCode => Object.hash(accountId, userId);
 }
 
 class UserFollowEntry {
@@ -31,7 +32,7 @@ class UserFollowEntry {
   }
 }
 
-@Riverpod(keepAlive: true)
+@riverpod
 class UserFollow extends _$UserFollow {
   @override
   UserFollowEntry build(UserFollowArgs args) {
@@ -42,6 +43,7 @@ class UserFollow extends _$UserFollow {
     if (state.updating) {
       return;
     }
+    if (args.accountId == null || pixivAccountNotifier.value?.user.id != args.accountId) return;
 
     final previous = state;
     final nextIsFollowed = !previous.isFollowed;
@@ -60,6 +62,7 @@ class UserFollow extends _$UserFollow {
       },
       settle: (current) => current.copyWith(updating: false),
       rollback: (previous) => previous.copyWith(updating: false),
+      canCommit: () => ref.mounted && pixivAccountNotifier.value?.user.id == args.accountId,
     );
   }
 }

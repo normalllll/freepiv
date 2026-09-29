@@ -5,7 +5,6 @@ import 'package:freepiv/features/user_detail/presentation/widgets/user_content_s
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class UserFollowingTabBody extends ConsumerStatefulWidget {
@@ -53,6 +52,7 @@ class _UserFollowingTabBodyState extends ConsumerState<UserFollowingTabBody> imp
   }
 
   void _ensureLoaded() {
+    if (!mounted) return;
     final source = _readSource();
     if (!source.initialized && !source.refreshing) {
       source.refresh(true);
@@ -72,17 +72,13 @@ class UserFollowingBody extends StatelessWidget {
   final Widget? sliverHeader;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+
+  Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
-      return DataLoadingCustomScrollView(
-        physics: physics,
-        slivers: [
-          ?sliverHeader,
-          const SliverPadding(padding: EdgeInsets.all(12), sliver: SliverUserPreviewerSkeletonList(scrollIllustPreviews: false)),
-        ],
-      );
+    if (source.phase == LoadPhase.loading) {
+      return DataLoadingCustomScrollView(physics: physics, slivers: [?sliverHeader, const SliverUserPreviewerSkeletonGrid()]);
     }
 
     if (!source.initialized && lastError != null) {
@@ -97,16 +93,7 @@ class UserFollowingBody extends StatelessWidget {
       physics: physics,
       slivers: [
         ?sliverHeader,
-        SliverDataList<UserPreview>(
-          source: source,
-          padding: const EdgeInsets.all(12),
-          itemBuilder: (context, userPreview, index) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: UserPreviewer(userPreview: userPreview, scrollIllustPreviews: false),
-            );
-          },
-        ),
+        SliverUserPreviewGrid(source: source),
       ],
     );
   }
