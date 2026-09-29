@@ -6,3 +6,4 @@ export 'models/download_summary.dart';
 export 'models/download_task_snapshot.dart';
 export 'models/downloaded_file.dart';
 export 'models/save_target.dart';
+export 'models/download_origin.dart';

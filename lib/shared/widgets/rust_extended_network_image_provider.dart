@@ -22,6 +22,7 @@ final class RustExtendedNetworkImageProvider extends ImageProvider<RustExtendedN
     this.decodeWidth,
     this.reloadRevision = 0,
     required this.mediaStream,
+    this.mediaStreamCacheIdentity,
     this.cacheRawData = false,
     this.cacheFile,
   }) : assert(retries >= 0),
@@ -33,6 +34,10 @@ final class RustExtendedNetworkImageProvider extends ImageProvider<RustExtendedN
   final int? decodeWidth;
   final int reloadRevision;
   final Stream<MediaChunk> Function(String, Map<String, String>) mediaStream;
+  // Use a stable value for cache identity when the stream callback's owner can
+  // be recreated across routes. Callers without one retain callback identity.
+  final Object? mediaStreamCacheIdentity;
+  Object get _streamIdentity => mediaStreamCacheIdentity ?? mediaStream;
   @override
   final bool cacheRawData;
   @override
@@ -202,10 +207,10 @@ final class RustExtendedNetworkImageProvider extends ImageProvider<RustExtendedN
       other.decodeWidth == decodeWidth &&
       other.reloadRevision == reloadRevision &&
       other.cacheRawData == cacheRawData &&
-      other.mediaStream == mediaStream;
+      other._streamIdentity == _streamIdentity;
 
   @override
-  int get hashCode => Object.hash(request.cacheKey, scale, decodeWidth, reloadRevision, cacheRawData, mediaStream);
+  int get hashCode => Object.hash(request.cacheKey, scale, decodeWidth, reloadRevision, cacheRawData, _streamIdentity);
 }
 
 final class MediaImageException implements Exception {

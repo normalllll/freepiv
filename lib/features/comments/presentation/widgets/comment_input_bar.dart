@@ -1,19 +1,25 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/fp_surface.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/shared/widgets/interaction_controls.dart';
 import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 typedef CommentSubmitCallback = Future<bool> Function({required String text, int? stampId});
 
 class CommentInputBar extends StatefulWidget {
-  const CommentInputBar({required this.assets, required this.onSubmit, this.replyingTo, this.onCancelReply, super.key});
+  const CommentInputBar({required this.assets, required this.onSubmit, this.replyingTo, this.onCancelReply, this.onDraftChanged, super.key});
 
   final PixivCommentAssets assets;
   final Comment? replyingTo;
   final VoidCallback? onCancelReply;
+  final ValueChanged<bool>? onDraftChanged;
   final CommentSubmitCallback onSubmit;
 
   @override
@@ -38,6 +44,11 @@ class _CommentInputBarState extends State<CommentInputBar> {
   void didUpdateWidget(covariant CommentInputBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     _controller.assets = widget.assets;
+    if (widget.replyingTo != null && widget.replyingTo?.id != oldWidget.replyingTo?.id) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _focusNode.requestFocus();
+      });
+    }
   }
 
   @override
@@ -52,87 +63,123 @@ class _CommentInputBarState extends State<CommentInputBar> {
   @override
   Widget build(BuildContext context) {
     final translations = context.t.illust.comments;
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = FreepivThemeTokens.of(context);
     final replyingTo = widget.replyingTo;
     final hasText = _controller.text.trim().isNotEmpty;
     final panelHeight = math.min(MediaQuery.sizeOf(context).height * 0.36, 280.0);
 
-    return Material(
-      elevation: 12,
-      color: colorScheme.surface,
-      child: SafeArea(
-        top: false,
-        child: AnimatedSize(
-          duration: const Duration(milliseconds: 200),
-          alignment: Alignment.topCenter,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (replyingTo != null)
-                _ReplyHeader(
-                  label: translations.replyingTo(name: replyingTo.user.name),
-                  onCancel: widget.onCancelReply,
-                ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      tooltip: translations.emoji,
-                      onPressed: _submitting || widget.assets.emojis.isEmpty ? null : () => _togglePanel(_CommentInputPanel.emoji),
-                      icon: Icon(_panel == _CommentInputPanel.emoji ? Icons.emoji_emotions : Icons.emoji_emotions_outlined),
-                      color: _panel == _CommentInputPanel.emoji ? colorScheme.primary : null,
+    // The composer floats like the other glass bars: a rounded chrome panel on
+    // the content column, clear of the screen's bottom edge, instead of a
+    // full-width strip under a divider.
+    final fieldBorder = OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none);
+    return SafeArea(
+      top: false,
+      child: ContentColumn(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 6, bottom: 8),
+          child: FpSurface(
+            role: FpSurfaceRole.chrome,
+            borderRadius: BorderRadius.circular(AppMetrics.groupRadius + 4),
+            child: AnimatedSize(
+              duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 240),
+              alignment: Alignment.topCenter,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (replyingTo != null)
+                    _ReplyHeader(
+                      label: translations.replyingTo(name: replyingTo.user.name),
+                      onCancel: widget.onCancelReply,
                     ),
-                    IconButton(
-                      tooltip: translations.stamp,
-                      onPressed: _submitting || hasText || widget.assets.stamps.isEmpty ? null : () => _togglePanel(_CommentInputPanel.stamp),
-                      icon: Icon(_panel == _CommentInputPanel.stamp ? Icons.image : Icons.image_outlined),
-                      color: _panel == _CommentInputPanel.stamp ? colorScheme.primary : null,
+                  Padding(
+                    // The leading icon buttons carry their own inset; the send
+                    // button does not, so the end gets the difference and the
+                    // row reads evenly inset from both rounded ends.
+                    padding: const EdgeInsetsDirectional.fromSTEB(4, 6, 8, 6),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final compact = constraints.maxWidth < 390 || MediaQuery.textScalerOf(context).scale(14) > 22;
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              tooltip: translations.emoji,
+                              onPressed: _submitting || widget.assets.emojis.isEmpty ? null : () => _togglePanel(_CommentInputPanel.emoji),
+                              icon: Icon(_panel == _CommentInputPanel.emoji ? Icons.emoji_emotions : Icons.emoji_emotions_outlined),
+                              color: _panel == _CommentInputPanel.emoji ? tokens.keyGraphicOn(tokens.surface) : null,
+                            ),
+                            IconButton(
+                              tooltip: translations.stamp,
+                              onPressed: _submitting || hasText || widget.assets.stamps.isEmpty ? null : () => _togglePanel(_CommentInputPanel.stamp),
+                              icon: Icon(_panel == _CommentInputPanel.stamp ? Icons.image : Icons.image_outlined),
+                              color: _panel == _CommentInputPanel.stamp ? tokens.keyGraphicOn(tokens.surface) : null,
+                            ),
+                            Expanded(
+                              child: TextField(
+                                controller: _controller,
+                                focusNode: _focusNode,
+                                minLines: 1,
+                                maxLines: 5,
+                                keyboardType: TextInputType.multiline,
+                                textInputAction: TextInputAction.newline,
+                                enabled: !_submitting,
+                                decoration: InputDecoration(
+                                  hintText: replyingTo == null ? translations.inputHint : translations.replyInputHint(name: replyingTo.user.name),
+                                  isDense: true,
+                                  filled: true,
+                                  fillColor: tokens.surfaceInset,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                                  // A chat field shows focus with its caret; no
+                                  // outline in any state.
+                                  border: fieldBorder,
+                                  enabledBorder: fieldBorder,
+                                  focusedBorder: fieldBorder,
+                                  disabledBorder: fieldBorder,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            if (compact)
+                              IconButton.filled(
+                                tooltip: context.t.common.send,
+                                onPressed: hasText && !_submitting ? _submitText : null,
+                                icon: _submitting
+                                    ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                                    : const Icon(Icons.arrow_upward, size: 20),
+                              )
+                            else
+                              AppButton(
+                                label: context.t.common.send,
+                                loading: _submitting,
+                                kind: AppButtonKind.primary,
+                                onPressed: hasText ? _submitText : null,
+                              ),
+                          ],
+                        );
+                      },
                     ),
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        focusNode: _focusNode,
-                        minLines: 1,
-                        maxLines: 5,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                        enabled: !_submitting,
-                        decoration: InputDecoration(
-                          hintText: replyingTo == null ? translations.inputHint : translations.replyInputHint(name: replyingTo.user.name),
-                          isDense: true,
-                          filled: true,
-                          fillColor: colorScheme.surfaceContainerHighest,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
-                        ),
+                  ),
+                  AnimatedSwitcher(
+                    duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 180),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeOutCubic,
+                    child: switch (_panel) {
+                      _CommentInputPanel.none => const SizedBox.shrink(),
+                      _CommentInputPanel.emoji => SizedBox(
+                        key: const ValueKey<String>('emoji-panel'),
+                        height: panelHeight,
+                        child: _EmojiGrid(assets: widget.assets.emojis, onSelected: _insertEmoji),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    AppButton(label: context.t.common.send, loading: _submitting, kind: AppButtonKind.primary, onPressed: hasText ? _submitText : null),
-                  ],
-                ),
-              ),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeOutCubic,
-                child: switch (_panel) {
-                  _CommentInputPanel.none => const SizedBox.shrink(),
-                  _CommentInputPanel.emoji => SizedBox(
-                    key: const ValueKey<String>('emoji-panel'),
-                    height: panelHeight,
-                    child: _EmojiGrid(assets: widget.assets.emojis, onSelected: _insertEmoji),
+                      _CommentInputPanel.stamp => SizedBox(
+                        key: const ValueKey<String>('stamp-panel'),
+                        height: panelHeight,
+                        child: _StampGrid(assets: widget.assets.stamps, onSelected: _submitStamp),
+                      ),
+                    },
                   ),
-                  _CommentInputPanel.stamp => SizedBox(
-                    key: const ValueKey<String>('stamp-panel'),
-                    height: panelHeight,
-                    child: _StampGrid(assets: widget.assets.stamps, onSelected: _submitStamp),
-                  ),
-                },
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -146,6 +193,7 @@ class _CommentInputBarState extends State<CommentInputBar> {
   }
 
   void _handleTextChanged() {
+    widget.onDraftChanged?.call(_controller.text.trim().isNotEmpty);
     setState(() {
       if (_controller.text.trim().isNotEmpty && _panel == _CommentInputPanel.stamp) {
         _panel = _CommentInputPanel.none;
@@ -195,6 +243,7 @@ class _CommentInputBarState extends State<CommentInputBar> {
   }
 
   Future<void> _submit({required String text, int? stampId}) async {
+    if (_submitting) return;
     setState(() => _submitting = true);
     final success = await widget.onSubmit(text: text, stampId: stampId);
     if (!mounted) {
@@ -222,30 +271,24 @@ class _ReplyHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = FreepivThemeTokens.of(context);
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
-      ),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 8, 6),
-        child: Row(
-          children: [
-            Icon(Icons.reply, size: 18, color: colorScheme.primary),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
-              ),
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 8, 6),
+      child: Row(
+        children: [
+          Icon(Icons.reply, size: 18, color: tokens.keyGraphicOn(tokens.surface)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(color: tokens.textSecondary, fontWeight: FontWeight.w700),
             ),
-            IconButton(tooltip: context.t.common.cancel, onPressed: onCancel, visualDensity: VisualDensity.compact, icon: const Icon(Icons.close)),
-          ],
-        ),
+          ),
+          IconButton(tooltip: context.t.common.cancel, onPressed: onCancel, visualDensity: VisualDensity.compact, icon: const Icon(Icons.close)),
+        ],
       ),
     );
   }
@@ -267,9 +310,8 @@ class _EmojiGrid extends StatelessWidget {
         final asset = assets[index];
         return Tooltip(
           message: asset.name,
-          child: InkResponse(
+          child: AppClickSurface(
             onTap: () => onSelected(asset),
-            radius: 24,
             child: Center(child: Image.asset(asset.path, width: 30, height: 30, filterQuality: FilterQuality.medium)),
           ),
         );
@@ -294,7 +336,7 @@ class _StampGrid extends StatelessWidget {
         final asset = assets[index];
         return Tooltip(
           message: asset.name,
-          child: InkWell(
+          child: AppClickSurface(
             borderRadius: BorderRadius.circular(8),
             onTap: () => onSelected(asset),
             child: Padding(

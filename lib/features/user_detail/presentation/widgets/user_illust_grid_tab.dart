@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -10,7 +9,6 @@ import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleto
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
-import 'package:go_router/go_router.dart';
 
 class UserIllustGridTabBody extends ConsumerStatefulWidget {
   const UserIllustGridTabBody({required this.detail, required this.illustType, required this.physics, this.sliverHeader, super.key});
@@ -63,6 +61,7 @@ class _UserIllustGridTabBodyState extends ConsumerState<UserIllustGridTabBody> i
   }
 
   void _ensureLoaded() {
+    if (!mounted) return;
     final source = _readSource();
     if (!source.initialized && !source.refreshing) {
       source.refresh(true);
@@ -91,10 +90,12 @@ class UserIllustGridBody extends StatelessWidget {
   final String emptyTitle;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+
+  Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
+    if (source.phase == LoadPhase.loading) {
       return DataLoadingCustomScrollView(physics: physics, slivers: [...leadingSlivers, ?sliverHeader, const SliverIllustWaterfallSkeleton()]);
     }
 
@@ -123,15 +124,8 @@ class UserIllustGridBody extends StatelessWidget {
         ?sliverHeader,
         SliverDataWaterfallGrid<Illust>(
           source: source,
-          padding: const EdgeInsets.all(12),
-          maxCrossAxisExtent: 240,
           itemBuilder: (context, illust, index) {
-            return IllustPreviewer(
-              illust: illust,
-              onTap: () {
-                context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '${illust.id}'}, extra: illust);
-              },
-            );
+            return IllustPreviewer(illust: illust, onOpen: (heroTag) => openIllustDetail(context, illust, heroTag));
           },
         ),
       ],

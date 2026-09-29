@@ -1,19 +1,22 @@
 import 'dart:async';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/core/media/logic.dart';
-import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
-
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/core/media/logic.dart';
+import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_ugoira_viewer.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class IllustImagePager extends StatelessWidget {
   const IllustImagePager({
@@ -41,23 +44,33 @@ class IllustImagePager extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final pageCount = isUgoira ? 1 : imagePages.length;
+    final heroTag = ArtworkHeroScope.maybeOf(context);
 
+    // No stage colour: letterboxing shows the page's artwork backdrop.
     return ColoredBox(
-      color: colorScheme.surfaceContainerHighest,
+      color: Colors.transparent,
       child: Stack(
         fit: StackFit.expand,
         children: [
           PageView.builder(
+            key: PageStorageKey<String>('illust-image-page-$illustId'),
             controller: pageController,
             itemCount: pageCount,
             onPageChanged: onPageChanged,
             itemBuilder: (context, index) {
               final image = imagePages[isUgoira ? 0 : index];
-              final imageContent = _PageImageContent(illustId: illustId, index: index, image: image, loadedImages: loadedImages);
+              Widget content = isUgoira
+                  ? UgoiraPageContent(illustId: illustId, previewUrl: image.viewUrl, fallbackDownloadUrl: image.downloadUrl, showContextMenu: true)
+                  : _PageImageContent(illustId: illustId, index: index, image: image, loadedImages: loadedImages);
+              // The first page is what the opening card showed. It flies back
+              // only while it is the page on screen; from another page the
+              // return is an ordinary transition, not a jump to page one.
+              if (heroTag != null && index == 0) {
+                content = _StageHero(tag: heroTag, aspectRatio: image.aspectRatio ?? heroTag.aspectRatio, enabled: pageIndex == 0, child: content);
+              }
               final child = isUgoira
-                  ? UgoiraPageContent(illustId: illustId, previewUrl: image.viewUrl, fallbackDownloadUrl: image.downloadUrl, showContextMenu: showControls)
+                  ? content
                   : _ImageContextMenuRegion(
                       illustId: illustId,
                       pageIndex: index,
@@ -65,11 +78,15 @@ class IllustImagePager extends StatelessWidget {
                       imagePages: imagePages,
                       loadedImages: loadedImages,
                       onTap: onImageTap == null ? null : () => onImageTap!(index),
-                      child: imageContent,
+                      child: content,
                     );
 
               return ClipRect(
-                child: InteractiveViewer(minScale: 1, maxScale: 4, child: SizedBox.expand(child: child)),
+                // The mobile detail scroll owns vertical drags. Tapping the
+                // image opens the original viewer, which retains pinch zoom.
+                child: MediaQuery.sizeOf(context).width < 960
+                    ? SizedBox.expand(child: child)
+                    : InteractiveViewer(minScale: 1, maxScale: 4, child: SizedBox.expand(child: child)),
               );
             },
           ),
@@ -91,7 +108,7 @@ class IllustImagePager extends StatelessWidget {
                 child: SurfaceIconButton(
                   icon: Icons.chevron_left,
                   tooltip: context.t.illust.tooltip.previousImage,
-                  onPressed: pageIndex == 0 ? null : () => _animateToPage(pageIndex - 1),
+                  onPressed: pageIndex == 0 ? null : () => _animateToPage(context, pageIndex - 1),
                 ),
               ),
             ),
@@ -103,7 +120,7 @@ class IllustImagePager extends StatelessWidget {
                 child: SurfaceIconButton(
                   icon: Icons.chevron_right,
                   tooltip: context.t.illust.tooltip.nextImage,
-                  onPressed: pageIndex >= pageCount - 1 ? null : () => _animateToPage(pageIndex + 1),
+                  onPressed: pageIndex >= pageCount - 1 ? null : () => _animateToPage(context, pageIndex + 1),
                 ),
               ),
             ),
@@ -113,8 +130,12 @@ class IllustImagePager extends StatelessWidget {
     );
   }
 
-  void _animateToPage(int index) {
-    pageController.animateToPage(index, duration: const Duration(milliseconds: 220), curve: Curves.easeOutCubic);
+  void _animateToPage(BuildContext context, int index) {
+    if (MediaQuery.disableAnimationsOf(context)) {
+      pageController.jumpToPage(index);
+      return;
+    }
+    pageController.animateToPage(index, duration: AppMotion.exit, curve: Curves.easeOutCubic);
   }
 }
 
@@ -157,16 +178,20 @@ class IllustPageImage {
   }
 }
 
-List<IllustPageImage> illustPageImages(Illust illust, ViewerImageQuality quality) {
+/// The detail stage's pages. The first page's placeholder is the very preview
+/// the artwork cards show ([previewQuality]), already cached when the work
+/// was opened from a list, so the stage never loads a second small image.
+List<IllustPageImage> illustPageImages(Illust illust, ViewerImageQuality quality, PreviewImageQuality previewQuality) {
   final aspectRatio = _illustAspectRatio(illust);
+  final cardPreviewUrl = illustPreviewImageUrl(illust.imageUrls, previewQuality);
 
   if (illust.metaPages.isNotEmpty) {
     return [
-      for (final page in illust.metaPages)
+      for (final (index, page) in illust.metaPages.indexed)
         IllustPageImage(
           viewUrl: illustViewerImageUrl(page.imageUrls, quality),
           originalUrl: illustViewerImageUrl(page.imageUrls, ViewerImageQuality.original),
-          previewUrl: illustImagePlaceholderUrl(page.imageUrls),
+          previewUrl: index == 0 ? cardPreviewUrl : illustImagePlaceholderUrl(page.imageUrls),
           aspectRatio: aspectRatio,
           quality: quality,
         ),
@@ -177,11 +202,44 @@ List<IllustPageImage> illustPageImages(Illust illust, ViewerImageQuality quality
     IllustPageImage(
       viewUrl: illustViewerImageUrl(illust.imageUrls, quality, originalImageUrl: illust.metaSinglePage.originalImageUrl),
       originalUrl: illustViewerImageUrl(illust.imageUrls, ViewerImageQuality.original, originalImageUrl: illust.metaSinglePage.originalImageUrl),
-      previewUrl: illustImagePlaceholderUrl(illust.imageUrls),
+      previewUrl: cardPreviewUrl,
       aspectRatio: aspectRatio,
       quality: quality,
     ),
   ];
+}
+
+/// The first page's hero, sized to the picture as the stage shows it
+/// (contained and centred) rather than to the whole stage. Both ends of the
+/// flight are then the picture itself, so the flight only moves, scales and
+/// uncrops it; a stage wider than the picture (a tall work under the height
+/// cap) can no longer make it shrink and regrow on landing. The page's taps
+/// and context menu still cover the whole stage.
+class _StageHero extends StatelessWidget {
+  const _StageHero({required this.tag, required this.aspectRatio, required this.enabled, required this.child});
+
+  final ArtworkHeroTag tag;
+  final double aspectRatio;
+  final bool enabled;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final picture = applyBoxFit(BoxFit.contain, Size(aspectRatio, 1), constraints.biggest).destination;
+        return Center(
+          child: SizedBox.fromSize(
+            size: picture,
+            child: HeroMode(
+              enabled: enabled,
+              child: ArtworkHero(tag: tag, child: child),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _PageImageContent extends StatelessWidget {
@@ -222,16 +280,12 @@ class _ImageContextMenuRegion extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      onSecondaryTapDown: isDesktopPlatform
-          ? (details) {
-              unawaited(_showImageContextMenu(context, details.globalPosition, illustId, pageIndex, image, imagePages, loadedImages));
-            }
-          : null,
-      onLongPressStart: isDesktopPlatform
-          ? null
-          : (details) {
-              unawaited(_showImageContextMenu(context, details.globalPosition, illustId, pageIndex, image, imagePages, loadedImages));
-            },
+      onSecondaryTapDown: (details) {
+        unawaited(showIllustImageContextMenu(context, details.globalPosition, illustId, pageIndex, image, imagePages, loadedImages));
+      },
+      onLongPressStart: (details) {
+        unawaited(showIllustImageContextMenu(context, details.globalPosition, illustId, pageIndex, image, imagePages, loadedImages));
+      },
       child: child,
     );
   }
@@ -271,54 +325,67 @@ class _DetailPixivImage extends ConsumerWidget {
   Widget? _rememberLoadedImageData(ExtendedImageState state) {
     final bytes = _rawImageDataFrom(state);
     if (bytes != null) {
-      loadedImages.put(image.viewUrl, LoadedImageData(bytes: bytes, mimeType: _imageMimeTypeFromUrl(image.viewUrl)));
+      loadedImages.put(image.viewUrl, LoadedImageData(bytes: bytes, mimeType: imageMimeTypeFromUrl(image.viewUrl)));
     }
 
     return null;
   }
 }
 
-enum _ImageContextAction { download, downloadAll, copy }
+enum _ImageContextAction { download, downloadAll, copy, copyLink, openOriginal }
 
-Future<void> _showImageContextMenu(
+Future<void> showIllustImageContextMenu(
   BuildContext context,
   Offset position,
   int illustId,
   int pageIndex,
   IllustPageImage image,
   List<IllustPageImage> imagePages,
-  LoadedIllustImages loadedImages,
-) async {
+  LoadedIllustImages loadedImages, {
+  bool linkOnly = false,
+  bool secondaryOnly = false,
+}) async {
   final overlay = Navigator.of(context).overlay;
   if (overlay == null) {
     return;
   }
+  final overlayContext = overlay.context;
 
-  final renderBox = overlay.context.findRenderObject() as RenderBox;
   final translations = t;
   final loadedImageData = loadedImages.get(image.viewUrl);
   final downloadNeedsLoadedData = image.canUseLoadedDataForDownload;
-  final alreadyDownloading = await _isImageAlreadyDownloading(illustId, pageIndex);
-  if (!context.mounted) {
+  final alreadyDownloading = linkOnly ? false : await _isImageAlreadyDownloading(illustId, pageIndex);
+  if (!context.mounted || !overlayContext.mounted) {
     return;
   }
 
+  // Both button and pointer anchors arrive in global coordinates. showMenu
+  // positions within this Navigator's Overlay, which may be offset by the
+  // desktop rail and caption bar.
+  final renderBox = overlayContext.findRenderObject() as RenderBox;
+  final localPosition = renderBox.globalToLocal(position);
+  final anchor = Offset(
+    localPosition.dx.clamp(8.0, math.max(8.0, renderBox.size.width - 8)),
+    localPosition.dy.clamp(8.0, math.max(8.0, renderBox.size.height - 8)),
+  );
   final canDownload = (!downloadNeedsLoadedData || loadedImageData != null) && !alreadyDownloading;
   final action = await showMenu<_ImageContextAction>(
     context: context,
-    position: RelativeRect.fromRect(Rect.fromPoints(position, position), Offset.zero & renderBox.size),
+    clipBehavior: Clip.antiAlias,
+    position: RelativeRect.fromRect(Rect.fromPoints(anchor, anchor), Offset.zero & renderBox.size),
     items: [
-      PopupMenuItem(
-        value: _ImageContextAction.download,
-        enabled: canDownload,
-        child: ListTile(
+      if (!linkOnly && !secondaryOnly)
+        PopupMenuItem(
+          value: _ImageContextAction.download,
           enabled: canDownload,
-          leading: const Icon(Icons.download_outlined),
-          title: Text(translations.illust.contextMenu.download),
-          contentPadding: EdgeInsets.zero,
+          child: ListTile(
+            enabled: canDownload,
+            leading: const Icon(Icons.download_outlined),
+            title: Text(translations.illust.contextMenu.download),
+            contentPadding: EdgeInsets.zero,
+          ),
         ),
-      ),
-      if (imagePages.length > 1)
+      if (!linkOnly && imagePages.length > 1)
         PopupMenuItem(
           value: _ImageContextAction.downloadAll,
           child: ListTile(
@@ -327,7 +394,7 @@ Future<void> _showImageContextMenu(
             contentPadding: EdgeInsets.zero,
           ),
         ),
-      if (isDesktopPlatform)
+      if (!linkOnly && isDesktopPlatform)
         PopupMenuItem(
           value: _ImageContextAction.copy,
           enabled: loadedImageData != null,
@@ -338,61 +405,101 @@ Future<void> _showImageContextMenu(
             contentPadding: EdgeInsets.zero,
           ),
         ),
+      if (!secondaryOnly)
+        PopupMenuItem(
+          value: _ImageContextAction.copyLink,
+          child: ListTile(leading: const Icon(Icons.link_outlined), title: Text(translations.illust.contextMenu.copyLink), contentPadding: EdgeInsets.zero),
+        ),
+      PopupMenuItem(
+        value: _ImageContextAction.openOriginal,
+        child: ListTile(
+          leading: const Icon(Icons.open_in_new_outlined),
+          title: Text(translations.illust.contextMenu.openOriginal),
+          contentPadding: EdgeInsets.zero,
+        ),
+      ),
     ],
   );
 
   switch (action) {
     case _ImageContextAction.download:
-      unawaited(_downloadImage(illustId, pageIndex, image, loadedImages));
+      unawaited(_downloadImage(illustId, pageIndex, image, loadedImages, origin: Rect.fromCenter(center: position, width: 48, height: 48)));
       break;
     case _ImageContextAction.downloadAll:
-      unawaited(_downloadAllImages(illustId, imagePages));
+      unawaited(_downloadAllImages(illustId, imagePages, origin: Rect.fromCenter(center: position, width: 48, height: 48)));
       break;
     case _ImageContextAction.copy:
       unawaited(_copyLoadedImage(image, loadedImages));
+      break;
+    case _ImageContextAction.copyLink:
+      unawaited(_copyIllustLink(illustId));
+      break;
+    case _ImageContextAction.openOriginal:
+      unawaited(_openIllustOnPixiv(illustId));
       break;
     case null:
       break;
   }
 }
 
-Future<void> _downloadImage(int illustId, int pageIndex, IllustPageImage image, LoadedIllustImages loadedImages) async {
+Future<void> _copyIllustLink(int illustId) async {
+  final url = 'https://www.pixiv.net/artworks/$illustId';
+  try {
+    await copyTextToClipboard(url);
+    AppToast.success(t.illust.toast.linkCopied);
+  } catch (error) {
+    AppToast.errorWithCause(t.illust.toast.linkCopyFailed, error);
+  }
+}
+
+Future<void> _openIllustOnPixiv(int illustId) async {
+  try {
+    final opened = await launchUrl(Uri.parse('https://www.pixiv.net/artworks/$illustId'), mode: LaunchMode.externalApplication);
+    if (!opened) {
+      throw StateError('No external application accepted the artwork URL.');
+    }
+  } catch (error) {
+    AppToast.errorWithCause(t.illust.toast.openFailed, error);
+  }
+}
+
+/// [origin] is where the download was asked for (the tapped button, or the
+/// pointer for a context menu); a copy of the page flies from there to the
+/// download badge once the task is accepted.
+Future<void> _downloadImage(int illustId, int pageIndex, IllustPageImage image, LoadedIllustImages loadedImages, {Rect? origin}) async {
   try {
     await downloadManager.ensureReadyForDownloads();
-    AppToast.info(t.illust.toast.downloadStarted);
+    DownloadFlight.launch(origin: origin, imageUrl: image.previewUrl);
     final downloadUri = Uri.parse(image.downloadUrl);
     final loadedImageData = image.canUseLoadedDataForDownload ? loadedImages.get(image.viewUrl) : null;
     final file = loadedImageData == null
         ? await downloadManager.download(
-            illustId: illustId,
-            pageIndex: pageIndex,
+            origin: ArtworkPage(illustId: illustId, pageIndex: pageIndex),
             url: downloadUri,
             networkOptions: const DownloadNetworkOptions(headers: {'Referer': 'https://www.pixiv.net/'}),
             thumbnailUrl: image.previewUrl,
           )
         : await downloadManager.saveBytes(
-            illustId: illustId,
-            pageIndex: pageIndex,
+            origin: ArtworkPage(illustId: illustId, pageIndex: pageIndex),
             bytes: loadedImageData.bytes,
             sourceUrl: downloadUri,
             thumbnailUrl: image.previewUrl,
           );
-    AppToast.success(t.illust.toast.downloadComplete(path: file.path));
+    AppToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
   } catch (error) {
     AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
   }
 }
 
-Future<void> _downloadAllImages(int illustId, List<IllustPageImage> imagePages) async {
+Future<void> _downloadAllImages(int illustId, List<IllustPageImage> imagePages, {Rect? origin}) async {
   try {
     await downloadManager.ensureReadyForDownloads();
+    DownloadFlight.launch(origin: origin, imageUrl: imagePages.firstOrNull?.previewUrl);
     final jobs = [
       for (var index = 0; index < imagePages.length; index++)
         DownloadJob.create(
-          illustId: illustId,
-          pageIndex: index,
+          origin: ArtworkPage(illustId: illustId, pageIndex: index),
           url: Uri.parse(imagePages[index].downloadUrl),
-          filename: illustDownloadFilename(illustId: illustId, pageIndex: index, sourceUrl: Uri.parse(imagePages[index].downloadUrl)),
           networkOptions: const DownloadNetworkOptions(headers: {'Referer': 'https://www.pixiv.net/'}),
           saveTarget: const SaveTarget.downloadsFolder(),
           thumbnailUrl: imagePages[index].previewUrl,
@@ -408,7 +515,7 @@ Future<void> _downloadAllImages(int illustId, List<IllustPageImage> imagePages) 
 Future<bool> _isImageAlreadyDownloading(int illustId, int pageIndex) async {
   final tasks = await downloadManager.listTasks(illustId: illustId);
   return tasks.any((task) {
-    return task.pageIndex == pageIndex &&
+    return task.origin == ArtworkPage(illustId: illustId, pageIndex: pageIndex) &&
         (task.status == DownloadStatus.queued ||
             task.status == DownloadStatus.running ||
             task.status == DownloadStatus.paused ||
@@ -485,7 +592,7 @@ class _ImageLoadError extends StatelessWidget {
           child: Material(
             color: colorScheme.surface.withValues(alpha: 0.9),
             elevation: 2,
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(AppMetrics.controlRadius),
             child: IconButton(tooltip: context.t.common.retry, icon: const Icon(Icons.refresh_outlined), onPressed: onRetry),
           ),
         ),
@@ -503,7 +610,7 @@ class _PageIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.58), borderRadius: BorderRadius.circular(999)),
+      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.58), borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         child: Text(
@@ -566,25 +673,60 @@ Uint8List? _rawImageDataFrom(ExtendedImageState state) {
   }
 }
 
-String _imageMimeTypeFromUrl(String imageUrl) {
-  final uri = Uri.tryParse(imageUrl);
-  final path = (uri?.path ?? imageUrl).toLowerCase();
-  if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-    return 'image/jpeg';
-  }
-  if (path.endsWith('.gif')) {
-    return 'image/gif';
-  }
-  if (path.endsWith('.webp')) {
-    return 'image/webp';
-  }
-
-  return 'image/png';
-}
 
 String _imageQualityLabel(ViewerImageQuality quality) {
   return switch (quality) {
     ViewerImageQuality.large => t.illust.imageLabels.large,
     ViewerImageQuality.original => t.illust.imageLabels.original,
   };
+}
+
+/// Work actions for the page currently shown. The wide and narrow detail
+/// layouts render the same set in one action row: download and copy link
+/// directly, everything else in "more", so each action has one entry.
+class IllustPageActions {
+  const IllustPageActions({required this.illustId, required this.pageIndex, required this.imagePages, required this.loadedImages, required this.isUgoira});
+
+  final int illustId;
+  final int pageIndex;
+  final List<IllustPageImage> imagePages;
+  final LoadedIllustImages loadedImages;
+  final bool isUgoira;
+
+  bool get canDownload => !isUgoira && imagePages.isNotEmpty;
+
+  IllustPageImage get _page => imagePages[pageIndex.clamp(0, imagePages.length - 1)];
+
+  /// Downloads the current page; [origin] is the tapped button's rect, for
+  /// the flight to the download badge.
+  Future<void> download({Rect? origin}) async {
+    if (!canDownload) return;
+    final index = pageIndex.clamp(0, imagePages.length - 1);
+    if (await _isImageAlreadyDownloading(illustId, index)) {
+      AppToast.info(t.illust.toast.alreadyDownloading);
+      return;
+    }
+    await _downloadImage(illustId, index, _page, loadedImages, origin: origin);
+  }
+
+  Future<void> copyLink() => _copyIllustLink(illustId);
+
+  Future<void> showMore(BuildContext buttonContext) async {
+    final box = buttonContext.findRenderObject();
+    if (box is! RenderBox || imagePages.isEmpty) {
+      await _openIllustOnPixiv(illustId);
+      return;
+    }
+    await showIllustImageContextMenu(
+      buttonContext,
+      box.localToGlobal(box.size.bottomLeft(Offset.zero)),
+      illustId,
+      pageIndex.clamp(0, imagePages.length - 1),
+      _page,
+      imagePages,
+      loadedImages,
+      linkOnly: isUgoira,
+      secondaryOnly: true,
+    );
+  }
 }

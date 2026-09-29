@@ -1,5 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/app_dialog.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/app/theme/app_feedback.dart';
+import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:freepiv/app/theme/content_script.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html;
 import 'image.dart';
@@ -28,7 +33,11 @@ class PixivisionBlock extends StatelessWidget {
               const SizedBox(height: 8),
               _ArticleLink(
                 onTap: () => onLink(work.url),
-                builder: (_) => PixivisionImage(url: preview, aspectRatio: imageRatios[preview]!, fit: BoxFit.contain),
+                builder: (_) => PixivisionImageMenu(
+                  url: preview,
+                  title: work.title,
+                  child: PixivisionImage(url: preview, aspectRatio: imageRatios[preview], resolveAspectRatio: true, fit: BoxFit.contain),
+                ),
               ),
             ],
           ],
@@ -87,7 +96,7 @@ class PixivisionBlock extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: block.text.trim().isEmpty ? 0 : 8),
             child: _ArticleLink(
-              onTap: () => showDialog<void>(
+              onTap: () => showAppDialog<void>(
                 context: context,
                 builder: (context) => Dialog.fullscreen(
                   child: Stack(
@@ -97,7 +106,10 @@ class PixivisionBlock extends StatelessWidget {
                           minScale: 0.5,
                           maxScale: 5,
                           child: Center(
-                            child: PixivisionImage(url: image.url, fit: BoxFit.contain),
+                            child: PixivisionImageMenu(
+                              url: image.url,
+                              child: PixivisionImage(url: image.url, fit: BoxFit.contain),
+                            ),
                           ),
                         ),
                       ),
@@ -105,6 +117,7 @@ class PixivisionBlock extends StatelessWidget {
                         top: 8,
                         right: 8,
                         child: IconButton.filledTonal(
+                          style: appSecondaryButtonStyle(FreepivThemeTokens.of(context)),
                           tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.close),
@@ -114,7 +127,10 @@ class PixivisionBlock extends StatelessWidget {
                   ),
                 ),
               ),
-              builder: (_) => PixivisionImage(url: image.url, aspectRatio: imageRatios[image.url]!, fit: BoxFit.contain),
+              builder: (_) => PixivisionImageMenu(
+                url: image.url,
+                child: PixivisionImage(url: image.url, aspectRatio: imageRatios[image.url], resolveAspectRatio: true, fit: BoxFit.contain),
+              ),
             ),
           ),
         for (final work in block.works)
@@ -216,6 +232,8 @@ class _RichTextState extends State<_RichText> {
         pendingBreak = true;
         return;
       }
+      // An empty item would render as a lone bullet.
+      if (tag == 'li' && node.text.trim().isEmpty) return;
       final isBlock = ['p', 'div', 'li', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'pre'].contains(tag);
       if (isBlock) pendingBreak = spans.isNotEmpty;
       var recognizer = inherited;
@@ -228,7 +246,7 @@ class _RichTextState extends State<_RichText> {
         TextStyle(
           fontWeight: ['b', 'strong'].contains(tag) ? FontWeight.bold : null,
           fontStyle: ['i', 'em'].contains(tag) ? FontStyle.italic : null,
-          color: recognizer != null ? Theme.of(context).colorScheme.primary : null,
+          color: recognizer != null ? Theme.of(context).colorScheme.onSurface : null,
           decoration: recognizer != null ? TextDecoration.underline : null,
         ),
       );
@@ -254,6 +272,7 @@ class _RichTextState extends State<_RichText> {
 bool pixivisionBlockHasContent(ArticleBlock block) =>
     block.text.trim().isNotEmpty ||
     block.images.isNotEmpty ||
+    block.links.isNotEmpty ||
     block.works.isNotEmpty ||
     block.embeds.isNotEmpty ||
     block.kind == BlockKind.divider ||
@@ -290,6 +309,7 @@ class _AuthorLink extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: _ArticleLink(
         onTap: () => onLink('https://www.pixiv.net/users/$id'),
+        showFeedback: true,
         builder: (hovered) => Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -305,8 +325,18 @@ class _AuthorLink extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Flexible(
-              child: Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: hovered ? colors.primary : colors.onSurface)),
+              child: Tooltip(
+                message: label,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: contentTextStyle(context, label, Theme.of(context).textTheme.titleMedium?.copyWith(color: colors.onSurface)),
+                ),
+              ),
             ),
+            const SizedBox(width: 4),
+            const ExcludeSemantics(child: Icon(Icons.chevron_right, size: 18)),
           ],
         ),
       ),
@@ -327,16 +357,27 @@ class _ArticleTextLink extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: _ArticleLink(
         onTap: onTap,
-        builder: (hovered) => Text(label, style: style?.copyWith(color: hovered ? colors.primary : colors.onSurface)),
+        showFeedback: true,
+        builder: (hovered) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(label, style: contentTextStyle(context, label, style?.copyWith(color: colors.onSurface))),
+            ),
+            const SizedBox(width: 4),
+            const ExcludeSemantics(child: Icon(Icons.chevron_right, size: 18)),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _ArticleLink extends StatefulWidget {
-  const _ArticleLink({required this.onTap, required this.builder});
+  const _ArticleLink({required this.onTap, required this.builder, this.showFeedback = false});
   final VoidCallback onTap;
   final Widget Function(bool hovered) builder;
+  final bool showFeedback;
 
   @override
   State<_ArticleLink> createState() => _ArticleLinkState();
@@ -352,15 +393,29 @@ class _ArticleLinkState extends State<_ArticleLink> {
     child: DecoratedBox(
       position: DecorationPosition.foreground,
       // Paint focus without adding padding or shifting the article layout.
-      decoration: BoxDecoration(border: Border.all(color: _focused ? Theme.of(context).colorScheme.primary : Colors.transparent)),
+      decoration: BoxDecoration(
+        borderRadius: widget.showFeedback ? BorderRadius.circular(AppMetrics.controlRadius) : null,
+        border: Border.all(
+          color: _focused && FocusManager.instance.highlightMode == FocusHighlightMode.traditional ? FreepivThemeTokens.of(context).focus : Colors.transparent,
+          width: _focused ? AppMetrics.focusBorderWidth : 1,
+        ),
+      ),
       child: InkWell(
         onTap: widget.onTap,
         mouseCursor: SystemMouseCursors.click,
         onHover: (value) => setState(() => _hovered = value),
         onFocusChange: (value) => setState(() => _focused = value),
         splashFactory: NoSplash.splashFactory,
-        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-        child: widget.builder(_hovered),
+        borderRadius: widget.showFeedback ? BorderRadius.circular(AppMetrics.controlRadius) : null,
+        overlayColor: widget.showFeedback
+            ? WidgetStateProperty.resolveWith((states) => appButtonStateLayer(FreepivThemeTokens.of(context), states, AppFeedbackRole.quiet))
+            : const WidgetStatePropertyAll(Colors.transparent),
+        child: widget.showFeedback
+            ? ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 44),
+                child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4), child: widget.builder(_hovered)),
+              )
+            : widget.builder(_hovered),
       ),
     ),
   );

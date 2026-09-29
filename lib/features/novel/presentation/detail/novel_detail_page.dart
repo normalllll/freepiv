@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/app/window/window_title.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_creator_section.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_detail_constraints.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_header.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_image_gallery.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_not_found_page.dart';
-import 'package:freepiv/features/novel/presentation/detail/widgets/novel_reader_slivers.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_related_slivers.dart';
 import 'package:freepiv/features/novel/presentation/widgets/novel_comments_section.dart';
 import 'package:freepiv/features/novel/presentation/widgets/novel_detail_skeleton.dart';
 import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/shared/layout/fp_page_header.dart';
 import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -30,7 +32,8 @@ class NovelDetailPage extends ConsumerWidget {
     final provider = novelDetailProvider(args);
     final detailValue = ref.watch(provider);
 
-    return detailValue.when(
+    final visibleNovel = detailValue.asData?.value.novel ?? novel;
+    final content = detailValue.when(
       data: (detail) => NovelDetailContent(key: ValueKey<String>('novel-detail-content-${detail.novel.id}'), detail: detail),
       loading: () => const NovelDetailSkeletonPage(),
       error: (error, stackTrace) {
@@ -40,6 +43,13 @@ class NovelDetailPage extends ConsumerWidget {
 
         return ErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
+    );
+    final id = novelId ?? novel?.id;
+    if (id == null) return content;
+    return WindowTitleContribution(
+      path: '/novel/$id',
+      work: visibleNovel == null ? null : WorkWindowTitle(id: id, title: visibleNovel.title, kind: 'novel', artworkUrl: visibleNovel.imageUrls.squareMedium),
+      child: content,
     );
   }
 }
@@ -77,7 +87,7 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
     final relatedSource = ref.watch(novelRelatedWorksProvider(_novel.id));
 
     return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool shouldUseDesktopShell) {
+      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
           body: SafeArea(
             bottom: false,
@@ -86,21 +96,26 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
               builder: (context, child) {
                 return DataLoadingCustomScrollView(
                   slivers: [
-                    if (!shouldUseDesktopShell)
+                    if (!useHorizontalLayout)
                       SliverAppBar(
-                        pinned: true,
-                        automaticallyImplyLeading: !shouldUseDesktopShell,
-                        leading: shouldUseDesktopShell ? const SizedBox.shrink() : null,
-                        leadingWidth: shouldUseDesktopShell ? 64 : null,
+                        // Collapses while the list scrolls on and returns on the way back.
+                        floating: true,
+                        snap: true,
+                        backgroundColor: Colors.transparent,
+                        surfaceTintColor: Colors.transparent,
+                        flexibleSpace: const PinnedChromeGlass(opacity: 1),
+                        automaticallyImplyLeading: false,
+                        leading: FpPageHeader.leadingFor(context),
+                        leadingWidth: FpPageHeader.leadingWidth,
+                        titleSpacing: FpPageHeader.titleSpacingOf(context),
                         title: Text(_novel.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                       ),
                     SliverToBoxAdapter(
-                      child: NovelHeader(novel: _novel, webviewNovel: _webviewNovel),
+                      child: NovelHeader(novel: _novel, webviewNovel: _webviewNovel, onStartReading: _openNovelReader),
                     ),
                     SliverToBoxAdapter(
                       child: NovelImageGallery(novel: _novel, webviewNovel: _webviewNovel),
                     ),
-                    ...NovelReaderSlivers.buildEntry(novel: _novel, webviewNovel: _webviewNovel, onStartReading: _openNovelReader),
                     SliverToBoxAdapter(
                       child: NovelCreatorSection(novel: _novel, onNovelTap: _openNovelDetail),
                     ),
@@ -128,8 +143,9 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
     context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': '${novel.id}'}, extra: novel);
   }
 
-  void _openNovelReader() {
-    context.pushNamed(AppRoute.novelReader.name, pathParameters: {'id': '${_novel.id}'}, extra: _novel);
+  Future<void> _openNovelReader() async {
+    await context.pushNamed(AppRoute.novelReader.name, pathParameters: {'id': '${_novel.id}'}, extra: _novel);
+    if (mounted) setState(() {});
   }
 
   void _ensureRelatedWorksLoaded() {

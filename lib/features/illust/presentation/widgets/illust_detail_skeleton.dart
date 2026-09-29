@@ -1,7 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/features/illust/presentation/widgets/illust_related_section.dart';
 import 'package:freepiv/shared/layout/auto_scaffold.dart';
+import 'package:freepiv/shared/layout/fp_page_header.dart';
+import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class IllustDetailSkeletonPage extends StatelessWidget {
@@ -10,8 +14,8 @@ class IllustDetailSkeletonPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool shouldUseDesktopShell) {
-        if (shouldUseDesktopShell) {
+      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+        if (useHorizontalLayout && layout.width >= 960) {
           return const _DesktopIllustDetailSkeleton();
         }
 
@@ -26,28 +30,26 @@ class _DesktopIllustDetailSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final panelWidth = math.min(460.0, math.max(380.0, MediaQuery.sizeOf(context).width * 0.32));
 
-    return ColoredBox(
-      color: colorScheme.surface,
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              child: Skeletonizer.zone(
-                child: Stack(
-                  children: [
-                    const Positioned.fill(child: _ImageAreaSkeleton()),
-                    PositionedDirectional(top: 16, end: 16, child: Bone.iconButton(size: 46, borderRadius: BorderRadius.circular(999))),
-                  ],
-                ),
+    // Same outline as DesktopIllustDetailLayout: transparent stage and a
+    // floating rounded panel.
+    return SafeArea(
+      child: Row(
+        children: [
+          Expanded(child: Skeletonizer.zone(child: const _ImageAreaSkeleton())),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 8, 8),
+            child: SizedBox(
+              width: panelWidth,
+              child: FpSurface(
+                role: FpSurfaceRole.panel,
+                borderRadius: BorderRadius.circular(AppMetrics.groupRadius + 4),
+                child: const _DetailPanelSkeleton(scrollable: true),
               ),
             ),
-            VerticalDivider(width: 1, thickness: 1, color: colorScheme.outlineVariant),
-            SizedBox(width: panelWidth, child: const _DetailPanelSkeleton(scrollable: true)),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -61,18 +63,38 @@ class _MobileIllustDetailSkeleton extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     final imageHeight = math.min(size.height * 0.68, math.max(360.0, size.width * 1.15));
 
-    return CustomScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      slivers: [
-        SliverAppBar(pinned: true, title: Skeletonizer.zone(child: const Bone.text(width: 180))),
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: imageHeight,
-            child: Skeletonizer.zone(child: const _ImageAreaSkeleton()),
-          ),
+    final leading = FpPageHeader.leadingFor(context);
+    return Stack(
+      children: [
+        CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: SizedBox(height: MediaQuery.paddingOf(context).top)),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: imageHeight,
+                child: Skeletonizer.zone(child: const _ImageAreaSkeleton()),
+              ),
+            ),
+            const SliverToBoxAdapter(child: _DetailPanelSkeleton(scrollable: false)),
+            const SliverToBoxAdapter(
+              child: Padding(padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24), child: IllustRelatedSectionSkeleton()),
+            ),
+          ],
         ),
-        const SliverToBoxAdapter(child: _DetailPanelSkeleton(scrollable: false)),
-        const SliverPadding(padding: EdgeInsets.fromLTRB(14, 0, 14, 24), sliver: _RelatedGridSkeleton()),
+        // Matches the loaded page: only the floating back control at rest.
+        if (leading != null)
+          SafeArea(
+            // Same spot as the loaded bar's disc: 8 in, centred in a toolbar.
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, (kToolbarHeight - 44) / 2, 0, 0),
+              child: FpSurface(
+                role: FpSurfaceRole.chrome,
+                borderRadius: BorderRadius.circular(22),
+                child: SizedBox.square(dimension: 44, child: Center(child: leading)),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -83,10 +105,8 @@ class _ImageAreaSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return ColoredBox(
-      color: colorScheme.surfaceContainerLowest,
+      color: Colors.transparent,
       child: Center(
         child: FractionallySizedBox(
           widthFactor: 0.72,
@@ -112,6 +132,8 @@ class _DetailPanelSkeleton extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: const [
             Bone.text(width: 260, fontSize: 22),
+            SizedBox(height: 12),
+            _UserPreviewSkeleton(),
             SizedBox(height: 8),
             _StatsStripSkeleton(),
             SizedBox(height: 14),
@@ -123,8 +145,7 @@ class _DetailPanelSkeleton extends StatelessWidget {
             SizedBox(height: 8),
             _CaptionSkeleton(),
             SizedBox(height: 14),
-            _UserPreviewSkeleton(),
-            SizedBox(height: 14),
+            SizedBox(height: 12),
             _SectionHeaderSkeleton(width: 92),
             SizedBox(height: 6),
             _MetadataSkeleton(),
@@ -141,10 +162,7 @@ class _DetailPanelSkeleton extends StatelessWidget {
       return child;
     }
 
-    return ColoredBox(
-      color: Theme.of(context).colorScheme.surface,
-      child: ListView(padding: EdgeInsets.zero, children: [child]),
-    );
+    return ListView(padding: EdgeInsets.zero, children: [child]);
   }
 }
 
@@ -313,23 +331,6 @@ class _RelatedPreviewRowSkeleton extends StatelessWidget {
           if (index != 2) const SizedBox(width: 8),
         ],
       ],
-    );
-  }
-}
-
-class _RelatedGridSkeleton extends StatelessWidget {
-  const _RelatedGridSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverGrid.builder(
-      itemCount: 6,
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 180, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 0.78),
-      itemBuilder: (context, index) {
-        return Skeletonizer.zone(
-          child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(8)),
-        );
-      },
     );
   }
 }

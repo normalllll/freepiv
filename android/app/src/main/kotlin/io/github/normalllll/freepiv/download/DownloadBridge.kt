@@ -702,7 +702,8 @@ object AndroidMediaSaver {
 
 data class NativeDownloadJob(
     val id: String,
-    val illustId: Int,
+    // Null for an image that is not a Pixiv work page.
+    val illustId: Int?,
     val url: String,
     val filename: String,
     val networkOptions: NativeNetworkOptions,
@@ -776,7 +777,7 @@ private fun nativeJobFromMap(map: Map<String, Any?>?): NativeDownloadJob? {
 
     return NativeDownloadJob(
         id = id,
-        illustId = (map["illustId"] as? Number)?.toInt() ?: 0,
+        illustId = (map["illustId"] as? Number)?.toInt(),
         url = url,
         filename = filename,
         networkOptions = NativeNetworkOptions(

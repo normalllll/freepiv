@@ -3,6 +3,9 @@ import 'dart:convert';
 
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:freepiv/core/services/appearance_settings.dart';
+import 'package:freepiv/app/theme/accent_validation.dart';
+import 'package:flutter/material.dart';
 
 enum PreviewImageQuality { medium, large }
 
@@ -75,11 +78,13 @@ final class HiveAppSettingsStore implements AppSettingsStore {
   }
 
   @override
-  Future<void> write(String key, dynamic value) {
+  Future<void> write(String key, dynamic value) async {
     if (value == null) {
-      return _box.delete(key);
+      await _box.delete(key);
+    } else {
+      await _box.put(key, value);
     }
-    return _box.put(key, value);
+    await _box.flush();
   }
 }
 
@@ -99,6 +104,8 @@ class AppSettings {
 
   static const _accountSessionKey = 'accountSession';
   static const _themeModeKey = 'themeMode';
+  static const _appearanceKey = 'appearance';
+  static const _reduceTransparencyKey = 'reduceTransparency';
   static const _localeCodeKey = 'localeCode';
   static const _previewImageQualityKey = 'previewImageQuality';
   static const _viewerImageQualityKey = 'viewerImageQuality';
@@ -118,6 +125,8 @@ class AppSettings {
     _searchHistoryKey,
     _accountSessionKey,
     _themeModeKey,
+    _appearanceKey,
+    _reduceTransparencyKey,
     _localeCodeKey,
     _previewImageQualityKey,
     _viewerImageQualityKey,
@@ -144,6 +153,28 @@ class AppSettings {
   static set themeMode(int? value) {
     _write(_themeModeKey, value);
   }
+
+  static AppearanceSettings get appearance => AppearanceSettings.fromRecord(_values[_appearanceKey], legacyThemeMode: themeMode);
+
+  /// Appearance uses a single awaited record, unlike older fire-and-forget settings.
+  static Future<void> saveAppearance(AppearanceSettings value) async {
+    for (final brightness in Brightness.values) {
+      if (!validateAccent(value.accentFor(brightness), brightness).canApply) {
+        throw ArgumentError.value(value.accentFor(brightness), 'accent', 'Unsafe appearance accent');
+      }
+      final recentCustom = value.customAccentFor(brightness);
+      if (recentCustom != null && !validateAccent(recentCustom, brightness).canApply) {
+        throw ArgumentError.value(recentCustom, 'customAccent', 'Unsafe appearance accent');
+      }
+    }
+    final record = value.toRecord();
+    await _activeStore.write(_appearanceKey, record);
+    _values[_appearanceKey] = record;
+  }
+
+  static bool get reduceTransparency => _values[_reduceTransparencyKey] == true;
+
+  static set reduceTransparency(bool value) => _write(_reduceTransparencyKey, value);
 
   static String? get localeCode {
     final value = _values[_localeCodeKey];
@@ -269,8 +300,11 @@ class AppSettings {
     }
 
     return switch (key) {
+      _searchHistoryKey => value is List && value.every((item) => item is String),
       _accountSessionKey => _accountSessionFromJson(value) != null,
       _themeModeKey => value is int && value >= 0 && value <= 2,
+      _appearanceKey => value is Map && value['version'] == 1,
+      _reduceTransparencyKey => value is bool,
       _localeCodeKey => value is String && supportedLocaleCodes.contains(value),
       _previewImageQualityKey => _isEnumSettingValue(value, PreviewImageQuality.values),
       _viewerImageQualityKey => _isEnumSettingValue(value, ViewerImageQuality.values),

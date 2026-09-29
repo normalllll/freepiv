@@ -1,10 +1,16 @@
+import 'package:freepiv/app/theme/app_feedback.dart';
+import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/content_script.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_comments_section.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_section.dart';
+import 'package:freepiv/features/illust/presentation/widgets/illust_detail_image_viewer.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_related_section.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_user_preview_section.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -18,59 +24,121 @@ class IllustDetailPanel extends StatelessWidget {
     this.onShowRelatedWorks,
     this.showRelatedPreview = true,
     this.scrollable = true,
+    required this.actions,
     super.key,
   });
 
   final Illust illust;
-  final ValueChanged<Illust> onIllustTap;
+  final IllustOpener onIllustTap;
   final VoidCallback? onShowRelatedWorks;
   final bool showRelatedPreview;
   final bool scrollable;
+  final IllustPageActions actions;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final translations = t;
+    // Wide and narrow share one order: title, quiet stats, creator, then the
+    // single action row. Stats sit with the title so they read as the work's.
     final content = [
-      Text(illust.title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
-      const SizedBox(height: 14),
-      IllustUserPreviewSection(illust: illust, onIllustTap: onIllustTap),
-      const SizedBox(height: 8),
-      _StatsStrip(illust: illust),
-      const SizedBox(height: 10),
-      _RestrictionBadges(illust: illust),
-      const SizedBox(height: 14),
-      IllustSectionTitle(title: translations.illust.section.tags, icon: Icons.tag_outlined),
+      SelectableText(
+        illust.title,
+        style: contentTextStyle(context, illust.title, Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+      ),
       const SizedBox(height: 6),
-      _TagWrap(tags: illust.tags),
+      _StatsStrip(illust: illust),
+      const SizedBox(height: AppMetrics.compactSectionGap),
+      IllustUserPreviewSection(illust: illust, onIllustTap: onIllustTap, showRecentWorks: false),
+      const SizedBox(height: AppMetrics.compactSectionGap),
+      _ActionRow(illust: illust, actions: actions),
+      if (illust.illustAiType == 2 || illust.xRestrict > 0) ...[const SizedBox(height: AppMetrics.compactGap), _RestrictionBadges(illust: illust)],
       if (illust.caption.trim().isNotEmpty) ...[
-        const SizedBox(height: 14),
-        IllustSectionTitle(title: translations.illust.section.caption, icon: Icons.notes_outlined),
-        const SizedBox(height: 6),
+        const SizedBox(height: AppMetrics.compactSectionGap),
+        IllustSectionTitle(title: translations.illust.section.caption),
+        const SizedBox(height: AppMetrics.sectionHeadingGap),
         _CaptionBox(caption: illust.caption),
       ],
-      const SizedBox(height: 14),
-      IllustSectionTitle(title: translations.illust.section.details, icon: Icons.info_outline),
-      const SizedBox(height: 4),
-      _MetadataRow(label: translations.common.id, value: illust.id.toString(), copyable: true),
-      if (illust.kind.isNotEmpty) _MetadataRow(label: translations.illust.metadata.type, value: illust.kind),
-      if (illust.createDate.isNotEmpty) _MetadataRow(label: translations.illust.metadata.created, value: formatPixivDate(illust.createDate)),
-      const SizedBox(height: 14),
-
+      const SizedBox(height: AppMetrics.compactSectionGap),
+      IllustSectionTitle(title: translations.illust.section.tags),
+      const SizedBox(height: AppMetrics.sectionHeadingGap),
+      _TagWrap(tags: illust.tags),
+      const SizedBox(height: AppMetrics.compactSectionGap),
+      ExpansionTile(
+        key: PageStorageKey<String>('illust-metadata-${illust.id}'),
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: EdgeInsets.zero,
+        shape: const Border(),
+        collapsedShape: const Border(),
+        title: Text(translations.illust.section.details, style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
+        children: [
+          _MetadataRow(label: translations.common.id, value: illust.id.toString(), copyable: true),
+          if (illust.kind.isNotEmpty) _MetadataRow(label: translations.illust.metadata.type, value: _kindLabel(illust.kind, translations)),
+          if (illust.width > 0 && illust.height > 0) _MetadataRow(label: translations.illust.stats.size, value: '${illust.width} × ${illust.height}'),
+          if (illust.createDate.isNotEmpty) _MetadataRow(label: translations.illust.metadata.created, value: formatPixivDate(illust.createDate)),
+        ],
+      ),
+      const SizedBox(height: 8),
       IllustCommentsSection(illustId: illust.id, totalComments: illust.totalComments),
-      const SizedBox(height: 14),
+      const SizedBox(height: AppMetrics.compactSectionGap),
+      // The creator's recent works follow the work's own content.
+      IllustUserPreviewSection(illust: illust, onIllustTap: onIllustTap, showHeader: false),
+      const SizedBox(height: AppMetrics.compactSectionGap),
       if (showRelatedPreview && onShowRelatedWorks != null)
         IllustRelatedSection(illustId: illust.id, onIllustTap: onIllustTap, onShowMore: onShowRelatedWorks!),
     ];
 
-    return ColoredBox(
-      color: colorScheme.surface,
-      child: scrollable
-          ? ListView(padding: const EdgeInsets.fromLTRB(14, 14, 14, 22), children: content)
-          : Padding(
-              padding: const EdgeInsets.fromLTRB(14, 14, 14, 22),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: content),
+    return scrollable
+        ? ListView(key: PageStorageKey<String>('illust-detail-panel-${illust.id}'), padding: const EdgeInsets.all(20), children: content)
+        : Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: content),
+          );
+  }
+}
+
+class _ActionRow extends StatelessWidget {
+  const _ActionRow({required this.illust, required this.actions});
+
+  final Illust illust;
+  final IllustPageActions actions;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = FreepivThemeTokens.of(context);
+    final translations = t;
+    final tonal = IconButton.styleFrom(backgroundColor: tokens.surfaceInset, fixedSize: const Size.square(AppMetrics.controlHeight));
+    return Wrap(
+      spacing: AppMetrics.compactGap,
+      runSpacing: AppMetrics.compactGap,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(color: tokens.surfaceInset, shape: BoxShape.circle),
+          child: IllustBookmarkButton(illustId: illust.id, initialIsBookmarked: illust.isBookmarked),
+        ),
+        if (actions.canDownload)
+          Builder(
+            builder: (buttonContext) => IconButton(
+              style: tonal,
+              tooltip: translations.illust.contextMenu.download,
+              onPressed: () => unawaited(actions.download(origin: DownloadFlight.originOf(buttonContext))),
+              icon: const Icon(Icons.download_outlined),
             ),
+          ),
+        IconButton(
+          style: tonal,
+          tooltip: translations.illust.contextMenu.copyLink,
+          onPressed: () => unawaited(actions.copyLink()),
+          icon: const Icon(Icons.link_rounded),
+        ),
+        Builder(
+          builder: (buttonContext) => IconButton(
+            style: tonal,
+            tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+            onPressed: () => unawaited(actions.showMore(buttonContext)),
+            icon: const Icon(Icons.more_horiz),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -106,7 +174,7 @@ class _InfoBadge extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(7)),
+      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         child: Row(
@@ -134,23 +202,13 @@ class _StatsStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return Row(
+    return Wrap(
+      spacing: 16,
+      runSpacing: 6,
       children: [
-        Expanded(
-          child: _StatPill(icon: Icons.aspect_ratio_outlined, label: translations.illust.stats.size, value: '${illust.width} x ${illust.height}'),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _StatPill(icon: Icons.visibility_outlined, label: translations.illust.stats.views, value: formatCount(illust.totalView)),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _StatPill(icon: Icons.favorite_border, label: translations.illust.stats.bookmarks, value: formatCount(illust.totalBookmarks)),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _StatPill(icon: Icons.collections_outlined, label: translations.illust.stats.pages, value: '${illust.pageCount}'),
-        ),
+        _StatPill(icon: Icons.visibility_outlined, label: translations.illust.stats.views, value: formatCount(illust.totalView)),
+        _StatPill(icon: Icons.favorite_border, label: translations.illust.stats.bookmarks, value: formatCount(illust.totalBookmarks)),
+        if (illust.pageCount > 1) _StatPill(icon: Icons.collections_outlined, label: translations.illust.stats.pages, value: '${illust.pageCount}'),
       ],
     );
   }
@@ -169,50 +227,70 @@ class _StatPill extends StatelessWidget {
 
     return Tooltip(
       message: context.t.common.labelValue(label: label, value: value),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: colorScheme.outlineVariant),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 14, color: colorScheme.onSurfaceVariant),
-              const SizedBox(height: 3),
-              Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700, height: 1),
-              ),
-            ],
-          ),
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: colorScheme.onSurfaceVariant),
+          const SizedBox(width: 4),
+          Text(value, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+        ],
       ),
     );
   }
 }
 
-class _TagWrap extends StatelessWidget {
+class _TagWrap extends StatefulWidget {
   const _TagWrap({required this.tags});
 
   final List<Tag> tags;
 
   @override
+  State<_TagWrap> createState() => _TagWrapState();
+}
+
+class _TagWrapState extends State<_TagWrap> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    if (tags.isEmpty) {
+    if (widget.tags.isEmpty) {
       return Text(context.t.illust.tags.none, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant));
     }
-    final sortedTags = [...tags]
-      ..sort((a, b) {
-        return _tagLabel(a).length.compareTo(_tagLabel(b).length);
-      });
+    final tags = widget.tags;
+    final visibleTags = _expanded ? tags : tags.take(5);
+    final tokens = FreepivThemeTokens.of(context);
 
-    return Wrap(spacing: 6, runSpacing: 6, children: [for (final tag in sortedTags) _TagChip(tag: tag)]);
+    return AnimatedSize(
+      duration: AppMotion.duration(context, AppMotion.expand),
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: AppMetrics.compactGap,
+            runSpacing: AppMetrics.compactGap,
+            children: [for (final tag in visibleTags) _TagChip(tag: tag)],
+          ),
+          if (tags.length > 5)
+            Padding(
+              padding: const EdgeInsets.only(top: AppMetrics.compactGap),
+              child: TextButton.icon(
+                onPressed: () => setState(() => _expanded = !_expanded),
+                style: TextButton.styleFrom(
+                  foregroundColor: tokens.textPrimary,
+                  backgroundColor: tokens.surfaceInset,
+                  minimumSize: const Size(0, 44),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+                ),
+                icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more, size: 18),
+                label: Text(_expanded ? context.t.illust.tags.showLess : context.t.illust.tags.showMore(count: tags.length - 5)),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 
@@ -224,24 +302,22 @@ class _TagChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final borderRadius = BorderRadius.circular(999);
+    final tokens = FreepivThemeTokens.of(context);
+    final borderRadius = BorderRadius.circular(AppMetrics.controlRadius);
 
-    return Material(
-      color: colorScheme.surfaceContainerHighest,
-      borderRadius: borderRadius,
-      child: InkWell(
-        borderRadius: borderRadius,
-        onTap: () => unawaited(_copyTextValue(context.t.illust.tags.tag, tag.name)),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: borderRadius,
-            border: Border.all(color: colorScheme.outlineVariant),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-            child: Text(_tagLabel(tag), style: Theme.of(context).textTheme.labelSmall),
-          ),
-        ),
+    return Tooltip(
+      message: context.t.common.copy(label: tag.name),
+      child: TextButton(
+        onPressed: () => unawaited(_copyTextValue(context.t.illust.tags.tag, tag.name)),
+        style: TextButton.styleFrom(
+          overlayColor: Colors.transparent,
+          foregroundColor: colorScheme.onSurfaceVariant,
+          minimumSize: const Size(0, 44),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          shape: RoundedRectangleBorder(borderRadius: borderRadius),
+        ).copyWith(backgroundColor: WidgetStateProperty.resolveWith((states) => appButtonRestingSurface(tokens, states, resting: tokens.surfaceMuted))),
+        child: Text(_tagLabel(tag), style: Theme.of(context).textTheme.labelMedium),
       ),
     );
   }
@@ -255,16 +331,14 @@ class _CaptionBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
+    final theme = Theme.of(context);
+    final textStyle = theme.brightness == Brightness.dark ? theme.textTheme.bodySmall : theme.textTheme.bodyMedium;
+    final tokens = FreepivThemeTokens.of(context);
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: BoxDecoration(color: tokens.surfaceMuted, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
       child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: HtmlRichText(caption, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurface, height: 1.35)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: HtmlRichText(caption, style: textStyle?.copyWith(color: colorScheme.onSurface, height: 1.5)),
       ),
     );
   }
@@ -282,7 +356,7 @@ class _MetadataRow extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           SizedBox(
@@ -300,7 +374,7 @@ class _MetadataRow extends StatelessWidget {
                   IconButton(
                     tooltip: context.t.common.copy(label: label),
                     visualDensity: VisualDensity.compact,
-                    constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                    constraints: const BoxConstraints.tightFor(width: AppMetrics.controlHeight, height: AppMetrics.controlHeight),
                     padding: EdgeInsets.zero,
                     icon: const Icon(Icons.content_copy_outlined, size: 16),
                     onPressed: () => unawaited(_copyTextValue(label, value)),
@@ -332,3 +406,8 @@ String _tagLabel(Tag tag) {
 
   return '#${tag.name}';
 }
+
+String _kindLabel(String kind, Translations translations) => switch (kind) {
+  'manga' => translations.home.manga,
+  _ => translations.home.illustrations,
+};

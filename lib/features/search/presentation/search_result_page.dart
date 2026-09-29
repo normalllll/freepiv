@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
@@ -35,41 +37,27 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool shouldUseDesktopShell) {
+      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+        // The query bar floats over the results; they scroll beneath it.
         return Scaffold(
-          body: SafeArea(
-            top: true,
-            bottom: false,
-            child: Column(
-              children: [
-                Material(
-                  color: colorScheme.surface,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
-                    ),
-                    child: SearchHeader(
-                      showBackButton: !shouldUseDesktopShell,
-                      onBack: () => Navigator.of(context).maybePop(),
-                      compact: true,
-                      onSearch: _submitSearch,
-                      onSelected: _handleSearchSelection,
-                      onTypeChanged: (type) => _submitSearch(SearchSubmission(query: _keyword, type: type)),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: switch (widget.type) {
-                    SearchType.illust => _buildIllustResult(),
-                    SearchType.novel => _buildNovelResult(),
-                    SearchType.user => _buildUserResult(),
-                  },
-                ),
-              ],
+          body: FpPinnedChrome(
+            estimatedExtent: MediaQuery.paddingOf(context).top + AppMetrics.compactTargetHeight + AppMetrics.compactGap * 2,
+            chrome: SafeArea(
+              bottom: false,
+              child: SearchHeader(
+                showBackButton: !useHorizontalLayout,
+                onBack: () => Navigator.of(context).maybePop(),
+                onSearch: _submitSearch,
+                onSelected: _handleSearchSelection,
+                onTypeChanged: (type) => _submitSearch(SearchSubmission(query: _keyword, type: type)),
+              ),
             ),
+            body: switch (widget.type) {
+              SearchType.illust => _buildIllustResult(),
+              SearchType.novel => _buildNovelResult(),
+              SearchType.user => _buildUserResult(),
+            },
           ),
         );
       },
@@ -82,12 +70,19 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> {
     _ensureLoaded(source);
 
     return DataRefreshView(
+      key: ValueKey(filter),
       onRefresh: () => source.refresh(source.isEmpty),
       builder: (context, physics, locators) {
         return AnimatedBuilder(
           animation: source,
           builder: (context, child) {
-            return _IllustResultBody(source: source, physics: physics, locators: locators);
+            return _IllustResultBody(
+              source: source,
+              physics: physics,
+              locators: locators,
+              hasActiveFilter: filter != const SearchFilterState(),
+              onResetFilters: () => ref.read(searchFiltersProvider.notifier).setFilter(SearchType.illust, const SearchFilterState()),
+            );
           },
         );
       },
@@ -100,12 +95,34 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> {
     _ensureLoaded(source);
 
     return DataRefreshView(
+      key: ValueKey(filter),
       onRefresh: () => source.refresh(source.isEmpty),
       builder: (context, physics, locators) {
         return AnimatedBuilder(
           animation: source,
           builder: (context, child) {
-            return UserNovelListBody(source: source, physics: physics, sliverHeader: locators.sliverHeader, emptyTitle: context.t.search.empty.novels);
+            if (source.initialized && source.isEmpty && filter != const SearchFilterState()) {
+              return DataSliverFillBody(
+                physics: physics,
+                sliverHeader: chromeSliverHeader(locators.sliverHeader),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    EmptyContent(icon: Icons.menu_book_outlined, title: context.t.search.empty.novels),
+                    TextButton(
+                      onPressed: () => ref.read(searchFiltersProvider.notifier).setFilter(SearchType.novel, const SearchFilterState()),
+                      child: Text(context.t.common.reset),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return UserNovelListBody(
+              source: source,
+              physics: physics,
+              sliverHeader: chromeSliverHeader(locators.sliverHeader),
+              emptyTitle: context.t.search.empty.novels,
+            );
           },
         );
       },
@@ -189,24 +206,28 @@ AppRoute _routeForType(SearchType type) {
 }
 
 class _IllustResultBody extends StatelessWidget {
-  const _IllustResultBody({required this.source, required this.physics, required this.locators});
+  const _IllustResultBody({required this.source, required this.physics, required this.locators, required this.hasActiveFilter, required this.onResetFilters});
 
   final SearchIllustListSource source;
   final ScrollPhysics? physics;
   final DataRefreshLocators locators;
+  final bool hasActiveFilter;
+  final VoidCallback onResetFilters;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+
+  Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
-      return DataLoadingCustomScrollView(physics: physics, slivers: [?locators.sliverHeader, const SliverIllustWaterfallSkeleton()]);
+    if (source.phase == LoadPhase.loading) {
+      return DataLoadingCustomScrollView(physics: physics, slivers: [chromeSliverHeader(locators.sliverHeader), const SliverIllustWaterfallSkeleton()]);
     }
 
     if (!source.initialized && lastError != null) {
       return DataSliverFillBody(
         physics: physics,
-        sliverHeader: locators.sliverHeader,
+        sliverHeader: chromeSliverHeader(locators.sliverHeader),
         child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
@@ -214,26 +235,25 @@ class _IllustResultBody extends StatelessWidget {
     if (source.initialized && source.isEmpty) {
       return DataSliverFillBody(
         physics: physics,
-        sliverHeader: locators.sliverHeader,
-        child: EmptyContent(icon: Icons.image_not_supported_outlined, title: context.t.search.empty.illustrations),
+        sliverHeader: chromeSliverHeader(locators.sliverHeader),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            EmptyContent(icon: Icons.image_not_supported_outlined, title: context.t.search.empty.illustrations),
+            if (hasActiveFilter) TextButton(onPressed: onResetFilters, child: Text(context.t.common.reset)),
+          ],
+        ),
       );
     }
 
     return DataLoadingCustomScrollView(
       physics: physics,
       slivers: [
-        ?locators.sliverHeader,
+        chromeSliverHeader(locators.sliverHeader),
         SliverDataWaterfallGrid<Illust>(
           source: source,
-          padding: const EdgeInsets.all(12),
-          maxCrossAxisExtent: 240,
           itemBuilder: (context, illust, index) {
-            return IllustPreviewer(
-              illust: illust,
-              onTap: () {
-                context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '${illust.id}'}, extra: illust);
-              },
-            );
+            return IllustPreviewer(illust: illust, onOpen: (heroTag) => openIllustDetail(context, illust, heroTag));
           },
         ),
       ],
@@ -249,23 +269,19 @@ class _UserResultBody extends StatelessWidget {
   final DataRefreshLocators locators;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+
+  Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
-      return DataLoadingCustomScrollView(
-        physics: physics,
-        slivers: [
-          ?locators.sliverHeader,
-          const SliverPadding(padding: EdgeInsets.all(12), sliver: SliverUserPreviewerSkeletonList()),
-        ],
-      );
+    if (source.phase == LoadPhase.loading) {
+      return DataLoadingCustomScrollView(physics: physics, slivers: [chromeSliverHeader(locators.sliverHeader), const SliverUserPreviewerSkeletonGrid()]);
     }
 
     if (!source.initialized && lastError != null) {
       return DataSliverFillBody(
         physics: physics,
-        sliverHeader: locators.sliverHeader,
+        sliverHeader: chromeSliverHeader(locators.sliverHeader),
         child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
@@ -273,7 +289,7 @@ class _UserResultBody extends StatelessWidget {
     if (source.initialized && source.isEmpty) {
       return DataSliverFillBody(
         physics: physics,
-        sliverHeader: locators.sliverHeader,
+        sliverHeader: chromeSliverHeader(locators.sliverHeader),
         child: EmptyContent(icon: Icons.people_outline, title: context.t.search.empty.users),
       );
     }
@@ -281,17 +297,8 @@ class _UserResultBody extends StatelessWidget {
     return DataLoadingCustomScrollView(
       physics: physics,
       slivers: [
-        ?locators.sliverHeader,
-        SliverDataList<UserPreview>(
-          source: source,
-          padding: const EdgeInsets.all(12),
-          itemBuilder: (context, userPreview, index) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: UserPreviewer(userPreview: userPreview),
-            );
-          },
-        ),
+        chromeSliverHeader(locators.sliverHeader),
+        SliverUserPreviewGrid(source: source),
       ],
     );
   }

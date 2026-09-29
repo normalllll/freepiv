@@ -7,20 +7,20 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'illust_bookmark_logic.g.dart';
 
 class IllustBookmarkArgs {
-  final String runtimeTag;
+  final String? accountId;
   final int illustId;
   final bool isBookmarked;
   final bool isNovel;
 
-  const IllustBookmarkArgs({required this.runtimeTag, required this.illustId, required this.isBookmarked, required this.isNovel});
+  const IllustBookmarkArgs({required this.accountId, required this.illustId, required this.isBookmarked, required this.isNovel});
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) || other is IllustBookmarkArgs && other.runtimeTag == runtimeTag;
+    return identical(this, other) || other is IllustBookmarkArgs && other.accountId == accountId && other.illustId == illustId && other.isNovel == isNovel;
   }
 
   @override
-  int get hashCode => runtimeTag.hashCode;
+  int get hashCode => Object.hash(accountId, illustId, isNovel);
 }
 
 class IllustBookmarkState {
@@ -41,7 +41,7 @@ class IllustBookmarkState {
   }
 }
 
-@Riverpod(keepAlive: true)
+@riverpod
 class IllustBookmark extends _$IllustBookmark {
   @override
   IllustBookmarkState build(IllustBookmarkArgs args) {
@@ -50,6 +50,7 @@ class IllustBookmark extends _$IllustBookmark {
 
   Future<void> toggle() async {
     if (state.updating) return;
+    if (args.accountId == null || pixivAccountNotifier.value?.user.id != args.accountId) return;
 
     final previous = state;
     final nextBookmarked = !previous.isBookmarked;
@@ -71,6 +72,7 @@ class IllustBookmark extends _$IllustBookmark {
       },
       settle: (current) => current.copyWith(updating: false),
       rollback: (previous) => previous.copyWith(updating: false),
+      canCommit: () => ref.mounted && pixivAccountNotifier.value?.user.id == args.accountId,
     );
   }
 }

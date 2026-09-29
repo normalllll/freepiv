@@ -1,11 +1,10 @@
+import 'download_origin.dart';
 import 'save_target.dart';
 import 'download_request_options.dart';
 
 class DownloadJob {
   DownloadJob({
-    required this.id,
-    required this.illustId,
-    required this.pageIndex,
+    required this.origin,
     required this.url,
     required this.filename,
     required this.networkOptions,
@@ -17,35 +16,29 @@ class DownloadJob {
   });
 
   factory DownloadJob.create({
-    required int illustId,
-    required int pageIndex,
+    required DownloadOrigin origin,
     required Uri url,
-    required String filename,
+    String? filename,
     required SaveTarget saveTarget,
     DownloadNetworkOptions networkOptions = const DownloadNetworkOptions(),
     DownloadValidationOptions validation = const DownloadValidationOptions(),
     String? thumbnailUrl,
     String? title,
   }) {
-    final now = DateTime.now();
     return DownloadJob(
-      id: downloadJobId(illustId: illustId, pageIndex: pageIndex),
-      illustId: illustId,
-      pageIndex: pageIndex,
+      origin: origin,
       url: url,
-      filename: filename,
+      filename: filename ?? origin.defaultFilename(url),
       networkOptions: networkOptions.normalizedFor(url),
       validation: validation.normalized(),
       saveTarget: saveTarget,
       thumbnailUrl: thumbnailUrl,
       title: title,
-      createdAt: now,
+      createdAt: DateTime.now(),
     );
   }
 
-  final String id;
-  final int illustId;
-  final int pageIndex;
+  final DownloadOrigin origin;
   final Uri url;
   final String filename;
   final DownloadNetworkOptions networkOptions;
@@ -55,10 +48,10 @@ class DownloadJob {
   final String? title;
   final DateTime createdAt;
 
+  String get id => origin.jobId;
+
   DownloadJob copyWith({
-    String? id,
-    int? illustId,
-    int? pageIndex,
+    DownloadOrigin? origin,
     Uri? url,
     String? filename,
     DownloadNetworkOptions? networkOptions,
@@ -69,9 +62,7 @@ class DownloadJob {
     DateTime? createdAt,
   }) {
     return DownloadJob(
-      id: id ?? this.id,
-      illustId: illustId ?? this.illustId,
-      pageIndex: pageIndex ?? this.pageIndex,
+      origin: origin ?? this.origin,
       url: url ?? this.url,
       filename: filename ?? this.filename,
       networkOptions: networkOptions ?? this.networkOptions,
@@ -84,6 +75,10 @@ class DownloadJob {
   }
 
   Map<String, Object?> toPlatformJson() {
+    final (illustId, pageIndex) = switch (origin) {
+      ArtworkPage(:final illustId, :final pageIndex) => (illustId, pageIndex),
+      ContentImage() => (null, null),
+    };
     return {
       'id': id,
       'illustId': illustId,
@@ -98,8 +93,4 @@ class DownloadJob {
       'createdAt': createdAt.millisecondsSinceEpoch,
     };
   }
-}
-
-String downloadJobId({required int illustId, required int pageIndex}) {
-  return 'illust_${illustId}_page_$pageIndex';
 }

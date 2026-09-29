@@ -1,3 +1,5 @@
+import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -67,33 +69,24 @@ class NovelCreatorHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Material(
+    final identity = Material(
       color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: () {
-          context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${user.id}'});
-        },
+      child: AppClickSurface(
+        onTap: () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${user.id}'}),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: 2),
           child: Row(
             children: [
               SizedBox.square(
                 dimension: 44,
                 child: PixivImage(url: user.profileImageUrls.medium, fit: BoxFit.cover, borderRadius: BorderRadius.circular(22)),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      user.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 2),
+                    Text(user.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleSmall),
                     Text(
                       '@${user.account}',
                       maxLines: 1,
@@ -103,12 +96,33 @@ class NovelCreatorHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              UserFollowButton(userId: user.id, initialIsFollowed: user.isFollowed),
             ],
           ),
         ),
       ),
+    );
+    final follow = UserFollowButton(userId: user.id, initialIsFollowed: user.isFollowed);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Large text must not let the action consume the creator's entire name.
+        if (constraints.maxWidth < MediaQuery.textScalerOf(context).scale(300)) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              identity,
+              const SizedBox(height: 4),
+              Align(alignment: AlignmentDirectional.centerEnd, child: follow),
+            ],
+          );
+        }
+        return Row(
+          children: [
+            Expanded(child: identity),
+            const SizedBox(width: 8),
+            follow,
+          ],
+        );
+      },
     );
   }
 }
@@ -161,7 +175,7 @@ class NovelCoverTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(6);
+    final borderRadius = BorderRadius.circular(AppMetrics.controlRadius);
 
     return Tooltip(
       message: novel.title,
@@ -172,7 +186,7 @@ class NovelCoverTile extends StatelessWidget {
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: borderRadius,
           clipBehavior: Clip.antiAlias,
-          child: InkWell(
+          child: AppClickSurface(
             onTap: onTap,
             child: Stack(
               fit: StackFit.expand,
@@ -222,7 +236,7 @@ class HorizontalNovelStripSkeleton extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(width: _novelStripSpacing),
             itemBuilder: (context, index) {
               return Skeletonizer.zone(
-                child: Bone(width: tileWidth, height: tileHeight, borderRadius: BorderRadius.circular(6)),
+                child: Bone(width: tileWidth, height: tileHeight, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
               );
             },
           ),

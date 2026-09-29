@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
@@ -20,18 +20,18 @@ class SearchTrendingTagsSliver extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final trendingTags = ref.watch(searchTrendingTagsProvider);
     final trendTags = trendingTags.value ?? const <TrendTag>[];
-    final isInitialLoading = trendingTags.isLoading && trendTags.isEmpty;
-
-    if (isInitialLoading) {
-      return const _TrendingTagGridSkeleton();
-    }
-
+    // Riverpod retries failed providers; a retry is "loading with an error",
+    // so the error must win over the skeleton or a failure looks endless.
     final error = trendingTags.error;
     if (error != null && trendTags.isEmpty) {
       return SliverFillRemaining(
         hasScrollBody: false,
         child: ErrorContent.fromError(error: error, onRetry: () => unawaited(ref.read(searchTrendingTagsProvider.notifier).reload(keepPreviousData: false))),
       );
+    }
+
+    if (trendingTags.isLoading && trendTags.isEmpty) {
+      return const _TrendingTagGridSkeleton();
     }
 
     if (trendTags.isEmpty) {
@@ -41,29 +41,28 @@ class SearchTrendingTagsSliver extends ConsumerWidget {
       );
     }
 
-    return SliverPadding(
-      padding: EdgeInsets.fromLTRB(
-        math.max(12, (MediaQuery.sizeOf(context).width - 900) / 2 + 12),
-        0,
-        math.max(12, (MediaQuery.sizeOf(context).width - 900) / 2 + 12),
-        24,
-      ),
-      sliver: SliverLayoutBuilder(
-        builder: (context, constraints) {
-          return SliverGrid.builder(
-            itemCount: trendTags.length,
-            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: _gridMaxExtent(constraints.crossAxisExtent),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-            ),
-            itemBuilder: (context, index) {
-              final trendTag = trendTags[index];
-              return _TrendingTagCard(trendTag: trendTag, onTap: () => onTagSelected(trendTag.tag));
+    return SliverLayoutBuilder(
+      builder: (context, outerConstraints) {
+        return SliverPadding(
+          padding: AppMetrics.columnPadding(outerConstraints.crossAxisExtent).copyWith(bottom: 24),
+          sliver: SliverLayoutBuilder(
+            builder: (context, constraints) {
+              return SliverGrid.builder(
+                itemCount: trendTags.length,
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: _gridMaxExtent(constraints.crossAxisExtent),
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                ),
+                itemBuilder: (context, index) {
+                  final trendTag = trendTags[index];
+                  return _TrendingTagCard(trendTag: trendTag, onTap: () => onTagSelected(trendTag.tag));
+                },
+              );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -136,28 +135,27 @@ class _TrendingTagGridSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverPadding(
-      padding: EdgeInsets.fromLTRB(
-        math.max(12, (MediaQuery.sizeOf(context).width - 900) / 2 + 12),
-        0,
-        math.max(12, (MediaQuery.sizeOf(context).width - 900) / 2 + 12),
-        24,
-      ),
-      sliver: SliverLayoutBuilder(
-        builder: (context, constraints) {
-          return SliverGrid.builder(
-            itemCount: 12,
-            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: _gridMaxExtent(constraints.crossAxisExtent),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-            ),
-            itemBuilder: (context, index) {
-              return const _TrendingTagSkeletonCard();
+    return SliverLayoutBuilder(
+      builder: (context, outerConstraints) {
+        return SliverPadding(
+          padding: AppMetrics.columnPadding(outerConstraints.crossAxisExtent).copyWith(bottom: 24),
+          sliver: SliverLayoutBuilder(
+            builder: (context, constraints) {
+              return SliverGrid.builder(
+                itemCount: 12,
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: _gridMaxExtent(constraints.crossAxisExtent),
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                ),
+                itemBuilder: (context, index) {
+                  return const _TrendingTagSkeletonCard();
+                },
+              );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

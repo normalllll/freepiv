@@ -1,6 +1,6 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/fp_surface.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_autocomplete_session.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_suggestion.dart';
@@ -9,16 +9,15 @@ import 'package:freepiv/shared/shared.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class SuggestionSurface extends StatelessWidget {
-  const SuggestionSurface({required this.session, required this.maxHeight, required this.onSelected, super.key});
+  const SuggestionSurface({required this.session, required this.maxHeight, required this.onSelected, this.selectedIndex = -1, super.key});
 
   final SearchAutocompleteSession session;
   final double maxHeight;
   final ValueChanged<SearchSuggestion> onSelected;
+  final int selectedIndex;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return AnimatedBuilder(
       animation: session,
       builder: (context, child) {
@@ -26,23 +25,16 @@ class SuggestionSurface extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        final height = suggestionHeight(context, session, maxHeight);
-        if (height <= 0) {
+        if (maxHeight <= 0) {
           return const SizedBox.shrink();
         }
 
-        return Material(
-          elevation: 3,
-          color: colorScheme.surface,
-          shadowColor: colorScheme.shadow.withValues(alpha: 0.10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: colorScheme.outlineVariant),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: SizedBox(
-            height: height,
-            child: SuggestionPanelBody(session: session, onSelected: onSelected),
+        return FpSurface(
+          role: FpSurfaceRole.overlay,
+          borderRadius: BorderRadius.circular(AppMetrics.groupRadius),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            child: SuggestionPanelBody(session: session, selectedIndex: selectedIndex, onSelected: onSelected),
           ),
         );
       },
@@ -51,10 +43,11 @@ class SuggestionSurface extends StatelessWidget {
 }
 
 class SuggestionPanelBody extends StatelessWidget {
-  const SuggestionPanelBody({required this.session, required this.onSelected, super.key});
+  const SuggestionPanelBody({required this.session, required this.onSelected, this.selectedIndex = -1, super.key});
 
   final SearchAutocompleteSession session;
   final ValueChanged<SearchSuggestion> onSelected;
+  final int selectedIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -64,34 +57,46 @@ class SuggestionPanelBody extends StatelessWidget {
         final suggestions = session.suggestions;
         final error = session.error;
 
-        return Column(
+        return Stack(
           children: [
-            SizedBox(height: 2, child: session.loading ? const LoadingSkeletonBlock(width: double.infinity, height: 2) : null),
-            if (error != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 10, 10, 2),
-                child: CompactMessage(
-                  icon: Icons.error_outline,
-                  message: formatPixivError(error),
-                  actionLabel: context.t.common.retry,
-                  onAction: session.retry,
-                ),
-              ),
-            Expanded(
-              child: suggestions.isEmpty
-                  ? SuggestionEmptyState(session: session)
-                  : ListView.separated(
-                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: suggestions.length,
-                      separatorBuilder: (context, index) {
-                        return const SizedBox(height: 2);
-                      },
-                      itemBuilder: (context, index) {
-                        return SuggestionTile(suggestion: suggestions[index], onTap: () => onSelected(suggestions[index]));
-                      },
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (error != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 2),
+                    child: CompactMessage(
+                      icon: Icons.error_outline,
+                      message: formatPixivError(error),
+                      details: pixivErrorDetails(error),
+                      actionLabel: context.t.common.retry,
+                      onAction: session.retry,
                     ),
+                  ),
+                Flexible(
+                  child: suggestions.isEmpty
+                      ? SizedBox(
+                          height: _suggestionEmptyHeight(session),
+                          child: SuggestionEmptyState(session: session),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                          padding: EdgeInsets.zero,
+                          itemCount: suggestions.length,
+                          itemBuilder: (context, index) {
+                            return SuggestionTile(
+                              suggestion: suggestions[index],
+                              selected: index == selectedIndex,
+                              onTap: () => onSelected(suggestions[index]),
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
+            // Overlay loading feedback so the first row still reaches the edge.
+            if (session.loading) const Positioned(top: 0, left: 0, right: 0, child: LoadingSkeletonBlock(width: double.infinity, height: 2)),
           ],
         );
       },
@@ -137,7 +142,7 @@ class SuggestionLoadingRows extends StatelessWidget {
   Widget build(BuildContext context) {
     return Skeletonizer.zone(
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: EdgeInsets.zero,
         itemCount: 3,
         itemBuilder: (context, index) {
           return const Padding(
@@ -159,10 +164,11 @@ class SuggestionLoadingRows extends StatelessWidget {
 }
 
 class SuggestionTile extends StatelessWidget {
-  const SuggestionTile({required this.suggestion, required this.onTap, super.key});
+  const SuggestionTile({required this.suggestion, required this.onTap, this.selected = false, super.key});
 
   final SearchSuggestion suggestion;
   final VoidCallback onTap;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +176,10 @@ class SuggestionTile extends StatelessWidget {
     final subtitle = suggestion.subtitle;
 
     return ListTile(
+      shape: const RoundedRectangleBorder(),
       dense: true,
+      selected: selected,
+      selectedTileColor: colorScheme.surfaceContainerHighest,
       leading: CircleAvatar(
         radius: 18,
         backgroundColor: colorScheme.surfaceContainerHighest,
@@ -184,29 +193,18 @@ class SuggestionTile extends StatelessWidget {
   }
 }
 
-double suggestionHeight(BuildContext context, SearchAutocompleteSession session, double maxHeight) {
-  final suggestions = session.suggestions;
-  if (maxHeight <= 0) {
-    return 0;
+double _suggestionEmptyHeight(SearchAutocompleteSession session) {
+  if (session.query.isEmpty) {
+    return 10;
   }
 
-  if (suggestions.isEmpty) {
-    if (session.query.isEmpty) {
-      return math.min(maxHeight, 10);
-    }
-
-    if (session.loading) {
-      return math.min(maxHeight, 176);
-    }
-
-    if (session.error != null) {
-      return math.min(maxHeight, 78);
-    }
-
-    return math.min(maxHeight, 80);
+  if (session.loading) {
+    return 176;
   }
 
-  final statusHeight = session.error == null ? 0.0 : 58.0;
-  final listHeight = suggestions.length * 58.0 + 18.0;
-  return math.min(maxHeight, statusHeight + listHeight + 2);
+  if (session.error != null) {
+    return 78;
+  }
+
+  return 80;
 }

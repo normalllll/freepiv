@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'article_images.dart';
-import 'package:freepiv/core/media/logic.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -105,12 +104,9 @@ class PixivisionDocument {
 
 @riverpod
 Future<PixivisionDocument> pixivisionArticle(Ref ref, String url) async {
-  final transport = ref.watch(rustMediaTransportProvider);
   final api = await ref.watch(pixivisionApiProvider(Uri.parse(url).pathSegments.first).future);
   final article = await api.getArticleByUrl(url: url);
-  if (!ref.mounted) throw StateError('Article preparation cancelled');
-  final ratios = await preparePixivisionImages(ref, article, transport);
-  return PixivisionDocument(article: article, imageRatios: ratios);
+  return PixivisionDocument(article: article, imageRatios: pixivisionKnownImageRatios(article));
 }
 
 @riverpod

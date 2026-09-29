@@ -1,10 +1,13 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_image_viewer.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_panel.dart';
-import 'package:freepiv/features/illust/presentation/widgets/illust_related_waterfall.dart';
+import 'package:freepiv/features/illust/presentation/widgets/illust_related_section.dart';
+import 'package:freepiv/shared/layout/fp_page_header.dart';
+import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
+import 'package:freepiv/shared/ui/fp_surface.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
@@ -20,6 +23,7 @@ class DesktopIllustDetailLayout extends StatelessWidget {
     required this.onImageTap,
     required this.onIllustTap,
     required this.onShowRelatedWorks,
+    this.viewerKey,
     super.key,
   });
 
@@ -31,56 +35,56 @@ class DesktopIllustDetailLayout extends StatelessWidget {
   final int pageIndex;
   final ValueChanged<int> onPageChanged;
   final ValueChanged<int>? onImageTap;
-  final ValueChanged<Illust> onIllustTap;
+  final IllustOpener onIllustTap;
   final VoidCallback onShowRelatedWorks;
+  final Key? viewerKey;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final panelWidth = math.min(460.0, math.max(380.0, MediaQuery.sizeOf(context).width * 0.32));
 
-    return ColoredBox(
-      color: colorScheme.surface,
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: IllustImagePager(
-                      illustId: illust.id,
-                      imagePages: imagePages,
-                      isUgoira: isUgoira,
-                      loadedImages: loadedImages,
-                      pageController: pageController,
-                      pageIndex: pageIndex,
-                      onPageChanged: onPageChanged,
-                      onImageTap: onImageTap,
-                      showControls: true,
-                    ),
-                  ),
-                  PositionedDirectional(
-                    top: 16,
-                    end: 16,
-                    child: IllustBookmarkButton(illustId: illust.id, initialIsBookmarked: illust.isBookmarked, floating: true),
-                  ),
-                ],
+    // The artwork stage is transparent: the window backdrop behind it is the
+    // work's own blurred colours. The information panel floats beside it.
+    return SafeArea(
+      child: Row(
+        children: [
+          Expanded(
+            child: IllustImagePager(
+              key: viewerKey,
+              illustId: illust.id,
+              imagePages: imagePages,
+              isUgoira: isUgoira,
+              loadedImages: loadedImages,
+              pageController: pageController,
+              pageIndex: pageIndex,
+              onPageChanged: onPageChanged,
+              onImageTap: onImageTap,
+              showControls: true,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 8, 8),
+            child: SizedBox(
+              width: panelWidth,
+              child: FpSurface(
+                role: FpSurfaceRole.panel,
+                borderRadius: BorderRadius.circular(AppMetrics.groupRadius + 4),
+                child: IllustDetailPanel(
+                  illust: illust,
+                  onIllustTap: onIllustTap,
+                  onShowRelatedWorks: onShowRelatedWorks,
+                  actions: IllustPageActions(illustId: illust.id, pageIndex: pageIndex, imagePages: imagePages, loadedImages: loadedImages, isUgoira: isUgoira),
+                ),
               ),
             ),
-            VerticalDivider(width: 1, thickness: 1, color: colorScheme.outlineVariant),
-            SizedBox(
-              width: panelWidth,
-              child: IllustDetailPanel(illust: illust, onIllustTap: onIllustTap, onShowRelatedWorks: onShowRelatedWorks),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class MobileIllustDetailLayout extends StatelessWidget {
+class MobileIllustDetailLayout extends StatefulWidget {
   const MobileIllustDetailLayout({
     required this.illust,
     required this.imagePages,
@@ -91,7 +95,8 @@ class MobileIllustDetailLayout extends StatelessWidget {
     required this.onPageChanged,
     required this.onImageTap,
     required this.onIllustTap,
-    required this.relatedSource,
+    required this.onShowRelatedWorks,
+    this.viewerKey,
     super.key,
   });
 
@@ -103,44 +108,188 @@ class MobileIllustDetailLayout extends StatelessWidget {
   final int pageIndex;
   final ValueChanged<int> onPageChanged;
   final ValueChanged<int>? onImageTap;
-  final ValueChanged<Illust> onIllustTap;
-  final IllustRelatedListSource relatedSource;
+  final IllustOpener onIllustTap;
+  final VoidCallback onShowRelatedWorks;
+  final Key? viewerKey;
+
+  @override
+  State<MobileIllustDetailLayout> createState() => _MobileIllustDetailLayoutState();
+}
+
+class _MobileIllustDetailLayoutState extends State<MobileIllustDetailLayout> {
+  final _scrollController = ScrollController();
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final imageHeight = math.min(size.height * 0.68, math.max(360.0, size.width * 1.15));
+    final topInset = MediaQuery.paddingOf(context).top;
+    final leading = FpPageHeader.leadingFor(context);
+    final actions = IllustPageActions(
+      illustId: widget.illust.id,
+      pageIndex: widget.pageIndex,
+      imagePages: widget.imagePages,
+      loadedImages: widget.loadedImages,
+      isUgoira: widget.isUgoira,
+    );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Pixiv supplies a work ratio for the detail. Keep one stage for every
+        // page, since individual page dimensions are not part of this model.
+        final ratio = widget.illust.width > 0 && widget.illust.height > 0 ? widget.illust.width / widget.illust.height : 1.0;
+        final width = constraints.maxWidth;
+        final imageHeight = (width / ratio).clamp(140.0, math.max(140.0, size.height * .78)).toDouble();
+        // The bar appears once the body title (just below the image) has
+        // scrolled under it, never as an empty strip over the artwork.
+        final titleThreshold = topInset + imageHeight - kToolbarHeight + 24;
 
-    return AnimatedBuilder(
-      animation: relatedSource,
-      builder: (context, child) {
-        return DataLoadingCustomScrollView(
-          slivers: [
-            SliverAppBar(pinned: true, title: Text(illust.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: imageHeight,
-                child: IllustImagePager(
-                  illustId: illust.id,
-                  imagePages: imagePages,
-                  isUgoira: isUgoira,
-                  loadedImages: loadedImages,
-                  pageController: pageController,
-                  pageIndex: pageIndex,
-                  onPageChanged: onPageChanged,
-                  onImageTap: onImageTap,
-                  showControls: false,
+        return Stack(
+          children: [
+            DataLoadingCustomScrollView(
+              key: PageStorageKey<String>('illust-detail-scroll-${widget.illust.id}'),
+              controller: _scrollController,
+              slivers: [
+                SliverToBoxAdapter(child: SizedBox(height: topInset)),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: imageHeight,
+                    child: IllustImagePager(
+                      key: widget.viewerKey,
+                      illustId: widget.illust.id,
+                      imagePages: widget.imagePages,
+                      isUgoira: widget.isUgoira,
+                      loadedImages: widget.loadedImages,
+                      pageController: widget.pageController,
+                      pageIndex: widget.pageIndex,
+                      onPageChanged: widget.onPageChanged,
+                      onImageTap: widget.onImageTap,
+                      showControls: true,
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: IllustDetailPanel(
+                    illust: widget.illust,
+                    onIllustTap: widget.onIllustTap,
+                    showRelatedPreview: false,
+                    scrollable: false,
+                    actions: actions,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                    child: IllustRelatedSection(illustId: widget.illust.id, onIllustTap: widget.onIllustTap, onShowMore: widget.onShowRelatedWorks),
+                  ),
+                ),
+                // Phones keep room for the floating download button; beside the
+                // sidebar the dock lives in the sidebar column instead.
+                SliverToBoxAdapter(child: SizedBox(height: AutoScaffold.usesHorizontalLayoutOf(context) ? MediaQuery.paddingOf(context).bottom : 88)),
+              ],
+            ),
+            Positioned(
+              left: 0,
+              top: 0,
+              right: 0,
+              height: topInset + kToolbarHeight,
+              child: AnimatedBuilder(
+                animation: _scrollController,
+                builder: (context, child) => _CompactTitleBar(
+                  coverage: _scrollController.hasClients ? ((_scrollController.offset - titleThreshold) / 24).clamp(0.0, 1.0) : 0,
+                  title: widget.illust.title,
+                  leading: leading,
+                  trailing: IllustBookmarkButton(illustId: widget.illust.id, initialIsBookmarked: widget.illust.isBookmarked),
                 ),
               ),
             ),
-            SliverToBoxAdapter(
-              child: IllustDetailPanel(illust: illust, onIllustTap: onIllustTap, showRelatedPreview: false, scrollable: false),
-            ),
-            ...IllustRelatedSlivers.build(context: context, source: relatedSource, currentIllustId: illust.id, onIllustTap: onIllustTap, topPadding: 0),
-            const SliverToBoxAdapter(child: SizedBox(height: 88)),
           ],
         );
       },
+    );
+  }
+}
+
+/// Narrow detail chrome. At rest only the back control floats over the
+/// artwork; after the title scrolls away a glass bar with the title and the
+/// nearest action fades in. Beside the sidebar there is no back control here
+/// (the sidebar owns it) and the bar floats like every other pinned bar.
+class _CompactTitleBar extends StatelessWidget {
+  const _CompactTitleBar({required this.coverage, required this.title, required this.leading, required this.trailing});
+
+  final double coverage;
+  final String title;
+  final Widget? leading;
+  final Widget trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final leading = this.leading;
+    return PinnedChromeGlass(
+      opacity: coverage,
+      animate: false,
+      child: SafeArea(
+        bottom: false,
+        // Beside the sidebar the glass floats inset from the bar's edges; the
+        // controls keep their usual distance from the glass, not the page, so
+        // the action does not crowd the rounded end. Without a back control
+        // the title then starts on the body's 16 edge.
+        child: Padding(
+          padding: PinnedChromeGlass.insetsOf(context),
+          child: Row(
+            children: [
+              const SizedBox(width: 4),
+              if (leading != null)
+                SizedBox.square(
+                  dimension: 52,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Positioned.fill(
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: IgnorePointer(
+                            child: Opacity(
+                              opacity: 1 - coverage,
+                              child: FpSurface(role: FpSurfaceRole.chrome, borderRadius: BorderRadius.circular(22), child: const SizedBox.expand()),
+                            ),
+                          ),
+                        ),
+                      ),
+                      leading,
+                    ],
+                  ),
+                ),
+              Expanded(
+                child: ExcludeSemantics(
+                  excluding: coverage == 0,
+                  child: Opacity(
+                    opacity: coverage,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                  ),
+                ),
+              ),
+              IgnorePointer(
+                ignoring: coverage == 0,
+                child: ExcludeFocus(
+                  excluding: coverage == 0,
+                  child: ExcludeSemantics(
+                    excluding: coverage == 0,
+                    child: Opacity(opacity: coverage, child: trailing),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

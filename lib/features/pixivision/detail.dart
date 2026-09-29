@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/data/data_list_source.dart';
+import 'package:freepiv/shared/widgets/load_state_switcher.dart';
+import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -9,6 +12,7 @@ import 'logic.dart';
 import 'navigation.dart';
 import 'widgets.dart';
 import 'article_blocks.dart';
+import 'image.dart';
 
 class PixivisionArticlePage extends ConsumerStatefulWidget {
   const PixivisionArticlePage({required this.url, this.summary, super.key});
@@ -32,34 +36,43 @@ class _PixivisionArticlePageState extends ConsumerState<PixivisionArticlePage> {
     final document = state.value;
     final article = document?.article;
     return PixivisionScaffold(
-      title: article?.title ?? 'pixivision',
+      title: pixivisionArticleTitle(article?.title ?? 'pixivision'),
       child: DotsRefreshIndicator(
         onRefresh: () async {
           ref.invalidate(pixivisionArticleProvider(widget.url));
           await ref.read(pixivisionArticleProvider(widget.url).future);
         },
         child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (article == null) {
-              return ListView(
-                padding: pixivisionPadding(constraints.maxWidth),
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  if (state.hasError)
-                    PixivisionError(retry: () => ref.invalidate(pixivisionArticleProvider(widget.url)))
-                  else ...[
-                    _ArticleHeader(summary: widget.summary, onLink: (_) {}),
-                    const SizedBox(height: 16),
-                    const _ArticleBodySkeleton(),
-                  ],
-                ],
-              );
-            }
-            return _ArticleContent(article: article, imageRatios: document!.imageRatios, controller: _scroll);
-          },
+          builder: (context, constraints) => LoadStateSwitcher(
+            phase: switch (article) {
+              null when state.hasError => LoadPhase.error,
+              null => LoadPhase.loading,
+              _ => LoadPhase.content,
+            },
+            child: _buildPhase(context, state, article, document, constraints),
+          ),
         ),
       ),
     );
+  }
+
+  Widget _buildPhase(BuildContext context, AsyncValue<PixivisionDocument> state, Article? article, PixivisionDocument? document, BoxConstraints constraints) {
+    if (article == null) {
+      return ListView(
+        padding: pixivisionReadingPadding(constraints.maxWidth),
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          if (state.hasError)
+            PixivisionError(error: state.error, retry: () => ref.invalidate(pixivisionArticleProvider(widget.url)))
+          else ...[
+            _ArticleHeader(summary: widget.summary, onLink: (_) {}),
+            const SizedBox(height: 16),
+            const _ArticleBodySkeleton(),
+          ],
+        ],
+      );
+    }
+    return _ArticleContent(article: article, imageRatios: document!.imageRatios, controller: _scroll);
   }
 }
 
@@ -79,7 +92,13 @@ class _ArticleContentState extends State<_ArticleContent> {
     if (uri.fragment.isNotEmpty && uri.replace(fragment: '').toString() == Uri.parse(widget.article.url).replace(fragment: '').toString()) {
       final index = widget.article.blocks.indexWhere((block) => block.anchor == uri.fragment);
       final target = _keys[index]?.currentContext;
-      if (target != null) Scrollable.ensureVisible(target, duration: const Duration(milliseconds: 250), alignment: 0.05);
+      if (target != null) {
+        Scrollable.ensureVisible(
+          target,
+          duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 250),
+          alignment: 0.05,
+        );
+      }
       return;
     }
     openPixivisionLink(context, uri.toString());
@@ -97,7 +116,7 @@ class _ArticleContentState extends State<_ArticleContent> {
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         controller: widget.controller,
-        padding: pixivisionPadding(constraints.maxWidth),
+        padding: pixivisionReadingPadding(constraints.maxWidth),
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -153,8 +172,11 @@ class _ArticleHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.t.pixivision;
-    final category = article?.category ?? summary?.category;
-    final tags = article?.tags ?? summary?.tags ?? const <PixivisionTag>[];
+    final loaded = article;
+    final category = loaded?.category ?? summary?.category;
+    final tags = loaded?.tags ?? summary?.tags ?? const <PixivisionTag>[];
+    final thumbnail = loaded == null ? summary?.thumbnail : pixivisionHeaderThumbnail(loaded);
+    final description = loaded == null ? null : pixivisionHeaderDescription(loaded);
     return Skeletonizer(
       enabled: article == null,
       child: Column(
@@ -163,7 +185,12 @@ class _ArticleHeader extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: SelectableText(article?.title ?? summary?.title ?? 'Article title', style: Theme.of(context).textTheme.headlineMedium)),
+              Expanded(
+                child: SelectableText(
+                  pixivisionArticleTitle(article?.title ?? summary?.title ?? 'Article title'),
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ),
               const SizedBox(width: 12),
               IconButton(
                 tooltip: t.openOriginal,
@@ -181,22 +208,69 @@ class _ArticleHeader extends StatelessWidget {
             children: [
               if (category != null) ActionChip(label: Text(category.title), onPressed: () => onLink(category.url)),
               for (final tag in tags) ActionChip(label: Text('#${tag.name}'), onPressed: () => onLink(tag.url)),
-              PopupMenuButton<String>(
-                tooltip: t.translations,
-                enabled: article?.translations.isNotEmpty ?? false,
-                onSelected: onLink,
-                itemBuilder: (_) => [
-                  for (final item in article?.translations ?? const <ArticleLink>[]) PopupMenuItem(value: item.url, child: Text(item.title)),
+              AppMenuAnchor(
+                menuChildren: [
+                  for (final item in article?.translations ?? const <ArticleLink>[]) AppMenuItem(onPressed: () => onLink(item.url), child: Text(item.title)),
                 ],
-                child: Chip(avatar: const Icon(Icons.translate, size: 18), label: Text(t.translations)),
+                builder: (context, focusNode, toggle) => ActionChip(
+                  focusNode: focusNode,
+                  avatar: const Icon(Icons.translate, size: 18),
+                  label: Text(t.translations),
+                  onPressed: (article?.translations.isNotEmpty ?? false) ? toggle : null,
+                ),
               ),
             ],
           ),
+          if (thumbnail != null) ...[
+            const SizedBox(height: 20),
+            // While the article loads the banner is a fixed bone: probing the
+            // thumbnail here resized the skeleton once, and the loaded page
+            // may place or drop the banner anyway, which resized it again.
+            if (loaded == null)
+              const AspectRatio(aspectRatio: pixivisionBannerRatio, child: ImageLoadingSkeleton())
+            else
+              PixivisionImageMenu(
+                url: thumbnail,
+                title: loaded.title,
+                child: PixivisionImage(url: thumbnail, fit: BoxFit.contain, resolveAspectRatio: true, placeholderRatio: pixivisionBannerRatio),
+              ),
+          ],
+          if (description != null) ...[const SizedBox(height: 20), SelectableText(description, style: Theme.of(context).textTheme.bodyLarge)],
         ],
       ),
     );
   }
 }
+
+String? pixivisionHeaderThumbnail(Article article) {
+  final thumbnail = article.thumbnail;
+  if (thumbnail == null) return null;
+  final repeated = article.blocks.any(
+    (block) =>
+        block.images.any((image) => _sameImage(image.url, thumbnail)) ||
+        block.works.any((work) => work.preview != null && _sameImage(work.preview!, thumbnail)),
+  );
+  return repeated ? null : thumbnail;
+}
+
+String? pixivisionHeaderDescription(Article article) {
+  final description = article.description?.trim();
+  if (description == null || description.isEmpty) return null;
+  final repeated = article.blocks.any((block) => block.kind == BlockKind.paragraph && _normalizedText(block.text) == _normalizedText(description));
+  return repeated ? null : description;
+}
+
+bool _sameImage(String left, String right) {
+  final first = Uri.tryParse(left);
+  final second = Uri.tryParse(right);
+  if (first == null || second == null) return left == right;
+  return first.replace(query: '', fragment: '') == second.replace(query: '', fragment: '');
+}
+
+String _normalizedText(String value) => value.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+/// Pixivision article banners are typically 1200×630 share images.
+const pixivisionBannerRatio = 1200 / 630;
 
 class _ArticleBodySkeleton extends StatelessWidget {
   const _ArticleBodySkeleton();

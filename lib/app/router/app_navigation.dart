@@ -1,20 +1,19 @@
-import 'package:flutter/material.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/shared/ui/fp_icon.dart';
 
 class AppRouteDestination {
-  const AppRouteDestination({required this.route, required this.icon, required this.selectedIcon});
+  const AppRouteDestination({required this.route, required this.icon});
 
   final AppRoute route;
-  final IconData icon;
-  final IconData selectedIcon;
+  final FpIconName icon;
 }
 
 const appRouteDestinations = <AppRouteDestination>[
-  AppRouteDestination(route: AppRoute.home, icon: Icons.auto_awesome_mosaic_outlined, selectedIcon: Icons.auto_awesome_mosaic),
-  AppRouteDestination(route: AppRoute.newest, icon: Icons.fiber_new_outlined, selectedIcon: Icons.fiber_new),
-  AppRouteDestination(route: AppRoute.search, icon: Icons.explore_outlined, selectedIcon: Icons.explore),
-  AppRouteDestination(route: AppRoute.me, icon: Icons.account_circle_outlined, selectedIcon: Icons.account_circle),
+  AppRouteDestination(route: AppRoute.home, icon: FpIconName.home),
+  AppRouteDestination(route: AppRoute.newest, icon: FpIconName.activity),
+  AppRouteDestination(route: AppRoute.search, icon: FpIconName.compass),
+  AppRouteDestination(route: AppRoute.me, icon: FpIconName.user),
 ];
 
 bool isMobileNavigationPath(String path) => appRouteDestinations.any((item) => item.route.path == path);
@@ -29,22 +28,32 @@ int? appDestinationIndexForPath(String path) {
   return null;
 }
 
-String appRouteDestinationLabel(Translations translations, AppRouteDestination destination) {
-  return switch (destination.route) {
-    AppRoute.search => translations.common.discover,
-    AppRoute.newest => translations.navigation.activity,
-    _ => appRouteLabel(translations, destination.route),
+String appRouteDestinationLabel(Translations translations, AppRouteDestination destination) => appRouteLabel(translations, destination.route);
+
+/// Navigation surfaces use short names; page and window titles keep the full
+/// name from [appRouteLabel].
+String appRouteNavigationLabel(Translations translations, AppRoute route) {
+  return switch (route) {
+    AppRoute.downloads => translations.navigation.downloads,
+    AppRoute.about => translations.navigation.about,
+    _ => appRouteLabel(translations, route),
   };
 }
 
 String appRouteLabel(Translations translations, AppRoute route) {
   return switch (route) {
     AppRoute.home => translations.navigation.home,
-    AppRoute.search || AppRoute.searchIllustResult || AppRoute.searchNovelResult || AppRoute.searchUserResult => translations.navigation.search,
-    AppRoute.newest => translations.navigation.newest,
+    // Primary destinations share one name between navigation and titles.
+    AppRoute.search => translations.common.discover,
+    AppRoute.searchIllustResult || AppRoute.searchNovelResult || AppRoute.searchUserResult => translations.navigation.search,
+    AppRoute.newest => translations.navigation.activity,
     AppRoute.fanbox => translations.fanbox.title,
     AppRoute.pixivision => translations.pixivision.title,
-    AppRoute.rankingIllust || AppRoute.rankingManga || AppRoute.rankingNovel => translations.navigation.ranking,
+    // The ranking page header holds only the mode picker; the kind lives in
+    // the window and top-bar title.
+    AppRoute.rankingIllust => '${translations.navigation.ranking} · ${translations.user.tabs.illustrations}',
+    AppRoute.rankingManga => '${translations.navigation.ranking} · ${translations.user.tabs.manga}',
+    AppRoute.rankingNovel => '${translations.navigation.ranking} · ${translations.user.tabs.novels}',
     AppRoute.me => translations.navigation.me,
     AppRoute.about => translations.about.title,
     AppRoute.settings => translations.navigation.settings,
@@ -53,6 +62,7 @@ String appRouteLabel(Translations translations, AppRoute route) {
     AppRoute.meFollowing || AppRoute.meFollowers => '',
     AppRoute.originalImageViewer ||
     AppRoute.illustDetail ||
+    AppRoute.illustRelated ||
     AppRoute.illustComments ||
     AppRoute.novelDetail ||
     AppRoute.novelReader ||
@@ -64,9 +74,9 @@ String appRouteLabel(Translations translations, AppRoute route) {
 bool _routeOwnsPath(AppRoute route, String path) {
   return switch (route) {
     AppRoute.home => path == route.path,
-    AppRoute.search => path == route.path || path.startsWith('/search/') || path == '/pixivision' || path.startsWith('/pixivision/'),
+    AppRoute.search => path == route.path || path.startsWith('/search/'),
     AppRoute.newest => path == route.path || path.startsWith('${route.path}/'),
-    AppRoute.me => path == route.path || path.startsWith('/me/') || path == '/fanbox' || path.startsWith('/fanbox/'),
+    AppRoute.me => path == route.path || path.startsWith('/me/'),
     _ => false,
   };
 }

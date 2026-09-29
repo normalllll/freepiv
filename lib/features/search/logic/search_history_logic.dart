@@ -19,4 +19,9 @@ class SearchHistory extends _$SearchHistory {
     state = const [];
     AppSettings.searchHistory = state;
   }
+
+  void remove(String query) {
+    state = List.unmodifiable(state.where((item) => item != query));
+    AppSettings.searchHistory = state;
+  }
 }

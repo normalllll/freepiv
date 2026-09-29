@@ -1,18 +1,25 @@
+import 'package:freepiv/shared/widgets/interaction_controls.dart';
+import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'package:freepiv/shared/widgets/settings_sections.dart';
 import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:freepiv/features/fanbox/account_settings.dart';
+import 'package:freepiv/features/settings/presentation/appearance_settings_section.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/theme/appearance_logic.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:freepiv/app/theme/transparency_logic.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/shared/layout/fp_page_header.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -24,21 +31,20 @@ class SettingsPage extends ConsumerStatefulWidget {
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
-    final themeMode = ref.watch(themeModeProvider);
+    final themeMode = ref.watch(appearanceProvider).settings.mode;
     final appLocale = ref.watch(appLocaleProvider);
     final previewQuality = ref.watch(previewImageQualityProvider);
     final viewerQuality = ref.watch(viewerImageQualityProvider);
     final downloadPathSettings = ref.watch(downloadSavePathSettingsProvider);
     final maxConcurrentDownloads = ref.watch(maxConcurrentDownloadsProvider);
     final proxySettings = ref.watch(proxySettingsProvider);
-    final tokens = FreepivThemeTokens.of(context);
+    final reduceTransparency = ref.watch(reduceTransparencyProvider);
     final translations = t;
 
     return AutoScaffold(
-      builder: (context, layout, orientation, shouldUseDesktopShell) {
+      builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
-          backgroundColor: tokens.surface,
-          appBar: shouldUseDesktopShell ? null : AppBar(title: Text(translations.navigation.settings)),
+          appBar: useHorizontalLayout ? null : FpPageHeader(title: Text(translations.navigation.settings)),
           body: SettingsSections(
             labels: [
               translations.settings.theme.title,
@@ -47,6 +53,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               translations.settings.proxy.title,
               translations.settings.downloads.title,
               translations.fanbox.title,
+              translations.settings.account.title,
             ],
             groups: [
               [
@@ -55,13 +62,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(translations.settings.theme.title, style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 12),
-                      _ThemeModeSelector(
-                        value: themeMode,
-                        onChanged: (mode) {
-                          ref.read(themeModeProvider.notifier).setThemeMode(mode);
-                        },
+                      AppearanceSettingsSection(
+                        modeSelector: ThemeModeSelector(value: themeMode, onChanged: (mode) => ref.read(appearanceProvider.notifier).setMode(mode)),
+                      ),
+                      const SizedBox(height: 16),
+                      AppSwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(translations.settings.theme.reduceTransparency),
+                        subtitle: Text(translations.settings.theme.reduceTransparencyHint),
+                        value: reduceTransparency,
+                        onChanged: (value) => ref.read(reduceTransparencyProvider.notifier).setEnabled(value),
                       ),
                     ],
                   ),
@@ -134,6 +144,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ],
               [const Padding(padding: EdgeInsets.all(16), child: FanboxAccountSettings())],
+              [
+                ListTile(
+                  title: Text(translations.settings.account.signOut),
+                  leading: const Icon(Icons.logout),
+                  onTap: pixivAccountNotifier.value == null
+                      ? null
+                      : () {
+                          setPixivAccount(null);
+                          context.go('/login');
+                        },
+                ),
+              ],
             ],
           ),
         );
@@ -181,8 +203,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 }
 
-class _ThemeModeSelector extends StatelessWidget {
-  const _ThemeModeSelector({required this.value, required this.onChanged});
+class ThemeModeSelector extends StatelessWidget {
+  const ThemeModeSelector({required this.value, required this.onChanged, super.key});
 
   final ThemeMode value;
   final ValueChanged<ThemeMode> onChanged;
@@ -190,16 +212,121 @@ class _ThemeModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final translations = t;
+    final tokens = FreepivThemeTokens.of(context);
+    final options = [
+      (mode: ThemeMode.system, icon: Icons.brightness_auto_outlined, label: translations.settings.theme.system),
+      (mode: ThemeMode.light, icon: Icons.light_mode_outlined, label: translations.settings.theme.light),
+      (mode: ThemeMode.dark, icon: Icons.dark_mode_outlined, label: translations.settings.theme.dark),
+    ];
 
-    return ConstrainedSegmentedButton<ThemeMode>(
-      maxWidth: null,
-      segments: [
-        ButtonSegment(value: ThemeMode.system, icon: const Icon(Icons.brightness_auto_outlined), label: Text(translations.settings.theme.system)),
-        ButtonSegment(value: ThemeMode.light, icon: const Icon(Icons.light_mode_outlined), label: Text(translations.settings.theme.light)),
-        ButtonSegment(value: ThemeMode.dark, icon: const Icon(Icons.dark_mode_outlined), label: Text(translations.settings.theme.dark)),
-      ],
-      selected: {value},
-      onSelectionChanged: (selection) => onChanged(selection.single),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final style = Theme.of(context).textTheme.labelLarge ?? const TextStyle(fontSize: 14);
+        final painter = TextPainter(textDirection: Directionality.of(context), textScaler: MediaQuery.textScalerOf(context));
+        var requiredWidth = 8.0;
+        for (final option in options) {
+          painter.text = TextSpan(text: option.label, style: style);
+          painter.layout();
+          requiredWidth += painter.width + 52;
+        }
+        final vertical = constraints.maxWidth < requiredWidth;
+        final children = [
+          for (final option in options)
+            _ThemeModeOption(
+              key: ValueKey('theme-mode-${option.mode.name}'),
+              label: option.label,
+              icon: option.icon,
+              selected: option.mode == value,
+              onTap: () => onChanged(option.mode),
+            ),
+        ];
+        return DecoratedBox(
+          key: const ValueKey('theme-mode-track'),
+          decoration: BoxDecoration(color: tokens.surfaceInset, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: vertical
+                ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children)
+                : Row(children: [for (final child in children) Expanded(child: child)]),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ThemeModeOption extends StatelessWidget {
+  const _ThemeModeOption({required this.label, required this.icon, required this.selected, required this.onTap, super.key});
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = FreepivThemeTokens.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(4),
+      child: Semantics(
+        selected: selected,
+        inMutuallyExclusiveGroup: true,
+        child: AnimatedContainer(
+          duration: AppMotion.duration(context, AppMotion.hover),
+          decoration: BoxDecoration(
+            color: selected ? tokens.surfaceRaised : tokens.surfaceInset,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: tokens.isDark ? .18 : .07),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: AppClickSurface(
+              feedback: AppClickFeedback.quiet,
+              borderRadius: BorderRadius.circular(8),
+              onTap: onTap,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: AppMetrics.fieldHeight(context)),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Same selection language as AppSegmentedButton:
+                          // raised pill, accent ink and weight, no underline.
+                          Icon(icon, size: AppMetrics.iconSize, color: selected ? tokens.selectionInk : tokens.textSecondary),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              label,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                color: selected ? tokens.selectionInk : tokens.textSecondary,
+                                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -345,16 +472,16 @@ class _ProxySettingsTile extends StatelessWidget {
     final active = settings.active;
 
     return Material(
-      color: Color.alphaBlend((active ? tokens.brand : tokens.surfaceTint).withValues(alpha: active ? 0.08 : 0.30), tokens.surfaceRaised),
+      color: tokens.surfaceRaised,
       borderRadius: BorderRadius.circular(8),
-      child: InkWell(
+      child: AppClickSurface(
         borderRadius: BorderRadius.circular(8),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
           child: Row(
             children: [
-              Icon(active ? Icons.hub : Icons.hub_outlined, color: active ? tokens.brand : colorScheme.onSurfaceVariant),
+              Icon(active ? Icons.hub : Icons.hub_outlined, color: active ? tokens.keyGraphicOn(tokens.surfaceRaised) : colorScheme.onSurfaceVariant),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -398,6 +525,7 @@ class _DownloadSettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final tokens = FreepivThemeTokens.of(context);
     final translations = t;
 
     return Column(
@@ -407,18 +535,18 @@ class _DownloadSettingsSection extends StatelessWidget {
         const SizedBox(height: 12),
         Text(translations.settings.downloads.savePath, style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: 8),
-        _DownloadPathModeSelector(value: settings.mode, onChanged: onModeChanged),
+        if (isDesktopPlatform) _DownloadPathModeSelector(value: settings.mode, onChanged: onModeChanged),
         const SizedBox(height: 8),
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.folder_outlined),
           title: Text(_downloadPathTitle(settings, translations)),
           subtitle: Text(_downloadPathSubtitle(settings, translations), maxLines: 1, overflow: TextOverflow.ellipsis),
-          trailing: settings.mode == DownloadSavePathMode.custom
+          trailing: isDesktopPlatform && settings.mode == DownloadSavePathMode.custom
               ? IconButton(
                   tooltip: translations.settings.downloads.chooseFolder,
                   icon: const Icon(Icons.folder_open_outlined),
-                  color: colorScheme.primary,
+                  color: tokens.keyGraphicOn(tokens.surfaceRaised),
                   onPressed: onChooseDirectory,
                 )
               : null,

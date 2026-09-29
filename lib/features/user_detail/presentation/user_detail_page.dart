@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_bookmarks_tab.dart';
@@ -9,16 +10,17 @@ import 'package:freepiv/features/user_detail/presentation/widgets/user_following
 import 'package:freepiv/features/user_detail/presentation/widgets/user_illust_grid_tab.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_list_tab.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_profile_info_tab.dart';
+import 'package:freepiv/app/window/window_title.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/error.dart';
-import 'package:freepiv/shared/widgets/lazy_indexed_stack.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class UserDetailPage extends ConsumerWidget {
-  const UserDetailPage({this.userId, this.userDetail, super.key}) : assert(userId != null || userDetail != null);
+  const UserDetailPage({this.userId, this.userDetail, this.initialTab = UserContentTabKind.illust, super.key}) : assert(userId != null || userDetail != null);
 
+  final UserContentTabKind initialTab;
   final int? userId;
   final UserDetailResult? userDetail;
 
@@ -26,23 +28,48 @@ class UserDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final args = UserDetailArgs(userId: userId, userDetail: userDetail);
     final detailValue = ref.watch(userDetailProvider(args));
+    final visible = detailValue.asData?.value ?? userDetail;
+    final id = userId ?? userDetail!.user.id;
 
+    // The window shows the author's name, and the ambient backdrop takes its
+    // colours from the banner or avatar that the page already loads.
+    return WindowTitleContribution(
+      path: '/user/$id',
+      work: visible == null
+          ? null
+          : WorkWindowTitle(
+              id: id,
+              title: visible.user.name,
+              kind: 'user',
+              artworkUrl: visible.profile.backgroundImageUrl ?? visible.user.profileImageUrls.medium,
+            ),
+      child: _buildPage(detailValue, ref),
+    );
+  }
+
+  Widget _buildPage(AsyncValue<UserDetailResult> detailValue, WidgetRef ref) {
+    final args = UserDetailArgs(userId: userId, userDetail: userDetail);
     return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool shouldUseDesktopShell) {
+      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return detailValue.when(
-          data: (detail) =>
-              UserDetailContent(key: ValueKey<String>('user-detail-content-${detail.user.id}'), detail: detail, shouldUseDesktopShell: shouldUseDesktopShell),
+          data: (detail) => UserDetailContent(
+            key: ValueKey<String>('user-detail-content-${detail.user.id}'),
+            detail: detail,
+            initialTab: initialTab,
+            useHorizontalLayout: useHorizontalLayout,
+          ),
           loading: () {
             final initialDetail = userDetail;
             if (initialDetail != null) {
               return UserDetailContent(
                 key: ValueKey<String>('user-detail-content-${initialDetail.user.id}'),
                 detail: initialDetail,
-                shouldUseDesktopShell: shouldUseDesktopShell,
+                initialTab: initialTab,
+                useHorizontalLayout: useHorizontalLayout,
               );
             }
 
-            return UserDetailLoadingSkeleton(shouldUseDesktopShell: shouldUseDesktopShell);
+            return UserDetailLoadingSkeleton(useHorizontalLayout: useHorizontalLayout);
           },
           error: (error, stackTrace) {
             return ErrorPage.fromError(error: error, onRetry: () => ref.read(userDetailProvider(args).notifier).reload());
@@ -54,10 +81,11 @@ class UserDetailPage extends ConsumerWidget {
 }
 
 class UserDetailContent extends StatefulWidget {
-  const UserDetailContent({required this.detail, required this.shouldUseDesktopShell, super.key});
+  const UserDetailContent({required this.detail, required this.useHorizontalLayout, this.initialTab = UserContentTabKind.illust, super.key});
 
+  final UserContentTabKind initialTab;
   final UserDetailResult detail;
-  final bool shouldUseDesktopShell;
+  final bool useHorizontalLayout;
 
   @override
   State<UserDetailContent> createState() => _UserDetailContentState();
@@ -76,8 +104,18 @@ class _UserDetailContentState extends State<UserDetailContent> with SingleTicker
 
     _tabKeys = {for (final tab in _tabs) tab.kind: GlobalKey(debugLabel: 'user-detail-tab-${tab.kind}')};
 
-    _tabController = TabController(length: _tabs.length, vsync: this, animationDuration: Duration.zero);
+    final initialIndex = _tabs.indexWhere((tab) => tab.kind == widget.initialTab);
+    _currentIndex = initialIndex < 0 ? 0 : initialIndex;
+    _tabController = TabController(initialIndex: _currentIndex, length: _tabs.length, vsync: this, animationDuration: const Duration(milliseconds: 200));
     _tabController.addListener(_handleTabChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant UserDetailContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialTab == widget.initialTab) return;
+    final index = _tabs.indexWhere((tab) => tab.kind == widget.initialTab);
+    if (index >= 0) _tabController.animateTo(index, duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 200));
   }
 
   void _handleTabChanged() {
@@ -108,15 +146,16 @@ class _UserDetailContentState extends State<UserDetailContent> with SingleTicker
           tabController: _tabController,
           storageKey: 'content',
           includeTopPadding: true,
-          showBackButton: !widget.shouldUseDesktopShell,
-          onRefresh: _refreshCurrentTab,
+          showBackButton: !widget.useHorizontalLayout && !(ShellNavigationScope.maybeOf(context)?.ownsBackControl ?? false),
+          onRefresh: _tabs[_currentIndex].kind == UserContentTabKind.profile ? null : _refreshCurrentTab,
           builder: (context, physics, locators) {
-            return LazyIndexedStack(
-              index: _currentIndex,
-              sizing: StackFit.expand,
+            // Swipeable like the other tabbed pages; a tab stays alive once
+            // opened, keeping its list, scroll position and requests.
+            return TabBarView(
+              controller: _tabController,
               children: [
                 for (final tab in _tabs)
-                  KeyedSubtree(
+                  _KeptAlive(
                     key: PageStorageKey<String>('user-detail-active-tab-${widget.detail.user.id}-${tab.kind}'),
                     child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
                   ),
@@ -165,4 +204,24 @@ List<UserDetailTabItem> _tabsFor(UserDetailResult detail, Translations translati
     UserDetailTabItem(kind: UserContentTabKind.following, icon: Icons.people_outline, label: translations.user.tabs.following),
     UserDetailTabItem(kind: UserContentTabKind.profile, icon: Icons.info_outline, label: translations.user.tabs.profile),
   ];
+}
+
+class _KeptAlive extends StatefulWidget {
+  const _KeptAlive({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  State<_KeptAlive> createState() => _KeptAliveState();
+}
+
+class _KeptAliveState extends State<_KeptAlive> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
+  }
 }

@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
+import 'package:freepiv/core/downloads/models/download_origin.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_section.dart';
 import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
@@ -149,10 +151,9 @@ class _NovelImagePager extends StatelessWidget {
     context.pushNamed(
       AppRoute.originalImageViewer.name,
       extra: OriginalImageViewerArgs(
-        workId: novel.id,
         title: novel.title,
         initialIndex: index,
-        pages: [for (final url in imageUrls) OriginalImagePage(url: url, previewUrl: url)],
+        pages: [for (final url in imageUrls) OriginalImagePage(url: url, previewUrl: url, downloadOrigin: DownloadOrigin.ofImageUrl(Uri.parse(url)))],
       ),
     );
   }
@@ -169,7 +170,10 @@ class NovelGalleryImage extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: PixivImage(url: url, fit: BoxFit.contain, borderRadius: BorderRadius.circular(8)),
+      child: ContentImageMenuRegion(
+        actions: ContentImageActions.pixivHosted(url: url, headers: pixivImageHeaders, title: t.novel.detail.images),
+        child: PixivImage(url: url, fit: BoxFit.contain, borderRadius: BorderRadius.circular(8)),
+      ),
     );
   }
 }

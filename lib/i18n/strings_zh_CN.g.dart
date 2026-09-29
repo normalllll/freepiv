@@ -43,6 +43,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$discover$zh_CN discover = Translations$discover$zh_CN.internal(_root);
 	@override late final Translations$app$zh_CN app = Translations$app$zh_CN.internal(_root);
 	@override late final Translations$navigation$zh_CN navigation = Translations$navigation$zh_CN.internal(_root);
+	@override late final Translations$errors$zh_CN errors = Translations$errors$zh_CN.internal(_root);
 	@override late final Translations$common$zh_CN common = Translations$common$zh_CN.internal(_root);
 	@override late final Translations$refresh$zh_CN refresh = Translations$refresh$zh_CN.internal(_root);
 	@override late final Translations$toast$zh_CN toast = Translations$toast$zh_CN.internal(_root);
@@ -74,6 +75,15 @@ class Translations$nativeWindow$zh_CN extends Translations$nativeWindow$en_US {
 	@override String get maximize => '最大化';
 	@override String get restore => '还原';
 	@override String get close => '关闭';
+	@override String get illust => '插画';
+	@override String get manga => '漫画';
+	@override String get novel => '小说';
+	@override String workFallback({required Object type, required Object id}) => '${type}：${id}';
+	@override String workTitle({required Object type, required Object id, required Object title}) => '${type}：${id} · ${title}';
+	@override String relatedTitle({required Object title}) => '相似作品 · ${title}';
+	@override String get user => '用户';
+	@override String userFallback({required Object id}) => '用户：${id}';
+	@override String viewerTitle({required Object title, required Object page, required Object total}) => '${title} · ${page}/${total}';
 }
 
 // Path: discover
@@ -87,6 +97,8 @@ class Translations$discover$zh_CN extends Translations$discover$en_US {
 	@override String get history => '搜索历史';
 	@override String get viewAll => '查看全部';
 	@override String get clearHistory => '清空历史';
+	@override String get deleteHistoryItem => '删除这条搜索记录';
+	@override String get emptyHistory => '搜索记录会显示在这里';
 }
 
 // Path: app
@@ -113,6 +125,25 @@ class Translations$navigation$zh_CN extends Translations$navigation$en_US {
 	@override String get ranking => '排行榜';
 	@override String get me => '我的';
 	@override String get settings => '设置';
+	@override String get more => '更多';
+	@override String get expand => '展开导航';
+	@override String get collapse => '收起导航';
+	@override String get downloads => '下载';
+	@override String get about => '关于';
+}
+
+// Path: errors
+class Translations$errors$zh_CN extends Translations$errors$en_US {
+	Translations$errors$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get generic => '内容加载失败，请重试。';
+	@override String get connection => '请检查网络连接后重试。';
+	@override String get session => '登录已过期，请重新登录。';
+	@override String get forbidden => '你暂无权限查看此内容。';
+	@override String get missing => '此内容已不可用。';
 }
 
 // Path: common
@@ -122,6 +153,7 @@ class Translations$common$zh_CN extends Translations$common$en_US {
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
+	@override String get viewLog => '查看日志';
 	@override String get apply => '应用';
 	@override String get reset => '重置';
 	@override String get discover => '发现';
@@ -137,6 +169,9 @@ class Translations$common$zh_CN extends Translations$common$en_US {
 	@override String copy({required Object label}) => '复制${label}';
 	@override String labelValue({required Object label, required Object value}) => '${label}：${value}';
 	@override String errorWithCause({required Object message, required Object cause}) => '${message}：${cause}';
+	@override String get errorDetails => '错误详情';
+	@override String get copyDetails => '复制详情';
+	@override String get detailsCopied => '已复制错误详情';
 }
 
 // Path: refresh
@@ -216,15 +251,14 @@ class Translations$me$zh_CN extends Translations$me$en_US {
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
+	@override String get profile => '个人主页';
 	@override String get openProfile => '打开个人主页';
 	@override String get following => '我的关注';
 	@override String get followers => '我的粉丝';
 	@override String get emptyFollowing => '暂无关注用户';
 	@override String get emptyFollowers => '暂无粉丝';
 	@override String get about => '关于';
-	@override String get aboutSubtitle => '版本、更新和项目链接';
 	@override String get settings => '设置';
-	@override String get settingsSubtitle => '主题、语言、图片和下载';
 }
 
 // Path: about
@@ -322,6 +356,7 @@ class Translations$user$zh_CN extends Translations$user$en_US {
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
+	@override String get noPublicWorks => '暂无公开作品';
 	@override late final Translations$user$tabs$zh_CN tabs = Translations$user$tabs$zh_CN.internal(_root);
 	@override late final Translations$user$stats$zh_CN stats = Translations$user$stats$zh_CN.internal(_root);
 	@override late final Translations$user$bookmarks$zh_CN bookmarks = Translations$user$bookmarks$zh_CN.internal(_root);
@@ -389,7 +424,7 @@ class Translations$follow$zh_CN extends Translations$follow$en_US {
 	@override String get tooltipFollow => '关注用户';
 	@override String get tooltipUnfollow => '取消关注';
 	@override String get followed => '已关注';
-	@override String get notFollowed => '未关注';
+	@override String get follow => '关注';
 }
 
 // Path: richText
@@ -415,6 +450,7 @@ class Translations$fanbox$zh_CN extends Translations$fanbox$en_US {
 	@override String get updateSession => '更新 Cookie';
 	@override String get title => 'FANBOX';
 	@override String get home => '关注动态';
+	@override String get feedGroup => '动态';
 	@override String get supporting => '赞助动态';
 	@override String get following => '关注的创作者';
 	@override String get recommended => '发现创作者';
@@ -535,10 +571,48 @@ class Translations$settings$theme$zh_CN extends Translations$settings$theme$en_U
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => '主题';
+	@override String get title => '外观';
+	@override String get displayMode => '显示模式';
+	@override String get tone => '色调';
+	@override String get neutral => '中性';
+	@override String get cool => '冷色';
+	@override String get warm => '暖色';
+	@override String get systemNeutralHint => '跟随系统时使用中性色';
+	@override String get lightAccent => '浅色主色';
+	@override String get darkAccent => '深色主色';
+	@override String get systemEditingLight => '当前随系统使用浅色主色';
+	@override String get systemEditingDark => '当前随系统使用深色主色';
+	@override String get presetPink => '默认粉色';
+	@override String get presetBlue => '蔚蓝';
+	@override String get presetTeal => '青绿';
+	@override String get presetViolet => '紫罗兰';
+	@override String get presetAmber => '琥珀';
+	@override String get presetOrange => '橙色';
+	@override String get custom => '自定义';
+	@override String get defaultAccent => '默认粉色';
+	@override String get restoreDefault => '恢复默认粉色';
+	@override String get editLightAccent => '自定义浅色主色';
+	@override String get editDarkAccent => '自定义深色主色';
+	@override String get hue => '色相';
+	@override String get saturation => '饱和度';
+	@override String get value => '明度';
+	@override String get hex => 'HEX 颜色';
+	@override String get invalidHex => '请输入六位 HEX 颜色';
+	@override String get preview => '预览';
+	@override String get previewButton => '按钮';
+	@override String get rejectedLight => '此颜色与浅色背景过于接近，部分操作可能无法辨认。请选择其他颜色。';
+	@override String get rejectedDark => '此颜色与深色背景过于接近，部分操作可能无法辨认。请选择其他颜色。';
+	@override String get weakContrast => '此颜色在部分背景上的辨识度较弱。';
+	@override String get applyAnyway => '仍然应用';
+	@override String get useDefault => '使用默认粉色';
+	@override String get saving => '正在保存…';
+	@override String get saveFailed => '外观保存失败，请重试。';
+	@override String get unsaved => '外观更改尚未保存。';
 	@override String get system => '跟随系统';
 	@override String get light => '浅色';
 	@override String get dark => '深色';
+	@override String get reduceTransparency => '减少透明度';
+	@override String get reduceTransparencyHint => '使用实色表面，不显示模糊效果';
 }
 
 // Path: settings.language
@@ -620,6 +694,9 @@ class Translations$settings$downloads$zh_CN extends Translations$settings$downlo
 	@override String get actionFailed => '下载操作失败';
 	@override String get expand => '展开';
 	@override String get collapse => '收起';
+	@override String get viewAll => '查看全部下载';
+	@override String badgeFailures({required Object count}) => '失败的下载：${count}';
+	@override String badgeActive({required Object count}) => '进行中的下载：${count}';
 }
 
 // Path: settings.proxy
@@ -646,6 +723,7 @@ class Translations$settings$proxy$zh_CN extends Translations$settings$proxy$en_U
 	@override String get helper => 'IP 和端口分开填写，例如 127.0.0.1 和 7890。';
 	@override String get save => '保存';
 	@override String get saved => '代理设置已保存';
+	@override String get saveFailed => '代理设置保存失败';
 	@override String get required => '启用代理前需要填写 IP 和端口。';
 	@override String get invalid => '请输入有效的 IP 和端口。';
 	@override String get hostRequired => '请输入 IP。';
@@ -703,6 +781,7 @@ class Translations$ranking$modes$zh_CN extends Translations$ranking$modes$en_US 
 	@override String get dayR18Ai => 'AI 生成 R-18';
 	@override String get week => '每周';
 	@override String get weekR18 => '每周 R-18';
+	@override String get weekR18G => '每周 R-18G';
 	@override String get weekOriginal => '原创每周';
 	@override String get weekRookie => '新人每周';
 	@override String get month => '每月';
@@ -958,6 +1037,8 @@ class Translations$illust$contextMenu$zh_CN extends Translations$illust$contextM
 	@override String get download => '下载';
 	@override String get downloadAll => '下载全部';
 	@override String get copyImage => '复制图片';
+	@override String get copyLink => '复制作品链接';
+	@override String get openOriginal => '在 Pixiv 打开';
 }
 
 // Path: illust.imageLabels
@@ -969,6 +1050,7 @@ class Translations$illust$imageLabels$zh_CN extends Translations$illust$imageLab
 	// Translations
 	@override String get original => '原图';
 	@override String get large => '大图';
+	@override String get image => '图片';
 }
 
 // Path: illust.toast
@@ -978,14 +1060,17 @@ class Translations$illust$toast$zh_CN extends Translations$illust$toast$en_US {
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
-	@override String get downloadStarted => '开始下载图片';
 	@override String downloadAllQueued({required Object count}) => '已加入下载队列：${count} 张图片';
-	@override String downloadComplete({required Object path}) => '下载完成：${path}';
+	@override String downloadComplete({required Object name}) => '已保存 ${name}';
 	@override String get downloadFailed => '下载失败';
 	@override String copying({required Object label}) => '正在复制${label}';
 	@override String copied({required Object label}) => '已复制${label}';
 	@override String copiedValue({required Object label, required Object value}) => '已复制${label}：${value}';
 	@override String copyFailed({required Object label}) => '复制${label}失败';
+	@override String get openFailed => '无法在 Pixiv 打开作品';
+	@override String get linkCopied => '已复制链接';
+	@override String get linkCopyFailed => '无法复制链接';
+	@override String get alreadyDownloading => '这一页已在下载队列中';
 }
 
 // Path: illust.tooltip
@@ -995,6 +1080,7 @@ class Translations$illust$tooltip$zh_CN extends Translations$illust$tooltip$en_U
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
+	@override String get play => '播放动画';
 	@override String get previousImage => '上一张图片';
 	@override String get nextImage => '下一张图片';
 	@override String get backToDetail => '回到图片详情';
@@ -1063,6 +1149,8 @@ class Translations$illust$tags$zh_CN extends Translations$illust$tags$en_US {
 	// Translations
 	@override String get none => '没有标签';
 	@override String get tag => '标签';
+	@override String showMore({required Object count}) => '展开其余 ${count} 个标签';
+	@override String get showLess => '收起标签';
 }
 
 // Path: illust.comments
@@ -1077,6 +1165,10 @@ class Translations$illust$comments$zh_CN extends Translations$illust$comments$en
 	@override String get moreAvailable => '还有更多评论';
 	@override String get hasReplies => '有回复';
 	@override String get open => '打开评论';
+	@override String get discardDraftTitle => '离开评论？';
+	@override String get discardDraftMessage => '尚未发送的评论将会丢失。';
+	@override String get continueEditing => '继续编辑';
+	@override String get discardDraft => '丢弃草稿';
 	@override String get reply => '回复';
 	@override String replyingTo({required Object name}) => '正在回复 ${name}';
 	@override String get loadReplies => '加载回复';
@@ -1084,6 +1176,7 @@ class Translations$illust$comments$zh_CN extends Translations$illust$comments$en
 	@override String get repliesFailed => '回复加载失败';
 	@override String get sendFailed => '评论发送失败';
 	@override String get delete => '删除';
+	@override String get deleteConfirm => '删除这条评论？';
 	@override String get deleteFailed => '评论删除失败';
 	@override String get inputHint => '写下评论';
 	@override String replyInputHint({required Object name}) => '回复 ${name}';
@@ -1125,6 +1218,7 @@ class Translations$novel$detail$zh_CN extends Translations$novel$detail$en_US {
 	@override String get series => '系列';
 	@override String get content => '正文';
 	@override String get startReading => '开始阅读';
+	@override String get continueReading => '继续阅读';
 	@override String totalChars({required Object count}) => '共 ${count} 字';
 	@override String paragraphCount({required Object count}) => '${count} 段';
 	@override String segmentCount({required Object count}) => '${count} 页';
@@ -1142,6 +1236,8 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 	@override String get chapters => '章节';
 	@override String get settings => '阅读设置';
 	@override String get emptyBody => '正文为空';
+	@override String get embeddedImageUnavailable => '图片暂时无法显示';
+	@override String get openEmbeddedWork => '打开关联作品';
 	@override String totalChars({required Object count}) => '共 ${count} 字';
 	@override String pagePosition({required Object current, required Object total}) => '${current} / ${total} 页';
 	@override String pageTotal({required Object total}) => '${total} 页';
@@ -1172,10 +1268,21 @@ extension on TranslationsZhCn {
 			'nativeWindow.maximize' => '最大化',
 			'nativeWindow.restore' => '还原',
 			'nativeWindow.close' => '关闭',
+			'nativeWindow.illust' => '插画',
+			'nativeWindow.manga' => '漫画',
+			'nativeWindow.novel' => '小说',
+			'nativeWindow.workFallback' => ({required Object type, required Object id}) => '${type}：${id}',
+			'nativeWindow.workTitle' => ({required Object type, required Object id, required Object title}) => '${type}：${id} · ${title}',
+			'nativeWindow.relatedTitle' => ({required Object title}) => '相似作品 · ${title}',
+			'nativeWindow.user' => '用户',
+			'nativeWindow.userFallback' => ({required Object id}) => '用户：${id}',
+			'nativeWindow.viewerTitle' => ({required Object title, required Object page, required Object total}) => '${title} · ${page}/${total}',
 			'discover.searchHint' => '搜索 Pixiv',
 			'discover.history' => '搜索历史',
 			'discover.viewAll' => '查看全部',
 			'discover.clearHistory' => '清空历史',
+			'discover.deleteHistoryItem' => '删除这条搜索记录',
+			'discover.emptyHistory' => '搜索记录会显示在这里',
 			'app.title' => 'freepiv',
 			'navigation.activity' => '动态',
 			'navigation.home' => '首页',
@@ -1184,6 +1291,17 @@ extension on TranslationsZhCn {
 			'navigation.ranking' => '排行榜',
 			'navigation.me' => '我的',
 			'navigation.settings' => '设置',
+			'navigation.more' => '更多',
+			'navigation.expand' => '展开导航',
+			'navigation.collapse' => '收起导航',
+			'navigation.downloads' => '下载',
+			'navigation.about' => '关于',
+			'errors.generic' => '内容加载失败，请重试。',
+			'errors.connection' => '请检查网络连接后重试。',
+			'errors.session' => '登录已过期，请重新登录。',
+			'errors.forbidden' => '你暂无权限查看此内容。',
+			'errors.missing' => '此内容已不可用。',
+			'common.viewLog' => '查看日志',
 			'common.apply' => '应用',
 			'common.reset' => '重置',
 			'common.discover' => '发现',
@@ -1199,6 +1317,9 @@ extension on TranslationsZhCn {
 			'common.copy' => ({required Object label}) => '复制${label}',
 			'common.labelValue' => ({required Object label, required Object value}) => '${label}：${value}',
 			'common.errorWithCause' => ({required Object message, required Object cause}) => '${message}：${cause}',
+			'common.errorDetails' => '错误详情',
+			'common.copyDetails' => '复制详情',
+			'common.detailsCopied' => '已复制错误详情',
 			'refresh.pullToRefresh' => '下拉刷新',
 			'refresh.releaseToRefresh' => '松开刷新',
 			'refresh.refreshing' => '正在刷新',
@@ -1227,10 +1348,48 @@ extension on TranslationsZhCn {
 			'login.browserOpenUnsupported' => '当前环境尚未实现系统浏览器打开功能。',
 			'login.browserOpenFailed' => ({required Object browser, required Object output}) => '${browser} 打开登录链接失败：${output}',
 			'login.proxyHint' => '如果你使用了网路代理请在此设置代理地址再进行登录。',
-			'settings.theme.title' => '主题',
+			'settings.theme.title' => '外观',
+			'settings.theme.displayMode' => '显示模式',
+			'settings.theme.tone' => '色调',
+			'settings.theme.neutral' => '中性',
+			'settings.theme.cool' => '冷色',
+			'settings.theme.warm' => '暖色',
+			'settings.theme.systemNeutralHint' => '跟随系统时使用中性色',
+			'settings.theme.lightAccent' => '浅色主色',
+			'settings.theme.darkAccent' => '深色主色',
+			'settings.theme.systemEditingLight' => '当前随系统使用浅色主色',
+			'settings.theme.systemEditingDark' => '当前随系统使用深色主色',
+			'settings.theme.presetPink' => '默认粉色',
+			'settings.theme.presetBlue' => '蔚蓝',
+			'settings.theme.presetTeal' => '青绿',
+			'settings.theme.presetViolet' => '紫罗兰',
+			'settings.theme.presetAmber' => '琥珀',
+			'settings.theme.presetOrange' => '橙色',
+			'settings.theme.custom' => '自定义',
+			'settings.theme.defaultAccent' => '默认粉色',
+			'settings.theme.restoreDefault' => '恢复默认粉色',
+			'settings.theme.editLightAccent' => '自定义浅色主色',
+			'settings.theme.editDarkAccent' => '自定义深色主色',
+			'settings.theme.hue' => '色相',
+			'settings.theme.saturation' => '饱和度',
+			'settings.theme.value' => '明度',
+			'settings.theme.hex' => 'HEX 颜色',
+			'settings.theme.invalidHex' => '请输入六位 HEX 颜色',
+			'settings.theme.preview' => '预览',
+			'settings.theme.previewButton' => '按钮',
+			'settings.theme.rejectedLight' => '此颜色与浅色背景过于接近，部分操作可能无法辨认。请选择其他颜色。',
+			'settings.theme.rejectedDark' => '此颜色与深色背景过于接近，部分操作可能无法辨认。请选择其他颜色。',
+			'settings.theme.weakContrast' => '此颜色在部分背景上的辨识度较弱。',
+			'settings.theme.applyAnyway' => '仍然应用',
+			'settings.theme.useDefault' => '使用默认粉色',
+			'settings.theme.saving' => '正在保存…',
+			'settings.theme.saveFailed' => '外观保存失败，请重试。',
+			'settings.theme.unsaved' => '外观更改尚未保存。',
 			'settings.theme.system' => '跟随系统',
 			'settings.theme.light' => '浅色',
 			'settings.theme.dark' => '深色',
+			'settings.theme.reduceTransparency' => '减少透明度',
+			'settings.theme.reduceTransparencyHint' => '使用实色表面，不显示模糊效果',
 			'settings.language.title' => '语言',
 			'settings.language.systemDefault' => '跟随系统',
 			'settings.language.enUs' => 'English (United States)',
@@ -1285,6 +1444,9 @@ extension on TranslationsZhCn {
 			'settings.downloads.actionFailed' => '下载操作失败',
 			'settings.downloads.expand' => '展开',
 			'settings.downloads.collapse' => '收起',
+			'settings.downloads.viewAll' => '查看全部下载',
+			'settings.downloads.badgeFailures' => ({required Object count}) => '失败的下载：${count}',
+			'settings.downloads.badgeActive' => ({required Object count}) => '进行中的下载：${count}',
 			'settings.proxy.title' => '网络代理',
 			'settings.proxy.shortTitle' => '代理',
 			'settings.proxy.subtitle' => '保存后 Pixiv API 和图片请求会使用所选代理。',
@@ -1302,6 +1464,7 @@ extension on TranslationsZhCn {
 			'settings.proxy.helper' => 'IP 和端口分开填写，例如 127.0.0.1 和 7890。',
 			'settings.proxy.save' => '保存',
 			'settings.proxy.saved' => '代理设置已保存',
+			'settings.proxy.saveFailed' => '代理设置保存失败',
 			'settings.proxy.required' => '启用代理前需要填写 IP 和端口。',
 			'settings.proxy.invalid' => '请输入有效的 IP 和端口。',
 			'settings.proxy.hostRequired' => '请输入 IP。',
@@ -1319,15 +1482,14 @@ extension on TranslationsZhCn {
 			'settings.account.signedOutSubtitle' => '登录后显示 Pixiv 账号',
 			'settings.account.notSignedIn' => '未登录',
 			'settings.account.signOut' => '退出登录',
+			'me.profile' => '个人主页',
 			'me.openProfile' => '打开个人主页',
 			'me.following' => '我的关注',
 			'me.followers' => '我的粉丝',
 			'me.emptyFollowing' => '暂无关注用户',
 			'me.emptyFollowers' => '暂无粉丝',
 			'me.about' => '关于',
-			'me.aboutSubtitle' => '版本、更新和项目链接',
 			'me.settings' => '设置',
-			'me.settingsSubtitle' => '主题、语言、图片和下载',
 			'about.title' => '关于',
 			'about.appName' => 'freepiv',
 			'about.subtitle' => '一个用于浏览 Pixiv 内容的轻量客户端。这里可以查看当前版本、检查更新并打开项目下载页面。',
@@ -1377,6 +1539,7 @@ extension on TranslationsZhCn {
 			'ranking.modes.dayR18Ai' => 'AI 生成 R-18',
 			'ranking.modes.week' => '每周',
 			'ranking.modes.weekR18' => '每周 R-18',
+			'ranking.modes.weekR18G' => '每周 R-18G',
 			'ranking.modes.weekOriginal' => '原创每周',
 			'ranking.modes.weekRookie' => '新人每周',
 			'ranking.modes.month' => '每月',
@@ -1415,6 +1578,7 @@ extension on TranslationsZhCn {
 			'search.empty.illustrations' => '没有找到插画',
 			'search.empty.novels' => '没有找到小说',
 			'search.empty.users' => '没有找到用户',
+			'user.noPublicWorks' => '暂无公开作品',
 			'user.tabs.illustrations' => '插画',
 			'user.tabs.manga' => '漫画',
 			'user.tabs.novels' => '小说',
@@ -1471,16 +1635,23 @@ extension on TranslationsZhCn {
 			'illust.contextMenu.download' => '下载',
 			'illust.contextMenu.downloadAll' => '下载全部',
 			'illust.contextMenu.copyImage' => '复制图片',
+			'illust.contextMenu.copyLink' => '复制作品链接',
+			'illust.contextMenu.openOriginal' => '在 Pixiv 打开',
 			'illust.imageLabels.original' => '原图',
 			'illust.imageLabels.large' => '大图',
-			'illust.toast.downloadStarted' => '开始下载图片',
+			'illust.imageLabels.image' => '图片',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下载队列：${count} 张图片',
-			'illust.toast.downloadComplete' => ({required Object path}) => '下载完成：${path}',
+			'illust.toast.downloadComplete' => ({required Object name}) => '已保存 ${name}',
 			'illust.toast.downloadFailed' => '下载失败',
 			'illust.toast.copying' => ({required Object label}) => '正在复制${label}',
 			'illust.toast.copied' => ({required Object label}) => '已复制${label}',
 			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '已复制${label}：${value}',
 			'illust.toast.copyFailed' => ({required Object label}) => '复制${label}失败',
+			'illust.toast.openFailed' => '无法在 Pixiv 打开作品',
+			'illust.toast.linkCopied' => '已复制链接',
+			'illust.toast.linkCopyFailed' => '无法复制链接',
+			'illust.toast.alreadyDownloading' => '这一页已在下载队列中',
+			'illust.tooltip.play' => '播放动画',
 			'illust.tooltip.previousImage' => '上一张图片',
 			'illust.tooltip.nextImage' => '下一张图片',
 			'illust.tooltip.backToDetail' => '回到图片详情',
@@ -1504,11 +1675,17 @@ extension on TranslationsZhCn {
 			'illust.stats.pages' => '页数',
 			'illust.tags.none' => '没有标签',
 			'illust.tags.tag' => '标签',
+			'illust.tags.showMore' => ({required Object count}) => '展开其余 ${count} 个标签',
+			'illust.tags.showLess' => '收起标签',
 			'illust.comments.failed' => '评论加载失败',
 			'illust.comments.empty' => '暂无评论',
 			'illust.comments.moreAvailable' => '还有更多评论',
 			'illust.comments.hasReplies' => '有回复',
 			'illust.comments.open' => '打开评论',
+			'illust.comments.discardDraftTitle' => '离开评论？',
+			'illust.comments.discardDraftMessage' => '尚未发送的评论将会丢失。',
+			'illust.comments.continueEditing' => '继续编辑',
+			'illust.comments.discardDraft' => '丢弃草稿',
 			'illust.comments.reply' => '回复',
 			'illust.comments.replyingTo' => ({required Object name}) => '正在回复 ${name}',
 			'illust.comments.loadReplies' => '加载回复',
@@ -1516,6 +1693,7 @@ extension on TranslationsZhCn {
 			'illust.comments.repliesFailed' => '回复加载失败',
 			'illust.comments.sendFailed' => '评论发送失败',
 			'illust.comments.delete' => '删除',
+			'illust.comments.deleteConfirm' => '删除这条评论？',
 			'illust.comments.deleteFailed' => '评论删除失败',
 			'illust.comments.inputHint' => '写下评论',
 			'illust.comments.replyInputHint' => ({required Object name}) => '回复 ${name}',
@@ -1530,6 +1708,7 @@ extension on TranslationsZhCn {
 			'novel.detail.series' => '系列',
 			'novel.detail.content' => '正文',
 			'novel.detail.startReading' => '开始阅读',
+			'novel.detail.continueReading' => '继续阅读',
 			'novel.detail.totalChars' => ({required Object count}) => '共 ${count} 字',
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} 段',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} 页',
@@ -1538,6 +1717,8 @@ extension on TranslationsZhCn {
 			'novel.reader.chapters' => '章节',
 			'novel.reader.settings' => '阅读设置',
 			'novel.reader.emptyBody' => '正文为空',
+			'novel.reader.embeddedImageUnavailable' => '图片暂时无法显示',
+			'novel.reader.openEmbeddedWork' => '打开关联作品',
 			'novel.reader.totalChars' => ({required Object count}) => '共 ${count} 字',
 			'novel.reader.pagePosition' => ({required Object current, required Object total}) => '${current} / ${total} 页',
 			'novel.reader.pageTotal' => ({required Object total}) => '${total} 页',
@@ -1557,7 +1738,7 @@ extension on TranslationsZhCn {
 			'follow.tooltipFollow' => '关注用户',
 			'follow.tooltipUnfollow' => '取消关注',
 			'follow.followed' => '已关注',
-			'follow.notFollowed' => '未关注',
+			'follow.follow' => '关注',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
 			'richText.illustId' => ({required Object id}) => '插画 ID：${id}',
 			'richText.userId' => ({required Object id}) => '用户 ID：${id}',
@@ -1565,6 +1746,7 @@ extension on TranslationsZhCn {
 			'fanbox.updateSession' => '更新 Cookie',
 			'fanbox.title' => 'FANBOX',
 			'fanbox.home' => '关注动态',
+			'fanbox.feedGroup' => '动态',
 			'fanbox.supporting' => '赞助动态',
 			'fanbox.following' => '关注的创作者',
 			'fanbox.recommended' => '发现创作者',
@@ -1594,6 +1776,8 @@ extension on TranslationsZhCn {
 			'fanbox.monthlyFee' => ({required Object fee}) => '¥${fee}／月',
 			'fanbox.supportOnWebsite' => '在 FANBOX 查看方案',
 			'fanbox.follow' => '关注',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.unfollow' => '取消关注',
 			'fanbox.like' => '点赞',
 			'fanbox.liked' => '已点赞',

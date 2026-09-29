@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_list_tab.dart';
@@ -35,10 +36,12 @@ class NewestBody extends StatelessWidget {
   final Widget filterSliver;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+
+  Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
+    if (source.phase == LoadPhase.loading) {
       if (source.key.isNovel) {
         return NovelListSkeleton(physics: physics, sliverHeader: locators.sliverHeader, leadingSlivers: [filterSliver]);
       }
@@ -60,7 +63,7 @@ class NewestBody extends StatelessWidget {
         physics: physics,
         sliverHeader: locators.sliverHeader,
         leadingSlivers: [filterSliver],
-        child: EmptyContent(icon: Icons.dynamic_feed_outlined, title: context.t.newest.emptyTitle),
+        child: EmptyContent(icon: Icons.inbox_outlined, title: context.t.newest.emptyTitle),
       );
     }
 
@@ -75,16 +78,9 @@ class NewestBody extends StatelessWidget {
         ?locators.sliverHeader,
         SliverDataWaterfallGrid<NewestItem>(
           source: source,
-          padding: const EdgeInsets.all(12),
-          maxCrossAxisExtent: 240,
           itemBuilder: (context, item, index) {
             return switch (item) {
-              NewestIllust(:final illust) => IllustPreviewer(
-                illust: illust,
-                onTap: () {
-                  context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '${illust.id}'}, extra: illust);
-                },
-              ),
+              NewestIllust(:final illust) => IllustPreviewer(illust: illust, onOpen: (heroTag) => openIllustDetail(context, illust, heroTag)),
               NewestNovel() => const SizedBox.shrink(),
             };
           },
@@ -108,7 +104,9 @@ class NovelListSkeleton extends StatelessWidget {
       slivers: [
         ...leadingSlivers,
         ?sliverHeader,
-        const SliverPadding(padding: EdgeInsets.all(12), sliver: SliverListSkeleton(itemExtent: 140, itemCount: 8)),
+        const SliverContentColumn(
+          sliver: SliverPadding(padding: EdgeInsets.symmetric(vertical: 12), sliver: SliverListSkeleton(itemExtent: 140, itemCount: 8)),
+        ),
       ],
     );
   }
@@ -131,14 +129,16 @@ class NovelList extends StatelessWidget {
         ?sliverHeader,
         SliverDataList<NewestItem>(
           source: source,
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           itemBuilder: (context, item, index) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: switch (item) {
-                NewestNovel(:final novel) => NovelCard(novel: novel),
-                NewestIllust() => const SizedBox.shrink(),
-              },
+            return ContentColumn(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: switch (item) {
+                  NewestNovel(:final novel) => NovelCard(novel: novel),
+                  NewestIllust() => const SizedBox.shrink(),
+                },
+              ),
             );
           },
         ),

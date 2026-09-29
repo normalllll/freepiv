@@ -11,5 +11,10 @@ class RustMediaTransport {
   const RustMediaTransport(this._proxy);
   final String? _proxy;
 
+  // A remounted image widget must resolve to the same memory-cache entry when
+  // the transport configuration is unchanged. Instance method tear-offs are
+  // tied to this transport object's lifetime, which is shorter than a route.
+  Object get imageCacheIdentity => (proxy: _proxy);
+
   Stream<rust.MediaChunk> stream(String url, Map<String, String> headers) => rust.streamMedia(url: url, proxy: _proxy, headers: headers);
 }

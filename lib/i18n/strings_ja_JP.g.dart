@@ -43,6 +43,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$discover$ja_JP discover = _Translations$discover$ja_JP._(_root);
 	@override late final _Translations$app$ja_JP app = _Translations$app$ja_JP._(_root);
 	@override late final _Translations$navigation$ja_JP navigation = _Translations$navigation$ja_JP._(_root);
+	@override late final _Translations$errors$ja_JP errors = _Translations$errors$ja_JP._(_root);
 	@override late final _Translations$common$ja_JP common = _Translations$common$ja_JP._(_root);
 	@override late final _Translations$refresh$ja_JP refresh = _Translations$refresh$ja_JP._(_root);
 	@override late final _Translations$toast$ja_JP toast = _Translations$toast$ja_JP._(_root);
@@ -74,6 +75,15 @@ class _Translations$nativeWindow$ja_JP extends Translations$nativeWindow$en_US {
 	@override String get maximize => '最大化';
 	@override String get restore => '元に戻す';
 	@override String get close => '閉じる';
+	@override String get illust => 'イラスト';
+	@override String get manga => 'マンガ';
+	@override String get novel => '小説';
+	@override String workFallback({required Object type, required Object id}) => '${type}：${id}';
+	@override String workTitle({required Object type, required Object id, required Object title}) => '${type}：${id} · ${title}';
+	@override String relatedTitle({required Object title}) => '関連作品 · ${title}';
+	@override String get user => 'ユーザー';
+	@override String userFallback({required Object id}) => 'ユーザー：${id}';
+	@override String viewerTitle({required Object title, required Object page, required Object total}) => '${title} · ${page}/${total}';
 }
 
 // Path: discover
@@ -87,6 +97,8 @@ class _Translations$discover$ja_JP extends Translations$discover$en_US {
 	@override String get history => '検索履歴';
 	@override String get viewAll => 'すべて見る';
 	@override String get clearHistory => '履歴を削除';
+	@override String get deleteHistoryItem => 'この検索履歴を削除';
+	@override String get emptyHistory => '検索履歴がここに表示されます';
 }
 
 // Path: app
@@ -113,6 +125,25 @@ class _Translations$navigation$ja_JP extends Translations$navigation$en_US {
 	@override String get ranking => 'ランキング';
 	@override String get me => '自分';
 	@override String get settings => '設定';
+	@override String get more => 'その他';
+	@override String get expand => 'ナビゲーションを展開';
+	@override String get collapse => 'ナビゲーションを折りたたむ';
+	@override String get downloads => 'ダウンロード';
+	@override String get about => 'アプリ情報';
+}
+
+// Path: errors
+class _Translations$errors$ja_JP extends Translations$errors$en_US {
+	_Translations$errors$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get generic => '読み込めませんでした。もう一度お試しください。';
+	@override String get connection => '接続を確認して、もう一度お試しください。';
+	@override String get session => 'セッションが切れました。再度ログインしてください。';
+	@override String get forbidden => 'このコンテンツへのアクセス権がありません。';
+	@override String get missing => 'このコンテンツは利用できません。';
 }
 
 // Path: common
@@ -122,6 +153,7 @@ class _Translations$common$ja_JP extends Translations$common$en_US {
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
+	@override String get viewLog => 'ログを表示';
 	@override String get apply => '適用';
 	@override String get reset => 'リセット';
 	@override String get discover => '見つける';
@@ -137,6 +169,9 @@ class _Translations$common$ja_JP extends Translations$common$en_US {
 	@override String copy({required Object label}) => '${label}をコピー';
 	@override String labelValue({required Object label, required Object value}) => '${label}：${value}';
 	@override String errorWithCause({required Object message, required Object cause}) => '${message}：${cause}';
+	@override String get errorDetails => 'エラーの詳細';
+	@override String get copyDetails => '詳細をコピー';
+	@override String get detailsCopied => 'エラーの詳細をコピーしました';
 }
 
 // Path: refresh
@@ -216,15 +251,14 @@ class _Translations$me$ja_JP extends Translations$me$en_US {
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
+	@override String get profile => 'プロフィール';
 	@override String get openProfile => 'プロフィールを開く';
 	@override String get following => 'フォロー中';
 	@override String get followers => 'フォロワー';
 	@override String get emptyFollowing => 'フォロー中のユーザーはいません';
 	@override String get emptyFollowers => 'フォロワーはいません';
 	@override String get about => 'このアプリについて';
-	@override String get aboutSubtitle => 'バージョン、更新、プロジェクトリンク';
 	@override String get settings => '設定';
-	@override String get settingsSubtitle => 'テーマ、言語、画像、ダウンロード';
 }
 
 // Path: about
@@ -322,6 +356,7 @@ class _Translations$user$ja_JP extends Translations$user$en_US {
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
+	@override String get noPublicWorks => '公開作品はありません';
 	@override late final _Translations$user$tabs$ja_JP tabs = _Translations$user$tabs$ja_JP._(_root);
 	@override late final _Translations$user$stats$ja_JP stats = _Translations$user$stats$ja_JP._(_root);
 	@override late final _Translations$user$bookmarks$ja_JP bookmarks = _Translations$user$bookmarks$ja_JP._(_root);
@@ -389,7 +424,7 @@ class _Translations$follow$ja_JP extends Translations$follow$en_US {
 	@override String get tooltipFollow => 'ユーザーをフォロー';
 	@override String get tooltipUnfollow => 'フォロー解除';
 	@override String get followed => 'フォロー中';
-	@override String get notFollowed => '未フォロー';
+	@override String get follow => 'フォロー';
 }
 
 // Path: richText
@@ -415,6 +450,7 @@ class _Translations$fanbox$ja_JP extends Translations$fanbox$en_US {
 	@override String get updateSession => 'Cookie を更新';
 	@override String get title => 'FANBOX';
 	@override String get home => 'フォロー中の投稿';
+	@override String get feedGroup => 'フィード';
 	@override String get supporting => '支援中の投稿';
 	@override String get following => 'フォロー中';
 	@override String get recommended => 'クリエイターを探す';
@@ -535,10 +571,48 @@ class _Translations$settings$theme$ja_JP extends Translations$settings$theme$en_
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'テーマ';
+	@override String get title => '外観';
+	@override String get displayMode => '表示モード';
+	@override String get tone => '色調';
+	@override String get neutral => 'ニュートラル';
+	@override String get cool => 'クール';
+	@override String get warm => 'ウォーム';
+	@override String get systemNeutralHint => 'システム設定ではニュートラルを使用します';
+	@override String get lightAccent => 'ライトのアクセント色';
+	@override String get darkAccent => 'ダークのアクセント色';
+	@override String get systemEditingLight => '現在、システムのライト用アクセント色を編集しています';
+	@override String get systemEditingDark => '現在、システムのダーク用アクセント色を編集しています';
+	@override String get presetPink => '標準のピンク';
+	@override String get presetBlue => 'ブルー';
+	@override String get presetTeal => 'ティール';
+	@override String get presetViolet => 'バイオレット';
+	@override String get presetAmber => 'アンバー';
+	@override String get presetOrange => 'オレンジ';
+	@override String get custom => 'カスタム';
+	@override String get defaultAccent => '標準のピンク';
+	@override String get restoreDefault => '標準のピンクに戻す';
+	@override String get editLightAccent => 'ライトのカスタム色';
+	@override String get editDarkAccent => 'ダークのカスタム色';
+	@override String get hue => '色相';
+	@override String get saturation => '彩度';
+	@override String get value => '明度';
+	@override String get hex => 'HEX カラー';
+	@override String get invalidHex => '6桁のHEXカラーを入力してください';
+	@override String get preview => 'プレビュー';
+	@override String get previewButton => 'ボタン';
+	@override String get rejectedLight => 'この色はライト背景に近すぎます。別の色を選んでください。';
+	@override String get rejectedDark => 'この色はダーク背景に近すぎます。別の色を選んでください。';
+	@override String get weakContrast => '一部の背景ではこの色が見分けにくい場合があります。';
+	@override String get applyAnyway => 'このまま適用';
+	@override String get useDefault => '標準のピンクを使用';
+	@override String get saving => '保存中…';
+	@override String get saveFailed => '外観を保存できませんでした。再試行してください。';
+	@override String get unsaved => '外観の変更はまだ保存されていません。';
 	@override String get system => '自動';
 	@override String get light => 'ライト';
 	@override String get dark => 'ダーク';
+	@override String get reduceTransparency => '透明度を下げる';
+	@override String get reduceTransparencyHint => 'ぼかしを使わず単色で表示します';
 }
 
 // Path: settings.language
@@ -620,6 +694,9 @@ class _Translations$settings$downloads$ja_JP extends Translations$settings$downl
 	@override String get actionFailed => 'ダウンロード操作に失敗しました';
 	@override String get expand => '展開';
 	@override String get collapse => '折りたたむ';
+	@override String get viewAll => 'すべてのダウンロードを見る';
+	@override String badgeFailures({required Object count}) => '失敗したダウンロード：${count}';
+	@override String badgeActive({required Object count}) => '進行中のダウンロード：${count}';
 }
 
 // Path: settings.proxy
@@ -646,6 +723,7 @@ class _Translations$settings$proxy$ja_JP extends Translations$settings$proxy$en_
 	@override String get helper => 'IP とポートを分けて入力してください。例: 127.0.0.1 と 7890。';
 	@override String get save => '保存';
 	@override String get saved => 'プロキシ設定を保存しました';
+	@override String get saveFailed => 'プロキシ設定を保存できませんでした';
 	@override String get required => 'オンにする前に IP とポートを入力してください。';
 	@override String get invalid => '有効な IP とポートを入力してください。';
 	@override String get hostRequired => 'IP を入力してください。';
@@ -703,6 +781,7 @@ class _Translations$ranking$modes$ja_JP extends Translations$ranking$modes$en_US
 	@override String get dayR18Ai => 'AI生成 R-18';
 	@override String get week => 'ウィークリー';
 	@override String get weekR18 => 'ウィークリー R-18';
+	@override String get weekR18G => 'ウィークリー R-18G';
 	@override String get weekOriginal => 'オリジナル';
 	@override String get weekRookie => 'ルーキー';
 	@override String get month => 'マンスリー';
@@ -958,6 +1037,8 @@ class _Translations$illust$contextMenu$ja_JP extends Translations$illust$context
 	@override String get download => 'ダウンロード';
 	@override String get downloadAll => 'すべてダウンロード';
 	@override String get copyImage => '画像をコピーする';
+	@override String get copyLink => '作品リンクをコピー';
+	@override String get openOriginal => 'Pixiv で開く';
 }
 
 // Path: illust.imageLabels
@@ -969,6 +1050,7 @@ class _Translations$illust$imageLabels$ja_JP extends Translations$illust$imageLa
 	// Translations
 	@override String get original => 'オリジナル画像';
 	@override String get large => '大きい画像';
+	@override String get image => '画像';
 }
 
 // Path: illust.toast
@@ -978,14 +1060,17 @@ class _Translations$illust$toast$ja_JP extends Translations$illust$toast$en_US {
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
-	@override String get downloadStarted => '画像をダウンロードしています';
 	@override String downloadAllQueued({required Object count}) => '${count} 枚の画像をダウンロードキューに追加しました';
-	@override String downloadComplete({required Object path}) => 'ダウンロード完了：${path}';
+	@override String downloadComplete({required Object name}) => '${name} を保存しました';
 	@override String get downloadFailed => 'ダウンロードに失敗しました';
 	@override String copying({required Object label}) => '${label}をコピーしています';
 	@override String copied({required Object label}) => '${label}をコピーしました';
 	@override String copiedValue({required Object label, required Object value}) => '${label}をコピーしました：${value}';
 	@override String copyFailed({required Object label}) => '${label}のコピーに失敗しました';
+	@override String get openFailed => 'Pixiv で作品を開けませんでした';
+	@override String get linkCopied => 'リンクをコピーしました';
+	@override String get linkCopyFailed => 'リンクをコピーできませんでした';
+	@override String get alreadyDownloading => 'このページはすでにダウンロード待ちです';
 }
 
 // Path: illust.tooltip
@@ -995,6 +1080,7 @@ class _Translations$illust$tooltip$ja_JP extends Translations$illust$tooltip$en_
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
+	@override String get play => 'アニメーションを再生';
 	@override String get previousImage => '前の画像';
 	@override String get nextImage => '次の画像';
 	@override String get backToDetail => '画像詳細に戻る';
@@ -1063,6 +1149,8 @@ class _Translations$illust$tags$ja_JP extends Translations$illust$tags$en_US {
 	// Translations
 	@override String get none => 'タグはありません';
 	@override String get tag => 'タグ';
+	@override String showMore({required Object count}) => '残り ${count} 件のタグを表示';
+	@override String get showLess => 'タグを閉じる';
 }
 
 // Path: illust.comments
@@ -1077,6 +1165,10 @@ class _Translations$illust$comments$ja_JP extends Translations$illust$comments$e
 	@override String get moreAvailable => 'さらにコメントがあります';
 	@override String get hasReplies => '返信があります';
 	@override String get open => 'コメントを開く';
+	@override String get discardDraftTitle => 'コメントを閉じますか？';
+	@override String get discardDraftMessage => '送信していないコメントは失われます。';
+	@override String get continueEditing => '編集を続ける';
+	@override String get discardDraft => '下書きを破棄';
 	@override String get reply => '返信';
 	@override String replyingTo({required Object name}) => '${name} に返信中';
 	@override String get loadReplies => '返信を読み込む';
@@ -1084,6 +1176,7 @@ class _Translations$illust$comments$ja_JP extends Translations$illust$comments$e
 	@override String get repliesFailed => '返信を読み込めませんでした';
 	@override String get sendFailed => 'コメントの送信に失敗しました';
 	@override String get delete => '削除';
+	@override String get deleteConfirm => 'このコメントを削除しますか？';
 	@override String get deleteFailed => 'コメントの削除に失敗しました';
 	@override String get inputHint => 'コメントを書く';
 	@override String replyInputHint({required Object name}) => '${name} に返信';
@@ -1125,6 +1218,7 @@ class _Translations$novel$detail$ja_JP extends Translations$novel$detail$en_US {
 	@override String get series => 'シリーズ';
 	@override String get content => '本文';
 	@override String get startReading => '読み始める';
+	@override String get continueReading => '続きを読む';
 	@override String totalChars({required Object count}) => '全 ${count} 文字';
 	@override String paragraphCount({required Object count}) => '${count} 段落';
 	@override String segmentCount({required Object count}) => '${count} ページ';
@@ -1142,6 +1236,8 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 	@override String get chapters => '章';
 	@override String get settings => '読書設定';
 	@override String get emptyBody => '本文がありません';
+	@override String get embeddedImageUnavailable => '画像を表示できません';
+	@override String get openEmbeddedWork => '関連作品を開く';
 	@override String totalChars({required Object count}) => '全 ${count} 文字';
 	@override String pagePosition({required Object current, required Object total}) => '${current} / ${total} ページ';
 	@override String pageTotal({required Object total}) => '${total} ページ';
@@ -1172,10 +1268,21 @@ extension on TranslationsJaJp {
 			'nativeWindow.maximize' => '最大化',
 			'nativeWindow.restore' => '元に戻す',
 			'nativeWindow.close' => '閉じる',
+			'nativeWindow.illust' => 'イラスト',
+			'nativeWindow.manga' => 'マンガ',
+			'nativeWindow.novel' => '小説',
+			'nativeWindow.workFallback' => ({required Object type, required Object id}) => '${type}：${id}',
+			'nativeWindow.workTitle' => ({required Object type, required Object id, required Object title}) => '${type}：${id} · ${title}',
+			'nativeWindow.relatedTitle' => ({required Object title}) => '関連作品 · ${title}',
+			'nativeWindow.user' => 'ユーザー',
+			'nativeWindow.userFallback' => ({required Object id}) => 'ユーザー：${id}',
+			'nativeWindow.viewerTitle' => ({required Object title, required Object page, required Object total}) => '${title} · ${page}/${total}',
 			'discover.searchHint' => 'Pixiv を検索',
 			'discover.history' => '検索履歴',
 			'discover.viewAll' => 'すべて見る',
 			'discover.clearHistory' => '履歴を削除',
+			'discover.deleteHistoryItem' => 'この検索履歴を削除',
+			'discover.emptyHistory' => '検索履歴がここに表示されます',
 			'app.title' => 'freepiv',
 			'navigation.activity' => '新着',
 			'navigation.home' => 'ホーム',
@@ -1184,6 +1291,17 @@ extension on TranslationsJaJp {
 			'navigation.ranking' => 'ランキング',
 			'navigation.me' => '自分',
 			'navigation.settings' => '設定',
+			'navigation.more' => 'その他',
+			'navigation.expand' => 'ナビゲーションを展開',
+			'navigation.collapse' => 'ナビゲーションを折りたたむ',
+			'navigation.downloads' => 'ダウンロード',
+			'navigation.about' => 'アプリ情報',
+			'errors.generic' => '読み込めませんでした。もう一度お試しください。',
+			'errors.connection' => '接続を確認して、もう一度お試しください。',
+			'errors.session' => 'セッションが切れました。再度ログインしてください。',
+			'errors.forbidden' => 'このコンテンツへのアクセス権がありません。',
+			'errors.missing' => 'このコンテンツは利用できません。',
+			'common.viewLog' => 'ログを表示',
 			'common.apply' => '適用',
 			'common.reset' => 'リセット',
 			'common.discover' => '見つける',
@@ -1199,6 +1317,9 @@ extension on TranslationsJaJp {
 			'common.copy' => ({required Object label}) => '${label}をコピー',
 			'common.labelValue' => ({required Object label, required Object value}) => '${label}：${value}',
 			'common.errorWithCause' => ({required Object message, required Object cause}) => '${message}：${cause}',
+			'common.errorDetails' => 'エラーの詳細',
+			'common.copyDetails' => '詳細をコピー',
+			'common.detailsCopied' => 'エラーの詳細をコピーしました',
 			'refresh.pullToRefresh' => '引っ張って更新',
 			'refresh.releaseToRefresh' => '離して更新',
 			'refresh.refreshing' => '更新中',
@@ -1227,10 +1348,48 @@ extension on TranslationsJaJp {
 			'login.browserOpenUnsupported' => 'この環境ではシステムブラウザを開く処理が実装されていません。',
 			'login.browserOpenFailed' => ({required Object browser, required Object output}) => '${browser} でログインリンクを開けませんでした：${output}',
 			'login.proxyHint' => 'ネットワークプロキシを使用している場合は、ログイン前にここでプロキシアドレスを設定してください。',
-			'settings.theme.title' => 'テーマ',
+			'settings.theme.title' => '外観',
+			'settings.theme.displayMode' => '表示モード',
+			'settings.theme.tone' => '色調',
+			'settings.theme.neutral' => 'ニュートラル',
+			'settings.theme.cool' => 'クール',
+			'settings.theme.warm' => 'ウォーム',
+			'settings.theme.systemNeutralHint' => 'システム設定ではニュートラルを使用します',
+			'settings.theme.lightAccent' => 'ライトのアクセント色',
+			'settings.theme.darkAccent' => 'ダークのアクセント色',
+			'settings.theme.systemEditingLight' => '現在、システムのライト用アクセント色を編集しています',
+			'settings.theme.systemEditingDark' => '現在、システムのダーク用アクセント色を編集しています',
+			'settings.theme.presetPink' => '標準のピンク',
+			'settings.theme.presetBlue' => 'ブルー',
+			'settings.theme.presetTeal' => 'ティール',
+			'settings.theme.presetViolet' => 'バイオレット',
+			'settings.theme.presetAmber' => 'アンバー',
+			'settings.theme.presetOrange' => 'オレンジ',
+			'settings.theme.custom' => 'カスタム',
+			'settings.theme.defaultAccent' => '標準のピンク',
+			'settings.theme.restoreDefault' => '標準のピンクに戻す',
+			'settings.theme.editLightAccent' => 'ライトのカスタム色',
+			'settings.theme.editDarkAccent' => 'ダークのカスタム色',
+			'settings.theme.hue' => '色相',
+			'settings.theme.saturation' => '彩度',
+			'settings.theme.value' => '明度',
+			'settings.theme.hex' => 'HEX カラー',
+			'settings.theme.invalidHex' => '6桁のHEXカラーを入力してください',
+			'settings.theme.preview' => 'プレビュー',
+			'settings.theme.previewButton' => 'ボタン',
+			'settings.theme.rejectedLight' => 'この色はライト背景に近すぎます。別の色を選んでください。',
+			'settings.theme.rejectedDark' => 'この色はダーク背景に近すぎます。別の色を選んでください。',
+			'settings.theme.weakContrast' => '一部の背景ではこの色が見分けにくい場合があります。',
+			'settings.theme.applyAnyway' => 'このまま適用',
+			'settings.theme.useDefault' => '標準のピンクを使用',
+			'settings.theme.saving' => '保存中…',
+			'settings.theme.saveFailed' => '外観を保存できませんでした。再試行してください。',
+			'settings.theme.unsaved' => '外観の変更はまだ保存されていません。',
 			'settings.theme.system' => '自動',
 			'settings.theme.light' => 'ライト',
 			'settings.theme.dark' => 'ダーク',
+			'settings.theme.reduceTransparency' => '透明度を下げる',
+			'settings.theme.reduceTransparencyHint' => 'ぼかしを使わず単色で表示します',
 			'settings.language.title' => '言語',
 			'settings.language.systemDefault' => 'システム設定',
 			'settings.language.enUs' => 'English (United States)',
@@ -1285,6 +1444,9 @@ extension on TranslationsJaJp {
 			'settings.downloads.actionFailed' => 'ダウンロード操作に失敗しました',
 			'settings.downloads.expand' => '展開',
 			'settings.downloads.collapse' => '折りたたむ',
+			'settings.downloads.viewAll' => 'すべてのダウンロードを見る',
+			'settings.downloads.badgeFailures' => ({required Object count}) => '失敗したダウンロード：${count}',
+			'settings.downloads.badgeActive' => ({required Object count}) => '進行中のダウンロード：${count}',
 			'settings.proxy.title' => 'ネットワークプロキシ',
 			'settings.proxy.shortTitle' => 'プロキシ',
 			'settings.proxy.subtitle' => '保存後、Pixiv API と画像リクエストは選択したプロキシを使用します。',
@@ -1302,6 +1464,7 @@ extension on TranslationsJaJp {
 			'settings.proxy.helper' => 'IP とポートを分けて入力してください。例: 127.0.0.1 と 7890。',
 			'settings.proxy.save' => '保存',
 			'settings.proxy.saved' => 'プロキシ設定を保存しました',
+			'settings.proxy.saveFailed' => 'プロキシ設定を保存できませんでした',
 			'settings.proxy.required' => 'オンにする前に IP とポートを入力してください。',
 			'settings.proxy.invalid' => '有効な IP とポートを入力してください。',
 			'settings.proxy.hostRequired' => 'IP を入力してください。',
@@ -1319,15 +1482,14 @@ extension on TranslationsJaJp {
 			'settings.account.signedOutSubtitle' => 'ログインすると Pixiv アカウントが表示されます',
 			'settings.account.notSignedIn' => '未ログイン',
 			'settings.account.signOut' => 'ログアウト',
+			'me.profile' => 'プロフィール',
 			'me.openProfile' => 'プロフィールを開く',
 			'me.following' => 'フォロー中',
 			'me.followers' => 'フォロワー',
 			'me.emptyFollowing' => 'フォロー中のユーザーはいません',
 			'me.emptyFollowers' => 'フォロワーはいません',
 			'me.about' => 'このアプリについて',
-			'me.aboutSubtitle' => 'バージョン、更新、プロジェクトリンク',
 			'me.settings' => '設定',
-			'me.settingsSubtitle' => 'テーマ、言語、画像、ダウンロード',
 			'about.title' => 'このアプリについて',
 			'about.appName' => 'freepiv',
 			'about.subtitle' => 'Pixiv コンテンツを閲覧するための軽量クライアントです。現在のバージョン確認、更新チェック、プロジェクトのダウンロードページへの移動ができます。',
@@ -1377,6 +1539,7 @@ extension on TranslationsJaJp {
 			'ranking.modes.dayR18Ai' => 'AI生成 R-18',
 			'ranking.modes.week' => 'ウィークリー',
 			'ranking.modes.weekR18' => 'ウィークリー R-18',
+			'ranking.modes.weekR18G' => 'ウィークリー R-18G',
 			'ranking.modes.weekOriginal' => 'オリジナル',
 			'ranking.modes.weekRookie' => 'ルーキー',
 			'ranking.modes.month' => 'マンスリー',
@@ -1415,6 +1578,7 @@ extension on TranslationsJaJp {
 			'search.empty.illustrations' => 'イラストは見つかりません',
 			'search.empty.novels' => '小説は見つかりません',
 			'search.empty.users' => 'ユーザーは見つかりません',
+			'user.noPublicWorks' => '公開作品はありません',
 			'user.tabs.illustrations' => 'イラスト',
 			'user.tabs.manga' => 'マンガ',
 			'user.tabs.novels' => '小説',
@@ -1471,16 +1635,23 @@ extension on TranslationsJaJp {
 			'illust.contextMenu.download' => 'ダウンロード',
 			'illust.contextMenu.downloadAll' => 'すべてダウンロード',
 			'illust.contextMenu.copyImage' => '画像をコピーする',
+			'illust.contextMenu.copyLink' => '作品リンクをコピー',
+			'illust.contextMenu.openOriginal' => 'Pixiv で開く',
 			'illust.imageLabels.original' => 'オリジナル画像',
 			'illust.imageLabels.large' => '大きい画像',
-			'illust.toast.downloadStarted' => '画像をダウンロードしています',
+			'illust.imageLabels.image' => '画像',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} 枚の画像をダウンロードキューに追加しました',
-			'illust.toast.downloadComplete' => ({required Object path}) => 'ダウンロード完了：${path}',
+			'illust.toast.downloadComplete' => ({required Object name}) => '${name} を保存しました',
 			'illust.toast.downloadFailed' => 'ダウンロードに失敗しました',
 			'illust.toast.copying' => ({required Object label}) => '${label}をコピーしています',
 			'illust.toast.copied' => ({required Object label}) => '${label}をコピーしました',
 			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '${label}をコピーしました：${value}',
 			'illust.toast.copyFailed' => ({required Object label}) => '${label}のコピーに失敗しました',
+			'illust.toast.openFailed' => 'Pixiv で作品を開けませんでした',
+			'illust.toast.linkCopied' => 'リンクをコピーしました',
+			'illust.toast.linkCopyFailed' => 'リンクをコピーできませんでした',
+			'illust.toast.alreadyDownloading' => 'このページはすでにダウンロード待ちです',
+			'illust.tooltip.play' => 'アニメーションを再生',
 			'illust.tooltip.previousImage' => '前の画像',
 			'illust.tooltip.nextImage' => '次の画像',
 			'illust.tooltip.backToDetail' => '画像詳細に戻る',
@@ -1504,11 +1675,17 @@ extension on TranslationsJaJp {
 			'illust.stats.pages' => 'ページ',
 			'illust.tags.none' => 'タグはありません',
 			'illust.tags.tag' => 'タグ',
+			'illust.tags.showMore' => ({required Object count}) => '残り ${count} 件のタグを表示',
+			'illust.tags.showLess' => 'タグを閉じる',
 			'illust.comments.failed' => 'コメントを読み込めませんでした',
 			'illust.comments.empty' => 'コメントはまだありません',
 			'illust.comments.moreAvailable' => 'さらにコメントがあります',
 			'illust.comments.hasReplies' => '返信があります',
 			'illust.comments.open' => 'コメントを開く',
+			'illust.comments.discardDraftTitle' => 'コメントを閉じますか？',
+			'illust.comments.discardDraftMessage' => '送信していないコメントは失われます。',
+			'illust.comments.continueEditing' => '編集を続ける',
+			'illust.comments.discardDraft' => '下書きを破棄',
 			'illust.comments.reply' => '返信',
 			'illust.comments.replyingTo' => ({required Object name}) => '${name} に返信中',
 			'illust.comments.loadReplies' => '返信を読み込む',
@@ -1516,6 +1693,7 @@ extension on TranslationsJaJp {
 			'illust.comments.repliesFailed' => '返信を読み込めませんでした',
 			'illust.comments.sendFailed' => 'コメントの送信に失敗しました',
 			'illust.comments.delete' => '削除',
+			'illust.comments.deleteConfirm' => 'このコメントを削除しますか？',
 			'illust.comments.deleteFailed' => 'コメントの削除に失敗しました',
 			'illust.comments.inputHint' => 'コメントを書く',
 			'illust.comments.replyInputHint' => ({required Object name}) => '${name} に返信',
@@ -1530,6 +1708,7 @@ extension on TranslationsJaJp {
 			'novel.detail.series' => 'シリーズ',
 			'novel.detail.content' => '本文',
 			'novel.detail.startReading' => '読み始める',
+			'novel.detail.continueReading' => '続きを読む',
 			'novel.detail.totalChars' => ({required Object count}) => '全 ${count} 文字',
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} 段落',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} ページ',
@@ -1538,6 +1717,8 @@ extension on TranslationsJaJp {
 			'novel.reader.chapters' => '章',
 			'novel.reader.settings' => '読書設定',
 			'novel.reader.emptyBody' => '本文がありません',
+			'novel.reader.embeddedImageUnavailable' => '画像を表示できません',
+			'novel.reader.openEmbeddedWork' => '関連作品を開く',
 			'novel.reader.totalChars' => ({required Object count}) => '全 ${count} 文字',
 			'novel.reader.pagePosition' => ({required Object current, required Object total}) => '${current} / ${total} ページ',
 			'novel.reader.pageTotal' => ({required Object total}) => '${total} ページ',
@@ -1557,7 +1738,7 @@ extension on TranslationsJaJp {
 			'follow.tooltipFollow' => 'ユーザーをフォロー',
 			'follow.tooltipUnfollow' => 'フォロー解除',
 			'follow.followed' => 'フォロー中',
-			'follow.notFollowed' => '未フォロー',
+			'follow.follow' => 'フォロー',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
 			'richText.illustId' => ({required Object id}) => 'イラスト ID：${id}',
 			'richText.userId' => ({required Object id}) => 'ユーザー ID：${id}',
@@ -1565,6 +1746,7 @@ extension on TranslationsJaJp {
 			'fanbox.updateSession' => 'Cookie を更新',
 			'fanbox.title' => 'FANBOX',
 			'fanbox.home' => 'フォロー中の投稿',
+			'fanbox.feedGroup' => 'フィード',
 			'fanbox.supporting' => '支援中の投稿',
 			'fanbox.following' => 'フォロー中',
 			'fanbox.recommended' => 'クリエイターを探す',
@@ -1594,6 +1776,8 @@ extension on TranslationsJaJp {
 			'fanbox.monthlyFee' => ({required Object fee}) => '月額 ¥${fee}',
 			'fanbox.supportOnWebsite' => 'FANBOX でプランを見る',
 			'fanbox.follow' => 'フォロー',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.unfollow' => 'フォロー解除',
 			'fanbox.like' => 'いいね',
 			'fanbox.liked' => 'いいね済み',

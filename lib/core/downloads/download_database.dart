@@ -9,8 +9,11 @@ part 'download_database.g.dart';
 
 class DownloadJobs extends Table {
   TextColumn get id => text()();
-  IntColumn get illustId => integer()();
-  IntColumn get pageIndex => integer().withDefault(const Constant(0))();
+
+  /// The work page downloaded; both null for a content image (see
+  /// DownloadOrigin), which is identified by its [url].
+  IntColumn get illustId => integer().nullable()();
+  IntColumn get pageIndex => integer().nullable()();
   TextColumn get url => text()();
   TextColumn get filename => text()();
   TextColumn get headersJson => text().withDefault(const Constant('{}'))();
@@ -47,25 +50,50 @@ class DownloadStates extends Table {
 class DownloadDatabase extends _$DownloadDatabase {
   DownloadDatabase() : super(_openConnection());
 
+  /// Opens [executor] instead of the app's database file, e.g. in memory.
+  DownloadDatabase.withExecutor(super.executor);
+
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onUpgrade: (migrator, from, to) async {
-        if (from < 2) {
-          await migrator.addColumn(downloadJobs, downloadJobs.pageIndex);
-        }
-        if (from < 3) {
-          await migrator.addColumn(downloadStates, downloadStates.log);
-        }
-        if (from < 4) {
-          await migrator.addColumn(downloadJobs, downloadJobs.networkOptionsJson);
-          await migrator.addColumn(downloadJobs, downloadJobs.validationJson);
+        try {
+          await _upgrade(migrator, from);
+        } catch (_) {
+          // Download history is a convenience record; a database that cannot
+          // be carried forward is cleared rather than blocking downloads.
+          await _reset(migrator);
         }
       },
     );
+  }
+
+  Future<void> _upgrade(Migrator migrator, int from) async {
+    if (from < 2) {
+      await migrator.addColumn(downloadJobs, downloadJobs.pageIndex);
+    }
+    if (from < 3) {
+      await migrator.addColumn(downloadStates, downloadStates.log);
+    }
+    if (from < 4) {
+      await migrator.addColumn(downloadJobs, downloadJobs.networkOptionsJson);
+      await migrator.addColumn(downloadJobs, downloadJobs.validationJson);
+    }
+    if (from < 5) {
+      // The work columns became nullable for content images; rebuilding the
+      // table copies every existing row.
+      await migrator.alterTable(TableMigration(downloadJobs));
+    }
+  }
+
+  Future<void> _reset(Migrator migrator) async {
+    for (final table in allTables.toList().reversed) {
+      await migrator.deleteTable(table.actualTableName);
+    }
+    await migrator.createAll();
   }
 }
 

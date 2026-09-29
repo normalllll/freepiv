@@ -1,178 +1,132 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/app_dialog.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_labels.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/shared/widgets/form_controls.dart';
 
-class NewestFilterControlsRow extends StatelessWidget {
-  const NewestFilterControlsRow({
-    required this.audience,
-    required this.state,
-    required this.compact,
-    required this.onWorkTypeChanged,
-    required this.onFollowScopeChanged,
-    super.key,
-  });
+/// Compact summary of the feed's work type (and follow scope for Following).
+/// It sits on the audience tab row, so the page keeps a single toolbar row;
+/// pointer platforms open an anchored menu, touch opens a bottom sheet.
+class NewestFilterButton extends StatelessWidget {
+  const NewestFilterButton({required this.audience, required this.state, required this.onWorkTypeChanged, required this.onFollowScopeChanged, super.key});
 
   final NewestAudience audience;
   final NewestState state;
-  final bool compact;
   final ValueChanged<NewestWorkType> onWorkTypeChanged;
   final ValueChanged<NewestFollowScope> onFollowScopeChanged;
 
   @override
   Widget build(BuildContext context) {
-    final hasFollowScope = audience == NewestAudience.following;
-    final controls = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Flexible(
-          child: NewestWorkTypeSelector(audience: audience, state: state, compact: compact, onChanged: onWorkTypeChanged),
-        ),
-        const SizedBox(width: 8),
-        Visibility(
-          visible: hasFollowScope,
-          maintainSize: true,
-          maintainAnimation: true,
-          maintainState: true,
-          child: NewestFollowScopePopupButton(state: state, compact: compact, onFollowScopeChanged: onFollowScopeChanged),
-        ),
-      ],
-    );
-
-    if (compact) {
-      return controls;
-    }
-
-    return Align(alignment: AlignmentDirectional.center, child: controls);
-  }
-}
-
-class NewestWorkTypeSelector extends StatelessWidget {
-  const NewestWorkTypeSelector({required this.audience, required this.state, required this.compact, required this.onChanged, super.key});
-
-  final NewestAudience audience;
-  final NewestState state;
-  final bool compact;
-  final ValueChanged<NewestWorkType> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final selectedWorkType = selectedNewestWorkType(state, audience);
     final translations = t;
-
-    return ConstrainedSegmentedButton<NewestWorkType>(
-      maxWidth: compact ? null : 420,
-      alignment: compact ? AlignmentDirectional.centerStart : AlignmentDirectional.center,
-      segments: [
-        for (final workType in newestWorkTypeOptions(audience))
-          ButtonSegment(
-            value: workType,
-            icon: Icon(newestWorkTypeIcon(workType)),
-            label: Text(compact ? newestWorkTypeCompactLabel(workType, translations) : newestWorkTypeLabel(workType, translations)),
-          ),
-      ],
-      selected: {selectedWorkType},
-      onSelectionChanged: (selection) => onChanged(selection.single),
-      style: SegmentedButton.styleFrom(
-        visualDensity: VisualDensity.compact,
-        padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 12),
-        textStyle: Theme.of(context).textTheme.labelLarge,
-      ),
-    );
-  }
-}
-
-class NewestFollowScopePopupButton extends StatelessWidget {
-  const NewestFollowScopePopupButton({required this.state, required this.compact, required this.onFollowScopeChanged, super.key});
-
-  final NewestState state;
-  final bool compact;
-  final ValueChanged<NewestFollowScope> onFollowScopeChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final translations = t;
-
-    return NewestFilterPopupButton<NewestFollowScope>(
-      icon: Icons.visibility_outlined,
-      label: compact ? newestFollowScopeCompactLabel(state.followScope, translations) : newestFollowScopeLabel(state.followScope, translations),
-      values: NewestFollowScope.values,
-      selectedValue: state.followScope,
-      labelFor: (scope) => newestFollowScopeLabel(scope, translations),
-      onSelected: onFollowScopeChanged,
-      compact: compact,
-    );
-  }
-}
-
-class NewestFilterPopupButton<T> extends StatelessWidget {
-  const NewestFilterPopupButton({
-    required this.icon,
-    required this.label,
-    required this.values,
-    required this.selectedValue,
-    required this.labelFor,
-    required this.onSelected,
-    required this.compact,
-    super.key,
-  });
-
-  final IconData icon;
-  final String label;
-  final List<T> values;
-  final T selectedValue;
-  final String Function(T value) labelFor;
-  final ValueChanged<T> onSelected;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<T>(
-      tooltip: label,
-      onSelected: onSelected,
-      itemBuilder: (context) {
-        return [for (final value in values) CheckedPopupMenuItem<T>(value: value, checked: value == selectedValue, child: Text(labelFor(value)))];
-      },
-      child: NewestToolbarFilterChip(icon: icon, label: label, compact: compact),
-    );
-  }
-}
-
-class NewestToolbarFilterChip extends StatelessWidget {
-  const NewestToolbarFilterChip({required this.icon, required this.label, required this.compact, super.key});
-
-  final IconData icon;
-  final String label;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final tokens = FreepivThemeTokens.of(context);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(color: Color.alphaBlend(tokens.brand.withValues(alpha: 0.055), tokens.surfaceRaised), borderRadius: BorderRadius.circular(8)),
-      child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(compact ? 9 : 11, 8, compact ? 7 : 9, 8),
-        child: Row(
+    final workType = selectedNewestWorkType(state, audience);
+    final following = audience == NewestAudience.following;
+    final summary = following
+        ? '${newestWorkTypeCompactLabel(workType, translations)} · ${newestFollowScopeCompactLabel(state.followScope, translations)}'
+        : newestWorkTypeCompactLabel(workType, translations);
+    final pointer = switch (Theme.of(context).platform) {
+      TargetPlatform.windows || TargetPlatform.macOS || TargetPlatform.linux => true,
+      _ => false,
+    };
+    Widget trigger(VoidCallback onPressed, {FocusNode? focusNode}) => Tooltip(
+      message: translations.common.filter,
+      child: TextButton.icon(
+        focusNode: focusNode,
+        onPressed: onPressed,
+        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12)),
+        icon: Icon(newestWorkTypeIcon(workType), size: AppMetrics.iconSize),
+        label: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: tokens.brand),
-            const SizedBox(width: 6),
-            ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: compact ? 96 : 150),
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant),
-              ),
-            ),
+            Flexible(child: Text(summary, maxLines: 1, overflow: TextOverflow.ellipsis)),
             const SizedBox(width: 2),
-            Icon(Icons.arrow_drop_down, size: 20, color: colorScheme.onSurfaceVariant),
+            const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
           ],
+        ),
+      ),
+    );
+    if (!pointer) return trigger(() => _showSheet(context, workType, state.followScope));
+
+    final tokens = FreepivThemeTokens.of(context);
+    Widget check(bool selected) => SizedBox.square(dimension: 18, child: selected ? Icon(Icons.check_rounded, size: 18, color: tokens.selectionInk) : null);
+    Widget heading(String label) => Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+      child: Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: tokens.textSecondary)),
+    );
+    return AppMenuAnchor(
+      alignmentOffset: const Offset(0, 4),
+      menuChildren: [
+        heading(translations.common.type),
+        for (final option in newestWorkTypeOptions(audience))
+          AppMenuItem(
+            leadingIcon: Icon(newestWorkTypeIcon(option), size: AppMetrics.iconSize),
+            trailingIcon: check(option == workType),
+            onPressed: () => onWorkTypeChanged(option),
+            child: Text(newestWorkTypeLabel(option, translations)),
+          ),
+        if (following) ...[
+          const Divider(height: 9),
+          heading(translations.newest.followScope.title),
+          for (final option in NewestFollowScope.values)
+            AppMenuItem(
+              trailingIcon: check(option == state.followScope),
+              onPressed: () => onFollowScopeChanged(option),
+              child: Text(newestFollowScopeLabel(option, translations)),
+            ),
+        ],
+      ],
+      builder: (context, focusNode, toggle) => trigger(toggle, focusNode: focusNode),
+    );
+  }
+
+  Future<void> _showSheet(BuildContext context, NewestWorkType initialWorkType, NewestFollowScope initialScope) {
+    var workType = initialWorkType;
+    var scope = initialScope;
+    return showModalBottomSheet<void>(
+      context: context,
+      sheetAnimationStyle: appSheetAnimationStyle(context),
+      useSafeArea: true,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, updateSheet) => ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(sheetContext).height * .72),
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            children: [
+              Text(t.common.type, style: Theme.of(sheetContext).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              for (final option in newestWorkTypeOptions(audience))
+                ListTile(
+                  selected: workType == option,
+                  leading: Icon(newestWorkTypeIcon(option)),
+                  title: Text(newestWorkTypeLabel(option, t)),
+                  trailing: workType == option ? const Icon(Icons.check) : null,
+                  onTap: () {
+                    updateSheet(() => workType = option);
+                    onWorkTypeChanged(option);
+                  },
+                ),
+              if (audience == NewestAudience.following) ...[
+                const SizedBox(height: 12),
+                Text(t.newest.followScope.title, style: Theme.of(sheetContext).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                for (final option in NewestFollowScope.values)
+                  ListTile(
+                    selected: scope == option,
+                    title: Text(newestFollowScopeLabel(option, t)),
+                    trailing: scope == option ? const Icon(Icons.check) : null,
+                    onTap: () {
+                      updateSheet(() => scope = option);
+                      onFollowScopeChanged(option);
+                    },
+                  ),
+              ],
+            ],
+          ),
         ),
       ),
     );

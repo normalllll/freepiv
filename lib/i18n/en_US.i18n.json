@@ -1,10 +1,12 @@
 {
-  "nativeWindow": {"minimize":"Minimize","maximize":"Maximize","restore":"Restore","close":"Close"},
+  "nativeWindow": {"minimize":"Minimize","maximize":"Maximize","restore":"Restore","close":"Close","illust":"Illust","manga":"Manga","novel":"Novel","workFallback":"$type: $id","workTitle":"$type: $id · $title","relatedTitle":"Related works · $title","user":"User","userFallback":"User: $id","viewerTitle":"$title · $page/$total"},
   "discover": {
     "searchHint": "Search Pixiv",
     "history": "Recent searches",
     "viewAll": "View all",
-    "clearHistory": "Clear history"
+    "clearHistory": "Clear history",
+    "deleteHistoryItem": "Remove recent search",
+    "emptyHistory": "Your searches will appear here"
   },
   "app": {
     "title": "freepiv"
@@ -16,9 +18,16 @@
     "newest": "Newest",
     "ranking": "Ranking",
     "me": "Me",
-    "settings": "Settings"
+    "settings": "Settings",
+    "more": "More",
+    "expand": "Expand navigation",
+    "collapse": "Collapse navigation",
+    "downloads": "Downloads",
+    "about": "About"
   },
+  "errors": {"generic": "Unable to load content. Please try again.", "connection": "Check your connection and try again.", "session": "Your session has expired. Please sign in again.", "forbidden": "You do not have access to this content.", "missing": "This content is no longer available."},
   "common": {
+    "viewLog": "View log",
     "apply": "Apply",
     "reset": "Reset",
     "discover": "Discover",
@@ -33,7 +42,10 @@
     "notFound": "Not found",
     "copy": "Copy $label",
     "labelValue": "$label: $value",
-    "errorWithCause": "$message: $cause"
+    "errorWithCause": "$message: $cause",
+    "errorDetails": "Error details",
+    "copyDetails": "Copy details",
+    "detailsCopied": "Error details copied"
   },
   "refresh": {
     "pullToRefresh": "Pull to refresh",
@@ -71,10 +83,48 @@
   },
   "settings": {
     "theme": {
-      "title": "Theme",
+      "title": "Appearance",
+      "displayMode": "Display mode",
+      "tone": "Tone",
+      "neutral": "Neutral",
+      "cool": "Cool",
+      "warm": "Warm",
+      "systemNeutralHint": "System mode uses a neutral tone",
+      "lightAccent": "Light accent",
+      "darkAccent": "Dark accent",
+      "systemEditingLight": "Currently editing the light accent used by the system",
+      "systemEditingDark": "Currently editing the dark accent used by the system",
+      "presetPink": "Default pink",
+      "presetBlue": "Blue",
+      "presetTeal": "Teal",
+      "presetViolet": "Violet",
+      "presetAmber": "Amber",
+      "presetOrange": "Orange",
+      "custom": "Custom",
+      "defaultAccent": "Default pink",
+      "restoreDefault": "Restore default pink",
+      "editLightAccent": "Custom light accent",
+      "editDarkAccent": "Custom dark accent",
+      "hue": "Hue",
+      "saturation": "Saturation",
+      "value": "Brightness",
+      "hex": "HEX color",
+      "invalidHex": "Enter a six-digit HEX color",
+      "preview": "Preview",
+      "previewButton": "Button",
+      "rejectedLight": "This color is too close to light backgrounds. Choose another color.",
+      "rejectedDark": "This color is too close to dark backgrounds. Choose another color.",
+      "weakContrast": "This color may be difficult to distinguish on some backgrounds.",
+      "applyAnyway": "Apply anyway",
+      "useDefault": "Use default pink",
+      "saving": "Saving…",
+      "saveFailed": "Could not save appearance. Try again.",
+      "unsaved": "Appearance changes are not saved yet.",
       "system": "System",
       "light": "Light",
-      "dark": "Dark"
+      "dark": "Dark",
+      "reduceTransparency": "Reduce transparency",
+      "reduceTransparencyHint": "Use solid surfaces instead of blur"
     },
     "language": {
       "title": "Language",
@@ -134,7 +184,10 @@
       "syncFailed": "Download sync failed",
       "actionFailed": "Download action failed",
       "expand": "Expand",
-      "collapse": "Collapse"
+      "collapse": "Collapse",
+      "viewAll": "View all downloads",
+      "badgeFailures": "Failed downloads: $count",
+      "badgeActive": "Active downloads: $count"
     },
     "proxy": {
       "title": "Network proxy",
@@ -154,6 +207,7 @@
       "helper": "Enter IP and port separately, for example 127.0.0.1 and 7890.",
       "save": "Save",
       "saved": "Proxy settings saved",
+      "saveFailed": "Could not save proxy settings",
       "required": "Enter an IP and port before turning this on.",
       "invalid": "Enter a valid IP and port.",
       "hostRequired": "Enter an IP.",
@@ -176,15 +230,14 @@
     }
   },
   "me": {
+    "profile": "My profile",
     "openProfile": "Open profile",
     "following": "My following",
     "followers": "My followers",
     "emptyFollowing": "No following users",
     "emptyFollowers": "No followers",
     "about": "About",
-    "aboutSubtitle": "Version, updates, and project links",
-    "settings": "Settings",
-    "settingsSubtitle": "Theme, language, images, and downloads"
+    "settings": "Settings"
   },
   "about": {
     "title": "About",
@@ -243,6 +296,7 @@
       "dayR18Ai": "AI-generated R-18",
       "week": "Weekly",
       "weekR18": "Weekly R-18",
+      "weekR18G": "Weekly R-18G",
       "weekOriginal": "Weekly Original",
       "weekRookie": "Weekly Rookie",
       "month": "Monthly"
@@ -302,6 +356,7 @@
     }
   },
   "user": {
+    "noPublicWorks": "No public works",
     "tabs": {
       "illustrations": "Illustrations",
       "manga": "Manga",
@@ -382,23 +437,30 @@
     "contextMenu": {
       "download": "Download",
       "downloadAll": "Download all",
-      "copyImage": "Copy image"
+      "copyImage": "Copy image",
+      "copyLink": "Copy work link",
+      "openOriginal": "Open on Pixiv"
     },
     "imageLabels": {
       "original": "original image",
-      "large": "large image"
+      "large": "large image",
+      "image": "image"
     },
     "toast": {
-      "downloadStarted": "Downloading image",
       "downloadAllQueued": "$count images added to the download queue",
-      "downloadComplete": "Download complete: $path",
+      "downloadComplete": "Saved $name",
       "downloadFailed": "Download failed",
       "copying": "Copying $label",
       "copied": "Copied $label",
       "copiedValue": "Copied $label: $value",
-      "copyFailed": "Failed to copy $label"
+      "copyFailed": "Failed to copy $label",
+      "openFailed": "Could not open this work on Pixiv",
+      "linkCopied": "Link copied",
+      "linkCopyFailed": "Could not copy the link",
+      "alreadyDownloading": "This page is already in the download queue"
     },
     "tooltip": {
+      "play": "Play animation",
       "previousImage": "Previous image",
       "nextImage": "Next image",
       "backToDetail": "Back to image detail",
@@ -431,7 +493,9 @@
     },
     "tags": {
       "none": "No tags",
-      "tag": "tag"
+      "tag": "tag",
+      "showMore": "Show $count more",
+      "showLess": "Show less"
     },
     "comments": {
       "failed": "Failed to load comments",
@@ -439,6 +503,10 @@
       "moreAvailable": "More comments available",
       "hasReplies": "Has replies",
       "open": "Open comments",
+      "discardDraftTitle": "Leave this comment?",
+      "discardDraftMessage": "Your unsent comment will be lost.",
+      "continueEditing": "Continue editing",
+      "discardDraft": "Discard draft",
       "reply": "Reply",
       "replyingTo": "Replying to $name",
       "loadReplies": "Load replies",
@@ -446,6 +514,7 @@
       "repliesFailed": "Failed to load replies",
       "sendFailed": "Failed to send comment",
       "delete": "Delete",
+      "deleteConfirm": "Delete this comment?",
       "deleteFailed": "Failed to delete comment",
       "inputHint": "Write a comment",
       "replyInputHint": "Reply to $name",
@@ -468,6 +537,7 @@
       "series": "Series",
       "content": "Content",
       "startReading": "Start reading",
+      "continueReading": "Continue reading",
       "totalChars": "$count chars",
       "paragraphCount": "$count paragraphs",
       "segmentCount": "$count pages"
@@ -478,6 +548,8 @@
       "chapters": "Chapters",
       "settings": "Reading settings",
       "emptyBody": "No body text",
+      "embeddedImageUnavailable": "This image is unavailable",
+      "openEmbeddedWork": "Open linked artwork",
       "totalChars": "$count chars",
       "pagePosition": "$current / $total pages",
       "pageTotal": "$total pages",
@@ -500,7 +572,7 @@
     "tooltipFollow": "Follow user",
     "tooltipUnfollow": "Unfollow",
     "followed": "Following",
-    "notFollowed": "Not following"
+    "follow": "Follow"
   },
   "richText": {
     "twitterUser": "Twitter: $username",
@@ -512,6 +584,7 @@
     "updateSession": "Update Cookie",
     "title": "FANBOX",
     "home": "Following feed",
+    "feedGroup": "Feed",
     "supporting": "Supporting feed",
     "following": "Following",
     "recommended": "Discover",

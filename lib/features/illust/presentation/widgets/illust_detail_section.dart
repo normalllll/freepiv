@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class IllustSectionTitle extends StatelessWidget {
-  const IllustSectionTitle({required this.title, required this.icon, super.key});
+  const IllustSectionTitle({required this.title, this.icon, super.key});
 
   final String title;
-  final IconData icon;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -12,8 +12,7 @@ class IllustSectionTitle extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 6),
+        if (icon case final value?) ...[Icon(value, size: 16, color: colorScheme.onSurfaceVariant), const SizedBox(width: 6)],
         Text(title, style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
       ],
     );

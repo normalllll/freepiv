@@ -1,8 +1,7 @@
-import 'package:freepiv/shared/widgets/search_input.dart';
-import 'package:freepiv/shared/widgets/floating_filter_sliver.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'logic.dart';
 import 'cards.dart';
@@ -15,17 +14,21 @@ class FanboxHomeSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SearchInputRegion(child: LoadingSkeletonBlock(width: double.infinity, height: 44, radius: 22)),
-        SizedBox(
-          height: compactFilterHeight(context),
-          child: FanboxContent(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 2),
-              child: Skeletonizer(
-                child: FanboxSectionNavigation(section: FanboxSection.home, onSelected: (_) {}),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return SizedBox(
+              height: fanboxNavigationHeight(context),
+              child: ContentColumn(
+                bleed: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 12, 0, 2),
+                  child: Skeletonizer(
+                    child: FanboxSectionNavigation(section: FanboxSection.home, onSelected: (_) {}),
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
         Expanded(
           child: LayoutBuilder(

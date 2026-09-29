@@ -1,10 +1,15 @@
 import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/services/updater_service.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/layout/auto_scaffold.dart';
+import 'package:freepiv/shared/layout/fp_page_header.dart';
+import 'package:freepiv/shared/ui/fp_icon.dart';
+import 'package:freepiv/shared/ui/fp_grouped_rows.dart';
+import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -22,99 +27,93 @@ class _AboutPageState extends State<AboutPage> {
   @override
   Widget build(BuildContext context) {
     final translations = context.t;
-    final tokens = FreepivThemeTokens.of(context);
 
     return AutoScaffold(
-      builder: (context, layout, orientation, shouldUseDesktopShell) {
-        final horizontalPadding = shouldUseDesktopShell ? 24.0 : 16.0;
-
+      builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
-          backgroundColor: tokens.surface,
-          appBar: shouldUseDesktopShell ? null : AppBar(title: Text(translations.about.title)),
+          appBar: useHorizontalLayout ? null : FpPageHeader(title: Text(translations.about.title)),
           body: SafeArea(
-            top: shouldUseDesktopShell,
+            top: useHorizontalLayout,
             child: FutureBuilder<PackageInfo>(
               future: _packageInfoFuture,
               builder: (context, snapshot) {
                 final packageInfo = snapshot.data;
 
                 return SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(horizontalPadding, 18, horizontalPadding, 24),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 720),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (shouldUseDesktopShell) ...[
-                            Text(translations.about.title, style: Theme.of(context).textTheme.headlineSmall),
-                            const SizedBox(height: 14),
+                  padding: const EdgeInsets.only(top: 12, bottom: 24),
+                  child: ContentColumn(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _AboutHero(
+                          packageInfo: packageInfo,
+                          packageInfoFailed: snapshot.hasError,
+                          checkingUpdate: _checkingUpdate,
+                          onCheckUpdate: _checkUpdate,
+                          onOpenDownloadPage: _openDownloadPage,
+                        ),
+                        const SizedBox(height: 24),
+                        _AboutSection(
+                          title: translations.about.versionInfo,
+                          children: [
+                            _AboutValueRow(
+                              icon: FpIconName.info,
+                              title: translations.about.appVersion,
+                              value: packageInfo == null
+                                  ? snapshot.hasError
+                                        ? translations.errors.generic
+                                        : translations.about.loading
+                                  : '${packageInfo.version}+${packageInfo.buildNumber}',
+                            ),
+                            ValueListenableBuilder<AppUpdateInfo?>(
+                              valueListenable: UpdaterService.latestRelease,
+                              builder: (context, latestRelease, child) {
+                                return _AboutValueRow(
+                                  icon: FpIconName.newspaper,
+                                  title: translations.about.latestVersion,
+                                  value: latestRelease == null ? translations.about.noCachedUpdate : '${latestRelease.version}+${latestRelease.buildNumber}',
+                                );
+                              },
+                            ),
                           ],
-                          _AboutHero(
-                            packageInfo: packageInfo,
-                            checkingUpdate: _checkingUpdate,
-                            onCheckUpdate: _checkUpdate,
-                            onOpenDownloadPage: _openDownloadPage,
-                          ),
-                          const SizedBox(height: 14),
-                          _AboutSection(
-                            title: translations.about.project,
-                            children: [
-                              _AboutActionRow(
-                                icon: Icons.code_outlined,
-                                title: translations.about.projectPage,
-                                subtitle: UpdaterService.projectUrl,
-                                onTap: () => _openUrl(UpdaterService.projectUrl),
-                              ),
-                              _AboutActionRow(
-                                icon: Icons.new_releases_outlined,
-                                title: translations.about.releasePage,
-                                subtitle: UpdaterService.latestReleaseUrl,
-                                onTap: _openDownloadPage,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          _AboutSection(
-                            title: translations.about.versionInfo,
-                            children: [
-                              _AboutValueRow(
-                                icon: Icons.app_shortcut_outlined,
-                                title: translations.about.appVersion,
-                                value: packageInfo == null ? translations.about.loading : '${packageInfo.version}+${packageInfo.buildNumber}',
-                              ),
-                              ValueListenableBuilder<AppUpdateInfo?>(
-                                valueListenable: UpdaterService.latestRelease,
-                                builder: (context, latestRelease, child) {
-                                  return _AboutValueRow(
-                                    icon: Icons.system_update_alt_outlined,
-                                    title: translations.about.latestVersion,
-                                    value: latestRelease == null ? translations.about.noCachedUpdate : '${latestRelease.version}+${latestRelease.buildNumber}',
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          _AboutSection(
-                            title: translations.about.community,
-                            children: [
-                              _AboutActionRow(
-                                icon: Icons.telegram_outlined,
-                                title: translations.about.telegram,
-                                subtitle: 'https://t.me/+ONtNV3HTQ0NhMzVh',
-                                onTap: () => _openUrl('https://t.me/+ONtNV3HTQ0NhMzVh'),
-                              ),
-                              _AboutActionRow(
-                                icon: Icons.discord_outlined,
-                                title: translations.about.discord,
-                                subtitle: 'https://discord.gg/jQatz6965H',
-                                onTap: () => _openUrl('https://discord.gg/jQatz6965H'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 24),
+                        _AboutSection(
+                          title: translations.about.project,
+                          children: [
+                            _AboutActionRow(
+                              icon: FpIconName.code,
+                              title: translations.about.projectPage,
+                              subtitle: UpdaterService.projectUrl,
+                              onTap: () => _openUrl(UpdaterService.projectUrl),
+                            ),
+                            _AboutActionRow(
+                              icon: FpIconName.newspaper,
+                              title: translations.about.releasePage,
+                              subtitle: UpdaterService.latestReleaseUrl,
+                              onTap: _openDownloadPage,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        _AboutSection(
+                          title: translations.about.community,
+                          children: [
+                            _AboutActionRow(
+                              icon: FpIconName.send,
+                              title: translations.about.telegram,
+                              subtitle: 'https://t.me/+ONtNV3HTQ0NhMzVh',
+                              onTap: () => _openUrl('https://t.me/+ONtNV3HTQ0NhMzVh'),
+                            ),
+                            _AboutActionRow(
+                              icon: FpIconName.messageCircle,
+                              title: translations.about.discord,
+                              subtitle: 'https://discord.gg/jQatz6965H',
+                              onTap: () => _openUrl('https://discord.gg/jQatz6965H'),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -137,7 +136,6 @@ class _AboutPageState extends State<AboutPage> {
 
     final translations = context.t.about;
     try {
-      AppToast.info(translations.checkingUpdate);
       final update = await UpdaterService.checkForUpdate();
       if (!mounted) {
         return;
@@ -179,18 +177,28 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   Future<void> _openUrl(String url, {String? failureMessage}) async {
-    final uri = Uri.parse(url);
-    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!opened && mounted) {
-      AppToast.error(failureMessage ?? context.t.about.openLinkFailed);
+    try {
+      final opened = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      if (!opened && mounted) {
+        AppToast.error(failureMessage ?? context.t.about.openLinkFailed);
+      }
+    } catch (_) {
+      if (mounted) AppToast.error(failureMessage ?? context.t.about.openLinkFailed);
     }
   }
 }
 
 class _AboutHero extends StatelessWidget {
-  const _AboutHero({required this.packageInfo, required this.checkingUpdate, required this.onCheckUpdate, required this.onOpenDownloadPage});
+  const _AboutHero({
+    required this.packageInfo,
+    required this.packageInfoFailed,
+    required this.checkingUpdate,
+    required this.onCheckUpdate,
+    required this.onOpenDownloadPage,
+  });
 
   final PackageInfo? packageInfo;
+  final bool packageInfoFailed;
   final bool checkingUpdate;
   final VoidCallback onCheckUpdate;
   final VoidCallback onOpenDownloadPage;
@@ -202,13 +210,8 @@ class _AboutHero extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final currentPackageInfo = packageInfo;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: tokens.surfaceRaised,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: tokens.line),
-        boxShadow: [BoxShadow(color: tokens.shadow, blurRadius: 18, offset: const Offset(0, 8))],
-      ),
+    return FpSurface(
+      role: FpSurfaceRole.glassPanel,
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
@@ -239,7 +242,9 @@ class _AboutHero extends StatelessWidget {
                       const SizedBox(height: 5),
                       Text(
                         currentPackageInfo == null
-                            ? translations.loading
+                            ? packageInfoFailed
+                                  ? context.t.errors.generic
+                                  : translations.loading
                             : translations.currentVersion(version: currentPackageInfo.version, buildNumber: currentPackageInfo.buildNumber),
                         style: textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                       ),
@@ -248,19 +253,21 @@ class _AboutHero extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
-            Text(translations.subtitle, style: textTheme.bodyMedium?.copyWith(height: 1.35)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Wrap(
               spacing: 10,
               runSpacing: 10,
               children: [
                 FilledButton.icon(
                   onPressed: checkingUpdate ? null : onCheckUpdate,
-                  icon: checkingUpdate ? const SizedBox.square(dimension: 16, child: LoadingSkeletonBlock()) : const Icon(Icons.system_update_alt_outlined),
-                  label: Text(checkingUpdate ? translations.checkingUpdateShort : translations.checkUpdate),
+                  icon: checkingUpdate ? const SizedBox.square(dimension: 16, child: LoadingSkeletonBlock()) : const FpIcon(FpIconName.refreshCw, size: 18),
+                  label: Text(translations.checkUpdate),
                 ),
-                OutlinedButton.icon(onPressed: onOpenDownloadPage, icon: const Icon(Icons.open_in_new_outlined), label: Text(translations.downloadPage)),
+                OutlinedButton.icon(
+                  onPressed: onOpenDownloadPage,
+                  icon: const FpIcon(FpIconName.externalLink, size: 18),
+                  label: Text(translations.downloadPage),
+                ),
               ],
             ),
           ],
@@ -278,8 +285,6 @@ class _AboutSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -290,14 +295,7 @@ class _AboutSection extends StatelessWidget {
             style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
           ),
         ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: tokens.surfaceRaised,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: tokens.line),
-          ),
-          child: Column(children: children),
-        ),
+        FpGroupedRows(children: children),
       ],
     );
   }
@@ -306,27 +304,19 @@ class _AboutSection extends StatelessWidget {
 class _AboutActionRow extends StatelessWidget {
   const _AboutActionRow({required this.icon, required this.title, required this.subtitle, required this.onTap});
 
-  final IconData icon;
+  final FpIconName icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return _AboutRowShell(
+    return ListTile(
       onTap: onTap,
-      icon: icon,
-      trailing: const Icon(Icons.north_east_outlined, size: 18),
-      child: Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 3),
-            Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
-      ),
+      leading: FpIcon(icon, size: 24),
+      title: Text(title),
+      subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+      trailing: const FpIcon(FpIconName.externalLink, size: 18),
     );
   }
 }
@@ -334,61 +324,26 @@ class _AboutActionRow extends StatelessWidget {
 class _AboutValueRow extends StatelessWidget {
   const _AboutValueRow({required this.icon, required this.title, required this.value});
 
-  final IconData icon;
+  final FpIconName icon;
   final String title;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return _AboutRowShell(
-      icon: icon,
-      trailing: Flexible(
+    if (MediaQuery.sizeOf(context).width < 600 || MediaQuery.textScalerOf(context).scale(16) >= 24) {
+      return ListTile(leading: FpIcon(icon, size: 24), title: Text(title), subtitle: Text(value));
+    }
+    return ListTile(
+      leading: FpIcon(icon, size: 24),
+      title: Text(title),
+      trailing: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 260),
         child: Text(
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.end,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-        ),
-      ),
-      child: Expanded(child: Text(title, style: Theme.of(context).textTheme.titleSmall)),
-    );
-  }
-}
-
-class _AboutRowShell extends StatelessWidget {
-  const _AboutRowShell({required this.icon, required this.child, required this.trailing, this.onTap});
-
-  final IconData icon;
-  final Widget child;
-  final Widget trailing;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-          child: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(color: tokens.surfaceTint, borderRadius: BorderRadius.circular(8)),
-                child: Icon(icon, size: 18, color: tokens.brand),
-              ),
-              const SizedBox(width: 12),
-              child,
-              const SizedBox(width: 10),
-              trailing,
-            ],
-          ),
         ),
       ),
     );

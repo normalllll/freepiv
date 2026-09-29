@@ -1,6 +1,10 @@
+import 'package:freepiv/shared/widgets/constrained_segmented_button.dart';
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/app_dialog.dart';
+import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +22,7 @@ class SearchFilterButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dimension = compact ? 36.0 : 44.0;
+    final dimension = AppMetrics.controlHeight;
     final iconSize = compact ? 18.0 : 20.0;
     final tokens = FreepivThemeTokens.of(context);
     final colorScheme = Theme.of(context).colorScheme;
@@ -39,16 +43,17 @@ class SearchFilterButton extends ConsumerWidget {
     }
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: enabled ? Color.alphaBlend(tokens.brand.withValues(alpha: 0.055), tokens.surfaceRaised) : tokens.surfaceMuted,
-        borderRadius: BorderRadius.circular(8),
-      ),
+      decoration: BoxDecoration(color: enabled ? tokens.surfaceRaised : tokens.surfaceMuted, borderRadius: BorderRadius.circular(8)),
       child: SizedBox.square(
         dimension: dimension,
         child: IconButton(
           tooltip: context.t.common.filter,
           onPressed: enabled ? () => _showFilterPanel(context) : null,
-          icon: Icon(Icons.tune, size: iconSize, color: enabled ? tokens.brand : colorScheme.onSurfaceVariant.withValues(alpha: 0.42)),
+          icon: Icon(
+            Icons.tune,
+            size: iconSize,
+            color: enabled ? tokens.keyGraphicOn(tokens.surfaceRaised) : colorScheme.onSurfaceVariant.withValues(alpha: 0.42),
+          ),
           iconSize: iconSize,
           visualDensity: VisualDensity.compact,
           padding: EdgeInsets.zero,
@@ -58,7 +63,7 @@ class SearchFilterButton extends ConsumerWidget {
   }
 
   Future<void> _showFilterPanel(BuildContext context) {
-    final mobile = !AutoScaffold.usesDesktopShellOf(context);
+    final mobile = !AutoScaffold.usesHorizontalLayoutOf(context);
     final panel = UncontrolledProviderScope(
       container: ProviderScope.containerOf(context, listen: false),
       child: SearchFilterPanel(type: type, allowTypeSelection: allowTypeSelection),
@@ -67,6 +72,7 @@ class SearchFilterButton extends ConsumerWidget {
     if (mobile) {
       return showModalBottomSheet<void>(
         context: context,
+        sheetAnimationStyle: appSheetAnimationStyle(context),
         useSafeArea: true,
         showDragHandle: true,
         isScrollControlled: true,
@@ -85,15 +91,53 @@ class SearchFilterButton extends ConsumerWidget {
       );
     }
 
-    return showDialog<void>(
-      context: context,
-      builder: (context) {
-        final maxHeight = MediaQuery.sizeOf(context).height * 0.82;
+    final navigatorOverlay = Navigator.of(context).overlay;
+    final buttonBox = context.findRenderObject();
+    if (navigatorOverlay == null || buttonBox is! RenderBox) return Future.value();
+    final overlayBox = navigatorOverlay.context.findRenderObject() as RenderBox;
+    final buttonRect = Rect.fromPoints(
+      overlayBox.globalToLocal(buttonBox.localToGlobal(Offset.zero)),
+      overlayBox.globalToLocal(buttonBox.localToGlobal(buttonBox.size.bottomRight(Offset.zero))),
+    );
 
-        return Dialog(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 460, maxHeight: maxHeight),
-            child: Padding(padding: const EdgeInsets.fromLTRB(24, 20, 24, 24), child: panel),
+    return showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      transitionDuration: AppMotion.duration(context, const Duration(milliseconds: 240)),
+      pageBuilder: (dialogContext, animation, secondaryAnimation) {
+        final size = MediaQuery.sizeOf(dialogContext);
+        final width = math.min(460.0, size.width - 16);
+        final maxHeight = math.max(120.0, size.height - 16);
+        final left = buttonRect.left.clamp(8.0, math.max(8.0, size.width - width - 8)).toDouble();
+        final below = buttonRect.bottom + 4;
+        final top = (size.height - below >= math.min(480, maxHeight) ? below : buttonRect.top - math.min(480, maxHeight))
+            .clamp(8.0, math.max(8.0, size.height - math.min(480, maxHeight) - 8))
+            .toDouble();
+        return Stack(
+          children: [
+            Positioned(
+              left: left,
+              top: top,
+              width: width,
+              child: FpSurface(
+                role: FpSurfaceRole.overlay,
+                borderRadius: BorderRadius.circular(AppMetrics.modalRadius),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: size.height - top - 8),
+                  child: Padding(padding: const EdgeInsets.all(16), child: panel),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+          child: SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0, -.01), end: Offset.zero).animate(animation),
+            child: child,
           ),
         );
       },
@@ -154,7 +198,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
     return SafeArea(
       top: false,
       child: AnimatedSize(
-        duration: const Duration(milliseconds: 180),
+        duration: AppMotion.duration(context, const Duration(milliseconds: 180)),
         alignment: Alignment.topCenter,
         child: SingleChildScrollView(
           child: Column(
@@ -172,10 +216,10 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                 ],
               ),
               if (allowTypeSelection) ...[
-                const SizedBox(height: 14),
+                const SizedBox(height: AppMetrics.compactSectionGap),
                 _SectionTitle(icon: Icons.category_outlined, label: context.t.common.type),
                 const SizedBox(height: 8),
-                SegmentedButton<SearchType>(
+                AppSegmentedButton<SearchType>(
                   showSelectedIcon: false,
                   segments: [
                     ButtonSegment(value: SearchType.illust, icon: const Icon(Icons.image_outlined), label: Text(context.t.search.type.illustManga)),
@@ -184,11 +228,10 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                   ],
                   selected: {activeType},
                   onSelectionChanged: (selection) => setType(selection.single),
-                  style: SegmentedButton.styleFrom(visualDensity: VisualDensity.compact, textStyle: Theme.of(context).textTheme.labelMedium),
                 ),
               ],
               if (activeType != SearchType.user) ...[
-                const SizedBox(height: 20),
+                const SizedBox(height: AppMetrics.compactSectionGap),
                 _SectionTitle(icon: Icons.sort_outlined, label: context.t.search.filters.sort),
                 const SizedBox(height: 8),
                 _ChoiceWrap<SearchSort>(
@@ -199,7 +242,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                     setFilter(activeFilter.copyWith(sort: value));
                   },
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: AppMetrics.compactSectionGap),
                 _SectionTitle(icon: Icons.track_changes_outlined, label: context.t.search.filters.target),
                 const SizedBox(height: 8),
                 _ChoiceWrap<SearchTarget>(
@@ -210,7 +253,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                     setFilter(activeFilter.copyWith(target: value));
                   },
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: AppMetrics.compactSectionGap),
                 _SectionTitle(icon: Icons.date_range_outlined, label: context.t.search.filters.date),
                 const SizedBox(height: 8),
                 AppSelect<SearchDatePreset>(
@@ -228,7 +271,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(_dateLabel(context, activeFilter), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: AppMetrics.compactSectionGap),
                 _SectionTitle(icon: Icons.bookmark_outline, label: context.t.search.filters.bookmarks),
                 const SizedBox(height: 8),
                 AppSelect<int>(
@@ -241,10 +284,10 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                   },
                 ),
               ],
-              const SizedBox(height: 24),
+              const SizedBox(height: AppMetrics.compactSectionGap),
               Row(
                 children: [
-                  TextButton(onPressed: () => setState(() => _filters = const SearchFiltersState()), child: Text(context.t.common.reset)),
+                  TextButton(onPressed: () => setFilter(const SearchFilterState()), child: Text(context.t.common.reset)),
                   const Spacer(),
                   TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(context.t.common.cancel)),
                   const SizedBox(width: 8),

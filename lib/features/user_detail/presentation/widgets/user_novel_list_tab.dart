@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
@@ -55,6 +56,7 @@ class _UserNovelListTabBodyState extends ConsumerState<UserNovelListTabBody> imp
   }
 
   void _ensureLoaded() {
+    if (!mounted) return;
     final source = _readSource();
     if (!source.initialized && !source.refreshing) {
       source.refresh(true);
@@ -83,16 +85,20 @@ class UserNovelListBody extends StatelessWidget {
   final String emptyTitle;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+
+  Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
+    if (source.phase == LoadPhase.loading) {
       return DataLoadingCustomScrollView(
         physics: physics,
         slivers: [
           ...leadingSlivers,
           ?sliverHeader,
-          const SliverPadding(padding: EdgeInsets.all(12), sliver: SliverListSkeleton(itemExtent: 140, itemCount: 8)),
+          const SliverContentColumn(
+            sliver: SliverPadding(padding: EdgeInsets.symmetric(vertical: 12), sliver: SliverListSkeleton(itemExtent: 140, itemCount: 8)),
+          ),
         ],
       );
     }
@@ -122,11 +128,13 @@ class UserNovelListBody extends StatelessWidget {
         ?sliverHeader,
         SliverDataList<Novel>(
           source: source,
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           itemBuilder: (context, novel, index) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: UserNovelCard(novel: novel),
+            return ContentColumn(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: UserNovelCard(novel: novel),
+              ),
             );
           },
         ),

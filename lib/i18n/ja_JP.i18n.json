@@ -1,10 +1,12 @@
 {
-  "nativeWindow": {"minimize":"最小化","maximize":"最大化","restore":"元に戻す","close":"閉じる"},
+  "nativeWindow": {"minimize":"最小化","maximize":"最大化","restore":"元に戻す","close":"閉じる","illust":"イラスト","manga":"マンガ","novel":"小説","workFallback":"$type：$id","workTitle":"$type：$id · $title","relatedTitle":"関連作品 · $title","user":"ユーザー","userFallback":"ユーザー：$id","viewerTitle":"$title · $page/$total"},
   "discover": {
     "searchHint": "Pixiv を検索",
     "history": "検索履歴",
     "viewAll": "すべて見る",
-    "clearHistory": "履歴を削除"
+    "clearHistory": "履歴を削除",
+    "deleteHistoryItem": "この検索履歴を削除",
+    "emptyHistory": "検索履歴がここに表示されます"
   },
   "app": {
     "title": "freepiv"
@@ -16,9 +18,16 @@
     "newest": "最新",
     "ranking": "ランキング",
     "me": "自分",
-    "settings": "設定"
+    "settings": "設定",
+    "more": "その他",
+    "expand": "ナビゲーションを展開",
+    "collapse": "ナビゲーションを折りたたむ",
+    "downloads": "ダウンロード",
+    "about": "アプリ情報"
   },
+  "errors": {"generic": "読み込めませんでした。もう一度お試しください。", "connection": "接続を確認して、もう一度お試しください。", "session": "セッションが切れました。再度ログインしてください。", "forbidden": "このコンテンツへのアクセス権がありません。", "missing": "このコンテンツは利用できません。"},
   "common": {
+    "viewLog": "ログを表示",
     "apply": "適用",
     "reset": "リセット",
     "discover": "見つける",
@@ -33,7 +42,10 @@
     "notFound": "見つかりません",
     "copy": "$labelをコピー",
     "labelValue": "$label：$value",
-    "errorWithCause": "$message：$cause"
+    "errorWithCause": "$message：$cause",
+    "errorDetails": "エラーの詳細",
+    "copyDetails": "詳細をコピー",
+    "detailsCopied": "エラーの詳細をコピーしました"
   },
   "refresh": {
     "pullToRefresh": "引っ張って更新",
@@ -71,10 +83,48 @@
   },
   "settings": {
     "theme": {
-      "title": "テーマ",
+      "title": "外観",
+      "displayMode": "表示モード",
+      "tone": "色調",
+      "neutral": "ニュートラル",
+      "cool": "クール",
+      "warm": "ウォーム",
+      "systemNeutralHint": "システム設定ではニュートラルを使用します",
+      "lightAccent": "ライトのアクセント色",
+      "darkAccent": "ダークのアクセント色",
+      "systemEditingLight": "現在、システムのライト用アクセント色を編集しています",
+      "systemEditingDark": "現在、システムのダーク用アクセント色を編集しています",
+      "presetPink": "標準のピンク",
+      "presetBlue": "ブルー",
+      "presetTeal": "ティール",
+      "presetViolet": "バイオレット",
+      "presetAmber": "アンバー",
+      "presetOrange": "オレンジ",
+      "custom": "カスタム",
+      "defaultAccent": "標準のピンク",
+      "restoreDefault": "標準のピンクに戻す",
+      "editLightAccent": "ライトのカスタム色",
+      "editDarkAccent": "ダークのカスタム色",
+      "hue": "色相",
+      "saturation": "彩度",
+      "value": "明度",
+      "hex": "HEX カラー",
+      "invalidHex": "6桁のHEXカラーを入力してください",
+      "preview": "プレビュー",
+      "previewButton": "ボタン",
+      "rejectedLight": "この色はライト背景に近すぎます。別の色を選んでください。",
+      "rejectedDark": "この色はダーク背景に近すぎます。別の色を選んでください。",
+      "weakContrast": "一部の背景ではこの色が見分けにくい場合があります。",
+      "applyAnyway": "このまま適用",
+      "useDefault": "標準のピンクを使用",
+      "saving": "保存中…",
+      "saveFailed": "外観を保存できませんでした。再試行してください。",
+      "unsaved": "外観の変更はまだ保存されていません。",
       "system": "自動",
       "light": "ライト",
-      "dark": "ダーク"
+      "dark": "ダーク",
+      "reduceTransparency": "透明度を下げる",
+      "reduceTransparencyHint": "ぼかしを使わず単色で表示します"
     },
     "language": {
       "title": "言語",
@@ -134,7 +184,10 @@
       "syncFailed": "ダウンロード状態の同期に失敗しました",
       "actionFailed": "ダウンロード操作に失敗しました",
       "expand": "展開",
-      "collapse": "折りたたむ"
+      "collapse": "折りたたむ",
+      "viewAll": "すべてのダウンロードを見る",
+      "badgeFailures": "失敗したダウンロード：$count",
+      "badgeActive": "進行中のダウンロード：$count"
     },
     "proxy": {
       "title": "ネットワークプロキシ",
@@ -154,6 +207,7 @@
       "helper": "IP とポートを分けて入力してください。例: 127.0.0.1 と 7890。",
       "save": "保存",
       "saved": "プロキシ設定を保存しました",
+      "saveFailed": "プロキシ設定を保存できませんでした",
       "required": "オンにする前に IP とポートを入力してください。",
       "invalid": "有効な IP とポートを入力してください。",
       "hostRequired": "IP を入力してください。",
@@ -176,15 +230,14 @@
     }
   },
   "me": {
+    "profile": "プロフィール",
     "openProfile": "プロフィールを開く",
     "following": "フォロー中",
     "followers": "フォロワー",
     "emptyFollowing": "フォロー中のユーザーはいません",
     "emptyFollowers": "フォロワーはいません",
     "about": "このアプリについて",
-    "aboutSubtitle": "バージョン、更新、プロジェクトリンク",
-    "settings": "設定",
-    "settingsSubtitle": "テーマ、言語、画像、ダウンロード"
+    "settings": "設定"
   },
   "about": {
     "title": "このアプリについて",
@@ -243,6 +296,7 @@
       "dayR18Ai": "AI生成 R-18",
       "week": "ウィークリー",
       "weekR18": "ウィークリー R-18",
+      "weekR18G": "ウィークリー R-18G",
       "weekOriginal": "オリジナル",
       "weekRookie": "ルーキー",
       "month": "マンスリー"
@@ -302,6 +356,7 @@
     }
   },
   "user": {
+    "noPublicWorks": "公開作品はありません",
     "tabs": {
       "illustrations": "イラスト",
       "manga": "マンガ",
@@ -382,23 +437,30 @@
     "contextMenu": {
       "download": "ダウンロード",
       "downloadAll": "すべてダウンロード",
-      "copyImage": "画像をコピーする"
+      "copyImage": "画像をコピーする",
+      "copyLink": "作品リンクをコピー",
+      "openOriginal": "Pixiv で開く"
     },
     "imageLabels": {
       "original": "オリジナル画像",
-      "large": "大きい画像"
+      "large": "大きい画像",
+      "image": "画像"
     },
     "toast": {
-      "downloadStarted": "画像をダウンロードしています",
       "downloadAllQueued": "$count 枚の画像をダウンロードキューに追加しました",
-      "downloadComplete": "ダウンロード完了：$path",
+      "downloadComplete": "$name を保存しました",
       "downloadFailed": "ダウンロードに失敗しました",
       "copying": "$labelをコピーしています",
       "copied": "$labelをコピーしました",
       "copiedValue": "$labelをコピーしました：$value",
-      "copyFailed": "$labelのコピーに失敗しました"
+      "copyFailed": "$labelのコピーに失敗しました",
+      "openFailed": "Pixiv で作品を開けませんでした",
+      "linkCopied": "リンクをコピーしました",
+      "linkCopyFailed": "リンクをコピーできませんでした",
+      "alreadyDownloading": "このページはすでにダウンロード待ちです"
     },
     "tooltip": {
+      "play": "アニメーションを再生",
       "previousImage": "前の画像",
       "nextImage": "次の画像",
       "backToDetail": "画像詳細に戻る",
@@ -431,7 +493,9 @@
     },
     "tags": {
       "none": "タグはありません",
-      "tag": "タグ"
+      "tag": "タグ",
+      "showMore": "残り $count 件のタグを表示",
+      "showLess": "タグを閉じる"
     },
     "comments": {
       "failed": "コメントを読み込めませんでした",
@@ -439,6 +503,10 @@
       "moreAvailable": "さらにコメントがあります",
       "hasReplies": "返信があります",
       "open": "コメントを開く",
+      "discardDraftTitle": "コメントを閉じますか？",
+      "discardDraftMessage": "送信していないコメントは失われます。",
+      "continueEditing": "編集を続ける",
+      "discardDraft": "下書きを破棄",
       "reply": "返信",
       "replyingTo": "$name に返信中",
       "loadReplies": "返信を読み込む",
@@ -446,6 +514,7 @@
       "repliesFailed": "返信を読み込めませんでした",
       "sendFailed": "コメントの送信に失敗しました",
       "delete": "削除",
+      "deleteConfirm": "このコメントを削除しますか？",
       "deleteFailed": "コメントの削除に失敗しました",
       "inputHint": "コメントを書く",
       "replyInputHint": "$name に返信",
@@ -468,6 +537,7 @@
       "series": "シリーズ",
       "content": "本文",
       "startReading": "読み始める",
+      "continueReading": "続きを読む",
       "totalChars": "全 $count 文字",
       "paragraphCount": "$count 段落",
       "segmentCount": "$count ページ"
@@ -478,6 +548,8 @@
       "chapters": "章",
       "settings": "読書設定",
       "emptyBody": "本文がありません",
+      "embeddedImageUnavailable": "画像を表示できません",
+      "openEmbeddedWork": "関連作品を開く",
       "totalChars": "全 $count 文字",
       "pagePosition": "$current / $total ページ",
       "pageTotal": "$total ページ",
@@ -500,7 +572,7 @@
     "tooltipFollow": "ユーザーをフォロー",
     "tooltipUnfollow": "フォロー解除",
     "followed": "フォロー中",
-    "notFollowed": "未フォロー"
+    "follow": "フォロー"
   },
   "richText": {
     "twitterUser": "Twitter：$username",
@@ -512,6 +584,7 @@
     "updateSession": "Cookie を更新",
     "title": "FANBOX",
     "home": "フォロー中の投稿",
+    "feedGroup": "フィード",
     "supporting": "支援中の投稿",
     "following": "フォロー中",
     "recommended": "クリエイターを探す",

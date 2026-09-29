@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:freepiv/app/app.dart';
 import 'package:freepiv/app_links/app_links.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
@@ -16,5 +18,9 @@ Future<void> main() async {
   unawaited(UpdaterService.checkOnAppStart());
   PaintingBinding.instance.imageCache.maximumSize = 300;
   PaintingBinding.instance.imageCache.maximumSizeBytes = 512 << 20;
+  // The bundled Noto Sans CJK subsets are distributed under the SIL OFL.
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks(const ['Noto Sans SC', 'Noto Sans JP'], await rootBundle.loadString('assets/fonts/OFL-NotoSansCJK.txt'));
+  });
   runApp(const FreepivApp());
 }

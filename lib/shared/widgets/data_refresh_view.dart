@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/shared/widgets/refresh_indicator.dart';
 import 'package:pull_to_refresh_notification/pull_to_refresh_notification.dart';
 
@@ -118,7 +119,7 @@ class _DataRefreshViewState extends State<DataRefreshView> with _DataRefreshCall
     }
 
     return PullToRefreshNotification(
-      color: Theme.of(context).colorScheme.primary,
+      color: FreepivThemeTokens.of(context).textPrimary,
       maxDragOffset: DataRefreshSliverHeader.maxDragOffset,
       refreshOffset: DataRefreshSliverHeader.refreshOffset,
       reachToRefreshOffset: DataRefreshSliverHeader.reachToRefreshOffset,
@@ -164,7 +165,7 @@ class _DataNestedRefreshViewState extends State<DataNestedRefreshView> with _Dat
     }
 
     return PullToRefreshNotification(
-      color: Theme.of(context).colorScheme.primary,
+      color: FreepivThemeTokens.of(context).textPrimary,
       maxDragOffset: DataRefreshSliverHeader.maxDragOffset,
       refreshOffset: DataRefreshSliverHeader.refreshOffset,
       reachToRefreshOffset: DataRefreshSliverHeader.reachToRefreshOffset,

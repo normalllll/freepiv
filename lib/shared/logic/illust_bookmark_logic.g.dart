@@ -20,7 +20,7 @@ final class IllustBookmarkProvider
   }) : super(
          retry: null,
          name: r'illustBookmarkProvider',
-         isAutoDispose: false,
+         isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
@@ -58,7 +58,7 @@ final class IllustBookmarkProvider
   }
 }
 
-String _$illustBookmarkHash() => r'7408379ee47059b4eb8cfab04cda31dc3ed21b5e';
+String _$illustBookmarkHash() => r'87caf71fbaa7b6f8736cf978fc1ad003a78c5728';
 
 final class IllustBookmarkFamily extends $Family
     with
@@ -75,7 +75,7 @@ final class IllustBookmarkFamily extends $Family
         name: r'illustBookmarkProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
-        isAutoDispose: false,
+        isAutoDispose: true,
       );
 
   IllustBookmarkProvider call(IllustBookmarkArgs args) =>

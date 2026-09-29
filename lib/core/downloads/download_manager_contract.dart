@@ -12,8 +12,7 @@ abstract interface class DownloadManager {
   Future<void> refreshQueue();
 
   Future<DownloadedFile> download({
-    required int illustId,
-    required int pageIndex,
+    required DownloadOrigin origin,
     required Uri url,
     String? filename,
     DownloadNetworkOptions networkOptions = const DownloadNetworkOptions(),
@@ -23,8 +22,7 @@ abstract interface class DownloadManager {
   });
 
   Future<DownloadedFile> saveBytes({
-    required int illustId,
-    required int pageIndex,
+    required DownloadOrigin origin,
     required Uint8List bytes,
     required Uri sourceUrl,
     String? filename,

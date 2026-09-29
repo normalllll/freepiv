@@ -1,4 +1,6 @@
+import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/widgets/energetic_card.dart';
 import 'package:freepiv/shared/widgets/waterfall_grid.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -12,13 +14,14 @@ class IllustWaterfallSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
     return IgnorePointer(
       child: WaterfallGrid<double>(
-        items: _ratios,
+        items: _skeletonRatios(size.width, size.height, AppMetrics.gridExtent),
         physics: physics,
         sliverHeader: sliverHeader,
         itemBuilder: (context, ratio, index) {
-          return _IllustWaterfallSkeletonCard(aspectRatio: ratio);
+          return IllustPreviewerSkeleton(aspectRatio: ratio);
         },
       ),
     );
@@ -27,60 +30,80 @@ class IllustWaterfallSkeleton extends StatelessWidget {
 
 class SliverIllustWaterfallSkeleton extends StatelessWidget {
   const SliverIllustWaterfallSkeleton({
-    this.padding = const EdgeInsets.all(12),
-    this.maxCrossAxisExtent = 240,
-    this.crossAxisSpacing = 8,
-    this.mainAxisSpacing = 8,
+    this.padding,
+    this.preferredTileWidth = AppMetrics.gridExtent,
+    this.crossAxisSpacing = AppMetrics.gridGap,
+    this.mainAxisSpacing = AppMetrics.gridGap,
     super.key,
   });
 
-  final EdgeInsets padding;
-  final double maxCrossAxisExtent;
+  final EdgeInsets? padding;
+  final double preferredTileWidth;
   final double crossAxisSpacing;
   final double mainAxisSpacing;
 
   @override
   Widget build(BuildContext context) {
-    return SliverWaterfallGrid<double>(
-      items: _ratios,
-      padding: padding,
-      maxCrossAxisExtent: maxCrossAxisExtent,
-      crossAxisSpacing: crossAxisSpacing,
-      mainAxisSpacing: mainAxisSpacing,
-      itemBuilder: (context, ratio, index) {
-        return _IllustWaterfallSkeletonCard(aspectRatio: ratio);
-      },
+    return SliverLayoutBuilder(
+      builder: (context, constraints) => SliverWaterfallGrid<double>(
+        items: _skeletonRatios(constraints.crossAxisExtent, constraints.viewportMainAxisExtent, preferredTileWidth),
+        padding: padding,
+        preferredTileWidth: preferredTileWidth,
+        crossAxisSpacing: crossAxisSpacing,
+        mainAxisSpacing: mainAxisSpacing,
+        itemBuilder: (context, ratio, index) {
+          return IllustPreviewerSkeleton(aspectRatio: ratio);
+        },
+      ),
     );
   }
 }
 
-class _IllustWaterfallSkeletonCard extends StatelessWidget {
-  const _IllustWaterfallSkeletonCard({required this.aspectRatio});
+/// Enough placeholder tiles to run past the bottom of the viewport at any
+/// window size, so a maximized window never shows a short skeleton that then
+/// grows when the real works arrive. Overestimates on purpose: tiles below
+/// the viewport are never built.
+List<double> _skeletonRatios(double width, double viewportHeight, double preferredTileWidth) {
+  const footerHeight = 64.0;
+  const widestRatio = 1.58;
+  final columns = (width / preferredTileWidth).ceil() + 1;
+  final shortestTile = width / columns / widestRatio + footerHeight;
+  final rows = (viewportHeight / shortestTile).ceil() + 1;
+  final count = (columns * rows).clamp(_ratios.length, 160);
+  return [for (var index = 0; index < count; index++) _ratios[index % _ratios.length]];
+}
 
+class IllustPreviewerSkeleton extends StatelessWidget {
+  const IllustPreviewerSkeleton({required this.aspectRatio, super.key});
   final double aspectRatio;
-
   @override
-  Widget build(BuildContext context) {
-    return Skeletonizer.zone(
-      child: DecoratedBox(
-        decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(8)),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(
-                aspectRatio: aspectRatio,
-                child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(6)),
-              ),
-              const SizedBox(height: 10),
-              const Bone.text(width: double.infinity),
-              const SizedBox(height: 7),
-              const Bone.text(width: 96),
-            ],
+  Widget build(BuildContext context) => Skeletonizer.zone(
+    child: EnergeticCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AspectRatio(
+            aspectRatio: aspectRatio,
+            child: const Bone(
+              width: double.infinity,
+              height: double.infinity,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(AppMetrics.controlRadius)),
+            ),
           ),
-        ),
+          const Padding(
+            padding: AppMetrics.artworkFooterPadding,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Bone.text(), SizedBox(height: 4), Bone.text(width: 96)]),
+                ),
+                SizedBox(width: 8),
+                Bone.circle(size: AppMetrics.controlHeight),
+              ],
+            ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }

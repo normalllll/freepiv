@@ -34,6 +34,17 @@ abstract class DataListSource<T> extends LoadingMoreBase<T> implements Listenabl
 
   Object? get lastError => _lastError;
 
+  /// The full-page state a list view shows: the first load's skeleton (also
+  /// before the first request has been issued, so a page never renders an
+  /// empty list for a frame), a first-load error, a confirmed empty list,
+  /// otherwise the items (with paging and refresh handled in place).
+  LoadPhase get phase => switch (this) {
+    _ when !initialized && lastError != null => LoadPhase.error,
+    _ when !initialized && isEmpty => LoadPhase.loading,
+    _ when initialized && isEmpty => LoadPhase.empty,
+    _ => LoadPhase.content,
+  };
+
   @override
   bool get hasMore => !_initialized || _hasMore;
 
@@ -200,3 +211,5 @@ abstract class DataListSource<T> extends LoadingMoreBase<T> implements Listenabl
 
   Future<List<T>> nextList();
 }
+
+enum LoadPhase { loading, error, empty, content }

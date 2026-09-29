@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/shared/widgets/search_input.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_autocomplete_session.dart';
@@ -60,7 +61,7 @@ class SearchInputSurface extends StatelessWidget {
       hintText: context.t.discover.searchHint,
       onSubmitted: onSubmitted,
       onClear: session.clearAll,
-      actions: [if (showFilters) SearchFilterButton(type: type, allowTypeSelection: false, compact: true)],
+      actions: [if (showFilters && type != SearchType.user) SearchFilterButton(type: type, allowTypeSelection: false, compact: true)],
       field: HighlightTextField(
         autofocus: autofocus,
         controller: session.controller,
@@ -78,11 +79,11 @@ class SearchInputSurface extends StatelessWidget {
 }
 
 List<HighlightRule> searchHighlightRules(BuildContext context) {
-  final colorScheme = Theme.of(context).colorScheme;
+  final tokens = FreepivThemeTokens.of(context);
   return [
     HighlightRule(
       pattern: RegExp(r'^\S+$'),
-      style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w700),
+      style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.w700),
     ),
   ];
 }

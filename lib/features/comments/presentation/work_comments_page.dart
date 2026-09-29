@@ -1,16 +1,27 @@
+import 'dart:async';
+
+import 'package:freepiv/shared/layout/fp_collapsing_header.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/ui/app_dialog.dart';
+import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/shared/layout/fp_page_header.dart';
 import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/comments/presentation/widgets/comment_input_bar.dart';
 import 'package:freepiv/features/comments/presentation/widgets/comment_tile.dart';
+import 'package:freepiv/features/comments/presentation/widgets/comment_timeline_lines.dart';
+import 'package:freepiv/features/comments/presentation/widgets/comments_skeleton.dart';
+import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
+import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
-class WorkCommentsPage extends StatefulWidget {
+class WorkCommentsPage extends ConsumerStatefulWidget {
   const WorkCommentsPage({required this.workType, required this.workId, this.totalComments, super.key});
 
   final CommentWorkType workType;
@@ -18,16 +29,20 @@ class WorkCommentsPage extends StatefulWidget {
   final int? totalComments;
 
   @override
-  State<WorkCommentsPage> createState() => _WorkCommentsPageState();
+  ConsumerState<WorkCommentsPage> createState() => _WorkCommentsPageState();
 }
 
-class _WorkCommentsPageState extends State<WorkCommentsPage> {
+class _WorkCommentsPageState extends ConsumerState<WorkCommentsPage> {
   late final WorkCommentsListSource _source = WorkCommentsListSource(workType: widget.workType, workId: widget.workId);
   late final Future<PixivCommentAssets> _assetsFuture = PixivCommentAssets.load();
 
   final Map<int, CommentRepliesListSource> _replySources = {};
   final Set<int> _deletingCommentIds = {};
+  final Set<int> _localReplyParentIds = {};
   Comment? _replyingTo;
+  bool _hasDraft = false;
+  bool _allowPop = false;
+  bool _confirmingDiscard = false;
 
   @override
   void initState() {
@@ -46,44 +61,93 @@ class _WorkCommentsPageState extends State<WorkCommentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool shouldUseDesktopShell) {
-        final canPost = widget.workType.supportsPosting;
-        final currentUserId = int.tryParse(pixivAccountNotifier.value?.user.id ?? '');
-        final title = _title(context);
-
-        return FutureBuilder<PixivCommentAssets>(
-          future: _assetsFuture,
-          builder: (context, snapshot) {
-            final assets = snapshot.data ?? PixivCommentAssets.empty;
-            final commentsView = _CommentsRefreshView(
-              source: _source,
-              assets: assets,
-              workType: widget.workType,
-              repliesSourceBuilder: _replySourceFor,
-              onRefresh: () => _source.refresh(_source.isEmpty),
-              onReply: canPost ? _setReplyingTo : null,
-              onDelete: _deleteComment,
-              currentUserId: currentUserId,
-              isDeletingComment: _isDeletingComment,
-            );
-            final inputBar = canPost
-                ? CommentInputBar(assets: assets, replyingTo: _replyingTo, onCancelReply: _clearReplyingTo, onSubmit: _submitComment)
-                : null;
-
-            if (shouldUseDesktopShell) {
-              return _DesktopCommentsScaffold(title: title, inputBar: inputBar, child: commentsView);
-            }
-
-            return Scaffold(
-              appBar: AppBar(title: Text(title)),
-              body: commentsView,
-              bottomNavigationBar: inputBar,
-            );
-          },
-        );
+    return PopScope(
+      canPop: !_hasDraft || _allowPop,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _hasDraft) _confirmDiscard();
       },
+      child: AutoScaffold(
+        builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+          final canPost = widget.workType.supportsPosting;
+          final currentUserId = int.tryParse(pixivAccountNotifier.value?.user.id ?? '');
+          final title = _title(context);
+
+          return FutureBuilder<PixivCommentAssets>(
+            future: _assetsFuture,
+            builder: (context, snapshot) {
+              final assets = snapshot.data ?? PixivCommentAssets.empty;
+              final commentsView = _CommentsRefreshView(
+                source: _source,
+                assets: assets,
+                workType: widget.workType,
+                repliesSourceBuilder: _replySourceFor,
+                onRefresh: () => _source.refresh(_source.isEmpty),
+                onReply: canPost ? _setReplyingTo : null,
+                onDelete: _deleteComment,
+                currentUserId: currentUserId,
+                isDeletingComment: _isDeletingComment,
+                hasLocalReply: (comment) => _localReplyParentIds.contains(comment.id),
+              );
+              final inputBar = canPost
+                  ? CommentInputBar(
+                      assets: assets,
+                      replyingTo: _replyingTo,
+                      onCancelReply: _clearReplyingTo,
+                      onDraftChanged: (hasDraft) {
+                        if (mounted && hasDraft != _hasDraft) setState(() => _hasDraft = hasDraft);
+                      },
+                      onSubmit: _submitComment,
+                    )
+                  : null;
+
+              if (useHorizontalLayout) {
+                return _DesktopCommentsScaffold(title: title, inputBar: inputBar, child: commentsView);
+              }
+
+              return Scaffold(
+                body: FpCollapsingHeader(
+                  header: FpPageHeader(title: Text(title)),
+                  child: commentsView,
+                ),
+                bottomNavigationBar: inputBar,
+              );
+            },
+          );
+        },
+      ),
     );
+  }
+
+  Future<void> _confirmDiscard() async {
+    if (_confirmingDiscard) return;
+    _confirmingDiscard = true;
+    final discard = await showAppDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(dialogContext.t.illust.comments.discardDraftTitle),
+        content: Text(dialogContext.t.illust.comments.discardDraftMessage),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(dialogContext.t.illust.comments.continueEditing)),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text(dialogContext.t.illust.comments.discardDraft)),
+        ],
+      ),
+    );
+    _confirmingDiscard = false;
+    if (!mounted || discard != true) return;
+    setState(() => _allowPop = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Navigator.of(context).maybePop();
+    });
+  }
+
+  void _syncDetailComments() {
+    switch (widget.workType) {
+      case CommentWorkType.illust:
+        ref.invalidate(illustCommentsProvider(widget.workId));
+      case CommentWorkType.novel:
+        ref.invalidate(novelCommentsProvider(widget.workId));
+    }
   }
 
   String _title(BuildContext context) {
@@ -112,13 +176,21 @@ class _WorkCommentsPageState extends State<WorkCommentsPage> {
 
     try {
       final added = await _source.addComment(comment: text, stampId: stampId, parentCommentId: parentComment?.id);
+      if (!mounted) return true;
       if (parentComment != null) {
-        _replySourceFor(parentComment).prependReply(added);
+        final repliesSource = _replySourceFor(parentComment);
+        if (repliesSource.initialized) {
+          repliesSource.prependReply(added);
+        } else {
+          unawaited(repliesSource.refresh(true));
+        }
       }
+      _syncDetailComments();
 
-      if (mounted) {
-        setState(() => _replyingTo = null);
-      }
+      setState(() {
+        _replyingTo = null;
+        if (parentComment != null) _localReplyParentIds.add(parentComment.id);
+      });
 
       return true;
     } catch (error) {
@@ -136,6 +208,20 @@ class _WorkCommentsPageState extends State<WorkCommentsPage> {
       return;
     }
 
+    final confirmed = await showAppDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(dialogContext.t.illust.comments.delete),
+        content: Text(dialogContext.t.illust.comments.deleteConfirm),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(dialogContext.t.common.cancel)),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text(dialogContext.t.illust.comments.delete)),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true) return;
+
     setState(() => _deletingCommentIds.add(comment.id));
     try {
       if (repliesSource == null) {
@@ -143,6 +229,8 @@ class _WorkCommentsPageState extends State<WorkCommentsPage> {
       } else {
         await repliesSource.deleteComment(comment);
       }
+      if (!mounted) return;
+      _syncDetailComments();
 
       if (mounted && _replyingTo?.id == comment.id) {
         setState(() => _replyingTo = null);
@@ -160,8 +248,6 @@ class _WorkCommentsPageState extends State<WorkCommentsPage> {
 class _DesktopCommentsScaffold extends StatelessWidget {
   const _DesktopCommentsScaffold({required this.title, required this.child, required this.inputBar});
 
-  static const _maxContentWidth = 840.0;
-
   final String title;
   final Widget child;
   final Widget? inputBar;
@@ -173,20 +259,9 @@ class _DesktopCommentsScaffold extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: _maxContentWidth),
-                child: _DesktopCommentsHeader(title: title),
-              ),
-            ),
+            ContentColumn(child: _DesktopCommentsHeader(title: title)),
             Expanded(child: child),
-            if (inputBar case final input?)
-              Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: _maxContentWidth),
-                  child: input,
-                ),
-              ),
+            ?inputBar,
           ],
         ),
       ),
@@ -201,20 +276,13 @@ class _DesktopCommentsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
-        child: Text(
-          title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 18, 0, 14),
+      child: Text(
+        title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -231,6 +299,7 @@ class _CommentsRefreshView extends StatelessWidget {
     required this.onDelete,
     required this.currentUserId,
     required this.isDeletingComment,
+    required this.hasLocalReply,
   });
 
   final WorkCommentsListSource source;
@@ -242,6 +311,7 @@ class _CommentsRefreshView extends StatelessWidget {
   final CommentDeleteCallback onDelete;
   final int? currentUserId;
   final bool Function(Comment comment) isDeletingComment;
+  final bool Function(Comment comment) hasLocalReply;
 
   @override
   Widget build(BuildContext context) {
@@ -262,6 +332,7 @@ class _CommentsRefreshView extends StatelessWidget {
               onDelete: onDelete,
               currentUserId: currentUserId,
               isDeletingComment: isDeletingComment,
+              hasLocalReply: hasLocalReply,
             );
           },
         );
@@ -282,6 +353,7 @@ class _CommentsBody extends StatelessWidget {
     required this.onDelete,
     required this.currentUserId,
     required this.isDeletingComment,
+    required this.hasLocalReply,
   });
 
   final WorkCommentsListSource source;
@@ -294,20 +366,23 @@ class _CommentsBody extends StatelessWidget {
   final CommentDeleteCallback onDelete;
   final int? currentUserId;
   final bool Function(Comment comment) isDeletingComment;
+  final bool Function(Comment comment) hasLocalReply;
 
   @override
-  Widget build(BuildContext context) {
-    final lastError = source.lastError;
-    final horizontalInset = (MediaQuery.sizeOf(context).width - 840).clamp(0.0, double.infinity) / 2 + 16;
+  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
-    if (!source.initialized && source.refreshing && source.isEmpty) {
+  Widget _buildPhase(BuildContext context) {
+    final lastError = source.lastError;
+
+    if (source.phase == LoadPhase.loading) {
       return DataLoadingCustomScrollView(
         physics: physics,
         slivers: [
           ?locators.sliverHeader,
           SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalInset, vertical: 16),
-            sliver: SliverToBoxAdapter(child: CommentsLoadingSkeleton(itemCount: 6)),
+            // Same insets as the loaded list below.
+            padding: const EdgeInsets.only(top: 12, bottom: 24),
+            sliver: SliverToBoxAdapter(child: ContentColumn(child: CommentsLoadingSkeleton(itemCount: 6, showActions: true))),
           ),
         ],
       );
@@ -335,19 +410,24 @@ class _CommentsBody extends StatelessWidget {
         ?locators.sliverHeader,
         SliverDataList<Comment>(
           source: source,
-          padding: EdgeInsets.fromLTRB(horizontalInset, 12, horizontalInset, 24),
+          padding: const EdgeInsets.only(top: 12, bottom: 24),
           itemBuilder: (context, comment, index) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: PixivCommentTile(
-                comment: comment,
-                assets: assets,
-                workType: workType,
-                repliesSourceBuilder: repliesSourceBuilder,
-                onReply: onReply,
-                onDelete: onDelete,
-                currentUserId: currentUserId,
-                isDeletingComment: isDeletingComment,
+            return ContentColumn(
+              child: Column(
+                children: [
+                  PixivCommentTile(
+                    comment: comment,
+                    assets: assets,
+                    workType: workType,
+                    repliesSourceBuilder: repliesSourceBuilder,
+                    onReply: onReply,
+                    onDelete: onDelete,
+                    currentUserId: currentUserId,
+                    isDeletingComment: isDeletingComment,
+                    hasLocalReply: hasLocalReply(comment),
+                  ),
+                  if (index < source.length - 1) const CommentSeparator(),
+                ],
               ),
             );
           },
