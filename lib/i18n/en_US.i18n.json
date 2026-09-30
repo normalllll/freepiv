@@ -575,7 +575,14 @@
       "decrease": "Decrease",
       "increase": "Increase",
       "shortcutsTitle": "Shortcuts",
-      "shortcutsHelp": "Left/Right or A/D turn pages; Up/Down or W/S scroll"
+      "shortcutsHelp": "Left/Right or A/D turn pages; Up/Down or W/S scroll",
+      "volumeKeys": "Use volume keys",
+      "volumeKeysHelp": "Volume down reads forward; volume up reads back.",
+      "autoScroll": "Auto scroll",
+      "startAutoScroll": "Start auto scroll",
+      "pauseAutoScroll": "Pause auto scroll",
+      "autoScrollSpeed": "Scroll speed",
+      "scrollSpeedValue": "$speed px/s"
     }
   },
   "follow": {

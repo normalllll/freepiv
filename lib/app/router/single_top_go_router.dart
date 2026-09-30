@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 /// list, a card of the work already open) never stacks a duplicate of it.
 /// Every push, named or not, goes through [push].
 class SingleTopGoRouter extends GoRouter {
-  SingleTopGoRouter({required RoutingConfig config, super.navigatorKey, super.initialLocation, super.refreshListenable})
+  SingleTopGoRouter({required RoutingConfig config, super.navigatorKey, super.initialLocation, super.refreshListenable, super.observers})
     : super.routingConfig(routingConfig: _Constant(config));
 
   @override

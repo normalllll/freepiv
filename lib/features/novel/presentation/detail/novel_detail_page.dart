@@ -36,6 +36,7 @@ class NovelDetailPage extends ConsumerWidget {
 
     final visibleNovel = detailValue.asData?.value.novel ?? novel;
     final content = detailValue.when(
+      skipLoadingOnRefresh: false,
       data: (detail) => NovelDetailContent(key: ValueKey<String>('novel-detail-content-${detail.novel.id}'), detail: detail),
       loading: () => const NovelDetailSkeletonPage(),
       error: (error, stackTrace) {

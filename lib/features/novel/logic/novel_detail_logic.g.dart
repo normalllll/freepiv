@@ -9,6 +9,47 @@ part of 'novel_detail_logic.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(novelAccountId)
+final novelAccountIdProvider = NovelAccountIdProvider._();
+
+final class NovelAccountIdProvider
+    extends $FunctionalProvider<String?, String?, String?>
+    with $Provider<String?> {
+  NovelAccountIdProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'novelAccountIdProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$novelAccountIdHash();
+
+  @$internal
+  @override
+  $ProviderElement<String?> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  String? create(Ref ref) {
+    return novelAccountId(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$novelAccountIdHash() => r'ec8a2e71a5e35c384f322422411239107833b061';
+
 @ProviderFor(NovelDetail)
 final novelDetailProvider = NovelDetailFamily._();
 
@@ -50,7 +91,7 @@ final class NovelDetailProvider
   }
 }
 
-String _$novelDetailHash() => r'4144a9ffc23f27ea43c68fc1a5f01d41b749b9b0';
+String _$novelDetailHash() => r'dec8c545d4090eb35721b141692892bdb3786705';
 
 final class NovelDetailFamily extends $Family
     with

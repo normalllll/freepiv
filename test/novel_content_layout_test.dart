@@ -1,3 +1,10 @@
+import 'package:freepiv/i18n/strings.g.dart';
+import 'package:flutter/gestures.dart';
+import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
+import 'package:freepiv/core/platform/reader_volume_keys.dart';
+import 'package:freepiv/app/router/reader_route_observer.dart';
+import 'package:freepiv/shared/widgets/interaction_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -184,6 +191,317 @@ void main() {
     expect((tester.getTopLeft(paragraph).dy - before).abs(), lessThan(80));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('chrome overlays full stage without moving the reading anchor', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(_readerHost('Anchor paragraph\n\n${'Reading words ' * 180}'));
+    await tester.pumpAndSettle();
+    final scroll = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView).first).controller!;
+    expect(tester.getSize(find.byType(SingleChildScrollView).first).height, 844);
+    scroll.jumpTo(120);
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Reading settings').hitTestable(), findsOneWidget);
+    final before = tester.getTopLeft(find.text('Anchor paragraph')).dy;
+    await tester.tapAt(const Offset(8, 400));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Reading settings').hitTestable(), findsNothing);
+    expect(tester.getTopLeft(find.text('Anchor paragraph')).dy, before);
+    await tester.tapAt(const Offset(8, 400));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Reading settings').hitTestable(), findsOneWidget);
+    await tester.drag(find.byType(SingleChildScrollView).first, const Offset(0, -100));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Reading settings').hitTestable(), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final kind in [PointerDeviceKind.touch, PointerDeviceKind.mouse]) {
+    testWidgets('single $kind tap on body text toggles chrome without selecting or moving content', (tester) async {
+      const text = 'Click this readable paragraph to show or hide the reading controls.';
+      await tester.pumpWidget(_readerHost(text));
+      await tester.pumpAndSettle();
+      final point = tester.getTopLeft(find.text(text)) + const Offset(20, 12);
+      final before = tester.getTopLeft(find.text(text));
+      await tester.tapAt(point, kind: kind);
+      await tester.pump(kDoubleTapTimeout + const Duration(milliseconds: 1));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Reading settings').hitTestable(), findsNothing);
+      expect(tester.getTopLeft(find.text(text)), before);
+      final selection = tester.state<SelectionAreaState>(find.byType(SelectionArea)).selectableRegion;
+      expect(selection.contextMenuButtonItems.any((item) => item.type == ContextMenuButtonType.copy), false);
+      await tester.tapAt(point, kind: kind);
+      await tester.pump(kDoubleTapTimeout + const Duration(milliseconds: 1));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Reading settings').hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('double click, long press and mouse drag select body text without hiding chrome', (tester) async {
+    const text = 'Select this paragraph using the normal text selection gestures.';
+    await tester.pumpWidget(_readerHost(text));
+    await tester.pumpAndSettle();
+    final point = tester.getTopLeft(find.text(text)) + const Offset(20, 12);
+    final selection = tester.state<SelectionAreaState>(find.byType(SelectionArea)).selectableRegion;
+    await tester.tapAt(point, kind: PointerDeviceKind.mouse);
+    await tester.pump(const Duration(milliseconds: 80));
+    await tester.tapAt(point, kind: PointerDeviceKind.mouse);
+    await tester.pump(kDoubleTapTimeout + const Duration(milliseconds: 1));
+    await tester.pumpAndSettle();
+    expect(selection.contextMenuButtonItems.any((item) => item.type == ContextMenuButtonType.copy), true);
+    expect(find.byTooltip('Reading settings').hitTestable(), findsOneWidget);
+    selection.hideToolbar();
+    selection.clearSelection();
+    await tester.pumpAndSettle();
+    await tester.longPressAt(point);
+    await tester.pump(kDoubleTapTimeout + const Duration(milliseconds: 1));
+    await tester.pumpAndSettle();
+    expect(selection.contextMenuButtonItems.any((item) => item.type == ContextMenuButtonType.copy), true);
+    expect(find.byTooltip('Reading settings').hitTestable(), findsOneWidget);
+    selection.hideToolbar();
+    selection.clearSelection();
+    await tester.pumpAndSettle();
+    final drag = await tester.startGesture(point, kind: PointerDeviceKind.mouse);
+    await drag.moveBy(const Offset(120, 0));
+    await tester.pump();
+    await drag.up();
+    await tester.pump(kDoubleTapTimeout + const Duration(milliseconds: 1));
+    await tester.pumpAndSettle();
+    expect(selection.contextMenuButtonItems.any((item) => item.type == ContextMenuButtonType.copy), true);
+    expect(find.byTooltip('Reading settings').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('reader back control uses shell ownership and mobile back action', (tester) async {
+    final reselection = ValueNotifier<({AppRoute route, int sequence})>((route: AppRoute.home, sequence: 0));
+    addTearDown(reselection.dispose);
+    var returned = 0;
+    Widget shellHost(bool desktop) => ProviderScope(
+      child: MaterialApp(
+        theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en', 'US')),
+        home: ShellNavigationScope(
+          ownsBackControl: desktop,
+          canGoBack: true,
+          goBack: () => returned++,
+          primaryReselection: reselection,
+          child: NovelReaderContent(
+            detail: NovelDetailData(novel: _novel, webviewNovel: _webviewNovel),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpWidget(shellHost(true));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.arrow_back), findsNothing);
+    await tester.pumpWidget(shellHost(false));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    expect(returned, 1);
+  });
+
+  testWidgets('visible auto scroll switch continues as soon as a scrollable segment reaches its bottom', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(_readerHost('Long reading ${'words ' * 180}[newpage]Final section.'));
+    await tester.pumpAndSettle();
+    expect(find.text('Auto scroll'), findsOneWidget);
+    final toggle = find.byType(AppSwitch);
+    expect(tester.widget<AppSwitch>(toggle).value, false);
+    final scroll = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView).first).controller!;
+    expect(scroll.position.maxScrollExtent, greaterThan(0));
+    await tester.tap(toggle);
+    await tester.pump();
+    expect(tester.widget<AppSwitch>(toggle).value, true);
+    scroll.jumpTo(scroll.position.maxScrollExtent);
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(find.text('2 / 2 pages'), findsOneWidget);
+    await tester.pump();
+    expect(tester.widget<AppSwitch>(toggle).value, false);
+    expect(find.text('Final section.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('auto scroll label and switch remain reachable in every language with enlarged text', (tester) async {
+    for (final (family, asset) in [('Noto Sans SC', 'assets/fonts/NotoSansSC-Subset.ttf'), ('Noto Sans JP', 'assets/fonts/NotoSansJP-Subset.ttf')]) {
+      await (FontLoader(family)..addFont(rootBundle.load(asset))).load();
+    }
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(() => LocaleSettings.setLocaleSync(AppLocale.enUs));
+    for (final locale in AppLocale.values) {
+      await tester.runAsync(() => LocaleSettings.setLocale(locale));
+      for (final scale in [1.0, 2.0]) {
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              theme: AppTheme.light(platform: TargetPlatform.android, locale: locale.flutterLocale),
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
+                child: child!,
+              ),
+              home: const NovelReaderContent(
+                detail: NovelDetailData(novel: _novel, webviewNovel: _webviewNovel),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text(t.novel.reader.autoScroll).hitTestable(), findsOneWidget, reason: '$locale scale $scale');
+        expect(find.byType(AppSwitch).hitTestable(), findsOneWidget, reason: '$locale scale $scale');
+        expect(tester.takeException(), isNull, reason: '$locale scale $scale');
+      }
+    }
+  });
+
+  testWidgets('automatic scroll starts explicitly and pauses on settings and background', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(_readerHost('Automatic reading ${'words ' * 500}'));
+    await tester.pumpAndSettle();
+    final scroll = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView).first).controller!;
+    final initial = scroll.offset;
+    await tester.pump(const Duration(seconds: 1));
+    expect(scroll.offset, initial);
+    await tester.tap(find.byTooltip('Start auto scroll'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(scroll.offset, greaterThan(initial));
+    await tester.tap(find.byTooltip('Reading settings'));
+    await tester.pumpAndSettle();
+    final paused = scroll.offset;
+    await tester.pump(const Duration(seconds: 1));
+    expect(scroll.offset, paused);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Start auto scroll'), findsOneWidget);
+    await tester.tap(find.byTooltip('Start auto scroll'));
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    final background = scroll.offset;
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump(const Duration(seconds: 1));
+    expect(scroll.offset, background);
+    expect(find.byTooltip('Start auto scroll'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('automatic scroll keeps short segments for a screen of reading time then stops at final end', (tester) async {
+    await tester.pumpWidget(_readerHost('First.[newpage]Second.[newpage]Last.'));
+    await tester.pumpAndSettle();
+    final screenHeight = tester.getSize(find.byType(SingleChildScrollView).first).height;
+    final screenReadingTime = Duration(microseconds: (screenHeight / 36 * Duration.microsecondsPerSecond).ceil());
+    await tester.tap(find.byTooltip('Start auto scroll'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('1 / 3 pages'), findsOneWidget);
+    await tester.pump(screenReadingTime - const Duration(seconds: 1) - const Duration(milliseconds: 1));
+    expect(find.text('1 / 3 pages'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 2));
+    expect(find.text('2 / 3 pages'), findsOneWidget);
+    await tester.pump();
+    await tester.pump(screenReadingTime - const Duration(milliseconds: 1));
+    expect(find.text('2 / 3 pages'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 2));
+    expect(find.text('3 / 3 pages'), findsOneWidget);
+    await tester.pump();
+    expect(find.byTooltip('Start auto scroll'), findsOneWidget);
+    expect(find.text('3 / 3 pages'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('volume capture is default off and suspends for overlays and background', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    const channel = MethodChannel('test/reader-volume-widget');
+    final enabled = <bool>[];
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      enabled.add(call.arguments as bool);
+      return null;
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+    final service = ReaderVolumeKeys(channel: channel, supported: true);
+    await tester.pumpWidget(_readerHost('Volume reading ${'words ' * 180}[newpage]Next segment.', volumeKeys: service, reducedMotion: true));
+    await tester.pumpAndSettle();
+    expect(enabled.last, false);
+    await tester.tap(find.byTooltip('Reading settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(AppSwitchListTile));
+    await tester.pumpAndSettle();
+    expect(enabled.last, false);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(enabled.last, true);
+    final scroll = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView).first).controller!;
+    final before = scroll.offset;
+    await messenger.handlePlatformMessage(channel.name, const StandardMethodCodec().encodeMethodCall(const MethodCall('turn', 1)), (_) {});
+    await tester.pumpAndSettle();
+    expect(scroll.offset, greaterThan(before));
+    expect(find.textContaining('1 /'), findsWidgets);
+    scroll.jumpTo(scroll.position.maxScrollExtent);
+    await tester.pump();
+    await messenger.handlePlatformMessage(channel.name, const StandardMethodCodec().encodeMethodCall(const MethodCall('turn', 1)), (_) {});
+    await tester.pumpAndSettle();
+    expect(find.text('2 / 2 pages'), findsOneWidget);
+    await messenger.handlePlatformMessage(channel.name, const StandardMethodCodec().encodeMethodCall(const MethodCall('turn', -1)), (_) {});
+    await tester.pumpAndSettle();
+    expect(find.text('1 / 2 pages'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    expect(find.byTooltip('Reading settings').hitTestable(), findsNothing);
+    await tester.tapAt(const Offset(8, 400));
+    await tester.pumpAndSettle();
+    final navigator = Navigator.of(tester.element(find.byType(NovelReaderContent)));
+    navigator.push(MaterialPageRoute<void>(builder: (_) => const Scaffold(body: Text('Covering page'))));
+    await tester.pumpAndSettle();
+    expect(enabled.last, false);
+    navigator.pop();
+    await tester.pumpAndSettle();
+    expect(enabled.last, true);
+    final dialog = showDialog<void>(
+      context: tester.element(find.byType(NovelReaderContent)),
+      builder: (_) => const AlertDialog(title: Text('Covering dialog')),
+    );
+    await tester.pumpAndSettle();
+    expect(enabled.last, false);
+    navigator.pop();
+    await dialog;
+    await tester.pumpAndSettle();
+    expect(enabled.last, true);
+    await messenger.handlePlatformMessage(channel.name, const StandardMethodCodec().encodeMethodCall(const MethodCall('focus', false)), (_) {});
+    await tester.pump();
+    expect(enabled.last, false);
+    await messenger.handlePlatformMessage(channel.name, const StandardMethodCodec().encodeMethodCall(const MethodCall('focus', true)), (_) {});
+    await tester.pump();
+    expect(enabled.last, true);
+    await tester.tap(find.byTooltip('Reading settings'));
+    await tester.pumpAndSettle();
+    expect(enabled.last, false);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(enabled.last, true);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    expect(enabled.last, false);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    expect(enabled.last, true);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    expect(enabled.last, false);
+  });
 }
 
 void _noop() {}
@@ -204,4 +522,19 @@ WebviewNovel _webviewWithText(String text) => WebviewNovel(
   replaceableItemIds: const [],
   aiType: 0,
   isOriginal: false,
+);
+
+Widget _readerHost(String text, {ReaderVolumeKeys? volumeKeys, bool reducedMotion = false}) => ProviderScope(
+  child: MaterialApp(
+    navigatorObservers: [readerRootRouteObserver],
+    theme: AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
+    builder: (context, child) => MediaQuery(
+      data: MediaQuery.of(context).copyWith(disableAnimations: reducedMotion),
+      child: child!,
+    ),
+    home: NovelReaderContent(
+      detail: NovelDetailData(novel: _novel, webviewNovel: _webviewWithText(text)),
+      volumeKeys: volumeKeys,
+    ),
+  ),
 );
