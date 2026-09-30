@@ -17,7 +17,7 @@ Browse illustrations and manga, read novels and articles, follow creators, and d
 - **Your library:** Follow creators, bookmark works, and browse your account's collections.
 - **FANBOX:** Browse followed and recommended creators, read posts, view creator plans, and download accessible attachments. Paid posts show their required support tier; access follows your FANBOX account's subscriptions.
 - **pixivision:** Discover articles by category, tag, or keyword, explore popular articles, and open featured works and creators in the app.
-- **Download management:** Track Pixiv and FANBOX tasks in a floating panel, pause and resume downloads, retry failures, and clear completed tasks. FANBOX files are organized in a separate folder.
+- **Download management:** Track Pixiv and FANBOX tasks in a floating panel, cancel downloads, retry failures, and clear completed tasks. FANBOX files are organized in a separate folder.
 - **Desktop and mobile layouts:** Adaptive navigation, mouse-drag scrolling, a custom Windows title bar, themes, and English, Simplified Chinese, Traditional Chinese, and Japanese interfaces.
 
 ## Download and install
