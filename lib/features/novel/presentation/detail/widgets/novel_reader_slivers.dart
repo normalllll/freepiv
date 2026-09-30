@@ -4,6 +4,7 @@ import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_section.dart';
 import 'package:freepiv/features/novel/domain/novel_text_parser.dart';
@@ -105,6 +106,7 @@ class _NovelEmbeddedMedia extends StatelessWidget {
                 AppRoute.originalImageViewer.name,
                 extra: OriginalImageViewerArgs(
                   title: t.novel.detail.images,
+                  source: DownloadSourceScope.of(context),
                   initialIndex: 0,
                   pages: [OriginalImagePage(url: imageUrl, previewUrl: imageUrl, downloadOrigin: DownloadOrigin.ofImageUrl(Uri.parse(imageUrl)))],
                 ),

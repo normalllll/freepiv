@@ -5,6 +5,8 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'models/download_source.dart';
+
 part 'download_database.g.dart';
 
 class DownloadJobs extends Table {
@@ -22,6 +24,21 @@ class DownloadJobs extends Table {
   TextColumn get saveTargetJson => text().withDefault(const Constant('{}'))();
   TextColumn get thumbnailUrl => text().nullable()();
   TextColumn get title => text().nullable()();
+
+  /// The source the file was downloaded from (see DownloadSource): its kind,
+  /// its id within the kind, and its label when downloaded.
+  TextColumn get sourceKind => text()();
+  TextColumn get sourceId => text()();
+  TextColumn get sourceTitle => text().nullable()();
+  TextColumn get sourceSubtitle => text().nullable()();
+  TextColumn get sourceThumbnailUrl => text().nullable()();
+
+  /// The page a source opens where it is not derived from its id.
+  TextColumn get sourceUrl => text().nullable()();
+
+  /// The part of the source the file belongs to, if the source has parts.
+  TextColumn get partId => text().nullable()();
+  TextColumn get partTitle => text().nullable()();
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
 
@@ -54,7 +71,7 @@ class DownloadDatabase extends _$DownloadDatabase {
   DownloadDatabase.withExecutor(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -82,10 +99,45 @@ class DownloadDatabase extends _$DownloadDatabase {
       await migrator.addColumn(downloadJobs, downloadJobs.networkOptionsJson);
       await migrator.addColumn(downloadJobs, downloadJobs.validationJson);
     }
-    if (from < 5) {
-      // The work columns became nullable for content images; rebuilding the
-      // table copies every existing row.
-      await migrator.alterTable(TableMigration(downloadJobs));
+    if (from < 6) {
+      // Rebuilding the table copies every row: the work columns became
+      // nullable for content images (v5), and each row gains its source (v6),
+      // known only for work pages; any other file stands alone.
+      final isWorkPage = downloadJobs.illustId.isNotNull() & downloadJobs.pageIndex.isNotNull();
+      await migrator.alterTable(
+        TableMigration(
+          downloadJobs,
+          newColumns: [
+            downloadJobs.sourceKind,
+            downloadJobs.sourceId,
+            downloadJobs.sourceTitle,
+            downloadJobs.sourceSubtitle,
+            downloadJobs.sourceThumbnailUrl,
+            downloadJobs.sourceUrl,
+            downloadJobs.partId,
+            downloadJobs.partTitle,
+          ],
+          columnTransformer: {
+            downloadJobs.sourceKind: CaseWhenExpression(
+              cases: [CaseWhen(isWorkPage, then: Constant(DownloadSourceKind.artwork.name))],
+              orElse: Constant(DownloadSourceKind.standalone.name),
+            ),
+            downloadJobs.sourceId: CaseWhenExpression(
+              cases: [CaseWhen(isWorkPage, then: downloadJobs.illustId.cast<String>())],
+              orElse: downloadJobs.id,
+            ),
+            downloadJobs.sourceTitle: CaseWhenExpression(
+              cases: [CaseWhen(isWorkPage, then: downloadJobs.title)],
+              orElse: coalesce([downloadJobs.title, downloadJobs.filename]),
+            ),
+            downloadJobs.sourceSubtitle: const Constant<String>(null),
+            downloadJobs.sourceThumbnailUrl: downloadJobs.thumbnailUrl,
+            downloadJobs.sourceUrl: const Constant<String>(null),
+            downloadJobs.partId: const Constant<String>(null),
+            downloadJobs.partTitle: const Constant<String>(null),
+          },
+        ),
+      );
     }
   }
 

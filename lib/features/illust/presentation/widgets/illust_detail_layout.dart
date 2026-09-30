@@ -51,7 +51,7 @@ class DesktopIllustDetailLayout extends StatelessWidget {
           Expanded(
             child: IllustImagePager(
               key: viewerKey,
-              illustId: illust.id,
+              artwork: artworkDownloadSource(illust),
               imagePages: imagePages,
               isUgoira: isUgoira,
               loadedImages: loadedImages,
@@ -73,7 +73,7 @@ class DesktopIllustDetailLayout extends StatelessWidget {
                   illust: illust,
                   onIllustTap: onIllustTap,
                   onShowRelatedWorks: onShowRelatedWorks,
-                  actions: IllustPageActions(illustId: illust.id, pageIndex: pageIndex, imagePages: imagePages, loadedImages: loadedImages, isUgoira: isUgoira),
+                  actions: IllustPageActions(artwork: artworkDownloadSource(illust), pageIndex: pageIndex, imagePages: imagePages, loadedImages: loadedImages, isUgoira: isUgoira),
                 ),
               ),
             ),
@@ -130,7 +130,7 @@ class _MobileIllustDetailLayoutState extends State<MobileIllustDetailLayout> {
     final topInset = MediaQuery.paddingOf(context).top;
     final leading = FpPageHeader.leadingFor(context);
     final actions = IllustPageActions(
-      illustId: widget.illust.id,
+      artwork: artworkDownloadSource(widget.illust),
       pageIndex: widget.pageIndex,
       imagePages: widget.imagePages,
       loadedImages: widget.loadedImages,
@@ -159,7 +159,7 @@ class _MobileIllustDetailLayoutState extends State<MobileIllustDetailLayout> {
                     height: imageHeight,
                     child: IllustImagePager(
                       key: widget.viewerKey,
-                      illustId: widget.illust.id,
+                      artwork: artworkDownloadSource(widget.illust),
                       imagePages: widget.imagePages,
                       isUgoira: widget.isUgoira,
                       loadedImages: widget.loadedImages,

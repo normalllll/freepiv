@@ -12,7 +12,7 @@ sealed class DownloadOrigin {
     if (_workPageImage.firstMatch(url.path) case final match?) {
       return ArtworkPage(illustId: int.parse(match[1]!), pageIndex: int.parse(match[2]!));
     }
-    return ContentImage.of(url);
+    return ContentFile.of(url);
   }
 
   static final _workPageImage = RegExp(r'/img-(?:master|original)/img/(?:\d+/){6}(\d+)_p(\d+)');
@@ -46,17 +46,19 @@ final class ArtworkPage extends DownloadOrigin {
   int get hashCode => Object.hash(illustId, pageIndex);
 }
 
-/// An image shown inside other content (a Pixivision article, a novel) that
-/// is not a Pixiv work page; a task per image address.
-final class ContentImage extends DownloadOrigin {
-  const ContentImage(this.address);
+/// A file shown inside other content (an image in a Pixivision article or a
+/// novel, an image or attachment of a FANBOX post) that is not a Pixiv work
+/// page; a task per file address.
+final class ContentFile extends DownloadOrigin {
+  const ContentFile(this.address);
 
-  /// The image at [url], identified without its query or fragment.
-  ContentImage.of(Uri url) : address = Uri(scheme: url.scheme, host: url.host, port: url.hasPort ? url.port : null, path: url.path);
+  /// The file at [url], identified without its query or fragment.
+  ContentFile.of(Uri url) : address = Uri(scheme: url.scheme, host: url.host, port: url.hasPort ? url.port : null, path: url.path);
 
-  /// The image's address without query or fragment, which identifies it.
+  /// The file's address without query or fragment, which identifies it.
   final Uri address;
 
+  /// Named for the images these tasks first held; existing tasks keep it.
   @override
   String get jobId => 'image_${address.host}${address.path}';
 
@@ -64,7 +66,7 @@ final class ContentImage extends DownloadOrigin {
   String defaultFilename(Uri url) => p.basename(url.path);
 
   @override
-  bool operator ==(Object other) => other is ContentImage && other.jobId == jobId;
+  bool operator ==(Object other) => other is ContentFile && other.jobId == jobId;
 
   @override
   int get hashCode => jobId.hashCode;

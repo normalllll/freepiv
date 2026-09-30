@@ -128,6 +128,92 @@ class $DownloadJobsTable extends DownloadJobs
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _sourceKindMeta = const VerificationMeta(
+    'sourceKind',
+  );
+  @override
+  late final GeneratedColumn<String> sourceKind = GeneratedColumn<String>(
+    'source_kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceIdMeta = const VerificationMeta(
+    'sourceId',
+  );
+  @override
+  late final GeneratedColumn<String> sourceId = GeneratedColumn<String>(
+    'source_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceTitleMeta = const VerificationMeta(
+    'sourceTitle',
+  );
+  @override
+  late final GeneratedColumn<String> sourceTitle = GeneratedColumn<String>(
+    'source_title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceSubtitleMeta = const VerificationMeta(
+    'sourceSubtitle',
+  );
+  @override
+  late final GeneratedColumn<String> sourceSubtitle = GeneratedColumn<String>(
+    'source_subtitle',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceThumbnailUrlMeta =
+      const VerificationMeta('sourceThumbnailUrl');
+  @override
+  late final GeneratedColumn<String> sourceThumbnailUrl =
+      GeneratedColumn<String>(
+        'source_thumbnail_url',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _sourceUrlMeta = const VerificationMeta(
+    'sourceUrl',
+  );
+  @override
+  late final GeneratedColumn<String> sourceUrl = GeneratedColumn<String>(
+    'source_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _partIdMeta = const VerificationMeta('partId');
+  @override
+  late final GeneratedColumn<String> partId = GeneratedColumn<String>(
+    'part_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _partTitleMeta = const VerificationMeta(
+    'partTitle',
+  );
+  @override
+  late final GeneratedColumn<String> partTitle = GeneratedColumn<String>(
+    'part_title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -163,6 +249,14 @@ class $DownloadJobsTable extends DownloadJobs
     saveTargetJson,
     thumbnailUrl,
     title,
+    sourceKind,
+    sourceId,
+    sourceTitle,
+    sourceSubtitle,
+    sourceThumbnailUrl,
+    sourceUrl,
+    partId,
+    partTitle,
     createdAt,
     updatedAt,
   ];
@@ -262,6 +356,67 @@ class $DownloadJobsTable extends DownloadJobs
         title.isAcceptableOrUnknown(data['title']!, _titleMeta),
       );
     }
+    if (data.containsKey('source_kind')) {
+      context.handle(
+        _sourceKindMeta,
+        sourceKind.isAcceptableOrUnknown(data['source_kind']!, _sourceKindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceKindMeta);
+    }
+    if (data.containsKey('source_id')) {
+      context.handle(
+        _sourceIdMeta,
+        sourceId.isAcceptableOrUnknown(data['source_id']!, _sourceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceIdMeta);
+    }
+    if (data.containsKey('source_title')) {
+      context.handle(
+        _sourceTitleMeta,
+        sourceTitle.isAcceptableOrUnknown(
+          data['source_title']!,
+          _sourceTitleMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_subtitle')) {
+      context.handle(
+        _sourceSubtitleMeta,
+        sourceSubtitle.isAcceptableOrUnknown(
+          data['source_subtitle']!,
+          _sourceSubtitleMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_thumbnail_url')) {
+      context.handle(
+        _sourceThumbnailUrlMeta,
+        sourceThumbnailUrl.isAcceptableOrUnknown(
+          data['source_thumbnail_url']!,
+          _sourceThumbnailUrlMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_url')) {
+      context.handle(
+        _sourceUrlMeta,
+        sourceUrl.isAcceptableOrUnknown(data['source_url']!, _sourceUrlMeta),
+      );
+    }
+    if (data.containsKey('part_id')) {
+      context.handle(
+        _partIdMeta,
+        partId.isAcceptableOrUnknown(data['part_id']!, _partIdMeta),
+      );
+    }
+    if (data.containsKey('part_title')) {
+      context.handle(
+        _partTitleMeta,
+        partTitle.isAcceptableOrUnknown(data['part_title']!, _partTitleMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -331,6 +486,38 @@ class $DownloadJobsTable extends DownloadJobs
         DriftSqlType.string,
         data['${effectivePrefix}title'],
       ),
+      sourceKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_kind'],
+      )!,
+      sourceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_id'],
+      )!,
+      sourceTitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_title'],
+      ),
+      sourceSubtitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_subtitle'],
+      ),
+      sourceThumbnailUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_thumbnail_url'],
+      ),
+      sourceUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_url'],
+      ),
+      partId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}part_id'],
+      ),
+      partTitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}part_title'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
@@ -363,6 +550,21 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   final String saveTargetJson;
   final String? thumbnailUrl;
   final String? title;
+
+  /// The source the file was downloaded from (see DownloadSource): its kind,
+  /// its id within the kind, and its label when downloaded.
+  final String sourceKind;
+  final String sourceId;
+  final String? sourceTitle;
+  final String? sourceSubtitle;
+  final String? sourceThumbnailUrl;
+
+  /// The page a source opens where it is not derived from its id.
+  final String? sourceUrl;
+
+  /// The part of the source the file belongs to, if the source has parts.
+  final String? partId;
+  final String? partTitle;
   final int createdAt;
   final int updatedAt;
   const DownloadJob({
@@ -377,6 +579,14 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     required this.saveTargetJson,
     this.thumbnailUrl,
     this.title,
+    required this.sourceKind,
+    required this.sourceId,
+    this.sourceTitle,
+    this.sourceSubtitle,
+    this.sourceThumbnailUrl,
+    this.sourceUrl,
+    this.partId,
+    this.partTitle,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -401,6 +611,26 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     }
     if (!nullToAbsent || title != null) {
       map['title'] = Variable<String>(title);
+    }
+    map['source_kind'] = Variable<String>(sourceKind);
+    map['source_id'] = Variable<String>(sourceId);
+    if (!nullToAbsent || sourceTitle != null) {
+      map['source_title'] = Variable<String>(sourceTitle);
+    }
+    if (!nullToAbsent || sourceSubtitle != null) {
+      map['source_subtitle'] = Variable<String>(sourceSubtitle);
+    }
+    if (!nullToAbsent || sourceThumbnailUrl != null) {
+      map['source_thumbnail_url'] = Variable<String>(sourceThumbnailUrl);
+    }
+    if (!nullToAbsent || sourceUrl != null) {
+      map['source_url'] = Variable<String>(sourceUrl);
+    }
+    if (!nullToAbsent || partId != null) {
+      map['part_id'] = Variable<String>(partId);
+    }
+    if (!nullToAbsent || partTitle != null) {
+      map['part_title'] = Variable<String>(partTitle);
     }
     map['created_at'] = Variable<int>(createdAt);
     map['updated_at'] = Variable<int>(updatedAt);
@@ -428,6 +658,26 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       title: title == null && nullToAbsent
           ? const Value.absent()
           : Value(title),
+      sourceKind: Value(sourceKind),
+      sourceId: Value(sourceId),
+      sourceTitle: sourceTitle == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceTitle),
+      sourceSubtitle: sourceSubtitle == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceSubtitle),
+      sourceThumbnailUrl: sourceThumbnailUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceThumbnailUrl),
+      sourceUrl: sourceUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceUrl),
+      partId: partId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(partId),
+      partTitle: partTitle == null && nullToAbsent
+          ? const Value.absent()
+          : Value(partTitle),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -452,6 +702,16 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       saveTargetJson: serializer.fromJson<String>(json['saveTargetJson']),
       thumbnailUrl: serializer.fromJson<String?>(json['thumbnailUrl']),
       title: serializer.fromJson<String?>(json['title']),
+      sourceKind: serializer.fromJson<String>(json['sourceKind']),
+      sourceId: serializer.fromJson<String>(json['sourceId']),
+      sourceTitle: serializer.fromJson<String?>(json['sourceTitle']),
+      sourceSubtitle: serializer.fromJson<String?>(json['sourceSubtitle']),
+      sourceThumbnailUrl: serializer.fromJson<String?>(
+        json['sourceThumbnailUrl'],
+      ),
+      sourceUrl: serializer.fromJson<String?>(json['sourceUrl']),
+      partId: serializer.fromJson<String?>(json['partId']),
+      partTitle: serializer.fromJson<String?>(json['partTitle']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
     );
@@ -471,6 +731,14 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
       'saveTargetJson': serializer.toJson<String>(saveTargetJson),
       'thumbnailUrl': serializer.toJson<String?>(thumbnailUrl),
       'title': serializer.toJson<String?>(title),
+      'sourceKind': serializer.toJson<String>(sourceKind),
+      'sourceId': serializer.toJson<String>(sourceId),
+      'sourceTitle': serializer.toJson<String?>(sourceTitle),
+      'sourceSubtitle': serializer.toJson<String?>(sourceSubtitle),
+      'sourceThumbnailUrl': serializer.toJson<String?>(sourceThumbnailUrl),
+      'sourceUrl': serializer.toJson<String?>(sourceUrl),
+      'partId': serializer.toJson<String?>(partId),
+      'partTitle': serializer.toJson<String?>(partTitle),
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
     };
@@ -488,6 +756,14 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     String? saveTargetJson,
     Value<String?> thumbnailUrl = const Value.absent(),
     Value<String?> title = const Value.absent(),
+    String? sourceKind,
+    String? sourceId,
+    Value<String?> sourceTitle = const Value.absent(),
+    Value<String?> sourceSubtitle = const Value.absent(),
+    Value<String?> sourceThumbnailUrl = const Value.absent(),
+    Value<String?> sourceUrl = const Value.absent(),
+    Value<String?> partId = const Value.absent(),
+    Value<String?> partTitle = const Value.absent(),
     int? createdAt,
     int? updatedAt,
   }) => DownloadJob(
@@ -502,6 +778,18 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     saveTargetJson: saveTargetJson ?? this.saveTargetJson,
     thumbnailUrl: thumbnailUrl.present ? thumbnailUrl.value : this.thumbnailUrl,
     title: title.present ? title.value : this.title,
+    sourceKind: sourceKind ?? this.sourceKind,
+    sourceId: sourceId ?? this.sourceId,
+    sourceTitle: sourceTitle.present ? sourceTitle.value : this.sourceTitle,
+    sourceSubtitle: sourceSubtitle.present
+        ? sourceSubtitle.value
+        : this.sourceSubtitle,
+    sourceThumbnailUrl: sourceThumbnailUrl.present
+        ? sourceThumbnailUrl.value
+        : this.sourceThumbnailUrl,
+    sourceUrl: sourceUrl.present ? sourceUrl.value : this.sourceUrl,
+    partId: partId.present ? partId.value : this.partId,
+    partTitle: partTitle.present ? partTitle.value : this.partTitle,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -528,6 +816,22 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
           ? data.thumbnailUrl.value
           : this.thumbnailUrl,
       title: data.title.present ? data.title.value : this.title,
+      sourceKind: data.sourceKind.present
+          ? data.sourceKind.value
+          : this.sourceKind,
+      sourceId: data.sourceId.present ? data.sourceId.value : this.sourceId,
+      sourceTitle: data.sourceTitle.present
+          ? data.sourceTitle.value
+          : this.sourceTitle,
+      sourceSubtitle: data.sourceSubtitle.present
+          ? data.sourceSubtitle.value
+          : this.sourceSubtitle,
+      sourceThumbnailUrl: data.sourceThumbnailUrl.present
+          ? data.sourceThumbnailUrl.value
+          : this.sourceThumbnailUrl,
+      sourceUrl: data.sourceUrl.present ? data.sourceUrl.value : this.sourceUrl,
+      partId: data.partId.present ? data.partId.value : this.partId,
+      partTitle: data.partTitle.present ? data.partTitle.value : this.partTitle,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -547,6 +851,14 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
           ..write('saveTargetJson: $saveTargetJson, ')
           ..write('thumbnailUrl: $thumbnailUrl, ')
           ..write('title: $title, ')
+          ..write('sourceKind: $sourceKind, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('sourceTitle: $sourceTitle, ')
+          ..write('sourceSubtitle: $sourceSubtitle, ')
+          ..write('sourceThumbnailUrl: $sourceThumbnailUrl, ')
+          ..write('sourceUrl: $sourceUrl, ')
+          ..write('partId: $partId, ')
+          ..write('partTitle: $partTitle, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -554,7 +866,7 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     illustId,
     pageIndex,
@@ -566,9 +878,17 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
     saveTargetJson,
     thumbnailUrl,
     title,
+    sourceKind,
+    sourceId,
+    sourceTitle,
+    sourceSubtitle,
+    sourceThumbnailUrl,
+    sourceUrl,
+    partId,
+    partTitle,
     createdAt,
     updatedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -584,6 +904,14 @@ class DownloadJob extends DataClass implements Insertable<DownloadJob> {
           other.saveTargetJson == this.saveTargetJson &&
           other.thumbnailUrl == this.thumbnailUrl &&
           other.title == this.title &&
+          other.sourceKind == this.sourceKind &&
+          other.sourceId == this.sourceId &&
+          other.sourceTitle == this.sourceTitle &&
+          other.sourceSubtitle == this.sourceSubtitle &&
+          other.sourceThumbnailUrl == this.sourceThumbnailUrl &&
+          other.sourceUrl == this.sourceUrl &&
+          other.partId == this.partId &&
+          other.partTitle == this.partTitle &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -600,6 +928,14 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
   final Value<String> saveTargetJson;
   final Value<String?> thumbnailUrl;
   final Value<String?> title;
+  final Value<String> sourceKind;
+  final Value<String> sourceId;
+  final Value<String?> sourceTitle;
+  final Value<String?> sourceSubtitle;
+  final Value<String?> sourceThumbnailUrl;
+  final Value<String?> sourceUrl;
+  final Value<String?> partId;
+  final Value<String?> partTitle;
   final Value<int> createdAt;
   final Value<int> updatedAt;
   final Value<int> rowid;
@@ -615,6 +951,14 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     this.saveTargetJson = const Value.absent(),
     this.thumbnailUrl = const Value.absent(),
     this.title = const Value.absent(),
+    this.sourceKind = const Value.absent(),
+    this.sourceId = const Value.absent(),
+    this.sourceTitle = const Value.absent(),
+    this.sourceSubtitle = const Value.absent(),
+    this.sourceThumbnailUrl = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
+    this.partId = const Value.absent(),
+    this.partTitle = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -631,12 +975,22 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     this.saveTargetJson = const Value.absent(),
     this.thumbnailUrl = const Value.absent(),
     this.title = const Value.absent(),
+    required String sourceKind,
+    required String sourceId,
+    this.sourceTitle = const Value.absent(),
+    this.sourceSubtitle = const Value.absent(),
+    this.sourceThumbnailUrl = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
+    this.partId = const Value.absent(),
+    this.partTitle = const Value.absent(),
     required int createdAt,
     required int updatedAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        url = Value(url),
        filename = Value(filename),
+       sourceKind = Value(sourceKind),
+       sourceId = Value(sourceId),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<DownloadJob> custom({
@@ -651,6 +1005,14 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     Expression<String>? saveTargetJson,
     Expression<String>? thumbnailUrl,
     Expression<String>? title,
+    Expression<String>? sourceKind,
+    Expression<String>? sourceId,
+    Expression<String>? sourceTitle,
+    Expression<String>? sourceSubtitle,
+    Expression<String>? sourceThumbnailUrl,
+    Expression<String>? sourceUrl,
+    Expression<String>? partId,
+    Expression<String>? partTitle,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
     Expression<int>? rowid,
@@ -668,6 +1030,15 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
       if (saveTargetJson != null) 'save_target_json': saveTargetJson,
       if (thumbnailUrl != null) 'thumbnail_url': thumbnailUrl,
       if (title != null) 'title': title,
+      if (sourceKind != null) 'source_kind': sourceKind,
+      if (sourceId != null) 'source_id': sourceId,
+      if (sourceTitle != null) 'source_title': sourceTitle,
+      if (sourceSubtitle != null) 'source_subtitle': sourceSubtitle,
+      if (sourceThumbnailUrl != null)
+        'source_thumbnail_url': sourceThumbnailUrl,
+      if (sourceUrl != null) 'source_url': sourceUrl,
+      if (partId != null) 'part_id': partId,
+      if (partTitle != null) 'part_title': partTitle,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -686,6 +1057,14 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     Value<String>? saveTargetJson,
     Value<String?>? thumbnailUrl,
     Value<String?>? title,
+    Value<String>? sourceKind,
+    Value<String>? sourceId,
+    Value<String?>? sourceTitle,
+    Value<String?>? sourceSubtitle,
+    Value<String?>? sourceThumbnailUrl,
+    Value<String?>? sourceUrl,
+    Value<String?>? partId,
+    Value<String?>? partTitle,
     Value<int>? createdAt,
     Value<int>? updatedAt,
     Value<int>? rowid,
@@ -702,6 +1081,14 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
       saveTargetJson: saveTargetJson ?? this.saveTargetJson,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       title: title ?? this.title,
+      sourceKind: sourceKind ?? this.sourceKind,
+      sourceId: sourceId ?? this.sourceId,
+      sourceTitle: sourceTitle ?? this.sourceTitle,
+      sourceSubtitle: sourceSubtitle ?? this.sourceSubtitle,
+      sourceThumbnailUrl: sourceThumbnailUrl ?? this.sourceThumbnailUrl,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
+      partId: partId ?? this.partId,
+      partTitle: partTitle ?? this.partTitle,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -744,6 +1131,30 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
     if (title.present) {
       map['title'] = Variable<String>(title.value);
     }
+    if (sourceKind.present) {
+      map['source_kind'] = Variable<String>(sourceKind.value);
+    }
+    if (sourceId.present) {
+      map['source_id'] = Variable<String>(sourceId.value);
+    }
+    if (sourceTitle.present) {
+      map['source_title'] = Variable<String>(sourceTitle.value);
+    }
+    if (sourceSubtitle.present) {
+      map['source_subtitle'] = Variable<String>(sourceSubtitle.value);
+    }
+    if (sourceThumbnailUrl.present) {
+      map['source_thumbnail_url'] = Variable<String>(sourceThumbnailUrl.value);
+    }
+    if (sourceUrl.present) {
+      map['source_url'] = Variable<String>(sourceUrl.value);
+    }
+    if (partId.present) {
+      map['part_id'] = Variable<String>(partId.value);
+    }
+    if (partTitle.present) {
+      map['part_title'] = Variable<String>(partTitle.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
@@ -770,6 +1181,14 @@ class DownloadJobsCompanion extends UpdateCompanion<DownloadJob> {
           ..write('saveTargetJson: $saveTargetJson, ')
           ..write('thumbnailUrl: $thumbnailUrl, ')
           ..write('title: $title, ')
+          ..write('sourceKind: $sourceKind, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('sourceTitle: $sourceTitle, ')
+          ..write('sourceSubtitle: $sourceSubtitle, ')
+          ..write('sourceThumbnailUrl: $sourceThumbnailUrl, ')
+          ..write('sourceUrl: $sourceUrl, ')
+          ..write('partId: $partId, ')
+          ..write('partTitle: $partTitle, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -1485,6 +1904,14 @@ typedef $$DownloadJobsTableCreateCompanionBuilder =
       Value<String> saveTargetJson,
       Value<String?> thumbnailUrl,
       Value<String?> title,
+      required String sourceKind,
+      required String sourceId,
+      Value<String?> sourceTitle,
+      Value<String?> sourceSubtitle,
+      Value<String?> sourceThumbnailUrl,
+      Value<String?> sourceUrl,
+      Value<String?> partId,
+      Value<String?> partTitle,
       required int createdAt,
       required int updatedAt,
       Value<int> rowid,
@@ -1502,6 +1929,14 @@ typedef $$DownloadJobsTableUpdateCompanionBuilder =
       Value<String> saveTargetJson,
       Value<String?> thumbnailUrl,
       Value<String?> title,
+      Value<String> sourceKind,
+      Value<String> sourceId,
+      Value<String?> sourceTitle,
+      Value<String?> sourceSubtitle,
+      Value<String?> sourceThumbnailUrl,
+      Value<String?> sourceUrl,
+      Value<String?> partId,
+      Value<String?> partTitle,
       Value<int> createdAt,
       Value<int> updatedAt,
       Value<int> rowid,
@@ -1593,6 +2028,46 @@ class $$DownloadJobsTableFilterComposer
 
   ColumnFilters<String> get title => $composableBuilder(
     column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceTitle => $composableBuilder(
+    column: $table.sourceTitle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceSubtitle => $composableBuilder(
+    column: $table.sourceSubtitle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceThumbnailUrl => $composableBuilder(
+    column: $table.sourceThumbnailUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get partId => $composableBuilder(
+    column: $table.partId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get partTitle => $composableBuilder(
+    column: $table.partTitle,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1696,6 +2171,46 @@ class $$DownloadJobsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceTitle => $composableBuilder(
+    column: $table.sourceTitle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceSubtitle => $composableBuilder(
+    column: $table.sourceSubtitle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceThumbnailUrl => $composableBuilder(
+    column: $table.sourceThumbnailUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get partId => $composableBuilder(
+    column: $table.partId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get partTitle => $composableBuilder(
+    column: $table.partTitle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -1758,6 +2273,38 @@ class $$DownloadJobsTableAnnotationComposer
 
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceId =>
+      $composableBuilder(column: $table.sourceId, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceTitle => $composableBuilder(
+    column: $table.sourceTitle,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceSubtitle => $composableBuilder(
+    column: $table.sourceSubtitle,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceThumbnailUrl => $composableBuilder(
+    column: $table.sourceThumbnailUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceUrl =>
+      $composableBuilder(column: $table.sourceUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get partId =>
+      $composableBuilder(column: $table.partId, builder: (column) => column);
+
+  GeneratedColumn<String> get partTitle =>
+      $composableBuilder(column: $table.partTitle, builder: (column) => column);
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -1832,6 +2379,14 @@ class $$DownloadJobsTableTableManager
                 Value<String> saveTargetJson = const Value.absent(),
                 Value<String?> thumbnailUrl = const Value.absent(),
                 Value<String?> title = const Value.absent(),
+                Value<String> sourceKind = const Value.absent(),
+                Value<String> sourceId = const Value.absent(),
+                Value<String?> sourceTitle = const Value.absent(),
+                Value<String?> sourceSubtitle = const Value.absent(),
+                Value<String?> sourceThumbnailUrl = const Value.absent(),
+                Value<String?> sourceUrl = const Value.absent(),
+                Value<String?> partId = const Value.absent(),
+                Value<String?> partTitle = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -1847,6 +2402,14 @@ class $$DownloadJobsTableTableManager
                 saveTargetJson: saveTargetJson,
                 thumbnailUrl: thumbnailUrl,
                 title: title,
+                sourceKind: sourceKind,
+                sourceId: sourceId,
+                sourceTitle: sourceTitle,
+                sourceSubtitle: sourceSubtitle,
+                sourceThumbnailUrl: sourceThumbnailUrl,
+                sourceUrl: sourceUrl,
+                partId: partId,
+                partTitle: partTitle,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -1864,6 +2427,14 @@ class $$DownloadJobsTableTableManager
                 Value<String> saveTargetJson = const Value.absent(),
                 Value<String?> thumbnailUrl = const Value.absent(),
                 Value<String?> title = const Value.absent(),
+                required String sourceKind,
+                required String sourceId,
+                Value<String?> sourceTitle = const Value.absent(),
+                Value<String?> sourceSubtitle = const Value.absent(),
+                Value<String?> sourceThumbnailUrl = const Value.absent(),
+                Value<String?> sourceUrl = const Value.absent(),
+                Value<String?> partId = const Value.absent(),
+                Value<String?> partTitle = const Value.absent(),
                 required int createdAt,
                 required int updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -1879,6 +2450,14 @@ class $$DownloadJobsTableTableManager
                 saveTargetJson: saveTargetJson,
                 thumbnailUrl: thumbnailUrl,
                 title: title,
+                sourceKind: sourceKind,
+                sourceId: sourceId,
+                sourceTitle: sourceTitle,
+                sourceSubtitle: sourceSubtitle,
+                sourceThumbnailUrl: sourceThumbnailUrl,
+                sourceUrl: sourceUrl,
+                partId: partId,
+                partTitle: partTitle,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

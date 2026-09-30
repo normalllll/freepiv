@@ -1,7 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/shared/layout/fp_collapsing_header.dart';
-import 'package:freepiv/features/fanbox/logic.dart';
-import 'package:freepiv/features/downloads/presentation/fanbox_download_tasks.dart';
 import 'package:freepiv/features/downloads/presentation/download_bulk_actions.dart';
 import 'package:freepiv/shared/widgets/constrained_segmented_button.dart';
 import 'package:freepiv/shared/widgets/error.dart';
@@ -11,17 +9,26 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/downloads/logic.dart';
+import 'package:freepiv/features/downloads/presentation/download_item_widgets.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
+import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:freepiv/shared/layout/fp_page_header.dart';
-import 'package:go_router/go_router.dart';
 
 class DownloadsPage extends StatelessWidget {
-  const DownloadsPage({super.key});
+  const DownloadsPage({this.focusItem, this.taskStream, super.key});
+
+  /// The key of an item to open and bring into view, as the floating panel
+  /// asks when one of its items is tapped.
+  final String? focusItem;
+
+  /// The tasks to show in place of the download manager's, for tests.
+  @visibleForTesting
+  final Stream<List<DownloadTaskSnapshot>>? taskStream;
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +41,17 @@ class DownloadsPage extends StatelessWidget {
               top: useHorizontalLayout,
               child: Column(
                 children: [
-                  if (useHorizontalLayout) _DownloadsHeader(onSync: _syncDownloads),
+                  if (useHorizontalLayout)
+                    FpInlinePageHeading(
+                      title: t.settings.downloads.tasksTitle,
+                      actions: [
+                        IconButton(tooltip: t.settings.downloads.sync, icon: const Icon(Icons.sync_outlined), onPressed: () => unawaited(_syncDownloads())),
+                      ],
+                    ),
 
-                  Expanded(child: _DownloadsBody(onSync: _syncDownloads)),
+                  Expanded(
+                    child: _DownloadsBody(onSync: _syncDownloads, focusItem: focusItem, taskStream: taskStream),
+                  ),
                 ],
               ),
             ),
@@ -62,51 +77,45 @@ class DownloadsPage extends StatelessWidget {
   }
 }
 
-class _DownloadsHeader extends StatelessWidget {
-  const _DownloadsHeader({required this.onSync});
-
-  final Future<void> Function() onSync;
-
-  @override
-  Widget build(BuildContext context) {
-    // Same column as the task list below, directly on the backdrop.
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final inset = AppMetrics.columnPadding(constraints.maxWidth).left;
-        return Padding(
-          padding: EdgeInsets.fromLTRB(inset, AppMetrics.sectionHeadingGap, inset - 8, 0),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(t.settings.downloads.tasksTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleLarge),
-              ),
-              IconButton(tooltip: t.settings.downloads.sync, icon: const Icon(Icons.sync_outlined), onPressed: () => unawaited(onSync())),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
 enum _TaskFilter { all, active, failed, saved }
 
 class _DownloadsBody extends ConsumerStatefulWidget {
-  const _DownloadsBody({required this.onSync});
+  const _DownloadsBody({required this.onSync, this.focusItem, this.taskStream});
   final Future<void> Function() onSync;
+  final String? focusItem;
+  final Stream<List<DownloadTaskSnapshot>>? taskStream;
   @override
   ConsumerState<_DownloadsBody> createState() => _DownloadsBodyState();
 }
 
 class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
-  late Stream<List<DownloadTaskSnapshot>> _tasks = downloadManager.watchTasks();
+  late Stream<List<DownloadTaskSnapshot>> _tasks = widget.taskStream ?? downloadManager.watchTasks();
   _TaskFilter _filter = _TaskFilter.all;
+
+  /// Items whose files are shown; temporary, so it lives with the page.
+  late final Set<String> _expanded = {?widget.focusItem};
+  final _focusKey = GlobalKey(debugLabel: 'focused-download-item');
+  bool _focusShown = false;
 
   void _retry() => setState(() => _tasks = downloadManager.watchTasks());
 
+  void _toggle(String key) => setState(() {
+    if (!_expanded.remove(key)) _expanded.add(key);
+  });
+
+  /// Brings the item the page was opened for into view once it is built.
+  void _showFocusedItem() {
+    if (_focusShown) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final focused = _focusKey.currentContext;
+      if (!mounted || focused == null || _focusShown) return;
+      _focusShown = true;
+      unawaited(Scrollable.ensureVisible(focused, duration: AppMotion.duration(context, AppMotion.expand), curve: Curves.easeInOutCubic, alignment: .1));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final fanbox = ref.watch(fanboxDownloadsProvider);
     final labels = context.t.settings.downloads;
     return StreamBuilder<List<DownloadTaskSnapshot>>(
       stream: _tasks,
@@ -116,24 +125,18 @@ class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
         }
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         final tasks = snapshot.data!;
-        final visible = tasks
+        final collecting = ref.watch(fanboxDownloadsProvider);
+        final visible = downloadItemsOf(tasks, collecting: collecting.values)
             .where(
-              (task) => switch (_filter) {
+              (item) => switch (_filter) {
                 _TaskFilter.all => true,
-                _TaskFilter.active => task.status == DownloadStatus.running || task.status == DownloadStatus.queued,
-                _TaskFilter.failed => task.needsRetry,
-                _TaskFilter.saved => task.isCompleted,
+                _TaskFilter.active => item.state == DownloadItemState.active || item.state == DownloadItemState.collecting,
+                _TaskFilter.failed => item.failed > 0,
+                _TaskFilter.saved => item.state == DownloadItemState.completed,
               },
             )
             .toList(growable: false);
-        final showFanbox =
-            fanbox.visible &&
-            switch (_filter) {
-              _TaskFilter.all => true,
-              _TaskFilter.active => fanbox.running,
-              _TaskFilter.failed => fanbox.error != null,
-              _TaskFilter.saved => !fanbox.running && !fanbox.cancelled && fanbox.error == null && fanbox.completed == fanbox.total,
-            };
+        if (widget.focusItem case final focus? when visible.any((item) => item.key == focus)) _showFocusedItem();
         final summary = DownloadSummary.fromTasks(tasks);
         return DotsRefreshIndicator(
           onRefresh: widget.onSync,
@@ -184,17 +187,12 @@ class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
                                   selected: {_filter},
                                   onSelectionChanged: (selection) => setState(() => _filter = selection.single),
                                 ),
-                                const DownloadBulkActions(),
+                                DownloadBulkActions(tasks: tasks),
                               ],
                             ),
                             if (snapshot.hasError) ErrorContent.fromError(error: snapshot.error!, onRetry: _retry),
-                            if (showFanbox) ...[const SizedBox(height: 24), const FanboxDownloadTasks()],
-                            if (visible.isNotEmpty) ...[
-                              const SizedBox(height: 24),
-                              Text('Pixiv', style: Theme.of(context).textTheme.titleMedium),
-                              const SizedBox(height: 8),
-                            ],
-                            if (visible.isEmpty && !showFanbox) const DownloadTaskList(tasks: []),
+                            const SizedBox(height: 24),
+                            if (visible.isEmpty) const DownloadEmptyState(),
                           ],
                         ),
                       ),
@@ -202,10 +200,7 @@ class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
                   ),
                   SliverPadding(
                     padding: EdgeInsets.fromLTRB(inset, 0, inset, 24 + MediaQuery.paddingOf(context).bottom),
-                    sliver: _AnimatedTaskList(
-                      tasks: visible,
-                      onOpenWork: (work) => context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '${work.illustId}'}),
-                    ),
+                    sliver: _AnimatedItemList(items: visible, expanded: _expanded, onToggle: _toggle, focusItem: widget.focusItem, focusKey: _focusKey),
                   ),
                 ],
               );
@@ -217,45 +212,48 @@ class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
   }
 }
 
-/// Task rows that ease in and out when the stream or filter changes, so
-/// clearing completed tasks or switching filters collapses rows instead of
-/// jumping the list. Rows are matched by task id; an unexpected reorder falls
-/// back to an immediate rebuild.
-class _AnimatedTaskList extends StatefulWidget {
-  const _AnimatedTaskList({required this.tasks, required this.onOpenWork});
+/// Item rows that ease in and out when the stream or filter changes, so
+/// clearing completed items or switching filters collapses rows instead of
+/// jumping the list. Rows are matched by item key; an unexpected reorder
+/// falls back to an immediate rebuild.
+class _AnimatedItemList extends StatefulWidget {
+  const _AnimatedItemList({required this.items, required this.expanded, required this.onToggle, required this.focusItem, required this.focusKey});
 
-  final List<DownloadTaskSnapshot> tasks;
-  final ValueChanged<ArtworkPage> onOpenWork;
+  final List<DownloadItem> items;
+  final Set<String> expanded;
+  final ValueChanged<String> onToggle;
+  final String? focusItem;
+  final GlobalKey focusKey;
 
   @override
-  State<_AnimatedTaskList> createState() => _AnimatedTaskListState();
+  State<_AnimatedItemList> createState() => _AnimatedItemListState();
 }
 
-class _AnimatedTaskListState extends State<_AnimatedTaskList> {
+class _AnimatedItemListState extends State<_AnimatedItemList> {
   var _listKey = GlobalKey<SliverAnimatedListState>();
-  late List<DownloadTaskSnapshot> _shown = List.of(widget.tasks);
+  late List<DownloadItem> _shown = List.of(widget.items);
 
   @override
-  void didUpdateWidget(covariant _AnimatedTaskList oldWidget) {
+  void didUpdateWidget(covariant _AnimatedItemList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (identical(oldWidget.tasks, widget.tasks)) return;
+    if (identical(oldWidget.items, widget.items)) return;
     final list = _listKey.currentState;
     final duration = AppMotion.duration(context, AppMotion.expand);
-    final next = widget.tasks;
-    final nextIds = {for (final task in next) task.id};
+    final next = widget.items;
+    final nextKeys = {for (final item in next) item.key};
     if (list == null) {
       _shown = List.of(next);
       return;
     }
     for (var index = _shown.length - 1; index >= 0; index--) {
-      if (nextIds.contains(_shown[index].id)) continue;
+      if (nextKeys.contains(_shown[index].key)) continue;
       final removed = _shown.removeAt(index);
       list.removeItem(index, (context, animation) => _row(removed, index, animation, interactive: false), duration: duration);
     }
     for (var index = 0; index < next.length; index++) {
-      if (index < _shown.length && _shown[index].id == next[index].id) {
+      if (index < _shown.length && _shown[index].key == next[index].key) {
         _shown[index] = next[index];
-      } else if (!_shown.any((task) => task.id == next[index].id)) {
+      } else if (!_shown.any((item) => item.key == next[index].key)) {
         _shown.insert(index, next[index]);
         list.insertItem(index, duration: duration);
       } else {
@@ -276,7 +274,7 @@ class _AnimatedTaskListState extends State<_AnimatedTaskList> {
     );
   }
 
-  Widget _row(DownloadTaskSnapshot task, int index, Animation<double> animation, {bool interactive = true}) {
+  Widget _row(DownloadItem item, int index, Animation<double> animation, {bool interactive = true}) {
     final curved = CurvedAnimation(parent: animation, curve: Curves.easeInOutCubic);
     return SizeTransition(
       sizeFactor: curved,
@@ -286,9 +284,15 @@ class _AnimatedTaskListState extends State<_AnimatedTaskList> {
         child: IgnorePointer(
           ignoring: !interactive,
           child: Column(
+            key: interactive && item.key == widget.focusItem ? widget.focusKey : null,
             children: [
               if (index > 0) const Divider(height: 1),
-              DownloadTaskTile(key: ValueKey(task.id), task: task, onOpenWork: widget.onOpenWork),
+              DownloadItemCard(
+                key: ValueKey<String>(item.key),
+                item: item,
+                expanded: widget.expanded.contains(item.key),
+                onToggle: () => widget.onToggle(item.key),
+              ),
             ],
           ),
         ),

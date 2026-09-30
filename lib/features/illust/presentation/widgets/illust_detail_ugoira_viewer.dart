@@ -16,9 +16,9 @@ import 'package:freepiv/src/rust/api/zip_utils.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class UgoiraPageContent extends StatefulWidget {
-  const UgoiraPageContent({required this.illustId, required this.previewUrl, required this.fallbackDownloadUrl, required this.showContextMenu, super.key});
+  const UgoiraPageContent({required this.artwork, required this.previewUrl, required this.fallbackDownloadUrl, required this.showContextMenu, super.key});
 
-  final int illustId;
+  final ArtworkSource artwork;
   final String previewUrl;
   final String fallbackDownloadUrl;
   final bool showContextMenu;
@@ -66,7 +66,7 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
   @override
   void initState() {
     super.initState();
-    _cache = _ugoiraDataCache.putIfAbsent(widget.illustId, _CachedUgoiraData.new);
+    _cache = _ugoiraDataCache.putIfAbsent(widget.artwork.illustId, _CachedUgoiraData.new);
     _metadata = _cache.metadata;
     _zipBytes = _cache.zipBytes;
     _frameBytes = _cache.frames?.bytes;
@@ -225,17 +225,21 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
   Future<void> _downloadGif({Rect? origin}) async {
     try {
       await downloadManager.ensureReadyForDownloads();
-      DownloadFlight.launch(origin: origin, imageUrl: widget.previewUrl);
+      DownloadFlight.launch(
+        origin: origin,
+        artwork: PixivImage(url: widget.previewUrl),
+      );
       await _ensurePlaybackStartedForExport();
       final gifBytes = await _ensureGifBytes();
       _setPhase(_UgoiraPhase.savingGif, progress: null);
       final zipUrl = _metadata?.zipUrls.medium;
       final zipUri = Uri.parse(zipUrl == null || zipUrl.isEmpty ? widget.fallbackDownloadUrl : zipUrl);
       final file = await downloadManager.saveBytes(
-        origin: ArtworkPage(illustId: widget.illustId, pageIndex: 0),
+        origin: ArtworkPage(illustId: widget.artwork.illustId, pageIndex: 0),
+        source: widget.artwork,
         bytes: gifBytes,
         sourceUrl: zipUri,
-        filename: '${widget.illustId}.gif',
+        filename: '${widget.artwork.illustId}.gif',
         thumbnailUrl: widget.previewUrl,
       );
       _setReadyAfterExport();
@@ -313,7 +317,7 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
 
     _setPhase(_UgoiraPhase.fetchingMetadata, progress: null);
     _cache.metadataFuture ??= pixivApi
-        .getUgoiraMetadata(illustId: widget.illustId)
+        .getUgoiraMetadata(illustId: widget.artwork.illustId)
         .then((result) {
           _cache.metadata = result.ugoiraMetadata;
           return result.ugoiraMetadata;

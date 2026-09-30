@@ -7,3 +7,4 @@ export 'models/download_task_snapshot.dart';
 export 'models/downloaded_file.dart';
 export 'models/save_target.dart';
 export 'models/download_origin.dart';
+export 'models/download_source.dart';

@@ -496,10 +496,6 @@ class Translations$fanbox$en_US {
 	String get download => 'Download';
 	String get downloadAll => 'Download all media';
 	String get downloadCreator => 'Download creator posts';
-	String downloadProgress({required Object done, required Object total}) => 'Downloaded ${done} / ${total}';
-	String get cancelDownload => 'Stop after current file';
-	String get downloadFinished => 'Download finished';
-	String get downloadFailed => 'Download failed. Retry to resume existing files.';
 	String get fanCard => 'Fan card';
 	String get previous => 'Previous post';
 	String get next => 'Next post';
@@ -522,6 +518,8 @@ class Translations$fanbox$en_US {
 	String get restrictedInfo => 'This post remains visible, but its content requires a qualifying support plan.';
 	String get noPlans => 'No available plans';
 	String get downloadPreparing => 'Collecting accessible posts…';
+	String downloadQueued({required Object count}) => '${count} files added to the download queue';
+	String get downloadNothingNew => 'Everything here is already in the download queue';
 	String get browserLogin => 'Log in with browser';
 	String get manualLogin => 'Enter Cookie manually';
 	String get browserHelp => 'Complete sign-in on the official website. This window closes after your session is verified.';
@@ -694,11 +692,21 @@ class Translations$settings$downloads$en_US {
 	String get clearCompleted => 'Clear completed tasks';
 	String get syncFailed => 'Download sync failed';
 	String get actionFailed => 'Download action failed';
-	String get expand => 'Expand';
 	String get collapse => 'Collapse';
 	String get viewAll => 'View all downloads';
 	String badgeFailures({required Object count}) => 'Failed downloads: ${count}';
 	String badgeActive({required Object count}) => 'Active downloads: ${count}';
+	String filesProgress({required Object done, required Object total}) => '${done} / ${total} files';
+	String filesFailed({required Object count}) => '${count} failed';
+	String collectingPosts({required Object count}) => 'Collecting posts · ${count} read';
+	String moreItems({required Object count}) => '${count} more';
+	String showAll({required Object count}) => 'Show all ${count}';
+	String get openSource => 'Open page';
+	String get openFolder => 'Open folder';
+	String get clearItem => 'Clear';
+	String get deleteItem => 'Delete records';
+	String get expandItem => 'Show files';
+	String get collapseItem => 'Hide files';
 }
 
 // Path: settings.proxy
@@ -1444,11 +1452,21 @@ extension on Translations {
 			'settings.downloads.clearCompleted' => 'Clear completed tasks',
 			'settings.downloads.syncFailed' => 'Download sync failed',
 			'settings.downloads.actionFailed' => 'Download action failed',
-			'settings.downloads.expand' => 'Expand',
 			'settings.downloads.collapse' => 'Collapse',
 			'settings.downloads.viewAll' => 'View all downloads',
 			'settings.downloads.badgeFailures' => ({required Object count}) => 'Failed downloads: ${count}',
 			'settings.downloads.badgeActive' => ({required Object count}) => 'Active downloads: ${count}',
+			'settings.downloads.filesProgress' => ({required Object done, required Object total}) => '${done} / ${total} files',
+			'settings.downloads.filesFailed' => ({required Object count}) => '${count} failed',
+			'settings.downloads.collectingPosts' => ({required Object count}) => 'Collecting posts · ${count} read',
+			'settings.downloads.moreItems' => ({required Object count}) => '${count} more',
+			'settings.downloads.showAll' => ({required Object count}) => 'Show all ${count}',
+			'settings.downloads.openSource' => 'Open page',
+			'settings.downloads.openFolder' => 'Open folder',
+			'settings.downloads.clearItem' => 'Clear',
+			'settings.downloads.deleteItem' => 'Delete records',
+			'settings.downloads.expandItem' => 'Show files',
+			'settings.downloads.collapseItem' => 'Hide files',
 			'settings.proxy.title' => 'Network proxy',
 			'settings.proxy.shortTitle' => 'Proxy',
 			'settings.proxy.subtitle' => 'Pixiv API and image requests will use the selected proxy after saving.',
@@ -1768,6 +1786,8 @@ extension on Translations {
 			'fanbox.empty' => 'No items yet',
 			'fanbox.loadMore' => 'Load more',
 			'fanbox.searchHint' => 'Creator name, ID or tag',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.creatorId' => 'Open creator by ID',
 			'fanbox.posts' => 'Posts',
 			'fanbox.creatorPlans' => 'Creator plans',
@@ -1778,8 +1798,6 @@ extension on Translations {
 			'fanbox.monthlyFee' => ({required Object fee}) => '¥${fee}/month',
 			'fanbox.supportOnWebsite' => 'View plan on FANBOX',
 			'fanbox.follow' => 'Follow',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.unfollow' => 'Unfollow',
 			'fanbox.like' => 'Like',
 			'fanbox.liked' => 'Liked',
@@ -1794,10 +1812,6 @@ extension on Translations {
 			'fanbox.download' => 'Download',
 			'fanbox.downloadAll' => 'Download all media',
 			'fanbox.downloadCreator' => 'Download creator posts',
-			'fanbox.downloadProgress' => ({required Object done, required Object total}) => 'Downloaded ${done} / ${total}',
-			'fanbox.cancelDownload' => 'Stop after current file',
-			'fanbox.downloadFinished' => 'Download finished',
-			'fanbox.downloadFailed' => 'Download failed. Retry to resume existing files.',
 			'fanbox.fanCard' => 'Fan card',
 			'fanbox.previous' => 'Previous post',
 			'fanbox.next' => 'Next post',
@@ -1820,6 +1834,8 @@ extension on Translations {
 			'fanbox.restrictedInfo' => 'This post remains visible, but its content requires a qualifying support plan.',
 			'fanbox.noPlans' => 'No available plans',
 			'fanbox.downloadPreparing' => 'Collecting accessible posts…',
+			'fanbox.downloadQueued' => ({required Object count}) => '${count} files added to the download queue',
+			'fanbox.downloadNothingNew' => 'Everything here is already in the download queue',
 			'fanbox.browserLogin' => 'Log in with browser',
 			'fanbox.manualLogin' => 'Enter Cookie manually',
 			'fanbox.browserHelp' => 'Complete sign-in on the official website. This window closes after your session is verified.',

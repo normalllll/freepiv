@@ -1,3 +1,5 @@
+import 'package:freepiv/core/downloads/download_models.dart';
+import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/shared/data/data_list_source.dart';
 import 'package:freepiv/shared/widgets/load_state_switcher.dart';
@@ -12,6 +14,7 @@ import 'logic.dart';
 import 'navigation.dart';
 import 'widgets.dart';
 import 'article_blocks.dart';
+import 'description.dart';
 import 'image.dart';
 
 class PixivisionArticlePage extends ConsumerStatefulWidget {
@@ -72,7 +75,10 @@ class _PixivisionArticlePageState extends ConsumerState<PixivisionArticlePage> {
         ],
       );
     }
-    return _ArticleContent(article: article, imageRatios: document!.imageRatios, controller: _scroll);
+    return DownloadSourceScope(
+      source: PixivisionSource(articleId: article.id, url: article.url, title: article.title, thumbnailUrl: article.thumbnail),
+      child: _ArticleContent(article: article, imageRatios: document!.imageRatios, controller: _scroll),
+    );
   }
 }
 
@@ -254,7 +260,8 @@ String? pixivisionHeaderThumbnail(Article article) {
 }
 
 String? pixivisionHeaderDescription(Article article) {
-  final description = article.description?.trim();
+  final raw = article.description;
+  final description = raw == null ? null : cleanPixivisionDescription(raw);
   if (description == null || description.isEmpty) return null;
   final repeated = article.blocks.any((block) => block.kind == BlockKind.paragraph && _normalizedText(block.text) == _normalizedText(description));
   return repeated ? null : description;

@@ -1,10 +1,12 @@
 import 'download_enums.dart';
 import 'download_origin.dart';
+import 'download_source.dart';
 
 class DownloadTaskSnapshot {
   const DownloadTaskSnapshot({
     required this.id,
     required this.origin,
+    required this.source,
     required this.title,
     required this.filename,
     required this.status,
@@ -18,11 +20,18 @@ class DownloadTaskSnapshot {
     required this.createdAt,
     required this.updatedAt,
     this.thumbnailUrl,
+    this.part,
     this.galleryAssetId,
   });
 
   final String id;
   final DownloadOrigin origin;
+
+  /// What the file was downloaded from, the item it shows under.
+  final DownloadSource source;
+
+  /// The part of [source] the file belongs to, if the source has parts.
+  final DownloadPart? part;
   final String title;
   final String filename;
   final String? thumbnailUrl;

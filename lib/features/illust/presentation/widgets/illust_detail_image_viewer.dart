@@ -20,7 +20,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class IllustImagePager extends StatelessWidget {
   const IllustImagePager({
-    required this.illustId,
+    required this.artwork,
     required this.imagePages,
     required this.isUgoira,
     required this.loadedImages,
@@ -32,7 +32,7 @@ class IllustImagePager extends StatelessWidget {
     super.key,
   });
 
-  final int illustId;
+  final ArtworkSource artwork;
   final List<IllustPageImage> imagePages;
   final bool isUgoira;
   final LoadedIllustImages loadedImages;
@@ -54,15 +54,15 @@ class IllustImagePager extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           PageView.builder(
-            key: PageStorageKey<String>('illust-image-page-$illustId'),
+            key: PageStorageKey<String>('illust-image-page-${artwork.illustId}'),
             controller: pageController,
             itemCount: pageCount,
             onPageChanged: onPageChanged,
             itemBuilder: (context, index) {
               final image = imagePages[isUgoira ? 0 : index];
               Widget content = isUgoira
-                  ? UgoiraPageContent(illustId: illustId, previewUrl: image.viewUrl, fallbackDownloadUrl: image.downloadUrl, showContextMenu: true)
-                  : _PageImageContent(illustId: illustId, index: index, image: image, loadedImages: loadedImages);
+                  ? UgoiraPageContent(artwork: artwork, previewUrl: image.viewUrl, fallbackDownloadUrl: image.downloadUrl, showContextMenu: true)
+                  : _PageImageContent(artwork: artwork, index: index, image: image, loadedImages: loadedImages);
               // The first page is what the opening card showed. It flies back
               // only while it is the page on screen; from another page the
               // return is an ordinary transition, not a jump to page one.
@@ -72,7 +72,7 @@ class IllustImagePager extends StatelessWidget {
               final child = isUgoira
                   ? content
                   : _ImageContextMenuRegion(
-                      illustId: illustId,
+                      artwork: artwork,
                       pageIndex: index,
                       image: image,
                       imagePages: imagePages,
@@ -178,6 +178,10 @@ class IllustPageImage {
   }
 }
 
+/// The work as the downloads list shows the pages saved from it.
+ArtworkSource artworkDownloadSource(Illust illust) =>
+    ArtworkSource(illustId: illust.id, title: illust.title, subtitle: illust.user.name, thumbnailUrl: illust.imageUrls.squareMedium);
+
 /// The detail stage's pages. The first page's placeholder is the very preview
 /// the artwork cards show ([previewQuality]), already cached when the work
 /// was opened from a list, so the stage never loads a second small image.
@@ -243,9 +247,9 @@ class _StageHero extends StatelessWidget {
 }
 
 class _PageImageContent extends StatelessWidget {
-  const _PageImageContent({required this.illustId, required this.index, required this.image, required this.loadedImages});
+  const _PageImageContent({required this.artwork, required this.index, required this.image, required this.loadedImages});
 
-  final int illustId;
+  final ArtworkSource artwork;
   final int index;
   final IllustPageImage image;
   final LoadedIllustImages loadedImages;
@@ -258,7 +262,7 @@ class _PageImageContent extends StatelessWidget {
 
 class _ImageContextMenuRegion extends StatelessWidget {
   const _ImageContextMenuRegion({
-    required this.illustId,
+    required this.artwork,
     required this.pageIndex,
     required this.image,
     required this.imagePages,
@@ -267,7 +271,7 @@ class _ImageContextMenuRegion extends StatelessWidget {
     this.onTap,
   });
 
-  final int illustId;
+  final ArtworkSource artwork;
   final int pageIndex;
   final IllustPageImage image;
   final List<IllustPageImage> imagePages;
@@ -281,10 +285,10 @@ class _ImageContextMenuRegion extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       onSecondaryTapDown: (details) {
-        unawaited(showIllustImageContextMenu(context, details.globalPosition, illustId, pageIndex, image, imagePages, loadedImages));
+        unawaited(showIllustImageContextMenu(context, details.globalPosition, artwork, pageIndex, image, imagePages, loadedImages));
       },
       onLongPressStart: (details) {
-        unawaited(showIllustImageContextMenu(context, details.globalPosition, illustId, pageIndex, image, imagePages, loadedImages));
+        unawaited(showIllustImageContextMenu(context, details.globalPosition, artwork, pageIndex, image, imagePages, loadedImages));
       },
       child: child,
     );
@@ -337,7 +341,7 @@ enum _ImageContextAction { download, downloadAll, copy, copyLink, openOriginal }
 Future<void> showIllustImageContextMenu(
   BuildContext context,
   Offset position,
-  int illustId,
+  ArtworkSource artwork,
   int pageIndex,
   IllustPageImage image,
   List<IllustPageImage> imagePages,
@@ -354,7 +358,7 @@ Future<void> showIllustImageContextMenu(
   final translations = t;
   final loadedImageData = loadedImages.get(image.viewUrl);
   final downloadNeedsLoadedData = image.canUseLoadedDataForDownload;
-  final alreadyDownloading = linkOnly ? false : await _isImageAlreadyDownloading(illustId, pageIndex);
+  final alreadyDownloading = linkOnly ? false : await _isImageAlreadyDownloading(artwork.illustId, pageIndex);
   if (!context.mounted || !overlayContext.mounted) {
     return;
   }
@@ -423,19 +427,19 @@ Future<void> showIllustImageContextMenu(
 
   switch (action) {
     case _ImageContextAction.download:
-      unawaited(_downloadImage(illustId, pageIndex, image, loadedImages, origin: Rect.fromCenter(center: position, width: 48, height: 48)));
+      unawaited(_downloadImage(artwork, pageIndex, image, loadedImages, origin: Rect.fromCenter(center: position, width: 48, height: 48)));
       break;
     case _ImageContextAction.downloadAll:
-      unawaited(_downloadAllImages(illustId, imagePages, origin: Rect.fromCenter(center: position, width: 48, height: 48)));
+      unawaited(_downloadAllImages(artwork, imagePages, origin: Rect.fromCenter(center: position, width: 48, height: 48)));
       break;
     case _ImageContextAction.copy:
       unawaited(_copyLoadedImage(image, loadedImages));
       break;
     case _ImageContextAction.copyLink:
-      unawaited(_copyIllustLink(illustId));
+      unawaited(_copyIllustLink(artwork.illustId));
       break;
     case _ImageContextAction.openOriginal:
-      unawaited(_openIllustOnPixiv(illustId));
+      unawaited(_openIllustOnPixiv(artwork.illustId));
       break;
     case null:
       break;
@@ -466,21 +470,26 @@ Future<void> _openIllustOnPixiv(int illustId) async {
 /// [origin] is where the download was asked for (the tapped button, or the
 /// pointer for a context menu); a copy of the page flies from there to the
 /// download badge once the task is accepted.
-Future<void> _downloadImage(int illustId, int pageIndex, IllustPageImage image, LoadedIllustImages loadedImages, {Rect? origin}) async {
+Future<void> _downloadImage(ArtworkSource artwork, int pageIndex, IllustPageImage image, LoadedIllustImages loadedImages, {Rect? origin}) async {
   try {
     await downloadManager.ensureReadyForDownloads();
-    DownloadFlight.launch(origin: origin, imageUrl: image.previewUrl);
+    DownloadFlight.launch(
+      origin: origin,
+      artwork: PixivImage(url: image.previewUrl),
+    );
     final downloadUri = Uri.parse(image.downloadUrl);
     final loadedImageData = image.canUseLoadedDataForDownload ? loadedImages.get(image.viewUrl) : null;
     final file = loadedImageData == null
         ? await downloadManager.download(
-            origin: ArtworkPage(illustId: illustId, pageIndex: pageIndex),
+            origin: ArtworkPage(illustId: artwork.illustId, pageIndex: pageIndex),
+            source: artwork,
             url: downloadUri,
             networkOptions: const DownloadNetworkOptions(headers: {'Referer': 'https://www.pixiv.net/'}),
             thumbnailUrl: image.previewUrl,
           )
         : await downloadManager.saveBytes(
-            origin: ArtworkPage(illustId: illustId, pageIndex: pageIndex),
+            origin: ArtworkPage(illustId: artwork.illustId, pageIndex: pageIndex),
+            source: artwork,
             bytes: loadedImageData.bytes,
             sourceUrl: downloadUri,
             thumbnailUrl: image.previewUrl,
@@ -491,14 +500,21 @@ Future<void> _downloadImage(int illustId, int pageIndex, IllustPageImage image, 
   }
 }
 
-Future<void> _downloadAllImages(int illustId, List<IllustPageImage> imagePages, {Rect? origin}) async {
+Future<void> _downloadAllImages(ArtworkSource artwork, List<IllustPageImage> imagePages, {Rect? origin}) async {
   try {
     await downloadManager.ensureReadyForDownloads();
-    DownloadFlight.launch(origin: origin, imageUrl: imagePages.firstOrNull?.previewUrl);
+    DownloadFlight.launch(
+      origin: origin,
+      artwork: switch (imagePages.firstOrNull) {
+        final page? => PixivImage(url: page.previewUrl),
+        null => null,
+      },
+    );
     final jobs = [
       for (var index = 0; index < imagePages.length; index++)
         DownloadJob.create(
-          origin: ArtworkPage(illustId: illustId, pageIndex: index),
+          origin: ArtworkPage(illustId: artwork.illustId, pageIndex: index),
+          source: artwork,
           url: Uri.parse(imagePages[index].downloadUrl),
           networkOptions: const DownloadNetworkOptions(headers: {'Referer': 'https://www.pixiv.net/'}),
           saveTarget: const SaveTarget.downloadsFolder(),
@@ -673,7 +689,6 @@ Uint8List? _rawImageDataFrom(ExtendedImageState state) {
   }
 }
 
-
 String _imageQualityLabel(ViewerImageQuality quality) {
   return switch (quality) {
     ViewerImageQuality.large => t.illust.imageLabels.large,
@@ -685,9 +700,9 @@ String _imageQualityLabel(ViewerImageQuality quality) {
 /// layouts render the same set in one action row: download and copy link
 /// directly, everything else in "more", so each action has one entry.
 class IllustPageActions {
-  const IllustPageActions({required this.illustId, required this.pageIndex, required this.imagePages, required this.loadedImages, required this.isUgoira});
+  const IllustPageActions({required this.artwork, required this.pageIndex, required this.imagePages, required this.loadedImages, required this.isUgoira});
 
-  final int illustId;
+  final ArtworkSource artwork;
   final int pageIndex;
   final List<IllustPageImage> imagePages;
   final LoadedIllustImages loadedImages;
@@ -702,25 +717,25 @@ class IllustPageActions {
   Future<void> download({Rect? origin}) async {
     if (!canDownload) return;
     final index = pageIndex.clamp(0, imagePages.length - 1);
-    if (await _isImageAlreadyDownloading(illustId, index)) {
+    if (await _isImageAlreadyDownloading(artwork.illustId, index)) {
       AppToast.info(t.illust.toast.alreadyDownloading);
       return;
     }
-    await _downloadImage(illustId, index, _page, loadedImages, origin: origin);
+    await _downloadImage(artwork, index, _page, loadedImages, origin: origin);
   }
 
-  Future<void> copyLink() => _copyIllustLink(illustId);
+  Future<void> copyLink() => _copyIllustLink(artwork.illustId);
 
   Future<void> showMore(BuildContext buttonContext) async {
     final box = buttonContext.findRenderObject();
     if (box is! RenderBox || imagePages.isEmpty) {
-      await _openIllustOnPixiv(illustId);
+      await _openIllustOnPixiv(artwork.illustId);
       return;
     }
     await showIllustImageContextMenu(
       buttonContext,
       box.localToGlobal(box.size.bottomLeft(Offset.zero)),
-      illustId,
+      artwork,
       pageIndex.clamp(0, imagePages.length - 1),
       _page,
       imagePages,

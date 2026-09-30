@@ -1,3 +1,5 @@
+import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
+import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 import 'package:skeletonizer/skeletonizer.dart';
@@ -35,7 +37,10 @@ class NovelReaderPage extends ConsumerWidget {
     final detailValue = ref.watch(provider);
 
     return detailValue.when(
-      data: (detail) => NovelReaderContent(key: ValueKey<String>('novel-reader-content-${detail.novel.id}'), detail: detail),
+      data: (detail) => DownloadSourceScope(
+        source: novelDownloadSource(detail.novel),
+        child: NovelReaderContent(key: ValueKey<String>('novel-reader-content-${detail.novel.id}'), detail: detail),
+      ),
       loading: () => const _ReaderLoadingPage(),
       error: (error, stackTrace) {
         if (_isNotFoundError(error)) {

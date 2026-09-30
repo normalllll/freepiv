@@ -53,10 +53,7 @@ class DownloadSummaryView extends StatelessWidget {
           ),
           SizedBox(height: compact ? 8 : 12),
         ],
-        if (summary.total > 0) ...[
-          _AnimatedRoundedProgressIndicator(value: summary.total == 0 ? 0 : progress, minHeight: compact ? 5 : 6),
-          const SizedBox(height: 8),
-        ],
+        if (summary.total > 0) ...[DownloadProgressIndicator(value: summary.total == 0 ? 0 : progress, minHeight: compact ? 5 : 6), const SizedBox(height: 8)],
         if (compact)
           // One quiet metadata line; only failures draw attention.
           Text.rich(
@@ -92,154 +89,102 @@ class DownloadSummaryView extends StatelessWidget {
   }
 }
 
-class DownloadTaskList extends StatelessWidget {
-  const DownloadTaskList({required this.tasks, this.compact = false, this.maxItems, this.showTooltips = true, this.onOpenWork, super.key});
-
-  final List<DownloadTaskSnapshot> tasks;
-  final bool compact;
-  final int? maxItems;
-  final bool showTooltips;
-  final ValueChanged<ArtworkPage>? onOpenWork;
-
-  @override
-  Widget build(BuildContext context) {
-    final visibleTasks = maxItems == null ? tasks : tasks.take(maxItems!).toList(growable: false);
-    if (visibleTasks.isEmpty) {
-      return _DownloadEmptyState(compact: compact);
-    }
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var index = 0; index < visibleTasks.length; index += 1) ...[
-          if (index > 0) const Divider(height: 1),
-          DownloadTaskTile(task: visibleTasks[index], compact: compact, showTooltips: showTooltips, onOpenWork: onOpenWork),
-        ],
-      ],
-    );
-  }
-}
-
-class DownloadTaskTile extends StatelessWidget {
-  const DownloadTaskTile({required this.task, this.compact = false, this.showTooltips = true, this.onOpenWork, super.key});
+/// One file of a download item: its name, status, size and progress, with
+/// the error that stopped it. [detailed] adds where it was saved, for an
+/// item of a single file.
+class DownloadFileRow extends StatelessWidget {
+  const DownloadFileRow({required this.task, this.detailed = false, this.showTooltips = true, super.key});
 
   final DownloadTaskSnapshot task;
-  final bool compact;
+  final bool detailed;
   final bool showTooltips;
-  final ValueChanged<ArtworkPage>? onOpenWork;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final status = _taskStatusLabel(task);
     final progress = task.progress.clamp(0, 1).toDouble();
+    final active = task.status == DownloadStatus.running || task.status == DownloadStatus.queued;
     final localPath = task.localPath;
     final error = task.error;
 
-    final child = AnimatedSize(
+    return AnimatedSize(
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOutCubic,
       alignment: Alignment.topCenter,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8, vertical: compact ? 8 : 10),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _DownloadThumbnail(url: task.thumbnailUrl, compact: compact),
-            SizedBox(width: compact ? 9 : 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const SizedBox(height: 4),
+                  Text(
+                    task.filename,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  // Status first, then the size, which is what changes while
+                  // the file downloads.
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      DownloadTaskStatusLabel(task: task, compact: true),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          task.title.trim().isEmpty ? task.filename : task.title.trim(),
+                          downloadBytesLabel(task),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: (compact ? textTheme.labelLarge : textTheme.titleSmall)?.copyWith(fontWeight: FontWeight.w700),
+                          style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Text('${(progress * 100).round()}%', style: textTheme.labelMedium?.copyWith(color: FreepivThemeTokens.of(context).textPrimary)),
                     ],
                   ),
-                  SizedBox(height: compact ? 4 : 6),
-                  _AnimatedRoundedProgressIndicator(
-                    value: task.status == DownloadStatus.running || task.totalBytes != null ? progress : null,
-                    minHeight: compact ? 3 : 5,
+                  _AnimatedTaskDetail(
+                    visible: active,
+                    child: DownloadProgressIndicator(value: task.status == DownloadStatus.running || task.totalBytes != null ? progress : null, minHeight: 3),
                   ),
-                  SizedBox(height: compact ? 4 : 6),
-                  if (compact)
-                    // Status first, then quiet metadata, on one line.
-                    Row(
-                      children: [
-                        _AnimatedStatusLabel(task: task, status: status, compact: true),
-                        const SizedBox(width: 8),
-                        // Size first: it is what changes while downloading, and
-                        // an ellipsis shortens the ID after it before the size.
-                        Expanded(
-                          child: Text(
-                            switch (task.origin) {
-                              ArtworkPage(:final illustId) => '${_bytesLabel(task)} · ${context.t.common.id} $illustId',
-                              ContentImage() => _bytesLabel(task),
-                            },
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-                          ),
-                        ),
-                      ],
-                    )
-                  else
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        _AnimatedStatusLabel(task: task, status: status, compact: compact),
-                        if (task.origin case ArtworkPage(:final illustId))
-                          Text('${context.t.common.id} $illustId', style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
-                        Text(_bytesLabel(task), style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
-                      ],
+                  _AnimatedTaskDetail(
+                    visible: error != null && error.isNotEmpty,
+                    child: Text(
+                      error ?? '',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.bodySmall?.copyWith(color: colorScheme.error),
                     ),
-                  _AnimatedTaskDetailText(
-                    visible: !compact && error != null && error.isNotEmpty,
-                    text: error ?? '',
-                    style: textTheme.bodySmall?.copyWith(color: colorScheme.error),
-                    maxLines: 2,
                   ),
-                  _AnimatedTaskDetailText(
-                    visible: !compact && localPath != null && localPath.isNotEmpty,
-                    text: localPath ?? '',
-                    style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                  _AnimatedTaskDetail(
+                    visible: detailed && localPath != null && localPath.isNotEmpty,
+                    child: Text(
+                      localPath ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                    ),
                   ),
                 ],
               ),
             ),
-            SizedBox(width: compact ? 4 : 8),
-            _DownloadTaskActions(task: task, compact: compact, showTooltips: showTooltips),
+            const SizedBox(width: 8),
+            DownloadTaskActions(task: task, showTooltips: showTooltips),
           ],
         ),
       ),
     );
-
-    // Only a finished work page opens its work; a content image has none.
-    if ((onOpenWork, task.origin) case (final open?, final ArtworkPage work) when _isFinished(task)) {
-      return AppClickSurface(onTap: () => open(work), child: child);
-    }
-    return child;
   }
 }
 
-class _DownloadTaskActions extends StatelessWidget {
-  const _DownloadTaskActions({required this.task, required this.compact, required this.showTooltips});
+/// A file's own actions: retry or cancel while there is one, and a menu to
+/// delete its record or read its log.
+class DownloadTaskActions extends StatelessWidget {
+  const DownloadTaskActions({required this.task, this.showTooltips = true, super.key});
 
   final DownloadTaskSnapshot task;
-  final bool compact;
   final bool showTooltips;
 
   @override
@@ -270,7 +215,7 @@ class _DownloadTaskActions extends StatelessWidget {
               child: Text(t.settings.downloads.deleteTask),
             ),
             if (task.log != null && task.log!.isNotEmpty)
-              AppMenuItem(onPressed: () => _showTaskLog(context, task), leadingIcon: const Icon(Icons.article_outlined), child: Text(t.common.viewLog)),
+              AppMenuItem(onPressed: () => showDownloadTaskLog(context, task), leadingIcon: const Icon(Icons.article_outlined), child: Text(t.common.viewLog)),
           ],
           builder: (context, focusNode, toggle) => IconButton(
             focusNode: focusNode,
@@ -287,7 +232,7 @@ class _DownloadTaskActions extends StatelessWidget {
 
   Widget? _primaryActionFor(DownloadTaskSnapshot task, {required bool showTooltips}) {
     if (task.status == DownloadStatus.failed) {
-      return _SmallActionIcon(
+      return DownloadTaskAction(
         key: const ValueKey<String>('retry'),
         tooltip: showTooltips ? t.common.retry : null,
         icon: const Icon(Icons.refresh_outlined),
@@ -296,7 +241,7 @@ class _DownloadTaskActions extends StatelessWidget {
     }
 
     if (task.status == DownloadStatus.downloaded && task.saveState == SaveState.failed) {
-      return _SmallActionIcon(
+      return DownloadTaskAction(
         key: const ValueKey<String>('retry-save'),
         tooltip: showTooltips ? t.common.retry : null,
         icon: const Icon(Icons.refresh_outlined),
@@ -305,7 +250,7 @@ class _DownloadTaskActions extends StatelessWidget {
     }
 
     if (task.status == DownloadStatus.running || task.status == DownloadStatus.queued) {
-      return _SmallActionIcon(
+      return DownloadTaskAction(
         key: const ValueKey<String>('cancel'),
         tooltip: showTooltips ? t.settings.downloads.cancel : null,
         icon: const Icon(Icons.close_outlined),
@@ -325,7 +270,7 @@ class _DownloadTaskActions extends StatelessWidget {
   }
 }
 
-void _showTaskLog(BuildContext context, DownloadTaskSnapshot task) {
+void showDownloadTaskLog(BuildContext context, DownloadTaskSnapshot task) {
   final log = task.log;
   if (log == null || log.isEmpty) {
     return;
@@ -351,7 +296,7 @@ void _showTaskLog(BuildContext context, DownloadTaskSnapshot task) {
                 'jobId=${task.id}\n'
                 'origin=${switch (task.origin) {
                   ArtworkPage(:final illustId, :final pageIndex) => 'illust $illustId page $pageIndex',
-                  ContentImage(:final address) => 'image $address',
+                  ContentFile(:final address) => 'file $address',
                 }}\n'
                 'filename=${task.filename}\n'
                 'status=${task.status.name}\n'
@@ -379,8 +324,8 @@ void _showTaskLog(BuildContext context, DownloadTaskSnapshot task) {
   );
 }
 
-class _SmallActionIcon extends StatelessWidget {
-  const _SmallActionIcon({required this.icon, required this.onPressed, this.tooltip, super.key});
+class DownloadTaskAction extends StatelessWidget {
+  const DownloadTaskAction({required this.icon, required this.onPressed, this.tooltip, super.key});
 
   final Widget icon;
   final VoidCallback onPressed;
@@ -399,12 +344,13 @@ class _SmallActionIcon extends StatelessWidget {
     );
 
     final tooltip = this.tooltip;
-    return tooltip == null ? child : Tooltip(message: tooltip, child: child);
+    final target = SizedBox.square(dimension: AppMetrics.compactTargetHeight, child: child);
+    return tooltip == null ? target : Tooltip(message: tooltip, child: target);
   }
 }
 
-class _AnimatedRoundedProgressIndicator extends StatelessWidget {
-  const _AnimatedRoundedProgressIndicator({required this.value, required this.minHeight});
+class DownloadProgressIndicator extends StatelessWidget {
+  const DownloadProgressIndicator({required this.value, required this.minHeight, super.key});
 
   final double? value;
   final double minHeight;
@@ -435,11 +381,11 @@ class _AnimatedRoundedProgressIndicator extends StatelessWidget {
   }
 }
 
-class _AnimatedStatusLabel extends StatelessWidget {
-  const _AnimatedStatusLabel({required this.task, required this.status, required this.compact});
+/// A file's status, which slides in when it changes.
+class DownloadTaskStatusLabel extends StatelessWidget {
+  const DownloadTaskStatusLabel({required this.task, this.compact = false, super.key});
 
   final DownloadTaskSnapshot task;
-  final String status;
   final bool compact;
 
   @override
@@ -462,22 +408,22 @@ class _AnimatedStatusLabel extends StatelessWidget {
           );
         },
         child: Text(
-          status,
+          downloadTaskStatusLabel(task),
           key: ValueKey<String>('${task.status.name}-${task.saveState.name}'),
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: _statusColor(context, task)),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: downloadTaskStatusColor(context, task)),
         ),
       ),
     );
   }
 }
 
-class _AnimatedTaskDetailText extends StatelessWidget {
-  const _AnimatedTaskDetailText({required this.visible, required this.text, required this.style, this.maxLines = 1});
+/// A detail under a file (progress, error, path) that eases in and out with
+/// its own height.
+class _AnimatedTaskDetail extends StatelessWidget {
+  const _AnimatedTaskDetail({required this.visible, required this.child});
 
   final bool visible;
-  final String text;
-  final TextStyle? style;
-  final int maxLines;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -496,42 +442,11 @@ class _AnimatedTaskDetailText extends StatelessWidget {
       },
       child: visible
           ? Padding(
-              key: ValueKey<String>(text),
+              key: const ValueKey<String>('detail'),
               padding: const EdgeInsets.only(top: 6),
-              child: SizedBox(
-                width: double.infinity,
-                child: Text(text, maxLines: maxLines, overflow: TextOverflow.ellipsis, style: style),
-              ),
+              child: SizedBox(width: double.infinity, child: child),
             )
           : const SizedBox.shrink(key: ValueKey<String>('empty-detail')),
-    );
-  }
-}
-
-class _DownloadThumbnail extends StatelessWidget {
-  const _DownloadThumbnail({required this.url, required this.compact});
-
-  final String? url;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final size = compact ? 56.0 : 60.0;
-    final url = this.url;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppMetrics.controlRadius),
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: url == null || url.isEmpty
-            ? ColoredBox(
-                color: colorScheme.surfaceContainerHighest,
-                child: Icon(Icons.image_outlined, color: colorScheme.onSurfaceVariant),
-              )
-            : PixivImage(url: url, fit: BoxFit.cover),
-      ),
     );
   }
 }
@@ -557,8 +472,8 @@ class _SummaryPill extends StatelessWidget {
   }
 }
 
-class _DownloadEmptyState extends StatelessWidget {
-  const _DownloadEmptyState({required this.compact});
+class DownloadEmptyState extends StatelessWidget {
+  const DownloadEmptyState({this.compact = false, super.key});
 
   final bool compact;
 
@@ -600,7 +515,7 @@ String _summaryTitle(DownloadSummary summary) {
   return t.settings.downloads.completed;
 }
 
-String _taskStatusLabel(DownloadTaskSnapshot task) {
+String downloadTaskStatusLabel(DownloadTaskSnapshot task) {
   if (task.status == DownloadStatus.downloaded) {
     return switch (task.saveState) {
       SaveState.pending => t.settings.downloads.savePending,
@@ -621,7 +536,7 @@ String _taskStatusLabel(DownloadTaskSnapshot task) {
   };
 }
 
-Color _statusColor(BuildContext context, DownloadTaskSnapshot task) {
+Color downloadTaskStatusColor(BuildContext context, DownloadTaskSnapshot task) {
   final colorScheme = Theme.of(context).colorScheme;
   if (task.status == DownloadStatus.failed || task.saveState == SaveState.failed) {
     return colorScheme.error;
@@ -632,15 +547,11 @@ Color _statusColor(BuildContext context, DownloadTaskSnapshot task) {
   return colorScheme.onSurfaceVariant;
 }
 
-String _bytesLabel(DownloadTaskSnapshot task) {
+String downloadBytesLabel(DownloadTaskSnapshot task) {
   final total = task.totalBytes;
   final received = formatByteSize(task.receivedBytes);
   if (total == null || total <= 0 || task.receivedBytes >= total) {
     return received;
   }
   return '$received / ${formatByteSize(total)}';
-}
-
-bool _isFinished(DownloadTaskSnapshot task) {
-  return task.status == DownloadStatus.downloaded || task.saveState == SaveState.saved;
 }

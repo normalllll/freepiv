@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 import 'login_logic.dart';
 
 import 'package:hive_ce_flutter/hive_flutter.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:freepiv/core/downloads/download_file_system.dart';
+import 'package:freepiv/core/downloads/download_manager.dart';
+import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
@@ -313,107 +312,155 @@ class FanboxBookmarks extends _$FanboxBookmarks {
   }
 }
 
-class FanboxDownloadProgress {
-  const FanboxDownloadProgress({this.running = false, this.completed = 0, this.total = 0, this.error, this.files = const [], this.cancelled = false});
-  final bool running;
-  final int completed;
-  final int total;
-  final Object? error;
-  final List<String> files;
-  final bool cancelled;
-  bool get visible => running || total > 0 || error != null || cancelled;
+/// A creator being collected for download, with the posts read so far.
+typedef FanboxCollecting = ({FanboxCreatorSource source, int posts});
+
+bool _isFanboxHost(String host) => host == 'fanbox.cc' || host.endsWith('.fanbox.cc');
+
+/// The headers a FANBOX download needs from the session (see
+/// DownloadSessionHeaders): the stored session's cookie, for files on
+/// FANBOX's own hosts, read each time a download starts.
+Future<Map<String, String>> fanboxDownloadSessionHeaders(DownloadJob job) async {
+  if (!_isFanboxHost(job.url.host)) return const {};
+  final session = (await Hive.openBox<String>('fanbox')).get('session');
+  if (session == null) throw DownloadException(t.fanbox.sessionExpired);
+  return {'Cookie': 'FANBOXSESSID=$session'};
 }
 
-Future<String> fanboxDownloadDirectory() async {
-  final root = Platform.isWindows || Platform.isLinux || Platform.isMacOS
-      ? await resolveDesktopDownloadDirectory()
-      : p.join((await getApplicationDocumentsDirectory()).path, appDownloadDirectoryName);
-  return p.join(root, 'fanbox');
-}
-
+/// FANBOX downloads, run by the download manager like every other download.
+///
+/// Downloading a creator whole first collects their posts page by page,
+/// queueing each post's files as soon as the post is read. The state is the
+/// creators still being collected, by creator id, with how many posts were
+/// read so far.
 @Riverpod(keepAlive: true)
 class FanboxDownloads extends _$FanboxDownloads {
-  bool _cancelled = false;
-  ({String directory, FanboxPost? post, String? creatorId, List<({String url, String filename})> media})? _lastRequest;
+  final _stopRequested = <String>{};
+  int _sessionRevision = 0;
+
   @override
-  FanboxDownloadProgress build() {
-    ref.onDispose(() => _cancelled = true);
+  Map<String, FanboxCollecting> build() {
     ref.listen(fanboxSessionProvider, (previous, next) {
       if (previous?.hasValue == true && next.hasValue && previous?.value != next.value) {
-        _cancelled = true;
-        _lastRequest = null;
+        // Another account, or none: what the old session asked for stops.
+        _sessionRevision++;
+        unawaited(_cancelActiveDownloads());
       }
     });
-    return const FanboxDownloadProgress();
+    return const {};
   }
 
-  void cancel() {
-    _cancelled = true;
+  /// Queues every image and file of [post]; returns how many were queued,
+  /// none when all of them already are.
+  Future<int> downloadPost(FanboxPost post, {required FanboxPostSource source}) => _enqueue(_postJobs(post, source: source));
+
+  /// Downloads one image or attachment shown under [source]; completes once
+  /// it is saved.
+  Future<DownloadedFile> downloadFile({required String url, required String filename, required DownloadSource source, bool image = true}) {
+    final uri = Uri.parse(url);
+    return downloadManager.download(
+      origin: ContentFile.of(uri),
+      source: source,
+      url: uri,
+      filename: filename,
+      networkOptions: _requestOptions,
+      validation: image ? _imageValidation : const DownloadValidationOptions(),
+      thumbnailUrl: image ? url : null,
+    );
   }
 
-  Future<void> retry() async {
-    final request = _lastRequest;
-    if (request != null) await downloadPosts(directory: request.directory, post: request.post, creatorId: request.creatorId, media: request.media);
-  }
-
-  void clearCompleted() {
-    if (state.running || state.error != null || state.cancelled || state.completed != state.total) return;
-    _lastRequest = null;
-    state = const FanboxDownloadProgress();
-  }
-
-  Future<void> downloadPosts({required String directory, FanboxPost? post, String? creatorId, List<({String url, String filename})> media = const []}) async {
-    if (state.running) return;
-    _lastRequest = (directory: directory, post: post, creatorId: creatorId, media: List.unmodifiable(media));
-    _cancelled = false;
-    state = const FanboxDownloadProgress(running: true);
-    var completed = 0;
-    var total = 0;
-    var files = const <String>[];
+  /// Collects every post of [source]'s creator that the session can read
+  /// and queues its files, each under its post; returns how many were queued.
+  /// Does nothing while the creator is already being collected.
+  Future<int> downloadCreator(FanboxCreatorSource source) async {
+    final creatorId = source.creatorId;
+    if (state.containsKey(creatorId)) return 0;
+    final revision = _sessionRevision;
+    _stopRequested.remove(creatorId);
+    _setCollected(source, 0);
+    var queued = 0;
+    var posts = 0;
+    bool stopped() => !ref.mounted || _stopRequested.contains(creatorId) || revision != _sessionRevision;
     try {
-      await Directory(directory).create(recursive: true);
       final api = await ref.read(fanboxApiProvider.future);
-      final posts = <FanboxPost>[];
-      if (post != null) posts.add(post);
-      if (creatorId != null) {
-        for (final url in await api.getCreatorPostPages(creatorId: creatorId)) {
-          if (_cancelled) break;
-          final page = await api.getNextPosts(url: url);
-          for (final summary in page.posts) {
-            if (_cancelled) break;
-            if (!summary.isRestricted) posts.add(await api.getPost(postId: summary.id));
-          }
+      for (final url in await api.getCreatorPostPages(creatorId: creatorId)) {
+        if (stopped()) break;
+        final page = await api.getNextPosts(url: url);
+        for (final summary in page.posts) {
+          if (stopped()) break;
+          if (summary.isRestricted) continue;
+          final post = await api.getPost(postId: summary.id);
+          if (stopped()) break;
+          queued += await _enqueue(
+            _postJobs(
+              post,
+              source: source,
+              part: DownloadPart(id: post.id, title: post.title),
+            ),
+          );
+          _setCollected(source, ++posts);
         }
       }
-      final downloads = <({String url, String filename})>[...media];
-      for (final post in posts) {
-        for (final block in post.blocks) {
-          switch (block) {
-            case FanboxBlock_Image(:final image):
-              downloads.add((url: image.originalUrl, filename: '${post.id}_${image.id}.${image.extension_}'));
-            case FanboxBlock_File(:final file):
-              downloads.add((url: file.url, filename: '${post.id}_${file.id}_${file.name}.${file.extension_}'));
-            default:
-              break;
-          }
-        }
-      }
-      total = downloads.length;
-      files = List.unmodifiable(downloads.map((item) => item.filename));
-      if (!ref.mounted) return;
-      state = FanboxDownloadProgress(running: true, completed: completed, total: total, files: files);
-      for (final item in downloads) {
-        if (_cancelled) break;
-        final filename = safeDownloadFilename(item.filename);
-        final destination = p.join(directory, filename);
-        if (!await File(destination).exists()) await api.downloadMedia(url: item.url, path: destination);
-        completed++;
-        if (!ref.mounted) return;
-        state = FanboxDownloadProgress(running: true, completed: completed, total: total, files: files);
-      }
-      if (ref.mounted) state = FanboxDownloadProgress(completed: completed, total: total, files: files, cancelled: _cancelled);
-    } catch (error) {
-      if (ref.mounted) state = FanboxDownloadProgress(completed: completed, total: total, error: error, files: files);
+      return queued;
+    } finally {
+      _stopRequested.remove(creatorId);
+      if (ref.mounted) state = Map.unmodifiable({...state}..remove(creatorId));
     }
+  }
+
+  /// Stops collecting [creatorId]'s posts; files already queued carry on
+  /// unless cancelled themselves.
+  void stopCollecting(String creatorId) {
+    if (state.containsKey(creatorId)) _stopRequested.add(creatorId);
+  }
+
+  void _setCollected(FanboxCreatorSource source, int posts) {
+    if (ref.mounted) state = Map.unmodifiable({...state, source.creatorId: (source: source, posts: posts)});
+  }
+
+  Future<int> _enqueue(List<DownloadJob> jobs) async {
+    if (jobs.isEmpty) return 0;
+    try {
+      return await downloadManager.enqueue(jobs);
+    } on DownloadAlreadyQueued {
+      return 0;
+    }
+  }
+
+  Future<void> _cancelActiveDownloads() async {
+    for (final task in await downloadManager.listTasks()) {
+      if (task.source is FanboxSource && !task.isTerminal) await downloadManager.cancel(task.id);
+    }
+  }
+
+  static const _requestOptions = DownloadNetworkOptions(headers: {'Referer': 'https://www.fanbox.cc/'});
+  static const _imageValidation = DownloadValidationOptions(allowedContentTypes: ['image/*']);
+
+  List<DownloadJob> _postJobs(FanboxPost post, {required FanboxSource source, DownloadPart? part}) {
+    DownloadJob job(String url, String filename, {required bool image, String? thumbnailUrl}) {
+      final uri = Uri.parse(url);
+      return DownloadJob.create(
+        origin: ContentFile.of(uri),
+        source: source,
+        part: part,
+        url: uri,
+        filename: safeDownloadFilename(filename),
+        saveTarget: const SaveTarget.downloadsFolder(),
+        networkOptions: _requestOptions,
+        validation: image ? _imageValidation : const DownloadValidationOptions(),
+        thumbnailUrl: thumbnailUrl,
+      );
+    }
+
+    return [
+      for (final block in post.blocks)
+        ...switch (block) {
+          FanboxBlock_Image(:final image) => [
+            job(image.originalUrl, '${post.id}_${image.id}.${image.extension_}', image: true, thumbnailUrl: image.thumbnailUrl),
+          ],
+          FanboxBlock_File(:final file) => [job(file.url, '${post.id}_${file.id}_${file.name}.${file.extension_}', image: false)],
+          _ => const <DownloadJob>[],
+        },
+    ];
   }
 }

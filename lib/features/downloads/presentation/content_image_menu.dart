@@ -8,7 +8,9 @@ import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
+import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:path/path.dart' as p;
 
 /// An image shown inside other content (a FANBOX post, a Pixivision article,
@@ -25,25 +27,36 @@ class ContentImageActions {
     return ContentImageActions(
       url: url,
       headers: headers,
-      download: (origin) => _downloadThroughManager(url: url, headers: headers, title: title, flightOrigin: origin),
+      download: (source, origin) => _downloadThroughManager(url: url, headers: headers, title: title, source: source, flightOrigin: origin),
     );
   }
 
   final String url;
   final Map<String, String> headers;
 
-  /// Starts the download; the argument is where it was asked for, for the
-  /// flight to the download badge.
-  final Future<void> Function(Rect origin) download;
+  /// Starts the download, filed under the page's source (see
+  /// DownloadSourceScope); origin is where it was asked for, for the flight
+  /// to the download badge.
+  final Future<void> Function(DownloadSource source, Rect origin) download;
 }
 
-Future<void> _downloadThroughManager({required String url, required Map<String, String> headers, required String? title, required Rect flightOrigin}) async {
+Future<void> _downloadThroughManager({
+  required String url,
+  required Map<String, String> headers,
+  required String? title,
+  required DownloadSource source,
+  required Rect flightOrigin,
+}) async {
   final uri = Uri.parse(url);
   try {
     await downloadManager.ensureReadyForDownloads();
-    DownloadFlight.launch(origin: flightOrigin, imageUrl: url);
+    DownloadFlight.launch(
+      origin: flightOrigin,
+      artwork: PixivImage(url: url, headers: headers),
+    );
     final file = await downloadManager.download(
       origin: DownloadOrigin.ofImageUrl(uri),
+      source: source,
       url: uri,
       networkOptions: DownloadNetworkOptions(headers: headers),
       thumbnailUrl: url,
@@ -82,6 +95,7 @@ class ContentImageMenuRegion extends ConsumerWidget {
     final local = overlay.globalToLocal(position);
     final anchor = Offset(local.dx.clamp(8.0, math.max(8.0, overlay.size.width - 8)), local.dy.clamp(8.0, math.max(8.0, overlay.size.height - 8)));
     final menu = context.t.illust.contextMenu;
+    final source = DownloadSourceScope.of(context);
     final action = await showMenu<_ContentImageAction>(
       context: context,
       clipBehavior: Clip.antiAlias,
@@ -100,7 +114,7 @@ class ContentImageMenuRegion extends ConsumerWidget {
     );
     switch (action) {
       case _ContentImageAction.download:
-        unawaited(actions.download(Rect.fromCenter(center: position, width: 48, height: 48)));
+        unawaited(actions.download(source, Rect.fromCenter(center: position, width: 48, height: 48)));
       case _ContentImageAction.copy:
         unawaited(_copy(transport));
       case null:

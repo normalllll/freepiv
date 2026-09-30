@@ -17,6 +17,7 @@ import 'package:freepiv/shared/widgets/interaction_controls.dart';
 import 'package:freepiv/core/downloads/models/download_task_snapshot.dart';
 import 'package:freepiv/core/downloads/models/download_enums.dart';
 import 'package:freepiv/core/downloads/models/download_origin.dart';
+import 'package:freepiv/core/downloads/models/download_source.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 
@@ -260,6 +261,7 @@ void main() {
     final task = DownloadTaskSnapshot(
       id: 'review',
       origin: const ArtworkPage(illustId: 1, pageIndex: 0),
+      source: const ArtworkSource(illustId: 1, title: 'Long artwork title for compact download panel'),
       title: 'Long artwork title for compact download panel',
       filename: 'art.png',
       status: DownloadStatus.failed,
@@ -279,7 +281,7 @@ void main() {
           child: MaterialApp(
             builder: (context, child) => AppInputFeedback(child: child!),
             theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-            home: Scaffold(body: DownloadTaskTile(task: task, compact: true)),
+            home: Scaffold(body: DownloadFileRow(task: task)),
           ),
         ),
       ),

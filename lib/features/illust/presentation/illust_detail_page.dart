@@ -163,6 +163,7 @@ class _IllustDetailContentState extends ConsumerState<IllustDetailContent> {
         title: widget.illust.title.trim().isNotEmpty
             ? widget.illust.title
             : t.nativeWindow.workFallback(type: t.nativeWindow.illust, id: '${widget.illust.id}'),
+        source: artworkDownloadSource(widget.illust),
         initialIndex: index,
         pages: [
           for (final (pageIndex, image) in imagePages.indexed)

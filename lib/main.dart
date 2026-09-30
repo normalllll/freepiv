@@ -5,13 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:freepiv/app/app.dart';
 import 'package:freepiv/app_links/app_links.dart';
+import 'package:freepiv/core/downloads/download_manager.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/core/services/updater_service.dart';
+import 'package:freepiv/features/fanbox/logic.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await appLinkDispatcher.start();
+  useDownloadSessionHeaders(fanboxDownloadSessionHeaders);
   await initializeAppServices();
   await initializeLocaleSettings();
   refreshPixivApiLanguage();

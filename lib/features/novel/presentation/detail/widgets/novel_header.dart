@@ -2,6 +2,7 @@ import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
 import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:go_router/go_router.dart';
@@ -100,6 +101,7 @@ class LargeNovelCoverImage extends StatelessWidget {
               AppRoute.originalImageViewer.name,
               extra: OriginalImageViewerArgs(
                 title: t.novel.detail.images,
+                source: DownloadSourceScope.of(context),
                 initialIndex: 0,
                 pages: [OriginalImagePage(url: url, previewUrl: url, downloadOrigin: DownloadOrigin.ofImageUrl(Uri.parse(url)))],
               ),

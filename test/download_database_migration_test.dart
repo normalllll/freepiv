@@ -41,15 +41,63 @@ void main() {
 
     final [kept] = await store.listTasks();
     expect(kept.origin, const ArtworkPage(illustId: 7, pageIndex: 1));
+    expect(kept.source, isA<ArtworkSource>().having((source) => source.illustId, 'illustId', 7));
     expect(kept.saveState, SaveState.saved);
 
     final image = Uri.parse('https://i.pximg.net/imgaz/upload/article.jpg');
-    final job = DownloadJob.create(origin: ContentImage(image), url: image, saveTarget: const SaveTarget.downloadsFolder());
+    const article = PixivisionSource(articleId: 3, url: 'https://www.pixivision.net/en/a/3', title: 'Article');
+    final job = DownloadJob.create(origin: ContentFile(image), source: article, url: image, saveTarget: const SaveTarget.downloadsFolder());
     await store.upsertJob(job);
 
-    expect((await store.getJob(job.id))?.origin, ContentImage(image));
-    expect((await store.listTasks()).map((task) => task.origin), containsAll([const ArtworkPage(illustId: 7, pageIndex: 1), ContentImage(image)]));
+    final stored = await store.getJob(job.id);
+    expect(stored?.origin, ContentFile(image));
+    expect(stored?.source, isA<PixivisionSource>().having((source) => source.url, 'url', article.url).having((source) => source.title, 'title', 'Article'));
+    expect((await store.listTasks()).map((task) => task.origin), containsAll([const ArtworkPage(illustId: 7, pageIndex: 1), ContentFile(image)]));
     expect(await store.listTasks(illustId: 7), hasLength(1), reason: 'content images never match a work');
+  });
+
+  test('upgrading version 5 files each saved image under its work or on its own', () async {
+    final store = DriftDownloadStore(
+      DownloadDatabase.withExecutor(
+        NativeDatabase.memory(
+          setup: (db) {
+            db.execute('''
+              CREATE TABLE download_jobs (
+                id TEXT NOT NULL, illust_id INTEGER, page_index INTEGER, url TEXT NOT NULL, filename TEXT NOT NULL,
+                headers_json TEXT NOT NULL DEFAULT '{}', network_options_json TEXT NOT NULL DEFAULT '{}',
+                validation_json TEXT NOT NULL DEFAULT '{}', save_target_json TEXT NOT NULL DEFAULT '{}',
+                thumbnail_url TEXT, title TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (id))
+            ''');
+            db.execute(_version4[1]);
+            db.execute(
+              "INSERT INTO download_jobs (id, illust_id, page_index, url, filename, thumbnail_url, title, created_at, updated_at) "
+              "VALUES ('illust_7_page_0', 7, 0, 'https://i.pximg.net/img-original/img/7_p0.png', '7_p0.png', 'https://i.pximg.net/7.jpg', 'Work', 1, 1)",
+            );
+            db.execute(
+              "INSERT INTO download_jobs (id, url, filename, created_at, updated_at) "
+              "VALUES ('image_i.pximg.net/a.jpg', 'https://i.pximg.net/a.jpg', 'a.jpg', 2, 2)",
+            );
+            for (final id in ['illust_7_page_0', 'image_i.pximg.net/a.jpg']) {
+              db.execute("INSERT INTO download_states (job_id, status, save_state, progress, updated_at) VALUES ('$id', 'downloaded', 'saved', 1, 1)");
+            }
+            db.userVersion = 5;
+          },
+        ),
+      ),
+    );
+    addTearDown(store.close);
+
+    final tasks = {for (final task in await store.listTasks()) task.id: task};
+    expect(
+      tasks['illust_7_page_0']?.source,
+      isA<ArtworkSource>()
+          .having((source) => source.title, 'title', 'Work')
+          .having((source) => source.thumbnailUrl, 'thumbnailUrl', 'https://i.pximg.net/7.jpg'),
+    );
+    expect(
+      tasks['image_i.pximg.net/a.jpg']?.source,
+      isA<StandaloneSource>().having((source) => source.taskId, 'taskId', 'image_i.pximg.net/a.jpg').having((source) => source.title, 'title', 'a.jpg'),
+    );
   });
 
   test('a database that cannot be upgraded is cleared instead of blocking downloads', () async {
@@ -70,7 +118,14 @@ void main() {
 
     expect(await store.listTasks(), isEmpty);
     final url = Uri.parse('https://i.pximg.net/img-original/img/9_p0.png');
-    await store.upsertJob(DownloadJob.create(origin: const ArtworkPage(illustId: 9, pageIndex: 0), url: url, saveTarget: const SaveTarget.downloadsFolder()));
+    await store.upsertJob(
+      DownloadJob.create(
+        origin: const ArtworkPage(illustId: 9, pageIndex: 0),
+        source: const ArtworkSource(illustId: 9, title: 'Work'),
+        url: url,
+        saveTarget: const SaveTarget.downloadsFolder(),
+      ),
+    );
     expect(await store.listTasks(illustId: 9), hasLength(1));
   });
 }

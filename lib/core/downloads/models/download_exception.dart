@@ -13,3 +13,8 @@ class DownloadException implements Exception {
     return '$message: $cause';
   }
 }
+
+/// Everything asked for is already queued or downloading; nothing was added.
+class DownloadAlreadyQueued extends DownloadException {
+  const DownloadAlreadyQueued() : super('This image is already queued or downloading.');
+}

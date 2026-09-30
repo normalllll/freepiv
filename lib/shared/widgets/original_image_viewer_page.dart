@@ -13,6 +13,7 @@ import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart
 import 'dart:math' as math;
 
 import 'package:extended_image/extended_image.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/services.dart';
@@ -24,10 +25,13 @@ import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:freepiv/shared/ui/fp_icon.dart';
 
 class OriginalImageViewerArgs {
-  const OriginalImageViewerArgs({required this.title, required this.pages, required this.initialIndex});
+  const OriginalImageViewerArgs({required this.title, required this.source, required this.pages, required this.initialIndex});
 
   /// What the viewer shows, for the window title and download tasks.
   final String title;
+
+  /// What the pages are part of, which their downloads are filed under.
+  final DownloadSource source;
   final List<OriginalImagePage> pages;
   final int initialIndex;
 }
@@ -148,6 +152,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
                         return _OriginalImageZoomPage(
                           key: ValueKey<String>('original-image-${page.url}'),
                           page: page,
+                          onMenu: (position) => unawaited(_showImageMenu(index, position)),
                           onZoomChanged: (zoomed) {
                             if (_zoomedPages[index] != zoomed && mounted) setState(() => _zoomedPages[index] = zoomed);
                           },
@@ -260,6 +265,45 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
     return KeyEventResult.ignored;
   }
 
+  /// Right click or long press on a page: the same download / copy actions as
+  /// the toolbar, at the pointer. They wait for the original to finish loading,
+  /// like the toolbar buttons.
+  Future<void> _showImageMenu(int index, Offset position) async {
+    final overlay = Navigator.of(context).overlay?.context.findRenderObject() as RenderBox?;
+    if (overlay == null) return;
+    final local = overlay.globalToLocal(position);
+    final anchor = Offset(local.dx.clamp(8.0, math.max(8.0, overlay.size.width - 8)), local.dy.clamp(8.0, math.max(8.0, overlay.size.height - 8)));
+    final menu = t.illust.contextMenu;
+    final loaded = _loadedImages.containsKey(index);
+    final action = await showMenu<_ViewerImageAction>(
+      context: context,
+      clipBehavior: Clip.antiAlias,
+      position: RelativeRect.fromRect(Rect.fromPoints(anchor, anchor), Offset.zero & overlay.size),
+      items: [
+        PopupMenuItem(
+          value: _ViewerImageAction.download,
+          enabled: loaded && !_downloading,
+          child: ListTile(leading: const Icon(Icons.download_outlined), title: Text(menu.download), contentPadding: EdgeInsets.zero),
+        ),
+        if (isDesktopPlatform)
+          PopupMenuItem(
+            value: _ViewerImageAction.copy,
+            enabled: loaded && !_copying,
+            child: ListTile(leading: const Icon(Icons.content_copy_outlined), title: Text(menu.copyImage), contentPadding: EdgeInsets.zero),
+          ),
+      ],
+    );
+    if (!mounted) return;
+    switch (action) {
+      case _ViewerImageAction.download:
+        unawaited(_downloadCurrentImage(origin: Rect.fromCenter(center: position, width: 48, height: 48)));
+      case _ViewerImageAction.copy:
+        unawaited(_copyCurrentImage());
+      case null:
+        break;
+    }
+  }
+
   Future<void> _copyCurrentImage() async {
     final image = _loadedImages[_pageIndex];
     if (image == null || _copying) return;
@@ -285,9 +329,13 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
     try {
       await downloadManager.ensureReadyForDownloads();
       final page = _pages[_pageIndex];
-      DownloadFlight.launch(origin: origin, imageUrl: page.previewUrl);
+      DownloadFlight.launch(
+        origin: origin,
+        artwork: PixivImage(url: page.previewUrl),
+      );
       final file = await downloadManager.saveBytes(
         origin: page.downloadOrigin,
+        source: widget.args.source,
         bytes: loadedImage.bytes,
         sourceUrl: Uri.parse(page.url),
         title: widget.args.title,
@@ -304,10 +352,13 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
   }
 }
 
+enum _ViewerImageAction { download, copy }
+
 class _OriginalImageZoomPage extends ConsumerStatefulWidget {
-  const _OriginalImageZoomPage({required this.page, required this.onLoaded, required this.onZoomChanged, super.key});
+  const _OriginalImageZoomPage({required this.page, required this.onMenu, required this.onLoaded, required this.onZoomChanged, super.key});
 
   final OriginalImagePage page;
+  final ValueChanged<Offset> onMenu;
   final ValueChanged<_LoadedOriginalImageData> onLoaded;
   final ValueChanged<bool> onZoomChanged;
 
@@ -325,10 +376,45 @@ class _OriginalImageZoomPageState extends ConsumerState<_OriginalImageZoomPage> 
     _transform.addListener(_notifyZoom);
   }
 
+  static const _holdSlop = 24.0;
+
+  Timer? _holdTimer;
+  int? _holdPointer;
+  Offset _holdOrigin = Offset.zero;
+
+  void _pointerDown(PointerDownEvent event) {
+    if (event.kind == PointerDeviceKind.mouse) {
+      if (event.buttons == kSecondaryMouseButton) widget.onMenu(event.position);
+      return;
+    }
+    // A second finger is a pinch, not a hold.
+    if (_holdPointer != null) {
+      _cancelHold();
+      return;
+    }
+    _holdPointer = event.pointer;
+    _holdOrigin = event.position;
+    _holdTimer = Timer(kLongPressTimeout, () {
+      _cancelHold();
+      widget.onMenu(_holdOrigin);
+    });
+  }
+
+  void _pointerMove(PointerMoveEvent event) {
+    if (event.pointer == _holdPointer && (event.position - _holdOrigin).distance > _holdSlop) _cancelHold();
+  }
+
+  void _cancelHold() {
+    _holdTimer?.cancel();
+    _holdTimer = null;
+    _holdPointer = null;
+  }
+
   void _notifyZoom() => widget.onZoomChanged(_transform.value.getMaxScaleOnAxis() > 1.01);
 
   @override
   void dispose() {
+    _holdTimer?.cancel();
     _transform.removeListener(_notifyZoom);
     _transform.dispose();
     super.dispose();
@@ -347,30 +433,40 @@ class _OriginalImageZoomPageState extends ConsumerState<_OriginalImageZoomPage> 
   Widget build(BuildContext context) {
     final backgroundColor = FreepivThemeTokens.of(context).surfaceInset;
 
-    return ClipRect(
-      child: ColoredBox(
-        color: backgroundColor,
-        child: InteractiveViewer(
-          transformationController: _transform,
-          minScale: 1,
-          maxScale: 6,
-          boundaryMargin: const EdgeInsets.all(96),
-          child: SizedBox.expand(
-            child: ExtendedImage(
-              image: RustExtendedNetworkImageProvider(
-                request: MediaRequest(url: widget.page.url),
-                cacheRawData: true,
-                mediaStream: ref.watch(rustMediaTransportProvider).stream,
+    // Raw pointer events rather than gesture recognizers: once zoomed, the
+    // viewer's pan wins the gesture arena at the first bit of drift, so a
+    // long press would never be recognized.
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: _pointerDown,
+      onPointerMove: _pointerMove,
+      onPointerUp: (_) => _cancelHold(),
+      onPointerCancel: (_) => _cancelHold(),
+      child: ClipRect(
+        child: ColoredBox(
+          color: backgroundColor,
+          child: InteractiveViewer(
+            transformationController: _transform,
+            minScale: 1,
+            maxScale: 6,
+            boundaryMargin: const EdgeInsets.all(96),
+            child: SizedBox.expand(
+              child: ExtendedImage(
+                image: RustExtendedNetworkImageProvider(
+                  request: MediaRequest(url: widget.page.url),
+                  cacheRawData: true,
+                  mediaStream: ref.watch(rustMediaTransportProvider).stream,
+                ),
+                fit: BoxFit.contain,
+                handleLoadingProgress: true,
+                loadStateChanged: (state) {
+                  return switch (state.extendedImageLoadState) {
+                    LoadState.loading => _OriginalImageLoadingPlaceholder(page: widget.page, progress: _imageLoadProgress(state.loadingProgress)),
+                    LoadState.failed => _OriginalImageLoadError(page: widget.page, onRetry: state.reLoadImage),
+                    LoadState.completed => _rememberLoadedImageData(state),
+                  };
+                },
               ),
-              fit: BoxFit.contain,
-              handleLoadingProgress: true,
-              loadStateChanged: (state) {
-                return switch (state.extendedImageLoadState) {
-                  LoadState.loading => _OriginalImageLoadingPlaceholder(page: widget.page, progress: _imageLoadProgress(state.loadingProgress)),
-                  LoadState.failed => _OriginalImageLoadError(page: widget.page, onRetry: state.reLoadImage),
-                  LoadState.completed => _rememberLoadedImageData(state),
-                };
-              },
             ),
           ),
         ),
