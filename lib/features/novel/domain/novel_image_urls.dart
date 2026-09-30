@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
@@ -16,6 +18,36 @@ String novelCoverUrl(Novel novel, WebviewNovel webviewNovel) {
 }
 
 // final _uploadedImagePattern = RegExp(r'\[uploadedimage:([^\]]+)\]');
+
+/// Pixiv works embedded with `[pixivimage:<id>]` or `[pixivimage:<id>-<page>]`,
+/// keyed like the marker. The webview reports them as one JSON object, which
+/// the bridge passes through as a string:
+/// `{"<key>": {"illust": {"images": {"original": …, "medium": …}}}}`.
+Map<String, String> novelEmbeddedWorkUrls(WebviewNovel webviewNovel) {
+  final urls = <String, String>{};
+  for (final raw in webviewNovel.illusts) {
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } on FormatException {
+      continue;
+    }
+    if (decoded is! Map<String, Object?>) continue;
+    for (final MapEntry(:key, :value) in decoded.entries) {
+      if (_bestWorkImageUrl(value) case final url?) urls[key] = url;
+    }
+  }
+  return urls;
+}
+
+String? _bestWorkImageUrl(Object? work) {
+  if (work case {'illust': {'images': final Map<String, Object?> images}} || {'images': final Map<String, Object?> images}) {
+    for (final size in const ['original', 'large', 'medium', 'small']) {
+      if (images[size] case final String url when _isImageUrl(url)) return url;
+    }
+  }
+  return null;
+}
 
 List<String> novelExtraImageUrls(Novel novel, WebviewNovel webviewNovel) {
   final coverUrl = novelCoverUrl(novel, webviewNovel).trim();
@@ -40,9 +72,7 @@ List<String> novelExtraImageUrls(Novel novel, WebviewNovel webviewNovel) {
     addUrl(_bestNovelImageUrl(image));
   }
 
-  for (final url in webviewNovel.illusts) {
-    addUrl(url);
-  }
+  novelEmbeddedWorkUrls(webviewNovel).values.forEach(addUrl);
 
   return urls;
 }
