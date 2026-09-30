@@ -575,7 +575,14 @@
       "decrease": "小さくする",
       "increase": "大きくする",
       "shortcutsTitle": "ショートカット",
-      "shortcutsHelp": "左右キーまたは A/D でページ移動、上下キーまたは W/S でスクロール"
+      "shortcutsHelp": "左右キーまたは A/D でページ移動、上下キーまたは W/S でスクロール",
+      "volumeKeys": "音量キーで読む",
+      "volumeKeysHelp": "音量下で先へ、音量上で前へ読み進めます。",
+      "autoScroll": "自動スクロール",
+      "startAutoScroll": "自動スクロール開始",
+      "pauseAutoScroll": "自動スクロール一時停止",
+      "autoScrollSpeed": "スクロール速度",
+      "scrollSpeedValue": "$speed px/秒"
     }
   },
   "follow": {

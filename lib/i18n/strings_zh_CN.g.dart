@@ -1262,6 +1262,13 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 	@override String get increase => '增大';
 	@override String get shortcutsTitle => '快捷键';
 	@override String get shortcutsHelp => '左右键或 A/D 翻页，上下键或 W/S 滚动';
+	@override String get volumeKeys => '音量键翻读';
+	@override String get volumeKeysHelp => '音量减向后翻读，音量加向前翻读。';
+	@override String get autoScroll => '自动滚动';
+	@override String get startAutoScroll => '开始自动滚动';
+	@override String get pauseAutoScroll => '暂停自动滚动';
+	@override String get autoScrollSpeed => '滚动速度';
+	@override String scrollSpeedValue({required Object speed}) => '${speed} 像素/秒';
 }
 
 /// The flat map containing all translations for locale <zh-CN>.
@@ -1753,6 +1760,13 @@ extension on TranslationsZhCn {
 			'novel.reader.increase' => '增大',
 			'novel.reader.shortcutsTitle' => '快捷键',
 			'novel.reader.shortcutsHelp' => '左右键或 A/D 翻页，上下键或 W/S 滚动',
+			'novel.reader.volumeKeys' => '音量键翻读',
+			'novel.reader.volumeKeysHelp' => '音量减向后翻读，音量加向前翻读。',
+			'novel.reader.autoScroll' => '自动滚动',
+			'novel.reader.startAutoScroll' => '开始自动滚动',
+			'novel.reader.pauseAutoScroll' => '暂停自动滚动',
+			'novel.reader.autoScrollSpeed' => '滚动速度',
+			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} 像素/秒',
 			'follow.tooltipFollow' => '关注用户',
 			'follow.tooltipUnfollow' => '取消关注',
 			'follow.followed' => '已关注',
@@ -1777,6 +1791,8 @@ extension on TranslationsZhCn {
 			'fanbox.bookmarks' => '本地收藏',
 			'fanbox.login' => '登录 FANBOX',
 			'fanbox.cookieHint' => '粘贴 FANBOXSESSID 的值或 FANBOXSESSID=值',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.importSession' => '导入登录文件',
 			'fanbox.openWebsite' => '打开 FANBOX 网站',
 			'fanbox.loginHelp' => '在浏览器登录后，从开发者工具 → 应用程序 → Cookies 复制 FANBOXSESSID。FANBOX 与 Pixiv 分别登录。',
@@ -1784,8 +1800,6 @@ extension on TranslationsZhCn {
 			'fanbox.empty' => '暂无内容',
 			'fanbox.loadMore' => '加载更多',
 			'fanbox.searchHint' => '创作者名称、ID 或标签',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.creatorId' => '通过 ID 打开创作者',
 			'fanbox.posts' => '文章',
 			'fanbox.creatorPlans' => '创作者方案',

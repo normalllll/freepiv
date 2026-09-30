@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:freepiv/core/services/pixiv_service.dart';
 
 /// Session-only reading position; no reading history is written to disk.
 final novelReadingSessions = PageStorageBucket();
@@ -24,6 +25,8 @@ class NovelReadingPosition {
 }
 
 NovelReadingPosition? novelReadingPosition(BuildContext context, int novelId) {
-  final saved = novelReadingSessions.readState(context, identifier: novelId);
+  final saved = novelReadingSessions.readState(context, identifier: novelReadingSessionKey(novelId, accountId: pixivAccountNotifier.value?.user.id));
   return saved is NovelReadingPosition ? saved : null;
 }
+
+Object novelReadingSessionKey(int novelId, {required String? accountId}) => (accountId: accountId, novelId: novelId);

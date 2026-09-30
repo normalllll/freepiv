@@ -575,7 +575,14 @@
       "decrease": "减小",
       "increase": "增大",
       "shortcutsTitle": "快捷键",
-      "shortcutsHelp": "左右键或 A/D 翻页，上下键或 W/S 滚动"
+      "shortcutsHelp": "左右键或 A/D 翻页，上下键或 W/S 滚动",
+      "volumeKeys": "音量键翻读",
+      "volumeKeysHelp": "音量减向后翻读，音量加向前翻读。",
+      "autoScroll": "自动滚动",
+      "startAutoScroll": "开始自动滚动",
+      "pauseAutoScroll": "暂停自动滚动",
+      "autoScrollSpeed": "滚动速度",
+      "scrollSpeedValue": "$speed 像素/秒"
     }
   },
   "follow": {

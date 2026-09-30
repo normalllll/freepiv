@@ -1264,6 +1264,13 @@ class Translations$novel$reader$en_US {
 	String get increase => 'Increase';
 	String get shortcutsTitle => 'Shortcuts';
 	String get shortcutsHelp => 'Left/Right or A/D turn pages; Up/Down or W/S scroll';
+	String get volumeKeys => 'Use volume keys';
+	String get volumeKeysHelp => 'Volume down reads forward; volume up reads back.';
+	String get autoScroll => 'Auto scroll';
+	String get startAutoScroll => 'Start auto scroll';
+	String get pauseAutoScroll => 'Pause auto scroll';
+	String get autoScrollSpeed => 'Scroll speed';
+	String scrollSpeedValue({required Object speed}) => '${speed} px/s';
 }
 
 /// The flat map containing all translations for locale <en-US>.
@@ -1755,6 +1762,13 @@ extension on Translations {
 			'novel.reader.increase' => 'Increase',
 			'novel.reader.shortcutsTitle' => 'Shortcuts',
 			'novel.reader.shortcutsHelp' => 'Left/Right or A/D turn pages; Up/Down or W/S scroll',
+			'novel.reader.volumeKeys' => 'Use volume keys',
+			'novel.reader.volumeKeysHelp' => 'Volume down reads forward; volume up reads back.',
+			'novel.reader.autoScroll' => 'Auto scroll',
+			'novel.reader.startAutoScroll' => 'Start auto scroll',
+			'novel.reader.pauseAutoScroll' => 'Pause auto scroll',
+			'novel.reader.autoScrollSpeed' => 'Scroll speed',
+			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} px/s',
 			'follow.tooltipFollow' => 'Follow user',
 			'follow.tooltipUnfollow' => 'Unfollow',
 			'follow.followed' => 'Following',
@@ -1779,6 +1793,8 @@ extension on Translations {
 			'fanbox.bookmarks' => 'Saved posts',
 			'fanbox.login' => 'Sign in to FANBOX',
 			'fanbox.cookieHint' => 'Paste FANBOXSESSID or FANBOXSESSID=value',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.importSession' => 'Import session file',
 			'fanbox.openWebsite' => 'Open FANBOX website',
 			'fanbox.loginHelp' => 'Log in in your browser, then copy FANBOXSESSID from Developer Tools → Application → Cookies. Your Pixiv login is separate.',
@@ -1786,8 +1802,6 @@ extension on Translations {
 			'fanbox.empty' => 'No items yet',
 			'fanbox.loadMore' => 'Load more',
 			'fanbox.searchHint' => 'Creator name, ID or tag',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.creatorId' => 'Open creator by ID',
 			'fanbox.posts' => 'Posts',
 			'fanbox.creatorPlans' => 'Creator plans',

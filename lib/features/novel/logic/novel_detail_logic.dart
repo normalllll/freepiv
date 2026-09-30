@@ -46,20 +46,41 @@ class NovelDetailData {
 
 Duration? noRetry(int retryCount, Object error) => null;
 
+@Riverpod(keepAlive: true)
+String? novelAccountId(Ref ref) {
+  void changed() => ref.invalidateSelf();
+  pixivAccountNotifier.addListener(changed);
+  ref.onDispose(() => pixivAccountNotifier.removeListener(changed));
+  return pixivAccountNotifier.value?.user.id;
+}
+
 @Riverpod(keepAlive: true, retry: noRetry)
 class NovelDetail extends _$NovelDetail {
+  int _requestVersion = 0;
+  bool _seedAccountCaptured = false;
+  String? _seedAccountId;
+
   @override
   FutureOr<NovelDetailData> build(NovelDetailArgs args) async {
-    return _load(args);
+    final accountId = ref.watch(novelAccountIdProvider);
+    _requestVersion++;
+    if (!_seedAccountCaptured) {
+      _seedAccountCaptured = true;
+      _seedAccountId = accountId;
+    }
+    return _load(args, useSeed: accountId == _seedAccountId);
   }
 
   Future<void> reload() async {
+    final accountId = ref.read(novelAccountIdProvider);
+    final request = ++_requestVersion;
     state = const AsyncLoading<NovelDetailData>();
-    state = await AsyncValue.guard(() => _load(args));
+    final result = await AsyncValue.guard(() => _load(args, useSeed: accountId == _seedAccountId));
+    if (ref.mounted && request == _requestVersion && pixivAccountNotifier.value?.user.id == accountId) state = result;
   }
 
-  Future<NovelDetailData> _load(NovelDetailArgs args) async {
-    final novel = args.novel;
+  Future<NovelDetailData> _load(NovelDetailArgs args, {required bool useSeed}) async {
+    final novel = useSeed ? args.novel : null;
     final novelId = args.resolvedNovelId;
     final webviewFuture = pixivApi.getWebviewNovel(novelId: novelId);
 

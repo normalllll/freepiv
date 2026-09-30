@@ -10,6 +10,7 @@ import 'package:freepiv/app/theme/app_theme.dart';
 import 'package:freepiv/core/downloads/download_manager.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/layout/auto_scaffold.dart';
+import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
 import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
 import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:go_router/go_router.dart';
@@ -50,7 +51,10 @@ void main() {
             onResetRightNavigator: () => navigatorKey.currentState!.popUntil((route) => route.isFirst),
             child: child,
           ),
-          routes: [GoRoute(path: '/', builder: (context, state) => const _PinnedPage())],
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => const _PinnedPage()),
+            GoRoute(path: '/novel/:id/read', builder: (context, state) => const _PinnedPage()),
+          ],
         ),
       ],
     );
@@ -128,6 +132,22 @@ void main() {
     await pumpShell(tester, platform: TargetPlatform.windows, size: const Size(1280, 800), statusBar: 0);
     expect(sidebarRect(tester).top, 0);
     expect(tester.getTopLeft(find.byKey(const ValueKey('page'))).dy, 0);
+    await disposeShell(tester);
+  });
+
+  testWidgets('desktop novel reading keeps the ordinary sidebar and page geometry', (tester) async {
+    await pumpShell(tester, platform: TargetPlatform.windows, size: const Size(1280, 800), statusBar: 0);
+    final sidebar = sidebarRect(tester);
+    final page = find.byKey(const ValueKey('page'));
+    final ordinaryPage = tester.getRect(page);
+    router.go('/novel/7/read');
+    await tester.pumpAndSettle();
+    expect(find.byType(DesktopNavItem), findsWidgets);
+    expect(sidebarRect(tester), sidebar);
+    expect(tester.getRect(page), ordinaryPage);
+    expect(ordinaryPage.left, greaterThan(sidebar.right));
+    expect(ShellNavigationScope.maybeOf(tester.element(page))!.ownsBackControl, isTrue);
+    expect(tester.takeException(), isNull);
     await disposeShell(tester);
   });
 }

@@ -1262,6 +1262,13 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 	@override String get increase => '增大';
 	@override String get shortcutsTitle => '快捷鍵';
 	@override String get shortcutsHelp => '左右鍵或 A/D 翻頁，上下鍵或 W/S 捲動';
+	@override String get volumeKeys => '音量鍵翻讀';
+	@override String get volumeKeysHelp => '音量減向後翻讀，音量加向前翻讀。';
+	@override String get autoScroll => '自動捲動';
+	@override String get startAutoScroll => '開始自動捲動';
+	@override String get pauseAutoScroll => '暫停自動捲動';
+	@override String get autoScrollSpeed => '捲動速度';
+	@override String scrollSpeedValue({required Object speed}) => '${speed} 像素/秒';
 }
 
 /// The flat map containing all translations for locale <zh-Hant-TW>.
@@ -1753,6 +1760,13 @@ extension on TranslationsZhHantTw {
 			'novel.reader.increase' => '增大',
 			'novel.reader.shortcutsTitle' => '快捷鍵',
 			'novel.reader.shortcutsHelp' => '左右鍵或 A/D 翻頁，上下鍵或 W/S 捲動',
+			'novel.reader.volumeKeys' => '音量鍵翻讀',
+			'novel.reader.volumeKeysHelp' => '音量減向後翻讀，音量加向前翻讀。',
+			'novel.reader.autoScroll' => '自動捲動',
+			'novel.reader.startAutoScroll' => '開始自動捲動',
+			'novel.reader.pauseAutoScroll' => '暫停自動捲動',
+			'novel.reader.autoScrollSpeed' => '捲動速度',
+			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} 像素/秒',
 			'follow.tooltipFollow' => '關注使用者',
 			'follow.tooltipUnfollow' => '取消關注',
 			'follow.followed' => '已關注',
@@ -1777,6 +1791,8 @@ extension on TranslationsZhHantTw {
 			'fanbox.bookmarks' => '本機收藏',
 			'fanbox.login' => '登入 FANBOX',
 			'fanbox.cookieHint' => '貼上 FANBOXSESSID 的值或 FANBOXSESSID=值',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.importSession' => '匯入登入檔案',
 			'fanbox.openWebsite' => '開啟 FANBOX 網站',
 			'fanbox.loginHelp' => '在瀏覽器登入後，從開發人員工具 → 應用程式 → Cookies 複製 FANBOXSESSID。FANBOX 與 Pixiv 分別登入。',
@@ -1784,8 +1800,6 @@ extension on TranslationsZhHantTw {
 			'fanbox.empty' => '暫無內容',
 			'fanbox.loadMore' => '載入更多',
 			'fanbox.searchHint' => '創作者名稱、ID 或標籤',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.creatorId' => '透過 ID 開啟創作者',
 			'fanbox.posts' => '文章',
 			'fanbox.creatorPlans' => '創作者方案',

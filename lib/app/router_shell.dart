@@ -61,10 +61,7 @@ class _RouterShellState extends State<RouterShell> with SingleTickerProviderStat
       builder: (context, layout, orientation, useHorizontalLayout) {
         final path = GoRouterState.of(context).uri.path;
         final selectedIndex = appDestinationIndexForPath(path);
-        // Only the novel reader hides navigation; the image viewer is an
-        // ordinary page beside the sidebar, closed with its own control.
-        final immersive = path.startsWith('/novel/') && path.endsWith('/read');
-        final sidebarAvailable = useHorizontalLayout && !immersive && layout.width >= 1200;
+        final sidebarAvailable = useHorizontalLayout && layout.width >= 1200;
         if (!sidebarAvailable && _expandedTarget) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted || !_expandedTarget) return;
@@ -72,8 +69,8 @@ class _RouterShellState extends State<RouterShell> with SingleTickerProviderStat
             _sidebarProgress.value = 0;
           });
         }
-        final ownsBackControl = useHorizontalLayout && !immersive;
-        final showSidebar = useHorizontalLayout && !immersive;
+        final ownsBackControl = useHorizontalLayout;
+        final showSidebar = useHorizontalLayout;
         return ValueListenableBuilder<bool>(
           valueListenable: widget.canPopListenable,
           builder: (context, canPop, _) {
@@ -161,7 +158,7 @@ class _RouterShellState extends State<RouterShell> with SingleTickerProviderStat
                               DesktopDownloadDock(
                                 railWidth: showSidebar ? frame.left + railWidth + _SidebarGeometry.margin : 0,
                                 buttonCenterX: showSidebar ? frame.left + _DesktopSidebar.iconAxis(progress) : null,
-                                bottomOffset: immersive ? 16 : frame.bottom - _SidebarGeometry.margin + _DesktopSidebar.downloadDockBottomOffset,
+                                bottomOffset: frame.bottom - _SidebarGeometry.margin + _DesktopSidebar.downloadDockBottomOffset,
                               ),
                           ],
                         );
@@ -325,7 +322,7 @@ class _DesktopSidebar extends StatelessWidget {
                                         (event.logicalKey != LogicalKeyboardKey.enter && event.logicalKey != LogicalKeyboardKey.space)) {
                                       return KeyEventResult.ignored;
                                     }
-                                    _showDesktopMore(buttonContext, translations, onSecondarySelected, moreButtonFocus);
+                                    _showDesktopMore(buttonContext, translations, onSecondarySelected, moreButtonFocus, currentPath: path);
                                     return KeyEventResult.handled;
                                   },
                                   child: DesktopNavItem(
@@ -333,7 +330,7 @@ class _DesktopSidebar extends StatelessWidget {
                                     fpIcon: FpIconName.more,
                                     selected: _secondaryRoutes.any((route) => path == route.path || path.startsWith('${route.path}/')),
                                     progress: progress,
-                                    onTap: () => _showDesktopMore(buttonContext, translations, onSecondarySelected, moreButtonFocus),
+                                    onTap: () => _showDesktopMore(buttonContext, translations, onSecondarySelected, moreButtonFocus, currentPath: path),
                                   ),
                                 ),
                               ),
@@ -743,7 +740,13 @@ FpIconName _secondaryIcon(AppRoute route) => switch (route) {
   _ => FpIconName.more,
 };
 
-Future<void> _showDesktopMore(BuildContext context, Translations translations, ValueChanged<AppRoute> onSelected, FocusNode buttonFocus) async {
+Future<void> _showDesktopMore(
+  BuildContext context,
+  Translations translations,
+  ValueChanged<AppRoute> onSelected,
+  FocusNode buttonFocus, {
+  required String currentPath,
+}) async {
   buttonFocus.requestFocus();
   final button = context.findRenderObject() as RenderBox?;
   final overlay = Navigator.of(context).overlay?.context.findRenderObject() as RenderBox?;
@@ -806,7 +809,12 @@ Future<void> _showDesktopMore(BuildContext context, Translations translations, V
                                 label: Text(appRouteNavigationLabel(translations, destination)),
                                 style: TextButton.styleFrom(
                                   alignment: AlignmentDirectional.centerStart,
-                                  foregroundColor: Theme.of(dialogContext).colorScheme.onSurface,
+                                  // The page on screen is marked, since More itself
+                                  // is lit while it is one of these.
+                                  backgroundColor: _isCurrent(destination, currentPath) ? FreepivThemeTokens.of(dialogContext).selectionFill : null,
+                                  foregroundColor: _isCurrent(destination, currentPath)
+                                      ? FreepivThemeTokens.of(dialogContext).selectionInk
+                                      : Theme.of(dialogContext).colorScheme.onSurface,
                                   padding: const EdgeInsets.symmetric(horizontal: 12),
                                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                   visualDensity: VisualDensity.standard,
@@ -829,6 +837,8 @@ Future<void> _showDesktopMore(BuildContext context, Translations translations, V
   if (context.mounted) buttonFocus.requestFocus();
   if (route != null && context.mounted) onSelected(route);
 }
+
+bool _isCurrent(AppRoute route, String path) => path == route.path || path.startsWith('${route.path}/');
 
 /// Page-level Escape: leave a focused text field first, then go back one
 /// page. Top-level pages have nowhere to go, so the key is left unhandled.

@@ -1262,6 +1262,13 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 	@override String get increase => '大きくする';
 	@override String get shortcutsTitle => 'ショートカット';
 	@override String get shortcutsHelp => '左右キーまたは A/D でページ移動、上下キーまたは W/S でスクロール';
+	@override String get volumeKeys => '音量キーで読む';
+	@override String get volumeKeysHelp => '音量下で先へ、音量上で前へ読み進めます。';
+	@override String get autoScroll => '自動スクロール';
+	@override String get startAutoScroll => '自動スクロール開始';
+	@override String get pauseAutoScroll => '自動スクロール一時停止';
+	@override String get autoScrollSpeed => 'スクロール速度';
+	@override String scrollSpeedValue({required Object speed}) => '${speed} px/秒';
 }
 
 /// The flat map containing all translations for locale <ja-JP>.
@@ -1753,6 +1760,13 @@ extension on TranslationsJaJp {
 			'novel.reader.increase' => '大きくする',
 			'novel.reader.shortcutsTitle' => 'ショートカット',
 			'novel.reader.shortcutsHelp' => '左右キーまたは A/D でページ移動、上下キーまたは W/S でスクロール',
+			'novel.reader.volumeKeys' => '音量キーで読む',
+			'novel.reader.volumeKeysHelp' => '音量下で先へ、音量上で前へ読み進めます。',
+			'novel.reader.autoScroll' => '自動スクロール',
+			'novel.reader.startAutoScroll' => '自動スクロール開始',
+			'novel.reader.pauseAutoScroll' => '自動スクロール一時停止',
+			'novel.reader.autoScrollSpeed' => 'スクロール速度',
+			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} px/秒',
 			'follow.tooltipFollow' => 'ユーザーをフォロー',
 			'follow.tooltipUnfollow' => 'フォロー解除',
 			'follow.followed' => 'フォロー中',
@@ -1777,6 +1791,8 @@ extension on TranslationsJaJp {
 			'fanbox.bookmarks' => '保存した投稿',
 			'fanbox.login' => 'FANBOX にログイン',
 			'fanbox.cookieHint' => 'FANBOXSESSID の値または FANBOXSESSID=値を貼り付け',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.importSession' => 'ログインファイルを読み込む',
 			'fanbox.openWebsite' => 'FANBOX を開く',
 			'fanbox.loginHelp' => 'ブラウザでログインし、開発者ツール → Application → Cookies から FANBOXSESSID をコピーしてください。Pixiv とは別のログインです。',
@@ -1784,8 +1800,6 @@ extension on TranslationsJaJp {
 			'fanbox.empty' => 'まだありません',
 			'fanbox.loadMore' => 'もっと見る',
 			'fanbox.searchHint' => 'クリエイター名、ID またはタグ',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.creatorId' => 'ID でクリエイターを開く',
 			'fanbox.posts' => '投稿',
 			'fanbox.creatorPlans' => 'クリエイターのプラン',

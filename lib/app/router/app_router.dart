@@ -10,6 +10,7 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/app_route_pages.dart' as route_pages;
 import 'package:freepiv/app/router/navigator_stack_observer.dart';
+import 'package:freepiv/app/router/reader_route_observer.dart';
 import 'package:freepiv/app/router/single_top_go_router.dart';
 import 'package:freepiv/app/router_shell.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
@@ -28,13 +29,14 @@ class AppRouter {
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoute.home.path,
     refreshListenable: pixivAccountNotifier,
+    observers: [readerRootRouteObserver],
     config: RoutingConfig(
       redirect: _redirect,
       routes: [
         GoRoute(path: AppRoute.login.path, name: AppRoute.login.name, pageBuilder: route_pages.loginPage),
         ShellRoute(
           navigatorKey: rightNavigatorKey,
-          observers: [_rightNavigatorObserver],
+          observers: [_rightNavigatorObserver, readerContentRouteObserver],
           builder: (context, state, child) {
             WidgetsBinding.instance.addPostFrameCallback((_) => _refreshRightNavigatorCanPop());
             return RouterShell(
