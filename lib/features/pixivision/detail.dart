@@ -275,11 +275,11 @@ const pixivisionBannerRatio = 1200 / 630;
 class _ArticleBodySkeleton extends StatelessWidget {
   const _ArticleBodySkeleton();
   @override
+  // The order of a typical article: the introduction first, then each work
+  // as title, author and image, so the loaded page replaces bones in place.
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      const AspectRatio(aspectRatio: 16 / 9, child: ImageLoadingSkeleton()),
-      const SizedBox(height: 12),
       for (var group = 0; group < (MediaQuery.sizeOf(context).height / 320).ceil(); group++) ...[
         for (var line = 0; line < 5; line++)
           Padding(

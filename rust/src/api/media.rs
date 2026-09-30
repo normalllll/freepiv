@@ -14,6 +14,22 @@ pub async fn stream_media(
     headers: HashMap<String, String>,
     sink: StreamSink<MediaChunk>,
 ) -> Result<(), String> {
+    // The generated Dart entry point returns the sink stream immediately and
+    // does not await this function's Future. Report transport errors on that
+    // stream so the image loader can retry them instead of leaking an error
+    // from the detached call.
+    if let Err(error) = forward_media(url, proxy, headers, &sink).await {
+        let _ = sink.add_error(error);
+    }
+    Ok(())
+}
+
+async fn forward_media(
+    url: String,
+    proxy: Option<String>,
+    headers: HashMap<String, String>,
+    sink: &StreamSink<MediaChunk>,
+) -> Result<(), String> {
     let mut stream = pixiv_rs::media::stream_media(url, proxy, headers)?;
     while let Some(chunk) = stream.next().await {
         let chunk = chunk?;

@@ -2,7 +2,9 @@ import 'package:freepiv/features/downloads/presentation/content_image_menu.dart'
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/shared/ui/spring_builder.dart';
+import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:freepiv/core/media/logic.dart';
@@ -103,21 +105,19 @@ class _PixivisionImageState extends ConsumerState<PixivisionImage> {
               fit: widget.fit,
               headers: pixivisionImageHeaders,
               placeholder: (_) => const ImageLoadingSkeleton(),
+              // A failed image keeps its slot filled, like the skeleton it
+              // replaced, with a clear way to try again over the whole area.
               errorBuilder: (context) =>
                   widget.errorWidget ??
-                  Center(
-                    child: IconButton(
-                      tooltip: context.t.common.retry,
-                      onPressed: () {
-                        setState(() {
-                          _retry++;
-                          _probeGeneration++;
-                          _probing = false;
-                        });
-                        _probeRatio();
-                      },
-                      icon: const Icon(Icons.refresh),
-                    ),
+                  _ImageLoadFailed(
+                    onRetry: () {
+                      setState(() {
+                        _retry++;
+                        _probeGeneration++;
+                        _probing = false;
+                      });
+                      _probeRatio();
+                    },
                   ),
             )
           : const ImageLoadingSkeleton(),
@@ -135,6 +135,42 @@ class _PixivisionImageState extends ConsumerState<PixivisionImage> {
       );
     }
     return clipped;
+  }
+}
+
+class _ImageLoadFailed extends StatelessWidget {
+  const _ImageLoadFailed({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = FreepivThemeTokens.of(context);
+    final label = Theme.of(context).textTheme.labelMedium?.copyWith(color: tokens.textSecondary);
+    return ColoredBox(
+      color: tokens.surfaceInset,
+      child: Material(
+        type: MaterialType.transparency,
+        child: Tooltip(
+          message: context.t.common.retry,
+          child: AppClickSurface(
+            feedback: AppClickFeedback.quiet,
+            borderRadius: BorderRadius.zero,
+            onTap: onRetry,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.refresh_rounded, color: tokens.textSecondary),
+                  const SizedBox(height: 6),
+                  Text(context.t.refresh.loadFailed, style: label, textAlign: TextAlign.center),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
