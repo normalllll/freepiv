@@ -11,6 +11,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -333,7 +334,7 @@ class DownloadForegroundService : Service() {
                 }
 
                 validateContentType(response.header("Content-Type"), job.validation.allowedContentTypes)
-                val body = response.body ?: throw IllegalStateException("Download response has no body")
+                val body = response.body
                 val responseLength = body.contentLength().takeIf { it > 0 }
                 val expectedBytes = job.validation.expectedBytes
                 if (expectedBytes != null && responseLength != null && expectedBytes != responseLength) {
@@ -495,7 +496,7 @@ class DownloadForegroundService : Service() {
             .setOngoing(running > 0 || queued > 0)
             .setOnlyAlertOnce(true)
             .setProgress(100, (overall * 100).toInt(), running > 0 && states.values.any { it.totalBytes == null })
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Cancel", cancelIntent)
+            .addAction(Notification.Action.Builder(Icon.createWithResource(this, android.R.drawable.ic_menu_close_clear_cancel), "Cancel", cancelIntent).build())
             .build()
     }
 
