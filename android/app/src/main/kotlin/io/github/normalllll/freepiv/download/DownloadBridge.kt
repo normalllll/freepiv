@@ -20,6 +20,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
+import android.webkit.MimeTypeMap
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
@@ -629,25 +630,35 @@ object AndroidMediaSaver {
 
         val resolver = context.contentResolver
         val displayName = safeFilename(job.filename)
+        val mimeType = mimeTypeFor(job.filename)
+        // Images go to the gallery; any other file (a FANBOX attachment) to
+        // Downloads. Both under the app's folder and the job's subfolder.
+        val isImage = mimeType.startsWith("image/")
+        val baseDirectory = if (isImage) Environment.DIRECTORY_PICTURES else Environment.DIRECTORY_DOWNLOADS
+        val relativePath = listOfNotNull(baseDirectory, "freepiv", job.folder).joinToString("/")
+        if (!isImage && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return savePublicDownload(relativePath, displayName, source, bytesWritten)
+        }
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
-            put(MediaStore.MediaColumns.MIME_TYPE, mimeTypeFor(job.filename))
+            put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
             put(MediaStore.MediaColumns.SIZE, source.length())
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/freepiv")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
             } else {
-                @Suppress("DEPRECATION")
-                val directory = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "freepiv")
-                if (!directory.exists() && !directory.mkdirs()) {
-                    throw IllegalStateException("Could not create download directory: ${directory.absolutePath}")
-                }
+                val directory = publicDirectory(relativePath)
                 @Suppress("DEPRECATION")
                 put(MediaStore.Images.Media.DATA, uniqueDestination(directory, displayName).absolutePath)
             }
         }
 
-        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: throw IllegalStateException("Could not create MediaStore item")
+        val collection = if (isImage || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        } else {
+            MediaStore.Downloads.EXTERNAL_CONTENT_URI
+        }
+        val uri = resolver.insert(collection, values) ?: throw IllegalStateException("Could not create MediaStore item")
         try {
             resolver.openOutputStream(uri)?.use { output ->
                 FileInputStream(source).use { input -> input.copyTo(output) }
@@ -665,6 +676,23 @@ object AndroidMediaSaver {
         }
     }
 
+    // Before Android 10 a file that is not an image is copied straight into
+    // the public Downloads folder, which the storage permission covers.
+    private fun savePublicDownload(relativePath: String, displayName: String, source: File, bytesWritten: Long): Map<String, Any?> {
+        val destination = uniqueDestination(publicDirectory(relativePath), displayName)
+        source.copyTo(destination)
+        return mapOf("path" to destination.absolutePath, "bytesWritten" to bytesWritten)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun publicDirectory(relativePath: String): File {
+        val directory = File(Environment.getExternalStorageDirectory(), relativePath)
+        if (!directory.exists() && !directory.mkdirs()) {
+            throw IllegalStateException("Could not create download directory: ${directory.absolutePath}")
+        }
+        return directory
+    }
+
     private fun ensureCanSave(context: Context) {
         if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
             throw IllegalStateException("External storage is not writable.")
@@ -677,13 +705,8 @@ object AndroidMediaSaver {
     }
 
     private fun mimeTypeFor(filename: String): String {
-        return when (filename.substringAfterLast('.', "").lowercase()) {
-            "jpg", "jpeg" -> "image/jpeg"
-            "png" -> "image/png"
-            "gif" -> "image/gif"
-            "webp" -> "image/webp"
-            else -> "image/jpeg"
-        }
+        val extension = filename.substringAfterLast('.', "").lowercase()
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
     }
 
     private fun uniqueDestination(directory: File, filename: String): File {
@@ -706,6 +729,8 @@ data class NativeDownloadJob(
     val illustId: Int?,
     val url: String,
     val filename: String,
+    // A subfolder of the app's folder the file is saved in, such as "fanbox".
+    val folder: String?,
     val networkOptions: NativeNetworkOptions,
     val validation: NativeValidationOptions,
 )
@@ -780,6 +805,7 @@ private fun nativeJobFromMap(map: Map<String, Any?>?): NativeDownloadJob? {
         illustId = (map["illustId"] as? Number)?.toInt(),
         url = url,
         filename = filename,
+        folder = (map["folder"] as? String)?.takeIf { it.matches(Regex("[A-Za-z0-9_-]+")) },
         networkOptions = NativeNetworkOptions(
             headers = headers,
             proxyUrl = networkMap["proxyUrl"]?.toString()?.takeIf { it.isNotBlank() },

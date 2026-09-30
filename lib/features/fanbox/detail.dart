@@ -1,3 +1,7 @@
+import 'package:freepiv/core/downloads/download_models.dart';
+import 'package:freepiv/core/downloads/download_manager.dart';
+import 'package:freepiv/app/toast/app_toast.dart';
+import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/shared/widgets/constrained_segmented_button.dart';
 import 'package:freepiv/shared/widgets/app_click_surface.dart';
@@ -27,14 +31,37 @@ import 'page.dart';
 import 'widgets.dart';
 import 'cards.dart';
 
-/// [origin] is where the download was asked for; once the folder is known a
-/// download glyph flies from there to the download badge (FANBOX images
-/// need its session, so no artwork rides along).
-Future<void> downloadFanboxPosts(BuildContext context, WidgetRef ref, {FanboxPost? post, String? creatorId, Rect? origin}) async {
-  final folder = await fanboxDownloadDirectory();
-  if (!context.mounted) return;
-  DownloadFlight.launch(origin: origin);
-  await ref.read(fanboxDownloadsProvider.notifier).downloadPosts(directory: folder, post: post, creatorId: creatorId);
+/// Queues every image and file of [post]. [origin] is where the download was
+/// asked for; the post's cover flies from there to the download badge.
+Future<void> downloadFanboxPost(WidgetRef ref, FanboxPost post, {Rect? origin}) async {
+  final source = fanboxPostDownloadSource(post);
+  await _downloadFanboxBatch(
+    origin: origin,
+    artworkUrl: source.thumbnailUrl,
+    queue: () => ref.read(fanboxDownloadsProvider.notifier).downloadPost(post, source: source),
+  );
+}
+
+/// Collects and queues every post of [creator] the session can read.
+Future<void> downloadFanboxCreator(WidgetRef ref, FanboxCreator creator, {Rect? origin}) async {
+  final source = fanboxCreatorDownloadSource(creator);
+  AppToast.info(t.fanbox.downloadPreparing);
+  await _downloadFanboxBatch(origin: origin, artworkUrl: source.thumbnailUrl, queue: () => ref.read(fanboxDownloadsProvider.notifier).downloadCreator(source));
+}
+
+Future<void> _downloadFanboxBatch({required Rect? origin, required String? artworkUrl, required Future<int> Function() queue}) async {
+  try {
+    await downloadManager.ensureReadyForDownloads();
+    DownloadFlight.launch(origin: origin, artwork: artworkUrl == null ? null : FanboxImageView(artworkUrl));
+    final queued = await queue();
+    if (queued > 0) {
+      AppToast.info(t.fanbox.downloadQueued(count: queued));
+    } else {
+      AppToast.info(t.fanbox.downloadNothingNew);
+    }
+  } catch (error) {
+    AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
+  }
 }
 
 class FanboxCreatorDetailPage extends ConsumerStatefulWidget {
@@ -54,7 +81,7 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
     final creatorState = ref.watch(fanboxCreatorProvider(widget.creatorId));
     final action = ref.watch(fanboxOperationProvider('creator:${widget.creatorId}'));
     final tags = ref.watch(fanboxTagsProvider(widget.creatorId));
-    final downloading = ref.watch(fanboxDownloadsProvider.select((value) => value.running));
+    final collecting = ref.watch(fanboxDownloadsProvider.select((creators) => creators.containsKey(widget.creatorId)));
     final creator =
         creatorState.value ??
         widget.summary ??
@@ -72,148 +99,152 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
       title: creatorState.asData?.value.user.name ?? widget.creatorId,
       body: creatorState.hasError && creatorState.value == null
           ? FanboxErrorView(creatorState.error!, retry: () => ref.invalidate(fanboxCreatorProvider(widget.creatorId)))
-          : FanboxCollectionView(
-              location: (section: _plans ? FanboxSection.creatorPlans : FanboxSection.creatorPosts, creatorId: widget.creatorId, query: ''),
-              header: Skeletonizer(
-                enabled: creatorState.value == null,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (creator.coverUrl != null) ClipRRect(borderRadius: BorderRadius.circular(16), child: FanboxImageView(creator.coverUrl, height: 220)),
-                    ListTile(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                      leading: SizedBox(width: 56, height: 56, child: ClipOval(child: FanboxImageView(creator.user.iconUrl))),
-                      title: Text(creator.user.name, style: Theme.of(context).textTheme.headlineSmall),
-                      subtitle: Text('@${creator.creatorId}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          FollowToggleButton(
-                            isFollowed: creator.isFollowed,
-                            updating: action.isLoading,
-                            onPressed: action.isLoading
-                                ? null
-                                : () async {
-                                    final success = await ref.read(fanboxOperationProvider('creator:${widget.creatorId}').notifier).run(() async {
-                                      final api = await ref.read(fanboxApiProvider.future);
-                                      if (creator.isFollowed) {
-                                        await api.unfollowCreator(userId: creator.user.id);
-                                      } else {
-                                        await api.followCreator(userId: creator.user.id);
+          : DownloadSourceScope(
+              source: fanboxCreatorDownloadSource(creator),
+              child: FanboxCollectionView(
+                location: (section: _plans ? FanboxSection.creatorPlans : FanboxSection.creatorPosts, creatorId: widget.creatorId, query: ''),
+                header: Skeletonizer(
+                  enabled: creatorState.value == null,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (creator.coverUrl != null) ClipRRect(borderRadius: BorderRadius.circular(16), child: FanboxImageView(creator.coverUrl, height: 220)),
+                      ListTile(
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        leading: SizedBox(width: 56, height: 56, child: ClipOval(child: FanboxImageView(creator.user.iconUrl))),
+                        title: Text(creator.user.name, style: Theme.of(context).textTheme.headlineSmall),
+                        subtitle: Text('@${creator.creatorId}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            FollowToggleButton(
+                              isFollowed: creator.isFollowed,
+                              updating: action.isLoading,
+                              onPressed: action.isLoading
+                                  ? null
+                                  : () async {
+                                      final success = await ref.read(fanboxOperationProvider('creator:${widget.creatorId}').notifier).run(() async {
+                                        final api = await ref.read(fanboxApiProvider.future);
+                                        if (creator.isFollowed) {
+                                          await api.unfollowCreator(userId: creator.user.id);
+                                        } else {
+                                          await api.followCreator(userId: creator.user.id);
+                                        }
+                                      });
+                                      if (success && mounted) {
+                                        ref.invalidate(fanboxCreatorProvider(widget.creatorId));
+                                        ref.invalidate(fanboxBrowseProvider);
                                       }
-                                    });
-                                    if (success && mounted) {
-                                      ref.invalidate(fanboxCreatorProvider(widget.creatorId));
-                                      ref.invalidate(fanboxBrowseProvider);
-                                    }
-                                  },
-                          ),
-                          AppMenuAnchor(
-                            menuChildren: [
-                              Builder(
-                                builder: (itemContext) => AppMenuItem(
-                                  onPressed: downloading
-                                      ? null
-                                      : () => downloadFanboxPosts(context, ref, creatorId: widget.creatorId, origin: DownloadFlight.originOf(itemContext)),
-                                  child: Text(t.downloadCreator),
-                                ),
-                              ),
-                              AppMenuItem(
-                                onPressed: () => openFanboxLink(context, 'https://www.fanbox.cc/@${Uri.encodeComponent(widget.creatorId)}'),
-                                child: Text(t.openOriginal),
-                              ),
-                            ],
-                            builder: (context, focusNode, toggle) => IconButton(
-                              focusNode: focusNode,
-                              tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-                              onPressed: toggle,
-                              icon: const Icon(Icons.more_vert),
+                                    },
                             ),
-                          ),
+                            AppMenuAnchor(
+                              menuChildren: [
+                                Builder(
+                                  builder: (itemContext) => AppMenuItem(
+                                    onPressed: collecting || creatorState.value == null
+                                        ? null
+                                        : () => downloadFanboxCreator(ref, creator, origin: DownloadFlight.originOf(itemContext)),
+                                    child: Text(t.downloadCreator),
+                                  ),
+                                ),
+                                AppMenuItem(
+                                  onPressed: () => openFanboxLink(context, 'https://www.fanbox.cc/@${Uri.encodeComponent(widget.creatorId)}'),
+                                  child: Text(t.openOriginal),
+                                ),
+                              ],
+                              builder: (context, focusNode, toggle) => IconButton(
+                                focusNode: focusNode,
+                                tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+                                onPressed: toggle,
+                                icon: const Icon(Icons.more_vert),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 180),
+                        child: action.hasError ? Text(fanboxError(context, action.error!)) : const SizedBox.shrink(),
+                      ),
+                      if (creator.description.isNotEmpty)
+                        Padding(padding: const EdgeInsets.only(top: 8, bottom: 8), child: SelectableText(creator.description)),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final url in creator.profileLinks)
+                            TextButton.icon(
+                              onPressed: () => openFanboxLink(context, url),
+                              icon: const Icon(Icons.link),
+                              label: Text(Uri.tryParse(url)?.host ?? t.openLink),
+                            ),
                         ],
                       ),
-                    ),
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 180),
-                      child: action.hasError ? Text(fanboxError(context, action.error!)) : const SizedBox.shrink(),
-                    ),
-                    if (creator.description.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8, bottom: 8), child: SelectableText(creator.description)),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final url in creator.profileLinks)
-                          TextButton.icon(
-                            onPressed: () => openFanboxLink(context, url),
-                            icon: const Icon(Icons.link),
-                            label: Text(Uri.tryParse(url)?.host ?? t.openLink),
-                          ),
-                      ],
-                    ),
-                    if (creator.profileImages.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        height: 120,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: creator.profileImages.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 8),
-                          itemBuilder: (_, index) => SizedBox(
-                            width: 160,
-                            child: AppClickSurface(
-                              feedback: AppClickFeedback.artwork,
-                              onTap: () => showFanboxImage(context, creator.profileImages[index]),
-                              child: FanboxImageMenu(url: creator.profileImages[index], child: FanboxImageView(creator.profileImages[index])),
+                      if (creator.profileImages.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 120,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: creator.profileImages.length,
+                            separatorBuilder: (_, _) => const SizedBox(width: 8),
+                            itemBuilder: (_, index) => SizedBox(
+                              width: 160,
+                              child: AppClickSurface(
+                                feedback: AppClickFeedback.artwork,
+                                onTap: () => showFanboxImage(context, creator.profileImages[index]),
+                                child: FanboxImageMenu(url: creator.profileImages[index], child: FanboxImageView(creator.profileImages[index])),
+                              ),
                             ),
                           ),
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      if (creator.isSupported)
+                        TextButton.icon(
+                          onPressed: () => showAppDialog<void>(
+                            context: context,
+                            builder: (_) => FanboxFanCardDialog(creatorId: creator.creatorId, source: fanboxCreatorDownloadSource(creator)),
+                          ),
+                          icon: const Icon(Icons.card_membership),
+                          label: Text(t.fanCard),
+                        ),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 180),
+                        alignment: Alignment.topCenter,
+                        child: (tags.hasError || (tags.value?.isNotEmpty ?? false))
+                            ? SizedBox(
+                                height: 48,
+                                child: tags.when(
+                                  loading: () => const SizedBox.shrink(),
+                                  error: (error, _) => TextButton(onPressed: () => ref.invalidate(fanboxTagsProvider(widget.creatorId)), child: Text(t.retry)),
+                                  data: (values) => ListView.separated(
+                                    scrollDirection: Axis.horizontal,
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    itemCount: values.length,
+                                    separatorBuilder: (_, _) => const SizedBox(width: 8),
+                                    itemBuilder: (context, index) => ActionChip(
+                                      label: Text('#${values[index].name}'),
+                                      onPressed: () => openFanboxTag(context, values[index].name, creatorId: widget.creatorId),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: AppSegmentedButton<bool>(
+                          segments: [
+                            ButtonSegment(value: false, label: Text(t.posts), icon: const Icon(Icons.article_outlined)),
+                            ButtonSegment(value: true, label: Text(t.creatorPlans), icon: const Icon(Icons.card_membership)),
+                          ],
+                          selected: {_plans},
+                          onSelectionChanged: (value) => setState(() => _plans = value.single),
                         ),
                       ),
                     ],
-                    const SizedBox(height: 8),
-                    if (creator.isSupported)
-                      TextButton.icon(
-                        onPressed: () => showAppDialog<void>(
-                          context: context,
-                          builder: (_) => FanboxFanCardDialog(creatorId: creator.creatorId),
-                        ),
-                        icon: const Icon(Icons.card_membership),
-                        label: Text(t.fanCard),
-                      ),
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 180),
-                      alignment: Alignment.topCenter,
-                      child: (tags.hasError || (tags.value?.isNotEmpty ?? false))
-                          ? SizedBox(
-                              height: 48,
-                              child: tags.when(
-                                loading: () => const SizedBox.shrink(),
-                                error: (error, _) => TextButton(onPressed: () => ref.invalidate(fanboxTagsProvider(widget.creatorId)), child: Text(t.retry)),
-                                data: (values) => ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
-                                  itemCount: values.length,
-                                  separatorBuilder: (_, _) => const SizedBox(width: 8),
-                                  itemBuilder: (context, index) => ActionChip(
-                                    label: Text('#${values[index].name}'),
-                                    onPressed: () => openFanboxTag(context, values[index].name, creatorId: widget.creatorId),
-                                  ),
-                                ),
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: AppSegmentedButton<bool>(
-                        segments: [
-                          ButtonSegment(value: false, label: Text(t.posts), icon: const Icon(Icons.article_outlined)),
-                          ButtonSegment(value: true, label: Text(t.creatorPlans), icon: const Icon(Icons.card_membership)),
-                        ],
-                        selected: {_plans},
-                        onSelectionChanged: (value) => setState(() => _plans = value.single),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -222,8 +253,11 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
 }
 
 class FanboxFanCardDialog extends ConsumerWidget {
-  const FanboxFanCardDialog({required this.creatorId, super.key});
+  const FanboxFanCardDialog({required this.creatorId, required this.source, super.key});
   final String creatorId;
+
+  /// The creator, which the fan card's download is filed under.
+  final FanboxCreatorSource source;
   @override
   Widget build(BuildContext context, WidgetRef ref) => AlertDialog(
     title: Text(context.t.fanbox.fanCard),
@@ -248,13 +282,7 @@ class FanboxFanCardDialog extends ConsumerWidget {
                 if (support.fanCardUrl case final url?) ...[
                   AspectRatio(aspectRatio: 1.6, child: FanboxImageView(url, fit: BoxFit.contain)),
                   TextButton(
-                    onPressed: () async {
-                      final folder = await fanboxDownloadDirectory();
-                      if (!context.mounted) return;
-                      await ref
-                          .read(fanboxDownloadsProvider.notifier)
-                          .downloadPosts(directory: folder, media: [(url: url, filename: 'fanbox-card-${Uri.encodeComponent(creatorId)}.png')]);
-                    },
+                    onPressed: () => downloadFanboxFile(ref, url: url, filename: 'fanbox-card-${Uri.encodeComponent(creatorId)}.png', source: source),
                     child: Text(context.t.fanbox.download),
                   ),
                 ] else
@@ -291,170 +319,171 @@ class FanboxPostDetailPage extends ConsumerWidget {
           ),
         ),
         error: (error, _) => FanboxErrorView(error, retry: () => ref.invalidate(fanboxPostProvider(postId))),
-        data: (post) => DotsRefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(fanboxPostProvider(postId));
-            await ref.read(fanboxPostProvider(postId).future);
-          },
-          child: LayoutBuilder(
-            builder: (context, constraints) => ListView(
-              padding: fanboxReadingPadding(constraints.maxWidth),
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: SelectableText(post.title, style: Theme.of(context).textTheme.headlineMedium)),
-                    const SizedBox(width: 12),
-                    IconButton(
-                      tooltip: saved ? t.saved : t.save,
-                      onPressed: () => ref.read(fanboxBookmarksProvider.notifier).toggle(postId),
-                      icon: Icon(saved ? Icons.bookmark : Icons.bookmark_outline),
-                    ),
-                    IconButton(
-                      tooltip: t.openOriginal,
-                      onPressed: () => openFanboxLink(
-                        context,
-                        'https://www.fanbox.cc/@${Uri.encodeComponent(state.asData?.value.creatorId ?? '')}/posts/${Uri.encodeComponent(postId)}',
-                      ),
-                      icon: const Icon(Icons.open_in_new),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(post.user.name.isEmpty ? post.creatorId : post.user.name),
-                  subtitle: Text(fanboxDate(context, post.publishedDatetime)),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => openFanboxCreator(context, post.creatorId),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+        data: (post) => DownloadSourceScope(
+          source: fanboxPostDownloadSource(post),
+          child: DotsRefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(fanboxPostProvider(postId));
+              await ref.read(fanboxPostProvider(postId).future);
+            },
+            child: LayoutBuilder(
+              builder: (context, constraints) => ListView(
+                padding: fanboxReadingPadding(constraints.maxWidth),
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Chip(
-                        avatar: Icon(post.isRestricted ? Icons.lock : Icons.lock_open, size: 16),
-                        label: Text(post.feeRequired > 0 ? t.restricted(fee: fanboxFee(context, post.feeRequired)) : t.free),
+                      Expanded(child: SelectableText(post.title, style: Theme.of(context).textTheme.headlineMedium)),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        tooltip: saved ? t.saved : t.save,
+                        onPressed: () => ref.read(fanboxBookmarksProvider.notifier).toggle(postId),
+                        icon: Icon(saved ? Icons.bookmark : Icons.bookmark_outline),
                       ),
-                      for (final tag in post.tags)
-                        ActionChip(
-                          label: Text('#$tag'),
-                          onPressed: () => openFanboxTag(context, tag, creatorId: post.creatorId),
+                      IconButton(
+                        tooltip: t.openOriginal,
+                        onPressed: () => openFanboxLink(
+                          context,
+                          'https://www.fanbox.cc/@${Uri.encodeComponent(state.asData?.value.creatorId ?? '')}/posts/${Uri.encodeComponent(postId)}',
                         ),
+                        icon: const Icon(Icons.open_in_new),
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 16),
-                if (post.coverUrl case final cover?) ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: FanboxImageMenu(
-                      url: cover,
-                      child: FanboxImageView(cover, height: 320, fit: BoxFit.contain),
+                  const SizedBox(height: 12),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(post.user.name.isEmpty ? post.creatorId : post.user.name),
+                    subtitle: Text(fanboxDate(context, post.publishedDatetime)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => openFanboxCreator(context, post.creatorId),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Chip(
+                          avatar: Icon(post.isRestricted ? Icons.lock : Icons.lock_open, size: 16),
+                          label: Text(post.feeRequired > 0 ? t.restricted(fee: fanboxFee(context, post.feeRequired)) : t.free),
+                        ),
+                        for (final tag in post.tags)
+                          ActionChip(
+                            label: Text('#$tag'),
+                            onPressed: () => openFanboxTag(context, tag, creatorId: post.creatorId),
+                          ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                ],
-                if (post.isRestricted) ...[
-                  EnergeticCard(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          const Icon(Icons.lock_outline, size: 40),
-                          const SizedBox(height: 12),
-                          Text(t.restricted(fee: fanboxFee(context, post.feeRequired)), style: Theme.of(context).textTheme.titleLarge),
-                          const SizedBox(height: 8),
-                          Text(t.restrictedInfo),
-                          if (post.excerpt.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 12), child: Text(post.excerpt)),
-                        ],
+                  const SizedBox(height: 16),
+                  if (post.coverUrl case final cover?) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: FanboxImageMenu(
+                        url: cover,
+                        child: FanboxImageView(cover, height: 320, fit: BoxFit.contain),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(t.creatorPlans, style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 12),
-                  FanboxPlansPanel(creatorId: post.creatorId),
-                ] else ...[
-                  for (final block in post.blocks) Padding(padding: const EdgeInsets.only(bottom: 16), child: FanboxBlockView(block)),
-                  if (post.unknownBodyJson != null)
+                    const SizedBox(height: 24),
+                  ],
+                  if (post.isRestricted) ...[
                     EnergeticCard(
-                      child: Padding(padding: const EdgeInsets.all(16), child: Text(t.unknown)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.lock_outline, size: 40),
+                            const SizedBox(height: 12),
+                            Text(t.restricted(fee: fanboxFee(context, post.feeRequired)), style: Theme.of(context).textTheme.titleLarge),
+                            const SizedBox(height: 8),
+                            Text(t.restrictedInfo),
+                            if (post.excerpt.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 12), child: Text(post.excerpt)),
+                          ],
+                        ),
+                      ),
                     ),
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 24),
+                    Text(t.creatorPlans, style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 12),
+                    FanboxPlansPanel(creatorId: post.creatorId),
+                  ] else ...[
+                    for (final block in post.blocks) Padding(padding: const EdgeInsets.only(bottom: 16), child: FanboxBlockView(block)),
+                    if (post.unknownBodyJson != null)
+                      EnergeticCard(
+                        child: Padding(padding: const EdgeInsets.all(16), child: Text(t.unknown)),
+                      ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        FilledButton.tonalIcon(
+                          style: appSecondaryButtonStyle(FreepivThemeTokens.of(context)),
+                          onPressed: post.isLiked || operation.isLoading
+                              ? null
+                              : () async {
+                                  final success = await ref
+                                      .read(fanboxOperationProvider('post:$postId').notifier)
+                                      .run(() async => (await ref.read(fanboxApiProvider.future)).likePost(postId: postId));
+                                  if (success && context.mounted) {
+                                    ref.invalidate(fanboxPostProvider(postId));
+                                    ref.invalidate(fanboxBrowseProvider);
+                                  }
+                                },
+                          icon: Icon(post.isLiked ? Icons.favorite : Icons.favorite_border),
+                          label: Text('${post.isLiked ? t.liked : t.like} · ${post.likeCount}'),
+                        ),
+                        Builder(
+                          builder: (buttonContext) => OutlinedButton.icon(
+                            onPressed: () => downloadFanboxPost(ref, post, origin: DownloadFlight.originOf(buttonContext)),
+                            icon: const Icon(Icons.download),
+                            label: Text(t.downloadAll),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => showModalBottomSheet<void>(
+                            context: context,
+                            sheetAnimationStyle: appSheetAnimationStyle(context),
+                            isScrollControlled: true,
+                            builder: (_) => SafeArea(
+                              child: DraggableScrollableSheet(
+                                expand: false,
+                                initialChildSize: 0.75,
+                                builder: (_, controller) => ListView(
+                                  controller: controller,
+                                  padding: const EdgeInsets.all(16),
+                                  children: [
+                                    Text(t.creatorPlans, style: Theme.of(context).textTheme.titleLarge),
+                                    FanboxPlansPanel(creatorId: post.creatorId),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          child: Text(t.viewPlans),
+                        ),
+                      ],
+                    ),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 180),
+                      alignment: Alignment.topLeft,
+                      child: operation.hasError ? Text(fanboxError(context, operation.error!)) : const SizedBox.shrink(),
+                    ),
+                    const SizedBox(height: 24),
+                    FanboxCommentsPanel(postId: postId),
+                  ],
+                  const SizedBox(height: 20),
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      FilledButton.tonalIcon(
-                        style: appSecondaryButtonStyle(FreepivThemeTokens.of(context)),
-                        onPressed: post.isLiked || operation.isLoading
-                            ? null
-                            : () async {
-                                final success = await ref
-                                    .read(fanboxOperationProvider('post:$postId').notifier)
-                                    .run(() async => (await ref.read(fanboxApiProvider.future)).likePost(postId: postId));
-                                if (success && context.mounted) {
-                                  ref.invalidate(fanboxPostProvider(postId));
-                                  ref.invalidate(fanboxBrowseProvider);
-                                }
-                              },
-                        icon: Icon(post.isLiked ? Icons.favorite : Icons.favorite_border),
-                        label: Text('${post.isLiked ? t.liked : t.like} · ${post.likeCount}'),
-                      ),
-                      Builder(
-                        builder: (buttonContext) => OutlinedButton.icon(
-                          onPressed: ref.watch(fanboxDownloadsProvider).running
-                              ? null
-                              : () => downloadFanboxPosts(context, ref, post: post, origin: DownloadFlight.originOf(buttonContext)),
-                          icon: const Icon(Icons.download),
-                          label: Text(t.downloadAll),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => showModalBottomSheet<void>(
-                          context: context,
-                          sheetAnimationStyle: appSheetAnimationStyle(context),
-                          isScrollControlled: true,
-                          builder: (_) => SafeArea(
-                            child: DraggableScrollableSheet(
-                              expand: false,
-                              initialChildSize: 0.75,
-                              builder: (_, controller) => ListView(
-                                controller: controller,
-                                padding: const EdgeInsets.all(16),
-                                children: [
-                                  Text(t.creatorPlans, style: Theme.of(context).textTheme.titleLarge),
-                                  FanboxPlansPanel(creatorId: post.creatorId),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        child: Text(t.viewPlans),
-                      ),
+                      if (post.previousPostId case final id?) OutlinedButton(onPressed: () => openFanboxPost(context, id), child: Text(t.previous)),
+                      if (post.nextPostId case final id?) OutlinedButton(onPressed: () => openFanboxPost(context, id), child: Text(t.next)),
                     ],
                   ),
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 180),
-                    alignment: Alignment.topLeft,
-                    child: operation.hasError ? Text(fanboxError(context, operation.error!)) : const SizedBox.shrink(),
-                  ),
-                  const SizedBox(height: 24),
-                  FanboxCommentsPanel(postId: postId),
                 ],
-                const SizedBox(height: 20),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    if (post.previousPostId case final id?) OutlinedButton(onPressed: () => openFanboxPost(context, id), child: Text(t.previous)),
-                    if (post.nextPostId case final id?) OutlinedButton(onPressed: () => openFanboxPost(context, id), child: Text(t.next)),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -480,41 +509,49 @@ class FanboxPlansPanel extends ConsumerWidget {
       );
 }
 
-void showFanboxImage(BuildContext context, String url) => showAppDialog<void>(
-  context: context,
-  builder: (context) => Dialog.fullscreen(
-    child: Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Center(
-                child: InteractiveViewer(
-                  minScale: 0.5,
-                  maxScale: 8,
-                  child: FanboxImageMenu(
-                    url: url,
-                    child: FanboxImageView(url, fit: BoxFit.contain),
+/// Shows [url] full screen; its menu files downloads under the page's
+/// source, as the image it was opened from does.
+void showFanboxImage(BuildContext context, String url) {
+  final source = DownloadSourceScope.of(context);
+  showAppDialog<void>(
+    context: context,
+    builder: (context) => DownloadSourceScope(
+      source: source,
+      child: Dialog.fullscreen(
+        child: Scaffold(
+          body: SafeArea(
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Center(
+                    child: InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 8,
+                      child: FanboxImageMenu(
+                        url: url,
+                        child: FanboxImageView(url, fit: BoxFit.contain),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(tooltip: context.t.fanbox.openOriginal, onPressed: () => openFanboxLink(context, url), icon: const Icon(Icons.open_in_new)),
+                      const CloseButton(),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            Align(
-              alignment: Alignment.topRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(tooltip: context.t.fanbox.openOriginal, onPressed: () => openFanboxLink(context, url), icon: const Icon(Icons.open_in_new)),
-                  const CloseButton(),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     ),
-  ),
-);
+  );
+}
 
 class FanboxBlockView extends ConsumerWidget {
   const FanboxBlockView(this.block, {super.key});
@@ -541,13 +578,13 @@ class FanboxBlockView extends ConsumerWidget {
         title: Text('${file.name}.${file.extension_}'),
         subtitle: Text(formatByteSize(file.size)),
         trailing: const Icon(Icons.download),
-        onTap: () async {
-          final folder = await fanboxDownloadDirectory();
-          if (!context.mounted) return;
-          await ref
-              .read(fanboxDownloadsProvider.notifier)
-              .downloadPosts(directory: folder, media: [(url: file.url, filename: '${file.id}_${file.name}.${file.extension_}')]);
-        },
+        onTap: () => downloadFanboxFile(
+          ref,
+          url: file.url,
+          filename: '${file.id}_${file.name}.${file.extension_}',
+          source: DownloadSourceScope.of(context),
+          image: false,
+        ),
       ),
     ),
     FanboxBlock_Embed(:final url, :final html) => _FanboxEmbed(url: url, content: html),

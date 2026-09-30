@@ -494,10 +494,6 @@ class Translations$fanbox$zh_Hant_TW extends Translations$fanbox$en_US {
 	@override String get download => '下載';
 	@override String get downloadAll => '下載全部媒體';
 	@override String get downloadCreator => '批次下載創作者文章';
-	@override String downloadProgress({required Object done, required Object total}) => '已下載 ${done} / ${total}';
-	@override String get cancelDownload => '完成目前檔案後停止';
-	@override String get downloadFinished => '下載完成';
-	@override String get downloadFailed => '下載失敗，重試會略過已完成的檔案。';
 	@override String get fanCard => '粉絲卡';
 	@override String get previous => '上一篇';
 	@override String get next => '下一篇';
@@ -520,6 +516,8 @@ class Translations$fanbox$zh_Hant_TW extends Translations$fanbox$en_US {
 	@override String get restrictedInfo => '文章卡片會保留，內文需要符合金額要求的贊助方案。';
 	@override String get noPlans => '暫無可用方案';
 	@override String get downloadPreparing => '正在收集有權瀏覽的文章…';
+	@override String downloadQueued({required Object count}) => '已加入下載佇列：${count} 個檔案';
+	@override String get downloadNothingNew => '這些檔案都已在下載佇列中';
 	@override String get browserLogin => '瀏覽器登入';
 	@override String get manualLogin => '手動填寫 Cookie';
 	@override String get browserHelp => '請在官方頁面完成登入，驗證工作階段成功後會自動關閉登入視窗。';
@@ -692,11 +690,21 @@ class Translations$settings$downloads$zh_Hant_TW extends Translations$settings$d
 	@override String get clearCompleted => '清空已完成任務';
 	@override String get syncFailed => '下載狀態同步失敗';
 	@override String get actionFailed => '下載操作失敗';
-	@override String get expand => '展開';
 	@override String get collapse => '收合';
 	@override String get viewAll => '查看全部下載';
 	@override String badgeFailures({required Object count}) => '失敗的下載：${count}';
 	@override String badgeActive({required Object count}) => '進行中的下載：${count}';
+	@override String filesProgress({required Object done, required Object total}) => '${done} / ${total} 個檔案';
+	@override String filesFailed({required Object count}) => '${count} 個失敗';
+	@override String collectingPosts({required Object count}) => '正在收集文章 · 已讀取 ${count} 篇';
+	@override String moreItems({required Object count}) => '還有 ${count} 項';
+	@override String showAll({required Object count}) => '顯示全部 ${count} 個';
+	@override String get openSource => '開啟原頁面';
+	@override String get openFolder => '開啟所在資料夾';
+	@override String get clearItem => '清除';
+	@override String get deleteItem => '刪除記錄';
+	@override String get expandItem => '顯示檔案';
+	@override String get collapseItem => '收起檔案';
 }
 
 // Path: settings.proxy
@@ -1442,11 +1450,21 @@ extension on TranslationsZhHantTw {
 			'settings.downloads.clearCompleted' => '清空已完成任務',
 			'settings.downloads.syncFailed' => '下載狀態同步失敗',
 			'settings.downloads.actionFailed' => '下載操作失敗',
-			'settings.downloads.expand' => '展開',
 			'settings.downloads.collapse' => '收合',
 			'settings.downloads.viewAll' => '查看全部下載',
 			'settings.downloads.badgeFailures' => ({required Object count}) => '失敗的下載：${count}',
 			'settings.downloads.badgeActive' => ({required Object count}) => '進行中的下載：${count}',
+			'settings.downloads.filesProgress' => ({required Object done, required Object total}) => '${done} / ${total} 個檔案',
+			'settings.downloads.filesFailed' => ({required Object count}) => '${count} 個失敗',
+			'settings.downloads.collectingPosts' => ({required Object count}) => '正在收集文章 · 已讀取 ${count} 篇',
+			'settings.downloads.moreItems' => ({required Object count}) => '還有 ${count} 項',
+			'settings.downloads.showAll' => ({required Object count}) => '顯示全部 ${count} 個',
+			'settings.downloads.openSource' => '開啟原頁面',
+			'settings.downloads.openFolder' => '開啟所在資料夾',
+			'settings.downloads.clearItem' => '清除',
+			'settings.downloads.deleteItem' => '刪除記錄',
+			'settings.downloads.expandItem' => '顯示檔案',
+			'settings.downloads.collapseItem' => '收起檔案',
 			'settings.proxy.title' => '網路代理',
 			'settings.proxy.shortTitle' => '代理',
 			'settings.proxy.subtitle' => '儲存後 Pixiv API 和圖片請求會使用所選代理。',
@@ -1766,6 +1784,8 @@ extension on TranslationsZhHantTw {
 			'fanbox.empty' => '暫無內容',
 			'fanbox.loadMore' => '載入更多',
 			'fanbox.searchHint' => '創作者名稱、ID 或標籤',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.creatorId' => '透過 ID 開啟創作者',
 			'fanbox.posts' => '文章',
 			'fanbox.creatorPlans' => '創作者方案',
@@ -1776,8 +1796,6 @@ extension on TranslationsZhHantTw {
 			'fanbox.monthlyFee' => ({required Object fee}) => '¥${fee}／月',
 			'fanbox.supportOnWebsite' => '在 FANBOX 查看方案',
 			'fanbox.follow' => '關注',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.unfollow' => '取消關注',
 			'fanbox.like' => '按讚',
 			'fanbox.liked' => '已按讚',
@@ -1792,10 +1810,6 @@ extension on TranslationsZhHantTw {
 			'fanbox.download' => '下載',
 			'fanbox.downloadAll' => '下載全部媒體',
 			'fanbox.downloadCreator' => '批次下載創作者文章',
-			'fanbox.downloadProgress' => ({required Object done, required Object total}) => '已下載 ${done} / ${total}',
-			'fanbox.cancelDownload' => '完成目前檔案後停止',
-			'fanbox.downloadFinished' => '下載完成',
-			'fanbox.downloadFailed' => '下載失敗，重試會略過已完成的檔案。',
 			'fanbox.fanCard' => '粉絲卡',
 			'fanbox.previous' => '上一篇',
 			'fanbox.next' => '下一篇',
@@ -1818,6 +1832,8 @@ extension on TranslationsZhHantTw {
 			'fanbox.restrictedInfo' => '文章卡片會保留，內文需要符合金額要求的贊助方案。',
 			'fanbox.noPlans' => '暫無可用方案',
 			'fanbox.downloadPreparing' => '正在收集有權瀏覽的文章…',
+			'fanbox.downloadQueued' => ({required Object count}) => '已加入下載佇列：${count} 個檔案',
+			'fanbox.downloadNothingNew' => '這些檔案都已在下載佇列中',
 			'fanbox.browserLogin' => '瀏覽器登入',
 			'fanbox.manualLogin' => '手動填寫 Cookie',
 			'fanbox.browserHelp' => '請在官方頁面完成登入，驗證工作階段成功後會自動關閉登入視窗。',

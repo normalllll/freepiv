@@ -643,10 +643,29 @@ abstract class _$FanboxBookmarks extends $AsyncNotifier<List<String>> {
   }
 }
 
+/// FANBOX downloads, run by the download manager like every other download.
+///
+/// Downloading a creator whole first collects their posts page by page,
+/// queueing each post's files as soon as the post is read. The state is the
+/// creators still being collected, by creator id, with how many posts were
+/// read so far.
+
 @ProviderFor(FanboxDownloads)
 final fanboxDownloadsProvider = FanboxDownloadsProvider._();
 
-final class FanboxDownloadsProvider extends $NotifierProvider<FanboxDownloads, FanboxDownloadProgress> {
+/// FANBOX downloads, run by the download manager like every other download.
+///
+/// Downloading a creator whole first collects their posts page by page,
+/// queueing each post's files as soon as the post is read. The state is the
+/// creators still being collected, by creator id, with how many posts were
+/// read so far.
+final class FanboxDownloadsProvider extends $NotifierProvider<FanboxDownloads, Map<String, FanboxCollecting>> {
+  /// FANBOX downloads, run by the download manager like every other download.
+  ///
+  /// Downloading a creator whole first collects their posts page by page,
+  /// queueing each post's files as soon as the post is read. The state is the
+  /// creators still being collected, by creator id, with how many posts were
+  /// read so far.
   FanboxDownloadsProvider._()
     : super(
         from: null,
@@ -666,20 +685,34 @@ final class FanboxDownloadsProvider extends $NotifierProvider<FanboxDownloads, F
   FanboxDownloads create() => FanboxDownloads();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(FanboxDownloadProgress value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<FanboxDownloadProgress>(value));
+  Override overrideWithValue(Map<String, FanboxCollecting> value) {
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<Map<String, FanboxCollecting>>(value));
   }
 }
 
-String _$fanboxDownloadsHash() => r'39f80abcbac73a866be52068c17d2c7c573439fe';
+String _$fanboxDownloadsHash() => r'6fc0b8dfe277a56631c67caad383d735a6cf3582';
 
-abstract class _$FanboxDownloads extends $Notifier<FanboxDownloadProgress> {
-  FanboxDownloadProgress build();
+/// FANBOX downloads, run by the download manager like every other download.
+///
+/// Downloading a creator whole first collects their posts page by page,
+/// queueing each post's files as soon as the post is read. The state is the
+/// creators still being collected, by creator id, with how many posts were
+/// read so far.
+
+abstract class _$FanboxDownloads extends $Notifier<Map<String, FanboxCollecting>> {
+  Map<String, FanboxCollecting> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<FanboxDownloadProgress, FanboxDownloadProgress>;
-    final element = ref.element as $ClassProviderElement<AnyNotifier<FanboxDownloadProgress, FanboxDownloadProgress>, FanboxDownloadProgress, Object?, Object?>;
+    final ref = this.ref as $Ref<Map<String, FanboxCollecting>, Map<String, FanboxCollecting>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Map<String, FanboxCollecting>, Map<String, FanboxCollecting>>,
+              Map<String, FanboxCollecting>,
+              Object?,
+              Object?
+            >;
     return element.handleCreate(ref, build);
   }
 }

@@ -494,10 +494,6 @@ class Translations$fanbox$zh_CN extends Translations$fanbox$en_US {
 	@override String get download => '下载';
 	@override String get downloadAll => '下载全部媒体';
 	@override String get downloadCreator => '批量下载创作者文章';
-	@override String downloadProgress({required Object done, required Object total}) => '已下载 ${done} / ${total}';
-	@override String get cancelDownload => '完成当前文件后停止';
-	@override String get downloadFinished => '下载完成';
-	@override String get downloadFailed => '下载失败，重试会跳过已完成的文件。';
 	@override String get fanCard => '粉丝卡';
 	@override String get previous => '上一篇';
 	@override String get next => '下一篇';
@@ -520,6 +516,8 @@ class Translations$fanbox$zh_CN extends Translations$fanbox$en_US {
 	@override String get restrictedInfo => '文章卡片会保留，正文需要符合金额要求的赞助方案。';
 	@override String get noPlans => '暂无可用方案';
 	@override String get downloadPreparing => '正在收集有权浏览的文章…';
+	@override String downloadQueued({required Object count}) => '已加入下载队列：${count} 个文件';
+	@override String get downloadNothingNew => '这些文件都已在下载队列中';
 	@override String get browserLogin => '浏览器登录';
 	@override String get manualLogin => '手动填写 Cookie';
 	@override String get browserHelp => '请在官方页面完成登录，验证会话成功后会自动关闭登录窗口。';
@@ -692,11 +690,21 @@ class Translations$settings$downloads$zh_CN extends Translations$settings$downlo
 	@override String get clearCompleted => '清空已完成任务';
 	@override String get syncFailed => '下载状态同步失败';
 	@override String get actionFailed => '下载操作失败';
-	@override String get expand => '展开';
 	@override String get collapse => '收起';
 	@override String get viewAll => '查看全部下载';
 	@override String badgeFailures({required Object count}) => '失败的下载：${count}';
 	@override String badgeActive({required Object count}) => '进行中的下载：${count}';
+	@override String filesProgress({required Object done, required Object total}) => '${done} / ${total} 个文件';
+	@override String filesFailed({required Object count}) => '${count} 个失败';
+	@override String collectingPosts({required Object count}) => '正在收集文章 · 已读取 ${count} 篇';
+	@override String moreItems({required Object count}) => '还有 ${count} 项';
+	@override String showAll({required Object count}) => '显示全部 ${count} 个';
+	@override String get openSource => '打开原页面';
+	@override String get openFolder => '打开所在文件夹';
+	@override String get clearItem => '清除';
+	@override String get deleteItem => '删除记录';
+	@override String get expandItem => '显示文件';
+	@override String get collapseItem => '收起文件';
 }
 
 // Path: settings.proxy
@@ -1442,11 +1450,21 @@ extension on TranslationsZhCn {
 			'settings.downloads.clearCompleted' => '清空已完成任务',
 			'settings.downloads.syncFailed' => '下载状态同步失败',
 			'settings.downloads.actionFailed' => '下载操作失败',
-			'settings.downloads.expand' => '展开',
 			'settings.downloads.collapse' => '收起',
 			'settings.downloads.viewAll' => '查看全部下载',
 			'settings.downloads.badgeFailures' => ({required Object count}) => '失败的下载：${count}',
 			'settings.downloads.badgeActive' => ({required Object count}) => '进行中的下载：${count}',
+			'settings.downloads.filesProgress' => ({required Object done, required Object total}) => '${done} / ${total} 个文件',
+			'settings.downloads.filesFailed' => ({required Object count}) => '${count} 个失败',
+			'settings.downloads.collectingPosts' => ({required Object count}) => '正在收集文章 · 已读取 ${count} 篇',
+			'settings.downloads.moreItems' => ({required Object count}) => '还有 ${count} 项',
+			'settings.downloads.showAll' => ({required Object count}) => '显示全部 ${count} 个',
+			'settings.downloads.openSource' => '打开原页面',
+			'settings.downloads.openFolder' => '打开所在文件夹',
+			'settings.downloads.clearItem' => '清除',
+			'settings.downloads.deleteItem' => '删除记录',
+			'settings.downloads.expandItem' => '显示文件',
+			'settings.downloads.collapseItem' => '收起文件',
 			'settings.proxy.title' => '网络代理',
 			'settings.proxy.shortTitle' => '代理',
 			'settings.proxy.subtitle' => '保存后 Pixiv API 和图片请求会使用所选代理。',
@@ -1766,6 +1784,8 @@ extension on TranslationsZhCn {
 			'fanbox.empty' => '暂无内容',
 			'fanbox.loadMore' => '加载更多',
 			'fanbox.searchHint' => '创作者名称、ID 或标签',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.creatorId' => '通过 ID 打开创作者',
 			'fanbox.posts' => '文章',
 			'fanbox.creatorPlans' => '创作者方案',
@@ -1776,8 +1796,6 @@ extension on TranslationsZhCn {
 			'fanbox.monthlyFee' => ({required Object fee}) => '¥${fee}／月',
 			'fanbox.supportOnWebsite' => '在 FANBOX 查看方案',
 			'fanbox.follow' => '关注',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.unfollow' => '取消关注',
 			'fanbox.like' => '点赞',
 			'fanbox.liked' => '已点赞',
@@ -1792,10 +1810,6 @@ extension on TranslationsZhCn {
 			'fanbox.download' => '下载',
 			'fanbox.downloadAll' => '下载全部媒体',
 			'fanbox.downloadCreator' => '批量下载创作者文章',
-			'fanbox.downloadProgress' => ({required Object done, required Object total}) => '已下载 ${done} / ${total}',
-			'fanbox.cancelDownload' => '完成当前文件后停止',
-			'fanbox.downloadFinished' => '下载完成',
-			'fanbox.downloadFailed' => '下载失败，重试会跳过已完成的文件。',
 			'fanbox.fanCard' => '粉丝卡',
 			'fanbox.previous' => '上一篇',
 			'fanbox.next' => '下一篇',
@@ -1818,6 +1832,8 @@ extension on TranslationsZhCn {
 			'fanbox.restrictedInfo' => '文章卡片会保留，正文需要符合金额要求的赞助方案。',
 			'fanbox.noPlans' => '暂无可用方案',
 			'fanbox.downloadPreparing' => '正在收集有权浏览的文章…',
+			'fanbox.downloadQueued' => ({required Object count}) => '已加入下载队列：${count} 个文件',
+			'fanbox.downloadNothingNew' => '这些文件都已在下载队列中',
 			'fanbox.browserLogin' => '浏览器登录',
 			'fanbox.manualLogin' => '手动填写 Cookie',
 			'fanbox.browserHelp' => '请在官方页面完成登录，验证会话成功后会自动关闭登录窗口。',

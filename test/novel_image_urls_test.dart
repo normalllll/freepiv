@@ -62,7 +62,7 @@ void main() {
     expect(DownloadOrigin.ofImageUrl(Uri.parse(_original)), const ArtworkPage(illustId: 123, pageIndex: 1));
     final upload = Uri.parse('https://i.pximg.net/novel-cover-original/img/2024/01/02/03/04/05/ci9_abc.jpg?x=1');
     final origin = DownloadOrigin.ofImageUrl(upload);
-    expect(origin, isA<ContentImage>());
+    expect(origin, isA<ContentFile>());
     expect(origin.jobId, DownloadOrigin.ofImageUrl(upload.replace(query: '')).jobId, reason: 'the query does not change which image it is');
   });
 }

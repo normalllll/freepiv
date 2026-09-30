@@ -5,7 +5,6 @@ import 'package:flutter/physics.dart';
 import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/shared/widgets/pixiv_image.dart';
 
 /// A download entry (the sidebar dock or the phone's floating button) that
 /// can receive a flight: where its count badge is on screen, even before the
@@ -37,9 +36,11 @@ abstract final class DownloadFlight {
   }
 
   /// Sends a flight from [origin] (a global rect: the tapped button, or a
-  /// small box around a pointer position) showing [imageUrl] when there is
-  /// one. With reduced motion only the landing bounce plays.
-  static void launch({required Rect? origin, String? imageUrl}) {
+  /// small box around a pointer position) carrying [artwork], the picture
+  /// being downloaded as its source shows it (a Pixiv or FANBOX image with
+  /// the requests each needs). Without artwork a download glyph flies. With
+  /// reduced motion only the landing bounce plays.
+  static void launch({required Rect? origin, Widget? artwork}) {
     final target = _target;
     final overlay = AppRouter.rootNavigatorKey.currentState?.overlay;
     if (target == null) return;
@@ -52,7 +53,7 @@ abstract final class DownloadFlight {
       builder: (context) => _Flight(
         origin: origin,
         target: target,
-        imageUrl: imageUrl,
+        artwork: artwork,
         onDone: () {
           target.land();
           entry.remove();
@@ -64,11 +65,11 @@ abstract final class DownloadFlight {
 }
 
 class _Flight extends StatefulWidget {
-  const _Flight({required this.origin, required this.target, required this.imageUrl, required this.onDone});
+  const _Flight({required this.origin, required this.target, required this.artwork, required this.onDone});
 
   final Rect origin;
   final DownloadFlightTarget target;
-  final String? imageUrl;
+  final Widget? artwork;
   final VoidCallback onDone;
 
   @override
@@ -127,7 +128,7 @@ class _FlightState extends State<_Flight> with SingleTickerProviderStateMixin {
               child: IgnorePointer(
                 child: Opacity(
                   opacity: opacity,
-                  child: _Token(imageUrl: widget.imageUrl),
+                  child: _Token(artwork: widget.artwork),
                 ),
               ),
             ),
@@ -144,14 +145,13 @@ class _FlightState extends State<_Flight> with SingleTickerProviderStateMixin {
 }
 
 class _Token extends StatelessWidget {
-  const _Token({required this.imageUrl});
+  const _Token({required this.artwork});
 
-  final String? imageUrl;
+  final Widget? artwork;
 
   @override
   Widget build(BuildContext context) {
     final tokens = FreepivThemeTokens.of(context);
-    final imageUrl = this.imageUrl;
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -166,7 +166,7 @@ class _Token extends StatelessWidget {
         ],
       ),
       child: ClipOval(
-        child: imageUrl == null
+        child: artwork == null
             ? Center(
                 child: FittedBox(
                   child: Padding(
@@ -175,7 +175,7 @@ class _Token extends StatelessWidget {
                   ),
                 ),
               )
-            : PixivImage(url: imageUrl),
+            : SizedBox.expand(child: artwork),
       ),
     );
   }

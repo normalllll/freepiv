@@ -1,3 +1,7 @@
+import 'package:path/path.dart' as p;
+import 'package:freepiv/core/downloads/download_manager.dart';
+import 'package:freepiv/app/toast/app_toast.dart';
+import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +12,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
@@ -43,6 +48,22 @@ String fanboxDate(BuildContext context, String date) {
 String fanboxFee(BuildContext context, int fee) => MaterialLocalizations.of(context).formatDecimal(fee);
 
 /// FANBOX serves images to its own pages, and its own hosts need the session.
+/// The post as the downloads list shows the files saved from it; a post
+/// without a cover shows its first image.
+FanboxPostSource fanboxPostDownloadSource(FanboxPost post) => FanboxPostSource(
+  postId: post.id,
+  title: post.title,
+  subtitle: post.user.name.isEmpty ? post.creatorId : post.user.name,
+  thumbnailUrl: post.coverUrl ?? post.blocks.whereType<FanboxBlock_Image>().firstOrNull?.image.thumbnailUrl,
+);
+
+/// The creator as the downloads list shows the files saved from their page.
+FanboxCreatorSource fanboxCreatorDownloadSource(FanboxCreator creator) => FanboxCreatorSource(
+  creatorId: creator.creatorId,
+  title: creator.user.name.isEmpty ? creator.creatorId : creator.user.name,
+  thumbnailUrl: creator.coverUrl ?? creator.user.iconUrl,
+);
+
 Map<String, String> fanboxImageHeaders(Uri uri, String? session) => {
   'Referer': 'https://www.fanbox.cc/',
   if (session != null && (uri.host == 'fanbox.cc' || uri.host.endsWith('.fanbox.cc'))) 'Cookie': 'FANBOXSESSID=$session',
@@ -140,9 +161,33 @@ class FanboxErrorView extends ConsumerWidget {
   );
 }
 
+/// Downloads one FANBOX image or attachment, filed under [source], and
+/// reports the saved file. An image flies from [origin] to the download
+/// badge.
+Future<void> downloadFanboxFile(
+  WidgetRef ref, {
+  required String url,
+  required String filename,
+  required DownloadSource source,
+  bool image = true,
+  Rect? origin,
+}) async {
+  final downloads = ref.read(fanboxDownloadsProvider.notifier);
+  try {
+    await downloadManager.ensureReadyForDownloads();
+    DownloadFlight.launch(origin: origin, artwork: image ? FanboxImageView(url) : null);
+    final file = await downloads.downloadFile(url: url, filename: filename, source: source, image: image);
+    AppToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
+  } on DownloadAlreadyQueued {
+    AppToast.info(t.illust.toast.alreadyDownloading);
+  } catch (error) {
+    AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
+  }
+}
+
 /// A FANBOX image with the artwork image menu (download, copy on desktop).
-/// It downloads through FANBOX's own downloads, which carry the session
-/// without storing it, into the FANBOX folder as [filename].
+/// Downloads carry the session when they start without storing it, and save
+/// into the FANBOX folder as [filename].
 class FanboxImageMenu extends ConsumerWidget {
   const FanboxImageMenu({required this.url, required this.child, this.filename, super.key});
 
@@ -160,12 +205,7 @@ class FanboxImageMenu extends ConsumerWidget {
       actions: ContentImageActions(
         url: url,
         headers: fanboxImageHeaders(uri, session),
-        download: (origin) async {
-          final downloads = ref.read(fanboxDownloadsProvider.notifier);
-          final directory = await fanboxDownloadDirectory();
-          DownloadFlight.launch(origin: origin);
-          await downloads.downloadPosts(directory: directory, media: [(url: url, filename: filename ?? uri.pathSegments.last)]);
-        },
+        download: (source, origin) => downloadFanboxFile(ref, url: url, filename: filename ?? uri.pathSegments.last, source: source, origin: origin),
       ),
       child: child,
     );

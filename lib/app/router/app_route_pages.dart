@@ -111,7 +111,10 @@ Page<void> aboutPage(BuildContext context, GoRouterState state) {
 }
 
 Page<void> downloadsPage(BuildContext context, GoRouterState state) {
-  return detailTransitionPage(key: state.pageKey, child: const DownloadsPage());
+  return detailTransitionPage(
+    key: state.pageKey,
+    child: DownloadsPage(focusItem: state.uri.queryParameters['item']),
+  );
 }
 
 Page<void> originalImageViewerPage(BuildContext context, GoRouterState state) {

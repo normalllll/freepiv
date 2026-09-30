@@ -4,8 +4,6 @@ import 'download_bulk_actions.dart';
 import 'download_dock_button.dart';
 import 'download_flight.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/features/fanbox/logic.dart';
-import 'fanbox_download_tasks.dart';
 
 import 'package:flutter/material.dart';
 import 'package:freepiv/shared/ui/spring_builder.dart';
@@ -14,7 +12,10 @@ import 'package:flutter/services.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/features/downloads/logic.dart';
+import 'package:freepiv/features/downloads/presentation/download_item_widgets.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
+import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:go_router/go_router.dart';
 
@@ -100,7 +101,7 @@ class _DesktopDownloadDockState extends ConsumerState<DesktopDownloadDock>
 
   @override
   Widget build(BuildContext context) {
-    final fanbox = ref.watch(fanboxDownloadsProvider);
+    final collecting = ref.watch(fanboxDownloadsProvider);
     return LayoutBuilder(
       builder: (context, constraints) {
         const buttonSize = 52.0;
@@ -119,11 +120,11 @@ class _DesktopDownloadDockState extends ConsumerState<DesktopDownloadDock>
             final tasks = snapshot.data ?? const <DownloadTaskSnapshot>[];
 
             final panelTasks = tasks;
-            if (panelTasks.isEmpty && !fanbox.visible) {
+            if (panelTasks.isEmpty && collecting.isEmpty) {
               return const SizedBox.shrink();
             }
 
-            final summary = combinedDownloadSummary(DownloadSummary.fromTasks(panelTasks), fanbox);
+            final summary = DownloadSummary.fromTasks(panelTasks);
 
             return Stack(
               children: [
@@ -186,14 +187,15 @@ class _DesktopDownloadDockState extends ConsumerState<DesktopDownloadDock>
                                 closeFocusNode: _closeFocusNode,
                                 summary: summary,
                                 tasks: panelTasks,
+                                items: downloadItemsOf(panelTasks, collecting: collecting.values),
                                 onClose: _closePanel,
                                 onViewAll: () {
                                   _closePanel(restoreFocus: false);
                                   context.pushNamed(AppRoute.downloads.name);
                                 },
-                                onOpenWork: (work) {
+                                onOpenItem: (item) {
                                   _closePanel(restoreFocus: false);
-                                  context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': work.illustId.toString()});
+                                  context.pushNamed(AppRoute.downloads.name, queryParameters: {'item': item.key});
                                 },
                               ),
                             ),
@@ -216,23 +218,24 @@ class _DownloadDockPanel extends StatelessWidget {
     required this.maxHeight,
     required this.summary,
     required this.tasks,
+    required this.items,
     required this.onClose,
     required this.onViewAll,
-    required this.onOpenWork,
+    required this.onOpenItem,
     required this.closeFocusNode,
   });
 
   final double maxHeight;
   final DownloadSummary summary;
   final List<DownloadTaskSnapshot> tasks;
+  final List<DownloadItem> items;
   final VoidCallback onClose;
   final FocusNode closeFocusNode;
   final VoidCallback onViewAll;
-  final ValueChanged<ArtworkPage> onOpenWork;
+  final ValueChanged<DownloadItem> onOpenItem;
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final tokens = FreepivThemeTokens.of(context);
     final actions = Row(
       mainAxisSize: MainAxisSize.min,
@@ -271,20 +274,7 @@ class _DownloadDockPanel extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      AnimatedSize(
-                        duration: AppMotion.duration(context, const Duration(milliseconds: 180)),
-                        alignment: Alignment.topCenter,
-                        child: const FanboxDownloadTasks(),
-                      ),
-                      if (tasks.isNotEmpty) ...[
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10, bottom: 2),
-                          child: Text('Pixiv', style: textTheme.labelMedium?.copyWith(color: tokens.textSecondary)),
-                        ),
-                        DownloadTaskList(tasks: tasks, compact: true, showTooltips: false, onOpenWork: onOpenWork),
-                      ],
-                    ],
+                    children: [DownloadItemList(items: items, onOpenItem: onOpenItem, onViewAll: onViewAll)],
                   ),
                 ),
               ),

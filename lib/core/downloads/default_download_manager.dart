@@ -162,7 +162,7 @@ final class DefaultDownloadManager implements DownloadManager {
     }
 
     if (enqueued == 0) {
-      throw const DownloadException('This image is already queued or downloading.');
+      throw const DownloadAlreadyQueued();
     }
 
     await _pumpQueue();
@@ -178,6 +178,8 @@ final class DefaultDownloadManager implements DownloadManager {
   @override
   Future<DownloadedFile> download({
     required DownloadOrigin origin,
+    required DownloadSource source,
+    DownloadPart? part,
     required Uri url,
     String? filename,
     DownloadNetworkOptions networkOptions = const DownloadNetworkOptions(),
@@ -188,6 +190,8 @@ final class DefaultDownloadManager implements DownloadManager {
     await _ensureInitialized();
     final job = DownloadJob.create(
       origin: origin,
+      source: source,
+      part: part,
       url: url,
       filename: filename ?? safeDownloadFilename(origin.defaultFilename(url)),
       networkOptions: networkOptions,
@@ -210,6 +214,8 @@ final class DefaultDownloadManager implements DownloadManager {
   @override
   Future<DownloadedFile> saveBytes({
     required DownloadOrigin origin,
+    required DownloadSource source,
+    DownloadPart? part,
     required Uint8List bytes,
     required Uri sourceUrl,
     String? filename,
@@ -221,6 +227,8 @@ final class DefaultDownloadManager implements DownloadManager {
     await _activePermissionGuard.ensureReadyForDownload();
     final job = DownloadJob.create(
       origin: origin,
+      source: source,
+      part: part,
       url: sourceUrl,
       filename: filename ?? safeDownloadFilename(origin.defaultFilename(sourceUrl)),
       validation: validation,
@@ -230,7 +238,7 @@ final class DefaultDownloadManager implements DownloadManager {
     );
     final activeTask = await _activeTaskForJob(job);
     if (activeTask != null) {
-      throw const DownloadException('This image is already queued or downloading.');
+      throw const DownloadAlreadyQueued();
     }
 
     _jobs[job.id] = job;
@@ -580,7 +588,7 @@ final class DefaultDownloadManager implements DownloadManager {
 
       await _activeStore.updateStatus(job.id, DownloadStatus.running);
       try {
-        await _activeEngine.start([job]);
+        await _activeEngine.start([await _withSessionHeaders(job)]);
         availableSlots -= 1;
       } catch (error, stackTrace) {
         await _activeStore.appendLog(
@@ -598,6 +606,14 @@ final class DefaultDownloadManager implements DownloadManager {
         _completeWithError(job.id, DownloadException('Failed to start download', error));
       }
     }
+  }
+
+  /// [job] as it is sent: with its session's headers, which stay out of the
+  /// store and the logs.
+  Future<DownloadJob> _withSessionHeaders(DownloadJob job) async {
+    final headers = await _configuration.sessionHeaders(job);
+    if (headers.isEmpty) return job;
+    return job.copyWith(networkOptions: job.networkOptions.copyWith(headers: {...job.networkOptions.headers, ...headers}).normalizedFor(job.url));
   }
 
   Future<void> _completeWithSnapshot(String jobId) async {

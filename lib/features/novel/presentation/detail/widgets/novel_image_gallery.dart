@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
 import 'package:freepiv/core/downloads/models/download_origin.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -152,6 +153,7 @@ class _NovelImagePager extends StatelessWidget {
       AppRoute.originalImageViewer.name,
       extra: OriginalImageViewerArgs(
         title: novel.title,
+        source: DownloadSourceScope.of(context),
         initialIndex: index,
         pages: [for (final url in imageUrls) OriginalImagePage(url: url, previewUrl: url, downloadOrigin: DownloadOrigin.ofImageUrl(Uri.parse(url)))],
       ),

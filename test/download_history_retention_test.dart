@@ -13,6 +13,7 @@ class _RetainedStore implements DownloadStore {
   final completed = DownloadTaskSnapshot(
     id: 'illust_7_page_0',
     origin: const ArtworkPage(illustId: 7, pageIndex: 0),
+    source: const ArtworkSource(illustId: 7, title: 'Saved work'),
     title: 'Saved work',
     filename: 'saved.png',
     status: DownloadStatus.downloaded,

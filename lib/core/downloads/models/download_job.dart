@@ -1,25 +1,30 @@
 import 'download_origin.dart';
+import 'download_source.dart';
 import 'save_target.dart';
 import 'download_request_options.dart';
 
 class DownloadJob {
   DownloadJob({
     required this.origin,
+    required this.source,
     required this.url,
     required this.filename,
     required this.networkOptions,
     required this.validation,
     required this.saveTarget,
     required this.createdAt,
+    this.part,
     this.thumbnailUrl,
     this.title,
   });
 
   factory DownloadJob.create({
     required DownloadOrigin origin,
+    required DownloadSource source,
     required Uri url,
     String? filename,
     required SaveTarget saveTarget,
+    DownloadPart? part,
     DownloadNetworkOptions networkOptions = const DownloadNetworkOptions(),
     DownloadValidationOptions validation = const DownloadValidationOptions(),
     String? thumbnailUrl,
@@ -27,6 +32,8 @@ class DownloadJob {
   }) {
     return DownloadJob(
       origin: origin,
+      source: source,
+      part: part,
       url: url,
       filename: filename ?? origin.defaultFilename(url),
       networkOptions: networkOptions.normalizedFor(url),
@@ -39,6 +46,12 @@ class DownloadJob {
   }
 
   final DownloadOrigin origin;
+
+  /// What the file was downloaded from, the item it shows under.
+  final DownloadSource source;
+
+  /// The part of [source] the file belongs to, if the source has parts.
+  final DownloadPart? part;
   final Uri url;
   final String filename;
   final DownloadNetworkOptions networkOptions;
@@ -50,8 +63,16 @@ class DownloadJob {
 
   String get id => origin.jobId;
 
+  /// The subfolder of the app's download folder the file is saved in:
+  /// FANBOX files keep to their own.
+  String? get folder => switch (source) {
+    FanboxSource() => 'fanbox',
+    _ => null,
+  };
+
   DownloadJob copyWith({
     DownloadOrigin? origin,
+    DownloadSource? source,
     Uri? url,
     String? filename,
     DownloadNetworkOptions? networkOptions,
@@ -63,6 +84,8 @@ class DownloadJob {
   }) {
     return DownloadJob(
       origin: origin ?? this.origin,
+      source: source ?? this.source,
+      part: part,
       url: url ?? this.url,
       filename: filename ?? this.filename,
       networkOptions: networkOptions ?? this.networkOptions,
@@ -77,7 +100,7 @@ class DownloadJob {
   Map<String, Object?> toPlatformJson() {
     final (illustId, pageIndex) = switch (origin) {
       ArtworkPage(:final illustId, :final pageIndex) => (illustId, pageIndex),
-      ContentImage() => (null, null),
+      ContentFile() => (null, null),
     };
     return {
       'id': id,
@@ -85,6 +108,7 @@ class DownloadJob {
       'pageIndex': pageIndex,
       'url': url.toString(),
       'filename': filename,
+      'folder': folder,
       'networkOptions': networkOptions.toJson(),
       'validation': validation.toJson(),
       'saveTarget': saveTarget.toJson(),

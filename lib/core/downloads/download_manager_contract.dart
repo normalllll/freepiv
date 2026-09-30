@@ -13,6 +13,8 @@ abstract interface class DownloadManager {
 
   Future<DownloadedFile> download({
     required DownloadOrigin origin,
+    required DownloadSource source,
+    DownloadPart? part,
     required Uri url,
     String? filename,
     DownloadNetworkOptions networkOptions = const DownloadNetworkOptions(),
@@ -23,6 +25,8 @@ abstract interface class DownloadManager {
 
   Future<DownloadedFile> saveBytes({
     required DownloadOrigin origin,
+    required DownloadSource source,
+    DownloadPart? part,
     required Uint8List bytes,
     required Uri sourceUrl,
     String? filename,

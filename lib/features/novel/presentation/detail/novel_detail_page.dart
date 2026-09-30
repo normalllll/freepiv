@@ -1,3 +1,5 @@
+import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
+import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,56 +88,59 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
   Widget build(BuildContext context) {
     final relatedSource = ref.watch(novelRelatedWorksProvider(_novel.id));
 
-    return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
-        return Scaffold(
-          body: SafeArea(
-            bottom: false,
-            child: AnimatedBuilder(
-              animation: relatedSource,
-              builder: (context, child) {
-                return DataLoadingCustomScrollView(
-                  slivers: [
-                    if (!useHorizontalLayout)
-                      SliverAppBar(
-                        // Collapses while the list scrolls on and returns on the way back.
-                        floating: true,
-                        snap: true,
-                        backgroundColor: Colors.transparent,
-                        surfaceTintColor: Colors.transparent,
-                        flexibleSpace: const PinnedChromeGlass(opacity: 1),
-                        automaticallyImplyLeading: false,
-                        leading: FpPageHeader.leadingFor(context),
-                        leadingWidth: FpPageHeader.leadingWidth,
-                        titleSpacing: FpPageHeader.titleSpacingOf(context),
-                        title: Text(_novel.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+    return DownloadSourceScope(
+      source: novelDownloadSource(_novel),
+      child: AutoScaffold(
+        builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+          return Scaffold(
+            body: SafeArea(
+              bottom: false,
+              child: AnimatedBuilder(
+                animation: relatedSource,
+                builder: (context, child) {
+                  return DataLoadingCustomScrollView(
+                    slivers: [
+                      if (!useHorizontalLayout)
+                        SliverAppBar(
+                          // Collapses while the list scrolls on and returns on the way back.
+                          floating: true,
+                          snap: true,
+                          backgroundColor: Colors.transparent,
+                          surfaceTintColor: Colors.transparent,
+                          flexibleSpace: const PinnedChromeGlass(opacity: 1),
+                          automaticallyImplyLeading: false,
+                          leading: FpPageHeader.leadingFor(context),
+                          leadingWidth: FpPageHeader.leadingWidth,
+                          titleSpacing: FpPageHeader.titleSpacingOf(context),
+                          title: Text(_novel.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        ),
+                      SliverToBoxAdapter(
+                        child: NovelHeader(novel: _novel, webviewNovel: _webviewNovel, onStartReading: _openNovelReader),
                       ),
-                    SliverToBoxAdapter(
-                      child: NovelHeader(novel: _novel, webviewNovel: _webviewNovel, onStartReading: _openNovelReader),
-                    ),
-                    SliverToBoxAdapter(
-                      child: NovelImageGallery(novel: _novel, webviewNovel: _webviewNovel),
-                    ),
-                    SliverToBoxAdapter(
-                      child: NovelCreatorSection(novel: _novel, onNovelTap: _openNovelDetail),
-                    ),
-                    SliverToBoxAdapter(
-                      child: NovelDetailWidthLimiter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 2, 20, 18),
-                          child: NovelCommentsSection(novelId: _novel.id, totalComments: _novel.totalComments),
+                      SliverToBoxAdapter(
+                        child: NovelImageGallery(novel: _novel, webviewNovel: _webviewNovel),
+                      ),
+                      SliverToBoxAdapter(
+                        child: NovelCreatorSection(novel: _novel, onNovelTap: _openNovelDetail),
+                      ),
+                      SliverToBoxAdapter(
+                        child: NovelDetailWidthLimiter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 2, 20, 18),
+                            child: NovelCommentsSection(novelId: _novel.id, totalComments: _novel.totalComments),
+                          ),
                         ),
                       ),
-                    ),
-                    ...NovelRelatedSlivers.build(context: context, source: relatedSource, currentNovelId: _novel.id, onNovelTap: _openNovelDetail),
-                    const SliverToBoxAdapter(child: SizedBox(height: 32)),
-                  ],
-                );
-              },
+                      ...NovelRelatedSlivers.build(context: context, source: relatedSource, currentNovelId: _novel.id, onNovelTap: _openNovelDetail),
+                      const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 

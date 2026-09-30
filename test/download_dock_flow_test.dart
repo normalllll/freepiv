@@ -19,12 +19,13 @@ import 'package:go_router/go_router.dart';
 
 class _NoFanboxDownloads extends FanboxDownloads {
   @override
-  FanboxDownloadProgress build() => const FanboxDownloadProgress();
+  Map<String, FanboxCollecting> build() => const {};
 }
 
 DownloadTaskSnapshot _failedTask() => DownloadTaskSnapshot(
   id: 'illust_101_page_0',
   origin: const ArtworkPage(illustId: 101, pageIndex: 0),
+  source: const ArtworkSource(illustId: 101, title: 'Artwork 101'),
   title: 'Artwork 101',
   filename: '101.png',
   status: DownloadStatus.failed,

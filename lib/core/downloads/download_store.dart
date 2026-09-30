@@ -63,11 +63,11 @@ class DriftDownloadStore implements DownloadStore {
               id: Value(job.id),
               illustId: Value(switch (job.origin) {
                 ArtworkPage(:final illustId) => illustId,
-                ContentImage() => null,
+                ContentFile() => null,
               }),
               pageIndex: Value(switch (job.origin) {
                 ArtworkPage(:final pageIndex) => pageIndex,
-                ContentImage() => null,
+                ContentFile() => null,
               }),
               url: Value(job.url.toString()),
               filename: Value(job.filename),
@@ -77,6 +77,17 @@ class DriftDownloadStore implements DownloadStore {
               saveTargetJson: Value(jsonEncode(job.saveTarget.toJson())),
               thumbnailUrl: Value(job.thumbnailUrl),
               title: Value(job.title),
+              sourceKind: Value(job.source.kind.name),
+              sourceId: Value(job.source.id),
+              sourceTitle: Value(job.source.title),
+              sourceSubtitle: Value(job.source.subtitle),
+              sourceThumbnailUrl: Value(job.source.thumbnailUrl),
+              sourceUrl: Value(switch (job.source) {
+                PixivisionSource(:final url) => url,
+                _ => null,
+              }),
+              partId: Value(job.part?.id),
+              partTitle: Value(job.part?.title),
               createdAt: Value(job.createdAt.millisecondsSinceEpoch),
               updatedAt: Value(now),
             ),
@@ -188,6 +199,16 @@ class DriftDownloadStore implements DownloadStore {
     }
     return DownloadJob(
       origin: _originFrom(row.illustId, row.pageIndex, row.url),
+      source: _sourceFrom(
+        taskId: row.id,
+        kind: row.sourceKind,
+        id: row.sourceId,
+        title: row.sourceTitle,
+        subtitle: row.sourceSubtitle,
+        thumbnailUrl: row.sourceThumbnailUrl,
+        url: row.sourceUrl,
+      ),
+      part: _partFrom(row.partId, row.partTitle),
       url: Uri.parse(row.url),
       filename: row.filename,
       networkOptions: _networkOptionsFromJson(row.networkOptionsJson, legacyHeadersJson: row.headersJson),
@@ -284,6 +305,14 @@ class DriftDownloadStore implements DownloadStore {
         j.filename AS filename,
         j.title AS title,
         j.thumbnail_url AS thumbnail_url,
+        j.source_kind AS source_kind,
+        j.source_id AS source_id,
+        j.source_title AS source_title,
+        j.source_subtitle AS source_subtitle,
+        j.source_thumbnail_url AS source_thumbnail_url,
+        j.source_url AS source_url,
+        j.part_id AS part_id,
+        j.part_title AS part_title,
         j.created_at AS created_at,
         s.status AS status,
         s.save_state AS save_state,
@@ -307,9 +336,20 @@ class DriftDownloadStore implements DownloadStore {
 
   DownloadTaskSnapshot _snapshotFromRow(QueryRow row) {
     final filename = row.read<String>('filename');
+    final id = row.read<String>('id');
     return DownloadTaskSnapshot(
-      id: row.read<String>('id'),
+      id: id,
       origin: _originFrom(row.readNullable<int>('illust_id'), row.readNullable<int>('page_index'), row.read<String>('url')),
+      source: _sourceFrom(
+        taskId: id,
+        kind: row.read<String>('source_kind'),
+        id: row.read<String>('source_id'),
+        title: row.readNullable<String>('source_title'),
+        subtitle: row.readNullable<String>('source_subtitle'),
+        thumbnailUrl: row.readNullable<String>('source_thumbnail_url'),
+        url: row.readNullable<String>('source_url'),
+      ),
+      part: _partFrom(row.readNullable<String>('part_id'), row.readNullable<String>('part_title')),
       title: row.readNullable<String>('title') ?? filename,
       filename: filename,
       thumbnailUrl: row.readNullable<String>('thumbnail_url'),
@@ -361,8 +401,44 @@ DownloadNetworkOptions _networkOptionsFromJson(String source, {required String l
   return DownloadNetworkOptions(headers: _stringMapFromJson(legacyHeadersJson));
 }
 
+/// A row's source as stored by [DriftDownloadStore.upsertJob]; a row whose
+/// source cannot be read back stands alone as its own item.
+DownloadSource _sourceFrom({
+  required String taskId,
+  required String kind,
+  required String id,
+  required String? title,
+  required String? subtitle,
+  required String? thumbnailUrl,
+  required String? url,
+}) {
+  final standalone = StandaloneSource(taskId: taskId, title: title, thumbnailUrl: thumbnailUrl);
+  return switch (DownloadSourceKind.values.asNameMap()[kind]) {
+    DownloadSourceKind.artwork => switch (int.tryParse(id)) {
+      final illustId? => ArtworkSource(illustId: illustId, title: title, subtitle: subtitle, thumbnailUrl: thumbnailUrl),
+      null => standalone,
+    },
+    DownloadSourceKind.pixivision => switch ((int.tryParse(id), url)) {
+      (final articleId?, final url?) => PixivisionSource(articleId: articleId, url: url, title: title, thumbnailUrl: thumbnailUrl),
+      _ => standalone,
+    },
+    DownloadSourceKind.novel => switch (int.tryParse(id)) {
+      final novelId? => NovelSource(novelId: novelId, title: title, subtitle: subtitle, thumbnailUrl: thumbnailUrl),
+      null => standalone,
+    },
+    DownloadSourceKind.fanboxPost => FanboxPostSource(postId: id, title: title, subtitle: subtitle, thumbnailUrl: thumbnailUrl),
+    DownloadSourceKind.fanboxCreator => FanboxCreatorSource(creatorId: id, title: title, thumbnailUrl: thumbnailUrl),
+    DownloadSourceKind.standalone || null => standalone,
+  };
+}
+
+DownloadPart? _partFrom(String? id, String? title) => switch ((id, title)) {
+  (final id?, final title?) => DownloadPart(id: id, title: title),
+  _ => null,
+};
+
 /// Rows without a work page are content images, identified by their address.
 DownloadOrigin _originFrom(int? illustId, int? pageIndex, String url) => switch ((illustId, pageIndex)) {
   (final illustId?, final pageIndex?) => ArtworkPage(illustId: illustId, pageIndex: pageIndex),
-  _ => ContentImage.of(Uri.parse(url)),
+  _ => ContentFile.of(Uri.parse(url)),
 };

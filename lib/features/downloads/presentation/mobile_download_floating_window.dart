@@ -1,10 +1,7 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'download_bulk_actions.dart';
 import 'download_dock_button.dart';
 import 'download_flight.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/features/fanbox/logic.dart';
-import 'fanbox_download_tasks.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -15,7 +12,10 @@ import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/downloads/logic.dart';
+import 'package:freepiv/features/downloads/presentation/download_item_widgets.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
+import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 
@@ -100,7 +100,7 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
 
   @override
   Widget build(BuildContext context) {
-    final fanbox = ref.watch(fanboxDownloadsProvider);
+    final collecting = ref.watch(fanboxDownloadsProvider);
     final usesHorizontalLayout = AutoScaffold.usesHorizontalLayoutOf(context);
     if (usesHorizontalLayout) {
       _badgeSlot = null;
@@ -134,11 +134,11 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
                   final tasks = snapshot.data ?? const <DownloadTaskSnapshot>[];
 
                   final panelTasks = tasks;
-                  if (panelTasks.isEmpty && !fanbox.visible) {
+                  if (panelTasks.isEmpty && collecting.isEmpty) {
                     return const SizedBox.shrink();
                   }
 
-                  final summary = combinedDownloadSummary(DownloadSummary.fromTasks(panelTasks), fanbox);
+                  final summary = DownloadSummary.fromTasks(panelTasks);
                   return Stack(
                     children: [
                       Positioned.fill(
@@ -152,7 +152,7 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
                           ),
                         ),
                       ),
-                      _buildPositionedWindow(context, constraints, summary, panelTasks),
+                      _buildPositionedWindow(context, constraints, summary, panelTasks, downloadItemsOf(panelTasks, collecting: collecting.values)),
                     ],
                   );
                 },
@@ -164,7 +164,13 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
     );
   }
 
-  Widget _buildPositionedWindow(BuildContext context, BoxConstraints constraints, DownloadSummary summary, List<DownloadTaskSnapshot> panelTasks) {
+  Widget _buildPositionedWindow(
+    BuildContext context,
+    BoxConstraints constraints,
+    DownloadSummary summary,
+    List<DownloadTaskSnapshot> panelTasks,
+    List<DownloadItem> items,
+  ) {
     final viewPadding = MediaQuery.viewPaddingOf(context);
     final windowSize = _windowSizeFor(constraints.biggest);
     final textScale = (MediaQuery.textScalerOf(context).scale(14) / 14).clamp(1.0, 2.0);
@@ -189,6 +195,7 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
         onPanelKeyEvent: _handlePanelKey,
         summary: summary,
         tasks: panelTasks,
+        items: items,
         onDragDelta: (delta) => _moveBy(delta, constraints.biggest, windowSize, viewPadding),
         onToggleExpanded: () {
           if (!panelFits) {
@@ -205,7 +212,7 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
           _closePanel(restoreFocus: false);
           unawaited(AppRouter.router.pushNamed(AppRoute.downloads.name));
         },
-        onOpenWork: _openTask,
+        onOpenItem: _openItem,
         wrapButton: landingScale,
       ),
     );
@@ -238,9 +245,9 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
     });
   }
 
-  void _openTask(ArtworkPage work) {
+  void _openItem(DownloadItem item) {
     _closePanel(restoreFocus: false);
-    unawaited(AppRouter.router.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': work.illustId.toString()}));
+    unawaited(AppRouter.router.pushNamed(AppRoute.downloads.name, queryParameters: {'item': item.key}));
   }
 }
 
@@ -252,11 +259,12 @@ class _DraggableDownloadWindow extends StatelessWidget {
     required this.onPanelKeyEvent,
     required this.summary,
     required this.tasks,
+    required this.items,
     required this.onDragDelta,
     required this.onToggleExpanded,
     required this.onClose,
     required this.onViewAll,
-    required this.onOpenWork,
+    required this.onOpenItem,
     required this.wrapButton,
   });
 
@@ -266,11 +274,12 @@ class _DraggableDownloadWindow extends StatelessWidget {
   final FocusOnKeyEventCallback onPanelKeyEvent;
   final DownloadSummary summary;
   final List<DownloadTaskSnapshot> tasks;
+  final List<DownloadItem> items;
   final ValueChanged<Offset> onDragDelta;
   final VoidCallback onToggleExpanded;
   final VoidCallback onClose;
   final VoidCallback onViewAll;
-  final ValueChanged<ArtworkPage> onOpenWork;
+  final ValueChanged<DownloadItem> onOpenItem;
 
   /// Wraps the collapsed button, for the landing bounce of a download flight.
   final Widget Function({required Widget child}) wrapButton;
@@ -299,10 +308,11 @@ class _DraggableDownloadWindow extends StatelessWidget {
                       closeFocusNode: closeFocusNode,
                       summary: summary,
                       tasks: tasks,
+                      items: items,
                       onDragDelta: onDragDelta,
                       onClose: onClose,
                       onViewAll: onViewAll,
-                      onOpenWork: onOpenWork,
+                      onOpenItem: onOpenItem,
                     ),
                   ),
                 ),
@@ -345,19 +355,21 @@ class _DownloadFloatingPanel extends StatelessWidget {
     required this.closeFocusNode,
     required this.summary,
     required this.tasks,
+    required this.items,
     required this.onDragDelta,
     required this.onClose,
     required this.onViewAll,
-    required this.onOpenWork,
+    required this.onOpenItem,
   });
 
   final DownloadSummary summary;
   final FocusNode closeFocusNode;
   final List<DownloadTaskSnapshot> tasks;
+  final List<DownloadItem> items;
   final ValueChanged<Offset> onDragDelta;
   final VoidCallback onClose;
   final VoidCallback onViewAll;
-  final ValueChanged<ArtworkPage> onOpenWork;
+  final ValueChanged<DownloadItem> onOpenItem;
 
   @override
   Widget build(BuildContext context) {
@@ -378,17 +390,7 @@ class _DownloadFloatingPanel extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        AnimatedSize(
-                          duration: AppMotion.duration(context, const Duration(milliseconds: 180)),
-                          alignment: Alignment.topCenter,
-                          child: const FanboxDownloadTasks(),
-                        ),
-                        if (tasks.isNotEmpty) ...[
-                          const Text('Pixiv'),
-                          DownloadTaskList(tasks: tasks, compact: true, showTooltips: false, onOpenWork: onOpenWork),
-                        ],
-                      ],
+                      children: [DownloadItemList(items: items, onOpenItem: onOpenItem, onViewAll: onViewAll)],
                     ),
                   ),
                 ),

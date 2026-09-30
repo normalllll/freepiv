@@ -494,10 +494,6 @@ class _Translations$fanbox$ja_JP extends Translations$fanbox$en_US {
 	@override String get download => 'ダウンロード';
 	@override String get downloadAll => 'メディアをすべて保存';
 	@override String get downloadCreator => '投稿を一括ダウンロード';
-	@override String downloadProgress({required Object done, required Object total}) => '${done} / ${total} 件保存済み';
-	@override String get cancelDownload => '現在のファイルの後に停止';
-	@override String get downloadFinished => 'ダウンロード完了';
-	@override String get downloadFailed => 'ダウンロードに失敗しました。再試行時は保存済みファイルをスキップします。';
 	@override String get fanCard => 'ファンカード';
 	@override String get previous => '前の投稿';
 	@override String get next => '次の投稿';
@@ -520,6 +516,8 @@ class _Translations$fanbox$ja_JP extends Translations$fanbox$en_US {
 	@override String get restrictedInfo => '投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。';
 	@override String get noPlans => 'プランがありません';
 	@override String get downloadPreparing => '閲覧可能な投稿を収集中…';
+	@override String downloadQueued({required Object count}) => '${count} 件のファイルをダウンロードキューに追加しました';
+	@override String get downloadNothingNew => 'これらのファイルはすべてダウンロード待ちです';
 	@override String get browserLogin => 'ブラウザーでログイン';
 	@override String get manualLogin => 'Cookie を手動で入力';
 	@override String get browserHelp => '公式ページでログインしてください。セッションの確認後、このウィンドウは自動的に閉じます。';
@@ -692,11 +690,21 @@ class _Translations$settings$downloads$ja_JP extends Translations$settings$downl
 	@override String get clearCompleted => '完了したタスクを消去';
 	@override String get syncFailed => 'ダウンロード状態の同期に失敗しました';
 	@override String get actionFailed => 'ダウンロード操作に失敗しました';
-	@override String get expand => '展開';
 	@override String get collapse => '折りたたむ';
 	@override String get viewAll => 'すべてのダウンロードを見る';
 	@override String badgeFailures({required Object count}) => '失敗したダウンロード：${count}';
 	@override String badgeActive({required Object count}) => '進行中のダウンロード：${count}';
+	@override String filesProgress({required Object done, required Object total}) => '${done} / ${total} ファイル';
+	@override String filesFailed({required Object count}) => '${count} 件失敗';
+	@override String collectingPosts({required Object count}) => '投稿を収集中 · ${count} 件読み込み済み';
+	@override String moreItems({required Object count}) => 'ほか ${count} 件';
+	@override String showAll({required Object count}) => '${count} 件すべて表示';
+	@override String get openSource => '元のページを開く';
+	@override String get openFolder => 'フォルダを開く';
+	@override String get clearItem => 'クリア';
+	@override String get deleteItem => '記録を削除';
+	@override String get expandItem => 'ファイルを表示';
+	@override String get collapseItem => 'ファイルを隠す';
 }
 
 // Path: settings.proxy
@@ -1442,11 +1450,21 @@ extension on TranslationsJaJp {
 			'settings.downloads.clearCompleted' => '完了したタスクを消去',
 			'settings.downloads.syncFailed' => 'ダウンロード状態の同期に失敗しました',
 			'settings.downloads.actionFailed' => 'ダウンロード操作に失敗しました',
-			'settings.downloads.expand' => '展開',
 			'settings.downloads.collapse' => '折りたたむ',
 			'settings.downloads.viewAll' => 'すべてのダウンロードを見る',
 			'settings.downloads.badgeFailures' => ({required Object count}) => '失敗したダウンロード：${count}',
 			'settings.downloads.badgeActive' => ({required Object count}) => '進行中のダウンロード：${count}',
+			'settings.downloads.filesProgress' => ({required Object done, required Object total}) => '${done} / ${total} ファイル',
+			'settings.downloads.filesFailed' => ({required Object count}) => '${count} 件失敗',
+			'settings.downloads.collectingPosts' => ({required Object count}) => '投稿を収集中 · ${count} 件読み込み済み',
+			'settings.downloads.moreItems' => ({required Object count}) => 'ほか ${count} 件',
+			'settings.downloads.showAll' => ({required Object count}) => '${count} 件すべて表示',
+			'settings.downloads.openSource' => '元のページを開く',
+			'settings.downloads.openFolder' => 'フォルダを開く',
+			'settings.downloads.clearItem' => 'クリア',
+			'settings.downloads.deleteItem' => '記録を削除',
+			'settings.downloads.expandItem' => 'ファイルを表示',
+			'settings.downloads.collapseItem' => 'ファイルを隠す',
 			'settings.proxy.title' => 'ネットワークプロキシ',
 			'settings.proxy.shortTitle' => 'プロキシ',
 			'settings.proxy.subtitle' => '保存後、Pixiv API と画像リクエストは選択したプロキシを使用します。',
@@ -1766,6 +1784,8 @@ extension on TranslationsJaJp {
 			'fanbox.empty' => 'まだありません',
 			'fanbox.loadMore' => 'もっと見る',
 			'fanbox.searchHint' => 'クリエイター名、ID またはタグ',
+			_ => null,
+		} ?? switch (path) {
 			'fanbox.creatorId' => 'ID でクリエイターを開く',
 			'fanbox.posts' => '投稿',
 			'fanbox.creatorPlans' => 'クリエイターのプラン',
@@ -1776,8 +1796,6 @@ extension on TranslationsJaJp {
 			'fanbox.monthlyFee' => ({required Object fee}) => '月額 ¥${fee}',
 			'fanbox.supportOnWebsite' => 'FANBOX でプランを見る',
 			'fanbox.follow' => 'フォロー',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.unfollow' => 'フォロー解除',
 			'fanbox.like' => 'いいね',
 			'fanbox.liked' => 'いいね済み',
@@ -1792,10 +1810,6 @@ extension on TranslationsJaJp {
 			'fanbox.download' => 'ダウンロード',
 			'fanbox.downloadAll' => 'メディアをすべて保存',
 			'fanbox.downloadCreator' => '投稿を一括ダウンロード',
-			'fanbox.downloadProgress' => ({required Object done, required Object total}) => '${done} / ${total} 件保存済み',
-			'fanbox.cancelDownload' => '現在のファイルの後に停止',
-			'fanbox.downloadFinished' => 'ダウンロード完了',
-			'fanbox.downloadFailed' => 'ダウンロードに失敗しました。再試行時は保存済みファイルをスキップします。',
 			'fanbox.fanCard' => 'ファンカード',
 			'fanbox.previous' => '前の投稿',
 			'fanbox.next' => '次の投稿',
@@ -1818,6 +1832,8 @@ extension on TranslationsJaJp {
 			'fanbox.restrictedInfo' => '投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。',
 			'fanbox.noPlans' => 'プランがありません',
 			'fanbox.downloadPreparing' => '閲覧可能な投稿を収集中…',
+			'fanbox.downloadQueued' => ({required Object count}) => '${count} 件のファイルをダウンロードキューに追加しました',
+			'fanbox.downloadNothingNew' => 'これらのファイルはすべてダウンロード待ちです',
 			'fanbox.browserLogin' => 'ブラウザーでログイン',
 			'fanbox.manualLogin' => 'Cookie を手動で入力',
 			'fanbox.browserHelp' => '公式ページでログインしてください。セッションの確認後、このウィンドウは自動的に閉じます。',
