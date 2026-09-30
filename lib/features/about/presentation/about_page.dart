@@ -31,7 +31,7 @@ class _AboutPageState extends State<AboutPage> {
     return AutoScaffold(
       builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
-          appBar: useHorizontalLayout ? null : FpPageHeader(title: Text(translations.about.title)),
+          appBar: windowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout) ? null : FpPageHeader(title: Text(translations.about.title)),
           body: SafeArea(
             top: useHorizontalLayout,
             child: FutureBuilder<PackageInfo>(

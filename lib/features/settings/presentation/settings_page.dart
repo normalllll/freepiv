@@ -45,121 +45,140 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
           appBar: useHorizontalLayout ? null : FpPageHeader(title: Text(translations.navigation.settings)),
-          body: SettingsSections(
-            labels: [
-              translations.settings.theme.title,
-              translations.settings.language.title,
-              translations.settings.images.title,
-              translations.settings.proxy.title,
-              translations.settings.downloads.title,
-              translations.fanbox.title,
-              translations.settings.account.title,
-            ],
-            groups: [
-              [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      AppearanceSettingsSection(
-                        modeSelector: ThemeModeSelector(value: themeMode, onChanged: (mode) => ref.read(appearanceProvider.notifier).setMode(mode)),
-                      ),
-                      const SizedBox(height: 16),
-                      AppSwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(translations.settings.theme.reduceTransparency),
-                        subtitle: Text(translations.settings.theme.reduceTransparencyHint),
-                        value: reduceTransparency,
-                        onChanged: (value) => ref.read(reduceTransparencyProvider.notifier).setEnabled(value),
-                      ),
-                    ],
+          body: _withSidebarHeading(
+            context,
+            useHorizontalLayout: useHorizontalLayout,
+            child: SettingsSections(
+              labels: [
+                translations.settings.theme.title,
+                translations.settings.language.title,
+                translations.settings.images.title,
+                translations.settings.proxy.title,
+                translations.settings.downloads.title,
+                translations.fanbox.title,
+                translations.settings.account.title,
+              ],
+              groups: [
+                [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AppearanceSettingsSection(
+                          modeSelector: ThemeModeSelector(value: themeMode, onChanged: (mode) => ref.read(appearanceProvider.notifier).setMode(mode)),
+                        ),
+                        const SizedBox(height: 16),
+                        AppSwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(translations.settings.theme.reduceTransparency),
+                          subtitle: Text(translations.settings.theme.reduceTransparencyHint),
+                          value: reduceTransparency,
+                          onChanged: (value) => ref.read(reduceTransparencyProvider.notifier).setEnabled(value),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-              [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(translations.settings.language.title, style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 12),
-                      _LanguageSelector(
-                        value: appLocale,
-                        onChanged: (locale) {
-                          unawaited(ref.read(appLocaleProvider.notifier).setLocale(locale));
-                        },
-                      ),
-                    ],
+                ],
+                [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(translations.settings.language.title, style: Theme.of(context).textTheme.titleMedium),
+                        const SizedBox(height: 12),
+                        _LanguageSelector(
+                          value: appLocale,
+                          onChanged: (locale) {
+                            unawaited(ref.read(appLocaleProvider.notifier).setLocale(locale));
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-              [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _ImageSettingsSection(
-                        previewQuality: previewQuality,
-                        viewerQuality: viewerQuality,
-                        onPreviewQualityChanged: (quality) {
-                          ref.read(previewImageQualityProvider.notifier).setQuality(quality);
-                        },
-                        onViewerQualityChanged: (quality) {
-                          ref.read(viewerImageQualityProvider.notifier).setQuality(quality);
-                        },
-                      ),
-                    ],
+                ],
+                [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _ImageSettingsSection(
+                          previewQuality: previewQuality,
+                          viewerQuality: viewerQuality,
+                          onPreviewQualityChanged: (quality) {
+                            ref.read(previewImageQualityProvider.notifier).setQuality(quality);
+                          },
+                          onViewerQualityChanged: (quality) {
+                            ref.read(viewerImageQualityProvider.notifier).setQuality(quality);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-              [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [_ProxySettingsSection(settings: proxySettings, onTap: () => showProxySettingsDialog(context))],
+                ],
+                [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [_ProxySettingsSection(settings: proxySettings, onTap: () => showProxySettingsDialog(context))],
+                    ),
                   ),
-                ),
-              ],
-              [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _DownloadSettingsSection(
-                        settings: downloadPathSettings,
-                        maxConcurrentDownloads: maxConcurrentDownloads,
-                        onModeChanged: _setDownloadPathMode,
-                        onChooseDirectory: _chooseDownloadDirectory,
-                        onMaxConcurrentDownloadsChanged: (value) {
-                          ref.read(maxConcurrentDownloadsProvider.notifier).setLimit(value);
-                        },
-                      ),
-                    ],
+                ],
+                [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _DownloadSettingsSection(
+                          settings: downloadPathSettings,
+                          maxConcurrentDownloads: maxConcurrentDownloads,
+                          onModeChanged: _setDownloadPathMode,
+                          onChooseDirectory: _chooseDownloadDirectory,
+                          onMaxConcurrentDownloadsChanged: (value) {
+                            ref.read(maxConcurrentDownloadsProvider.notifier).setLimit(value);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
+                [const Padding(padding: EdgeInsets.all(16), child: FanboxAccountSettings())],
+                [
+                  ListTile(
+                    title: Text(translations.settings.account.signOut),
+                    leading: const Icon(Icons.logout),
+                    onTap: pixivAccountNotifier.value == null
+                        ? null
+                        : () {
+                            setPixivAccount(null);
+                            context.go('/login');
+                          },
+                  ),
+                ],
               ],
-              [const Padding(padding: EdgeInsets.all(16), child: FanboxAccountSettings())],
-              [
-                ListTile(
-                  title: Text(translations.settings.account.signOut),
-                  leading: const Icon(Icons.logout),
-                  onTap: pixivAccountNotifier.value == null
-                      ? null
-                      : () {
-                          setPixivAccount(null);
-                          context.go('/login');
-                        },
-                ),
-              ],
-            ],
+            ),
           ),
         );
       },
+    );
+  }
+
+  /// In the sidebar layout the page title is a large heading above the
+  /// sections, like the downloads page; Windows shows it in the caption bar.
+  Widget _withSidebarHeading(BuildContext context, {required bool useHorizontalLayout, required Widget child}) {
+    if (!useHorizontalLayout || windowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout)) return child;
+    return SafeArea(
+      bottom: false,
+      child: Column(
+        children: [
+          FpInlinePageHeading(title: t.navigation.settings, maxWidth: AppMetrics.settingsMaxWidth),
+          Expanded(child: child),
+        ],
+      ),
     );
   }
 
@@ -331,6 +350,9 @@ class _ThemeModeOption extends StatelessWidget {
   }
 }
 
+/// The languages the app offers, each written in its own language.
+const languageOptionNames = <AppLocale, String>{AppLocale.enUs: 'English', AppLocale.zhCn: '简体中文', AppLocale.zhHantTw: '繁體中文', AppLocale.jaJp: '日本語'};
+
 class _LanguageSelector extends StatelessWidget {
   const _LanguageSelector({required this.value, required this.onChanged});
 
@@ -345,10 +367,8 @@ class _LanguageSelector extends StatelessWidget {
       value: value,
       items: [
         AppSelectItem(value: null, label: translations.settings.language.systemDefault),
-        AppSelectItem(value: AppLocale.enUs, label: translations.settings.language.enUs),
-        AppSelectItem(value: AppLocale.zhCn, label: translations.settings.language.zhCn),
-        AppSelectItem(value: AppLocale.zhHantTw, label: translations.settings.language.zhTw),
-        AppSelectItem(value: AppLocale.jaJp, label: translations.settings.language.jaJp),
+        // Each language is named in itself, so a wrong pick can always be undone.
+        for (final entry in languageOptionNames.entries) AppSelectItem(value: entry.key, label: entry.value),
       ],
       onChanged: onChanged,
     );

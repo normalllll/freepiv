@@ -446,7 +446,7 @@ Future<void> _copyIllustLink(int illustId) async {
   final url = 'https://www.pixiv.net/artworks/$illustId';
   try {
     await copyTextToClipboard(url);
-    AppToast.success(t.illust.toast.linkCopied);
+    unawaited(AppToast.copied(t.illust.toast.linkCopied));
   } catch (error) {
     AppToast.errorWithCause(t.illust.toast.linkCopyFailed, error);
   }
@@ -534,7 +534,7 @@ Future<void> _copyLoadedImage(IllustPageImage image, LoadedIllustImages loadedIm
 
   try {
     await copyImageBytesToClipboard(loadedImageData.bytes, mimeType: loadedImageData.mimeType);
-    AppToast.success(t.illust.toast.copied(label: label));
+    unawaited(AppToast.copied(t.illust.toast.copied(label: label)));
   } catch (error) {
     AppToast.errorWithCause(t.illust.toast.copyFailed(label: label), error);
   }

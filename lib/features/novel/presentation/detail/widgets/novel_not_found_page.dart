@@ -11,7 +11,7 @@ class NovelNotFoundPage extends StatelessWidget {
     return AutoScaffold(
       builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
-          appBar: useHorizontalLayout ? null : FpPageHeader(title: Text(context.t.common.notFound)),
+          appBar: windowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout) ? null : FpPageHeader(title: Text(context.t.common.notFound)),
           body: SafeArea(
             child: EmptyContent(icon: Icons.menu_book_outlined, title: context.t.common.notFound),
           ),

@@ -193,7 +193,7 @@ class _IllustNotFoundPage extends StatelessWidget {
     return AutoScaffold(
       builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
-          appBar: useHorizontalLayout ? null : FpPageHeader(title: Text(context.t.common.notFound)),
+          appBar: windowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout) ? null : FpPageHeader(title: Text(context.t.common.notFound)),
           body: SafeArea(
             child: EmptyContent(icon: Icons.image_not_supported_outlined, title: context.t.common.notFound),
           ),

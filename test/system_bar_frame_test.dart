@@ -113,6 +113,17 @@ void main() {
     await disposeShell(tester);
   });
 
+  testWidgets('the keyboard does not push the sidebar or its download dock up', (tester) async {
+    await pumpShell(tester, platform: TargetPlatform.android);
+    final before = sidebarRect(tester);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 320);
+    await tester.pumpAndSettle();
+    expect(sidebarRect(tester), before, reason: 'the shell does not shrink for the keyboard');
+    tester.view.resetViewInsets();
+    await tester.pumpAndSettle();
+    await disposeShell(tester);
+  });
+
   testWidgets('on Windows the page and sidebar still meet the title bar directly', (tester) async {
     await pumpShell(tester, platform: TargetPlatform.windows, size: const Size(1280, 800), statusBar: 0);
     expect(sidebarRect(tester).top, 0);

@@ -100,6 +100,11 @@ class _RouterShellState extends State<RouterShell> with SingleTickerProviderStat
                 child: LayoutCrossfade(
                   layoutIdentity: useHorizontalLayout,
                   child: Scaffold(
+                    // The shell never shrinks for the keyboard: the sidebar, its
+                    // download dock and the phone's bottom navigation stay put
+                    // (the keyboard covers them). Pages keep avoiding it through
+                    // their own Scaffolds, which now see the keyboard inset.
+                    resizeToAvoidBottomInset: false,
                     extendBody: !useHorizontalLayout && isMobileNavigationPath(path),
                     body: AnimatedBuilder(
                       animation: _sidebarProgress,

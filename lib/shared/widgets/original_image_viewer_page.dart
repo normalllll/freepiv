@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/theme/app_theme.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
@@ -264,7 +266,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
     setState(() => _copying = true);
     try {
       await copyImageBytesToClipboard(image.bytes, mimeType: image.mimeType);
-      AppToast.success(t.illust.toast.copied(label: t.illust.imageLabels.original));
+      unawaited(AppToast.copied(t.illust.toast.copied(label: t.illust.imageLabels.original)));
     } catch (error) {
       AppToast.errorWithCause(t.illust.toast.copyFailed(label: t.illust.imageLabels.original), error);
     } finally {
