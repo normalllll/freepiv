@@ -254,7 +254,7 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
       final gifBytes = await _ensureGifBytes();
       await copyImageBytesToClipboard(gifBytes, mimeType: 'image/gif');
       _setReadyAfterExport();
-      AppToast.success(t.illust.toast.copied(label: label));
+      unawaited(AppToast.copied(t.illust.toast.copied(label: label)));
     } catch (error) {
       _setFailed(error);
       AppToast.errorWithCause(t.illust.toast.copyFailed(label: label), error);

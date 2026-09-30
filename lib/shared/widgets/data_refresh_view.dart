@@ -114,10 +114,6 @@ class _DataRefreshViewState extends State<DataRefreshView> with _DataRefreshCall
       ),
     );
 
-    if (widget.onRefresh == null) {
-      return child;
-    }
-
     return PullToRefreshNotification(
       color: FreepivThemeTokens.of(context).textPrimary,
       maxDragOffset: DataRefreshSliverHeader.maxDragOffset,
@@ -127,6 +123,9 @@ class _DataRefreshViewState extends State<DataRefreshView> with _DataRefreshCall
       pullBackOnRefresh: true,
       pullBackOnError: true,
       onRefresh: _handleRefresh,
+      // Refresh availability can change with a tab. Keep the child at the
+      // same tree location so its pager, providers and scroll state survive.
+      notificationPredicate: (notification) => widget.onRefresh != null && defaultNotificationPredicate(notification),
       child: child,
     );
   }
@@ -160,10 +159,6 @@ class _DataNestedRefreshViewState extends State<DataNestedRefreshView> with _Dat
       child = NotificationListener<ScrollNotification>(onNotification: _handleNestedHeaderSnapNotification, child: child);
     }
 
-    if (widget.onRefresh == null) {
-      return child;
-    }
-
     return PullToRefreshNotification(
       color: FreepivThemeTokens.of(context).textPrimary,
       maxDragOffset: DataRefreshSliverHeader.maxDragOffset,
@@ -173,6 +168,7 @@ class _DataNestedRefreshViewState extends State<DataNestedRefreshView> with _Dat
       pullBackOnRefresh: true,
       pullBackOnError: true,
       onRefresh: _handleRefresh,
+      notificationPredicate: (notification) => widget.onRefresh != null && defaultNotificationPredicate(notification),
       child: child,
     );
   }

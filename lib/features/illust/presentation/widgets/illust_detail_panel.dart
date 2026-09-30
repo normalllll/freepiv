@@ -392,7 +392,7 @@ class _MetadataRow extends StatelessWidget {
 Future<void> _copyTextValue(String label, String value) async {
   try {
     await copyTextToClipboard(value);
-    AppToast.success(t.illust.toast.copiedValue(label: label, value: value));
+    unawaited(AppToast.copied(t.illust.toast.copiedValue(label: label, value: value)));
   } catch (error) {
     AppToast.errorWithCause(t.illust.toast.copyFailed(label: label), error);
   }

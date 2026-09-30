@@ -87,7 +87,7 @@ class ErrorContent extends StatelessWidget {
               Center(
                 child: FilledButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: Text(retryLabel ?? context.t.common.retry)),
               ),
-              if (details != null && details.trim().isNotEmpty) ...[const SizedBox(height: 16), ErrorDetails(details: details, initiallyExpanded: true)],
+              if (details != null && details.trim().isNotEmpty) ...[const SizedBox(height: 16), ErrorDetails(details: details)],
             ],
           ),
         ),
@@ -97,7 +97,7 @@ class ErrorContent extends StatelessWidget {
 }
 
 /// Selectable technical detail of an error with a copy action. Full-page
-/// errors show it open; inline messages keep it one tap away.
+/// errors and inline messages alike keep it collapsed, one tap away.
 class ErrorDetails extends StatefulWidget {
   const ErrorDetails({required this.details, this.initiallyExpanded = false, super.key});
 
@@ -113,7 +113,7 @@ class _ErrorDetailsState extends State<ErrorDetails> {
 
   Future<void> _copy() async {
     await Clipboard.setData(ClipboardData(text: widget.details));
-    AppToast.success(t.common.detailsCopied);
+    unawaited(AppToast.copied(t.common.detailsCopied));
   }
 
   @override
