@@ -17,6 +17,7 @@ Future<void> _pumpHeader(
   AppLocale locale = AppLocale.enUs,
   SearchTypePlacement typePlacement = SearchTypePlacement.besideQueryOrTabs,
   ValueChanged<SearchType>? onTypeChanged,
+  TabController Function(TickerProvider vsync)? typeController,
 }) async {
   LocaleSettings.setLocale(locale);
   tester.view.devicePixelRatio = 1;
@@ -31,7 +32,9 @@ Future<void> _pumpHeader(
             data: MediaQueryData(size: Size(width, 900), textScaler: TextScaler.linear(textScale)),
             child: AppLayoutScope(
               child: Scaffold(
-                body: SearchHeader(onSearch: (_) {}, onSelected: (_) {}, typePlacement: typePlacement, onTypeChanged: onTypeChanged),
+                body: typeController == null
+                    ? SearchHeader(onSearch: (_) {}, onSelected: (_) {}, typePlacement: typePlacement, onTypeChanged: onTypeChanged)
+                    : _ControlledHeader(create: typeController, typePlacement: typePlacement),
               ),
             ),
           ),
@@ -40,6 +43,29 @@ Future<void> _pumpHeader(
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _ControlledHeader extends StatefulWidget {
+  const _ControlledHeader({required this.create, required this.typePlacement});
+
+  final TabController Function(TickerProvider vsync) create;
+  final SearchTypePlacement typePlacement;
+
+  @override
+  State<_ControlledHeader> createState() => _ControlledHeaderState();
+}
+
+class _ControlledHeaderState extends State<_ControlledHeader> with SingleTickerProviderStateMixin {
+  late final TabController _controller = widget.create(this);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => SearchHeader(onSearch: (_) {}, onSelected: (_) {}, typePlacement: widget.typePlacement, typeController: _controller);
 }
 
 final _besideQuery = find.byWidgetPredicate((widget) => widget is SearchTypeSelector || widget is SearchTypeMenuButton);
@@ -130,15 +156,13 @@ void main() {
     expect(chosen, SearchType.novel);
   });
 
-  testWidgets('phone results tabs report the choice but keep showing this page type', (tester) async {
-    SearchType? chosen;
-    await _pumpHeader(tester, width: 390, onTypeChanged: (type) => chosen = type);
+  testWidgets('phone results tabs move the controller of the page they sit above', (tester) async {
+    late TabController controller;
+    await _pumpHeader(tester, width: 390, typeController: (vsync) => controller = TabController(length: 3, vsync: vsync));
     final tabs = find.byType(SearchTypeTabs);
     await tester.tap(find.descendant(of: tabs, matching: find.text(t.search.type.user)));
     await tester.pumpAndSettle();
-    expect(chosen, SearchType.user);
-    // The other type opens as a new results page; this one stays illust.
-    expect(tester.widget<TabBar>(find.descendant(of: tabs, matching: find.byType(TabBar))).controller!.index, 0);
+    expect(controller.index, 2);
   });
 
   testWidgets('discover leaves the type out on phones and keeps it beside the query otherwise', (tester) async {

@@ -1,7 +1,6 @@
 import 'login_panel.dart';
 import 'package:freepiv/shared/widgets/data_refresh_view.dart';
 import 'package:freepiv/shared/widgets/refresh_indicator.dart';
-import 'package:freepiv/shared/widgets/floating_filter_sliver.dart';
 import 'package:freepiv/shared/widgets/sliver_paged_data_list.dart';
 import 'skeletons.dart';
 import 'package:freepiv/shared/widgets/search_input.dart';
@@ -10,6 +9,7 @@ import 'navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
 import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -40,10 +40,16 @@ class FanboxPage extends ConsumerStatefulWidget {
   ConsumerState<FanboxPage> createState() => _FanboxPageState();
 }
 
-class _FanboxPageState extends ConsumerState<FanboxPage> {
+class _FanboxPageState extends ConsumerState<FanboxPage> with SingleTickerProviderStateMixin {
   final _search = TextEditingController();
   final _searchFocus = FocusNode();
   late bool _searchExpanded = widget.location.query.isNotEmpty;
+  late final _tabs = TabController(length: FanboxGroup.values.length, initialIndex: FanboxGroup.of(widget.location.section).index, vsync: this);
+
+  /// What each group tab shows, chosen with the collection value beside the
+  /// tabs; a group not chosen from shows its first section.
+  late final _locations = <FanboxGroup, FanboxLocation>{FanboxGroup.of(widget.location.section): widget.location};
+
   @override
   void initState() {
     super.initState();
@@ -54,20 +60,29 @@ class _FanboxPageState extends ConsumerState<FanboxPage> {
   void didUpdateWidget(covariant FanboxPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.location.query != widget.location.query) _search.text = widget.location.query;
+    if (oldWidget.location != widget.location) _show(widget.location);
   }
 
   @override
   void dispose() {
+    _tabs.dispose();
     _search.dispose();
     _searchFocus.dispose();
     super.dispose();
   }
 
+  FanboxLocation _locationOf(FanboxGroup group) => _locations[group] ?? (section: group.sections.first, creatorId: '', query: '');
+
+  void _show(FanboxLocation location) {
+    final group = FanboxGroup.of(location.section);
+    _locations[group] = location;
+    if (_tabs.index != group.index) _tabs.animateTo(group.index);
+  }
+
   void _select(FanboxSection section, {String query = ''}) {
     final location = (section: section, creatorId: '', query: query);
     ref.read(fanboxBrowseSelectionProvider.notifier).select(location);
-    final path = GoRouterState.of(context).uri.path == '/fanbox' ? '/fanbox' : '/fanbox/browse';
-    context.replace(Uri(path: path, queryParameters: {'section': section.name, if (query.isNotEmpty) 'q': query}).toString());
+    setState(() => _show(location));
   }
 
   void _toggleSearch() {
@@ -119,7 +134,9 @@ class _FanboxPageState extends ConsumerState<FanboxPage> {
                         onSubmitted: (value) {
                           if (value.trim().isNotEmpty) {
                             _select(
-                              widget.location.section == FanboxSection.searchTags ? FanboxSection.searchTags : FanboxSection.searchCreators,
+                              _locationOf(FanboxGroup.values[_tabs.index]).section == FanboxSection.searchTags
+                                  ? FanboxSection.searchTags
+                                  : FanboxSection.searchCreators,
                               query: value.trim(),
                             );
                           }
@@ -152,19 +169,29 @@ class _FanboxPageState extends ConsumerState<FanboxPage> {
                   Expanded(
                     child: PageStorage(
                       bucket: _fanboxBrowseStorage,
-                      child: FanboxCollectionView(
-                        key: ValueKey(widget.location),
-                        location: widget.location,
-                        filterSliver: FloatingFilterSliver(
-                          height: fanboxNavigationHeight(context),
-                          // Tabs carry their label padding, so the row bleeds by it.
-                          child: ContentColumn(
-                            bleed: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 12, 0, 2),
-                              child: FanboxSectionNavigation(section: widget.location.section, onSelected: _select),
+                      // The tabs stay put while the groups slide beneath them.
+                      child: FpPinnedChrome(
+                        extent: fanboxNavigationHeight(context),
+                        // Tabs carry their label padding, so the row bleeds by it.
+                        chrome: ContentColumn(
+                          bleed: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 12, 0, 2),
+                            child: AnimatedBuilder(
+                              animation: _tabs,
+                              builder: (context, _) {
+                                final location = _locationOf(FanboxGroup.values[_tabs.index]);
+                                return FanboxSectionNavigation(section: location.section, controller: _tabs, onSelected: _select);
+                              },
                             ),
                           ),
+                        ),
+                        body: TabBarView(
+                          controller: _tabs,
+                          children: [
+                            for (final group in FanboxGroup.values)
+                              FanboxCollectionView(key: ValueKey(_locationOf(group)), location: _locationOf(group), filterSliver: const FpChromeSpacer()),
+                          ],
                         ),
                       ),
                     ),

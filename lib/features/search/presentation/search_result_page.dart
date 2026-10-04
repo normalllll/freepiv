@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
+import 'package:freepiv/shared/widgets/keep_alive_tab.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
@@ -26,17 +27,49 @@ class _ScopedSearchResultPage extends ConsumerStatefulWidget {
   ConsumerState<_ScopedSearchResultPage> createState() => _SearchResultPageState();
 }
 
-class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> {
+const _searchTypeOrder = [SearchType.illust, SearchType.novel, SearchType.user];
+
+class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with SingleTickerProviderStateMixin {
   late String _keyword;
+
+  /// The query box was emptied: the old results no longer answer anything
+  /// on screen, so they stay hidden until the next search.
+  bool _cleared = false;
+  late final TabController _tabs = TabController(length: _searchTypeOrder.length, initialIndex: _searchTypeOrder.indexOf(widget.type), vsync: this);
 
   @override
   void initState() {
     super.initState();
     _keyword = widget.initialKeyword.trim();
+    _tabs.addListener(_syncDraftType);
+  }
+
+  @override
+  void dispose() {
+    _tabs.removeListener(_syncDraftType);
+    _tabs.dispose();
+    super.dispose();
+  }
+
+  /// The draft type follows the page the tabs are on, so the filter and the
+  /// type controls beside the query show the visible type.
+  void _syncDraftType() {
+    final type = _searchTypeOrder[_tabs.index];
+    final draft = ref.read(searchDraftProvider);
+    if (draft.type != type) ref.read(searchDraftProvider.notifier).setDraft(draft.copyWith(type: type));
+  }
+
+  void _showType(SearchType type) {
+    final index = _searchTypeOrder.indexOf(type);
+    if (_tabs.index != index) _tabs.animateTo(index);
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(searchDraftProvider.select((draft) => draft.type), (_, type) => _showType(type));
+    ref.listen(searchDraftProvider.select((draft) => draft.text.trim().isEmpty), (_, empty) {
+      if (empty && !_cleared) setState(() => _cleared = true);
+    });
     return AutoScaffold(
       builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
         // The query bar floats over the results; they scroll beneath it.
@@ -50,21 +83,37 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> {
                 onBack: () => Navigator.of(context).maybePop(),
                 onSearch: _submitSearch,
                 onSelected: _handleSearchSelection,
-                onTypeChanged: (type) => _submitSearch(SearchSubmission(query: _keyword, type: type)),
+                onTypeChanged: _showType,
+                typeController: _tabs,
               ),
             ),
-            body: switch (widget.type) {
-              SearchType.illust => _buildIllustResult(),
-              SearchType.novel => _buildNovelResult(),
-              SearchType.user => _buildUserResult(),
-            },
+            body: _cleared
+                ? const SizedBox.expand()
+                : TabBarView(
+                    controller: _tabs,
+                    children: [
+                      // A new keyword gets fresh tabs, so each starts at the top.
+                      KeepAliveTab(
+                        key: ValueKey(('illust', _keyword)),
+                        child: Consumer(builder: (context, ref, _) => _buildIllustResult(ref)),
+                      ),
+                      KeepAliveTab(
+                        key: ValueKey(('novel', _keyword)),
+                        child: Consumer(builder: (context, ref, _) => _buildNovelResult(ref)),
+                      ),
+                      KeepAliveTab(
+                        key: ValueKey(('user', _keyword)),
+                        child: Consumer(builder: (context, ref, _) => _buildUserResult(ref)),
+                      ),
+                    ],
+                  ),
           ),
         );
       },
     );
   }
 
-  Widget _buildIllustResult() {
+  Widget _buildIllustResult(WidgetRef ref) {
     final filter = ref.watch(searchFiltersProvider.select((state) => state.illust));
     final source = ref.watch(searchIllustResultSourceProvider(SearchResultRequest(keyword: _keyword, filter: filter)));
     _ensureLoaded(source);
@@ -89,7 +138,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> {
     );
   }
 
-  Widget _buildNovelResult() {
+  Widget _buildNovelResult(WidgetRef ref) {
     final filter = ref.watch(searchFiltersProvider.select((state) => state.novel));
     final source = ref.watch(searchNovelResultSourceProvider(SearchResultRequest(keyword: _keyword, filter: filter)));
     _ensureLoaded(source);
@@ -129,7 +178,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> {
     );
   }
 
-  Widget _buildUserResult() {
+  Widget _buildUserResult(WidgetRef ref) {
     final source = ref.watch(searchUserResultSourceProvider(_keyword));
     _ensureLoaded(source);
 
@@ -148,11 +197,15 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> {
 
   void _submitSearch(SearchSubmission submission) {
     final query = submission.query.trim();
-    if (query.isEmpty || (query == _keyword && submission.type == widget.type)) {
-      return;
+    if (query.isEmpty) return;
+    // A new keyword reloads this page's tabs rather than opening another page.
+    if (query != _keyword || _cleared) {
+      setState(() {
+        _keyword = query;
+        _cleared = false;
+      });
     }
-
-    unawaited(context.pushNamed(_routeForType(submission.type).name, queryParameters: {'q': query}, extra: ref.read(searchFiltersProvider)));
+    _showType(submission.type);
   }
 
   void _handleSearchSelection(SearchSelection selection) {
@@ -195,14 +248,6 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> {
       unawaited(source.refresh(true));
     });
   }
-}
-
-AppRoute _routeForType(SearchType type) {
-  return switch (type) {
-    SearchType.illust => AppRoute.searchIllustResult,
-    SearchType.novel => AppRoute.searchNovelResult,
-    SearchType.user => AppRoute.searchUserResult,
-  };
 }
 
 class _IllustResultBody extends StatelessWidget {
