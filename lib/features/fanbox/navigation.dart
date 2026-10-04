@@ -34,38 +34,52 @@ String fanboxSectionLabel(BuildContext context, FanboxSection section) {
   };
 }
 
-enum _FanboxGroup {
+enum FanboxGroup {
   feed([FanboxSection.home, FanboxSection.supporting]),
   discover([FanboxSection.recommended, FanboxSection.pixiv, FanboxSection.plans, FanboxSection.searchCreators, FanboxSection.searchTags]),
   personal([FanboxSection.following, FanboxSection.bookmarks, FanboxSection.notices, FanboxSection.messages]);
 
-  const _FanboxGroup(this.sections);
+  const FanboxGroup(this.sections);
   final List<FanboxSection> sections;
+
+  /// The group that lists [section]; sections outside every list (a tag's
+  /// posts, a creator's) belong with discovery.
+  static FanboxGroup of(FanboxSection section) => values.where((group) => group.sections.contains(section)).firstOrNull ?? discover;
 }
 
 class FanboxSectionNavigation extends StatefulWidget {
-  const FanboxSectionNavigation({required this.section, required this.onSelected, super.key});
+  const FanboxSectionNavigation({required this.section, required this.onSelected, this.controller, super.key});
+
+  /// The section the collection value beside the group tabs shows.
   final FanboxSection section;
   final ValueChanged<FanboxSection> onSelected;
+
+  /// Drives the group tabs when the page below swipes between groups. Without
+  /// one the tabs follow [section]'s group.
+  final TabController? controller;
 
   @override
   State<FanboxSectionNavigation> createState() => _FanboxSectionNavigationState();
 }
 
 class _FanboxSectionNavigationState extends State<FanboxSectionNavigation> with SingleTickerProviderStateMixin {
-  late final _controller = TabController(length: _FanboxGroup.values.length, initialIndex: _group.index, vsync: this);
+  late final TabController? _ownController = widget.controller == null
+      ? TabController(length: FanboxGroup.values.length, initialIndex: FanboxGroup.of(widget.section).index, vsync: this)
+      : null;
 
-  _FanboxGroup get _group => _FanboxGroup.values.where((group) => group.sections.contains(widget.section)).firstOrNull ?? _FanboxGroup.discover;
+  TabController get _controller => widget.controller ?? _ownController!;
+
+  FanboxGroup get _group => FanboxGroup.of(widget.section);
 
   @override
   void didUpdateWidget(covariant FanboxSectionNavigation oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_controller.index != _group.index) _controller.animateTo(_group.index, duration: Duration.zero);
+    if (widget.controller == null && _controller.index != _group.index) _controller.animateTo(_group.index, duration: Duration.zero);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _ownController?.dispose();
     super.dispose();
   }
 
@@ -89,7 +103,11 @@ class _FanboxSectionNavigationState extends State<FanboxSectionNavigation> with 
                 Tab(text: context.t.common.discover),
                 Tab(text: context.t.navigation.me),
               ],
-              onTap: (index) => widget.onSelected(_FanboxGroup.values[index].sections.first),
+              // A page-driven controller moves the pages itself; standalone, a
+              // tap reports the group's first section.
+              onTap: (index) {
+                if (widget.controller == null) widget.onSelected(FanboxGroup.values[index].sections.first);
+              },
             ),
           ),
           const SizedBox(width: 8),

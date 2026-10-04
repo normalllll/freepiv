@@ -39,6 +39,7 @@ class SearchHeader extends ConsumerWidget {
     this.showFilters = true,
     this.onBack,
     this.onTypeChanged,
+    this.typeController,
     this.searchBoxKey,
     super.key,
   });
@@ -51,6 +52,10 @@ class SearchHeader extends ConsumerWidget {
   final bool showFilters;
   final VoidCallback? onBack;
   final ValueChanged<SearchType>? onTypeChanged;
+
+  /// Drives the phone's type tabs when the page below swipes between types;
+  /// the tabs then follow the page instead of the search draft.
+  final TabController? typeController;
   final GlobalKey<SearchBoxState>? searchBoxKey;
 
   @override
@@ -142,7 +147,7 @@ class SearchHeader extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         region,
-        SearchTypeTabs(onChanged: onTypeChanged),
+        SearchTypeTabs(onChanged: onTypeChanged, controller: typeController),
       ],
     );
   }
@@ -164,33 +169,36 @@ const _searchTypes = [SearchType.illust, SearchType.novel, SearchType.user];
 /// The search type as page tabs under a phone's query row, styled and inset
 /// like the home page's type tabs.
 class SearchTypeTabs extends ConsumerStatefulWidget {
-  const SearchTypeTabs({this.onChanged, super.key});
+  const SearchTypeTabs({this.onChanged, this.controller, super.key});
 
   final ValueChanged<SearchType>? onChanged;
+  final TabController? controller;
 
   @override
   ConsumerState<SearchTypeTabs> createState() => _SearchTypeTabsState();
 }
 
 class _SearchTypeTabsState extends ConsumerState<SearchTypeTabs> with SingleTickerProviderStateMixin {
-  late final TabController _controller = TabController(
-    length: _searchTypes.length,
-    initialIndex: _searchTypes.indexOf(ref.read(searchDraftProvider).type),
-    vsync: this,
-  );
+  late final TabController? _ownController = widget.controller == null
+      ? TabController(length: _searchTypes.length, initialIndex: _searchTypes.indexOf(ref.read(searchDraftProvider).type), vsync: this)
+      : null;
+
+  TabController get _controller => widget.controller ?? _ownController!;
 
   @override
   void dispose() {
-    _controller.dispose();
+    _ownController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(searchDraftProvider.select((draft) => draft.type), (_, type) {
-      final index = _searchTypes.indexOf(type);
-      if (_controller.index != index) _controller.animateTo(index);
-    });
+    if (widget.controller == null) {
+      ref.listen(searchDraftProvider.select((draft) => draft.type), (_, type) {
+        final index = _searchTypes.indexOf(type);
+        if (_controller.index != index) _controller.animateTo(index);
+      });
+    }
     return LayoutBuilder(
       builder: (context, constraints) => Padding(
         padding: EdgeInsets.symmetric(horizontal: AppMetrics.pageTabInset(constraints.maxWidth)),
@@ -207,13 +215,8 @@ class _SearchTypeTabsState extends ConsumerState<SearchTypeTabs> with SingleTick
           ],
           onTap: (index) {
             final next = _searchTypes[index];
-            if (widget.onChanged case final callback?) {
-              callback(next);
-              // The results page opens the other type as a new page and keeps
-              // its own; the tabs keep showing this page's type, as the
-              // segmented control does, so returning shows the right tab.
-              _controller.index = _searchTypes.indexOf(ref.read(searchDraftProvider).type);
-            } else {
+            // With a page-driven controller the tab bar already moves the page.
+            if (widget.controller == null) {
               final draft = ref.read(searchDraftProvider);
               ref.read(searchDraftProvider.notifier).setDraft(draft.copyWith(type: next));
             }
