@@ -111,53 +111,57 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
       children: [
         ExcludeFocus(excluding: _expanded, child: widget.child),
         Positioned.fill(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final viewPadding = MediaQuery.viewPaddingOf(context);
-              final windowSize = _windowSizeFor(constraints.biggest);
-              final position = _clampedPosition(
-                _position ?? _defaultPosition(constraints.biggest, windowSize, viewPadding),
-                constraints.biggest,
-                windowSize,
-                viewPadding,
-              );
-              final geometry = downloadDockButtonGeometry(context, size: _buttonSize);
-              _badgeSlot = Rect.fromLTWH(
-                position.dx + windowSize.width - 22,
-                position.dy + windowSize.height - geometry.footprint.height,
-                22,
-                geometry.badgeHeight,
-              );
-              return StreamBuilder<List<DownloadTaskSnapshot>>(
-                stream: _tasks,
-                builder: (context, snapshot) {
-                  final tasks = snapshot.data ?? const <DownloadTaskSnapshot>[];
+          // This layer sits above the app's Navigator, so its tooltips and
+          // menus get an overlay of their own here.
+          child: Overlay.wrap(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final viewPadding = MediaQuery.viewPaddingOf(context);
+                final windowSize = _windowSizeFor(constraints.biggest);
+                final position = _clampedPosition(
+                  _position ?? _defaultPosition(constraints.biggest, windowSize, viewPadding),
+                  constraints.biggest,
+                  windowSize,
+                  viewPadding,
+                );
+                final geometry = downloadDockButtonGeometry(context, size: _buttonSize);
+                _badgeSlot = Rect.fromLTWH(
+                  position.dx + windowSize.width - 22,
+                  position.dy + windowSize.height - geometry.footprint.height,
+                  22,
+                  geometry.badgeHeight,
+                );
+                return StreamBuilder<List<DownloadTaskSnapshot>>(
+                  stream: _tasks,
+                  builder: (context, snapshot) {
+                    final tasks = snapshot.data ?? const <DownloadTaskSnapshot>[];
 
-                  final panelTasks = tasks;
-                  if (panelTasks.isEmpty && collecting.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
+                    final panelTasks = tasks;
+                    if (panelTasks.isEmpty && collecting.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
 
-                  final summary = DownloadSummary.fromTasks(panelTasks);
-                  return Stack(
-                    children: [
-                      Positioned.fill(
-                        key: const ValueKey<String>('mobile-download-dismiss-layer'),
-                        child: IgnorePointer(
-                          ignoring: !_expanded,
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: _closePanel,
-                            child: const ColoredBox(color: Colors.transparent),
+                    final summary = DownloadSummary.fromTasks(panelTasks);
+                    return Stack(
+                      children: [
+                        Positioned.fill(
+                          key: const ValueKey<String>('mobile-download-dismiss-layer'),
+                          child: IgnorePointer(
+                            ignoring: !_expanded,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: _closePanel,
+                              child: const ColoredBox(color: Colors.transparent),
+                            ),
                           ),
                         ),
-                      ),
-                      _buildPositionedWindow(context, constraints, summary, panelTasks, downloadItemsOf(panelTasks, collecting: collecting.values)),
-                    ],
-                  );
-                },
-              );
-            },
+                        _buildPositionedWindow(context, constraints, summary, panelTasks, downloadItemsOf(panelTasks, collecting: collecting.values)),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ),
       ],
