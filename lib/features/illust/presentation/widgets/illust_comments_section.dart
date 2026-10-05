@@ -1,4 +1,3 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -12,6 +11,7 @@ import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
 class IllustCommentsSection extends ConsumerStatefulWidget {
@@ -39,7 +39,7 @@ class _IllustCommentsSectionState extends ConsumerState<IllustCommentsSection> {
         : translations.illust.section.commentsWithCount(count: formatCount(widget.totalComments!));
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(AppMetrics.groupRadius),
+      borderRadius: BorderRadius.circular(FrostMetrics.groupRadius),
       child: Material(
         color: Colors.transparent,
         child: Theme(
@@ -98,12 +98,12 @@ class _CommentsBody extends ConsumerWidget {
     final translations = t;
     final comments = ref.watch(illustCommentsProvider(illustId));
 
-    return LoadStateSwitcher(
+    return FrostLoadStateSwitcher(
       animateSize: true,
       child: comments.when(
         loading: () => CommentsLoadingSkeleton(itemCount: _commentSkeletonItemCount, preview: true),
-        error: (error, stackTrace) => CompactMessage(
-          icon: Icons.error_outline,
+        error: (error, stackTrace) => FrostCompactMessage(
+          icon: FrostIconData.glyph(Icons.error_outline),
           message: formatPixivError(error),
           details: pixivErrorDetails(error),
           actionLabel: translations.common.retry,
@@ -158,7 +158,7 @@ class _CommentsList extends StatelessWidget {
     if (comments.isEmpty) {
       return Column(
         children: [
-          CompactMessage(icon: Icons.chat_bubble_outline, message: translations.illust.comments.empty),
+          FrostCompactMessage(icon: FrostIconData.glyph(Icons.chat_bubble_outline), message: translations.illust.comments.empty),
           openAll,
         ],
       );

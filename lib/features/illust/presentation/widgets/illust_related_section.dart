@@ -64,19 +64,19 @@ class _RelatedPreviewBody extends StatelessWidget {
   final VoidCallback onShowMore;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, animateSize: true, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, animateSize: true, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final translations = t;
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
+    if (source.phase == FrostLoadPhase.loading) {
       return const RelatedPreviewGridSkeleton(itemCount: _previewCount);
     }
 
     if (!source.initialized && lastError != null) {
-      return CompactMessage(
-        icon: Icons.error_outline,
+      return FrostCompactMessage(
+        icon: FrostIconData.glyph(Icons.error_outline),
         message: translations.illust.related.failed,
         details: pixivErrorDetails(lastError),
         actionLabel: translations.common.retry,
@@ -87,7 +87,7 @@ class _RelatedPreviewBody extends StatelessWidget {
     final works = source.items.where((illust) => illust.id != currentIllustId).take(_previewCount).toList(growable: false);
 
     if (works.isEmpty) {
-      return CompactMessage(icon: Icons.image_not_supported_outlined, message: t.illust.related.empty);
+      return FrostCompactMessage(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), message: t.illust.related.empty);
     }
 
     return Column(

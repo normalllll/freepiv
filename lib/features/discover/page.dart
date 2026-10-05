@@ -1,27 +1,23 @@
+import 'package:freepiv/app/router/app_navigation.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_box.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_header.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_trending_tags.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
 import 'package:go_router/go_router.dart';
 import 'package:freepiv/features/search/logic/search_history_logic.dart';
 import 'pixivision_preview.dart';
 import 'package:freepiv/features/pixivision/logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/ui/fp_icon.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'search_history.dart';
 
 class DiscoverPage extends ConsumerStatefulWidget {
@@ -34,12 +30,12 @@ class DiscoverPage extends ConsumerStatefulWidget {
 class _DiscoverPageState extends ConsumerState<DiscoverPage> {
   final _searchBoxKey = GlobalKey<SearchBoxState>();
   final _scrollController = ScrollController();
-  ValueListenable<({AppRoute route, int sequence})>? _primaryReselection;
+  ValueListenable<({int index, int sequence})>? _primaryReselection;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final next = ShellNavigationScope.maybeOf(context)?.primaryReselection;
+    final next = FrostShellNavigationScope.maybeOf(context)?.primaryReselection;
     if (identical(next, _primaryReselection)) return;
     _primaryReselection?.removeListener(_handlePrimaryReselection);
     _primaryReselection = next;
@@ -48,8 +44,8 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
   void _handlePrimaryReselection() {
     final signal = _primaryReselection?.value;
-    if (signal == null || signal.route != AppRoute.search || signal.sequence == 0 || !_scrollController.hasClients) return;
-    final duration = AppMotion.duration(context, AppMotion.navigation);
+    if (signal == null || appRouteDestinations[signal.index].route != AppRoute.search || signal.sequence == 0 || !_scrollController.hasClients) return;
+    final duration = FrostMotion.duration(context, FrostMotion.navigation);
     if (duration == Duration.zero) {
       _scrollController.jumpTo(0);
     } else {
@@ -69,8 +65,8 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
     // The search row floats over the page as glass, like the results page's;
     // the sections scroll beneath it.
     return Scaffold(
-      body: FpPinnedChrome(
-        estimatedExtent: MediaQuery.paddingOf(context).top + AppMetrics.compactTargetHeight + AppMetrics.compactGap * 2,
+      body: FrostPinnedChrome(
+        estimatedExtent: MediaQuery.paddingOf(context).top + FrostMetrics.compactTargetHeight + FrostMetrics.compactGap * 2,
         chrome: SafeArea(
           bottom: false,
           child: SearchHeader(
@@ -81,7 +77,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
             showFilters: false,
           ),
         ),
-        body: DataRefreshView(
+        body: FrostRefreshView(
           onRefresh: () async {
             final language = pixivisionLanguagePath(context.t.$meta.locale);
             final articles = pixivisionBrowseProvider('https://www.pixivision.net/$language/');
@@ -106,7 +102,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
             ];
             final trending = <Widget>[
               SliverToBoxAdapter(
-                child: ContentColumn(
+                child: FrostContentColumn(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
                     child: SizedBox(
@@ -122,11 +118,11 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                 },
               ),
             ];
-            return DataLoadingCustomScrollView(
+            return FrostLoadingScrollView(
               key: const PageStorageKey('discover-content'),
               controller: _scrollController,
               physics: physics,
-              slivers: [chromeSliverHeader(locators.sliverHeader), ...overview, ...trending],
+              slivers: [frostChromeSliverHeader(locators.sliverHeader), ...overview, ...trending],
             );
           },
         ),
@@ -188,19 +184,19 @@ class _FanboxEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return ContentColumn(
+    return FrostContentColumn(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
-        child: FpSurface(
-          role: FpSurfaceRole.glassPanel,
-          child: AppClickSurface(
-            borderRadius: BorderRadius.circular(AppMetrics.groupRadius),
+        child: FrostSurface(
+          role: FrostSurfaceRole.glassPanel,
+          child: FrostClickSurface(
+            borderRadius: BorderRadius.circular(FrostMetrics.groupRadius),
             onTap: () => context.pushNamed(AppRoute.fanbox.name),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
-                  FpIcon(FpIconName.heart, color: scheme.onSurface),
+                  FrostIcon(PivIcons.heart, color: scheme.onSurface),
                   const SizedBox(width: 12),
                   Expanded(child: Text(context.t.fanbox.title, style: Theme.of(context).textTheme.titleSmall)),
                   const Icon(Icons.arrow_forward_ios, size: 16),

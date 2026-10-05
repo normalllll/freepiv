@@ -6,9 +6,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/spring_builder.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/services.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/core/core.dart';
@@ -16,7 +15,6 @@ import 'package:freepiv/features/downloads/logic.dart';
 import 'package:freepiv/features/downloads/presentation/download_item_widgets.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 
 class MobileDownloadFloatingWindow extends ConsumerStatefulWidget {
@@ -101,7 +99,7 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
   @override
   Widget build(BuildContext context) {
     final collecting = ref.watch(fanboxDownloadsProvider);
-    final usesHorizontalLayout = AutoScaffold.usesHorizontalLayoutOf(context);
+    final usesHorizontalLayout = FrostAutoScaffold.usesHorizontalLayoutOf(context);
     if (usesHorizontalLayout) {
       _badgeSlot = null;
       return widget.child;
@@ -301,7 +299,7 @@ class _DraggableDownloadWindow extends StatelessWidget {
               onKeyEvent: onPanelKeyEvent,
               // The panel grows out of the button's corner while the button
               // shrinks away into it, and the reverse on closing.
-              child: SpringReveal(
+              child: FrostSpringReveal(
                 shown: expanded,
                 alignment: AlignmentDirectional.bottomEnd,
                 hiddenScale: .82,
@@ -331,7 +329,7 @@ class _DraggableDownloadWindow extends StatelessWidget {
             ignoring: expanded,
             child: ExcludeFocus(
               excluding: expanded,
-              child: SpringReveal(
+              child: FrostSpringReveal(
                 shown: !expanded,
                 alignment: Alignment.center,
                 hiddenScale: .82,
@@ -379,8 +377,8 @@ class _DownloadFloatingPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return FpSurface(
-          role: FpSurfaceRole.overlay,
+        return FrostSurface(
+          role: FrostSurfaceRole.overlay,
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(

@@ -2,8 +2,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/app/window/native_window.dart';
 
 void main() {
@@ -85,7 +85,7 @@ void main() {
       for (final elapsed in [20, 90, 200, 500]) {
         await tester.pump(Duration(milliseconds: elapsed));
         final material = tester.widget<Material>(find.descendant(of: close, matching: find.byType(Material)).first);
-        expect(material.color, WindowCaptionColors.closeHover);
+        expect(material.color, FrostCaptionColors.closeHover);
         expect(find.descendant(of: close, matching: find.byType(AnimatedContainer)), findsNothing);
       }
       await mouse.moveTo(const Offset(400, 300));

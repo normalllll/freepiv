@@ -1,13 +1,9 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/app_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/accent_validation.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/app/theme/appearance_logic.dart';
-import 'package:freepiv/core/services/appearance_settings.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
 
 class AppearanceSettingsSection extends ConsumerWidget {
   const AppearanceSettingsSection({required this.modeSelector, super.key});
@@ -25,10 +21,10 @@ class AppearanceSettingsSection extends ConsumerWidget {
         : Brightness.light;
     final tone = settings.effectiveToneFor(brightness);
     final labels = t.settings.theme;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final accent = settings.accentFor(brightness);
     final custom = settings.customAccentFor(brightness);
-    final presetIndex = accentPresets.indexOf(accent);
+    final presetIndex = freepivFrostConfig.palettes.accentPresets.indexOf(accent);
     final names = [labels.presetPink, labels.presetBlue, labels.presetTeal, labels.presetViolet, labels.presetAmber, labels.presetOrange];
 
     return Column(
@@ -68,12 +64,12 @@ class AppearanceSettingsSection extends ConsumerWidget {
           runSpacing: 4,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            for (var i = 0; i < accentPresets.length; i++)
+            for (var i = 0; i < freepivFrostConfig.palettes.accentPresets.length; i++)
               _AccentSwatch(
-                color: accentPresets[i],
+                color: freepivFrostConfig.palettes.accentPresets[i],
                 label: names[i],
                 selected: presetIndex == i,
-                onPressed: () => ref.read(appearanceProvider.notifier).setPreset(brightness, accentPresets[i]),
+                onPressed: () => ref.read(appearanceProvider.notifier).setPreset(brightness, freepivFrostConfig.palettes.accentPresets[i]),
               ),
             _CustomAccentButton(color: custom, selected: presetIndex < 0, onPressed: () => _openCustomEditor(context, brightness, tone, custom ?? accent)),
           ],
@@ -86,7 +82,7 @@ class AppearanceSettingsSection extends ConsumerWidget {
           runSpacing: 4,
           children: [
             Text('#${accentHex(accent)}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: tokens.textSecondary)),
-            if (accent == FreepivThemeTokens.brandPink)
+            if (accent == freepivFrostConfig.palettes.defaultAccent(brightness))
               Text(labels.defaultAccent, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: tokens.textSecondary))
             else
               TextButton(onPressed: () => ref.read(appearanceProvider.notifier).restoreDefault(brightness), child: Text(labels.restoreDefault)),
@@ -111,13 +107,13 @@ class AppearanceSettingsSection extends ConsumerWidget {
     );
   }
 
-  Future<void> _openCustomEditor(BuildContext context, Brightness brightness, AppearanceTone tone, Color initial) async {
+  Future<void> _openCustomEditor(BuildContext context, Brightness brightness, FrostTone tone, Color initial) async {
     final focus = FocusManager.instance.primaryFocus;
     final editor = _CustomAccentEditor(brightness: brightness, tone: tone, initial: initial);
     if (MediaQuery.sizeOf(context).width < 600) {
       await showModalBottomSheet<void>(
         context: context,
-        sheetAnimationStyle: appSheetAnimationStyle(context),
+        sheetAnimationStyle: frostSheetAnimationStyle(context),
         isScrollControlled: true,
         useSafeArea: true,
         constraints: const BoxConstraints(maxWidth: 600),
@@ -127,7 +123,7 @@ class AppearanceSettingsSection extends ConsumerWidget {
         ),
       );
     } else {
-      await showAppDialog<void>(
+      await showFrostDialog<void>(
         context: context,
         builder: (context) => Dialog(
           child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 400), child: editor),
@@ -143,14 +139,14 @@ class _ToneSelector extends StatelessWidget {
 
   final Brightness brightness;
   final Color accent;
-  final AppearanceTone selected;
+  final FrostTone selected;
   final bool enabled;
-  final ValueChanged<AppearanceTone> onChanged;
+  final ValueChanged<FrostTone> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final labels = t.settings.theme;
-    final tones = AppearanceTone.values;
+    final tones = FrostTone.values;
     final names = [labels.neutral, labels.cool, labels.warm];
     final style = Theme.of(context).textTheme.labelMedium ?? const TextStyle(fontSize: 12);
     final scaler = MediaQuery.textScalerOf(context);
@@ -206,7 +202,7 @@ class _ToneOption extends StatelessWidget {
     required this.onTap,
   });
 
-  final AppearanceTone tone;
+  final FrostTone tone;
   final Brightness brightness;
   final Color accent;
   final String label;
@@ -217,8 +213,8 @@ class _ToneOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = FreepivThemeTokens.palette(brightness, tone, accent);
-    final tokens = FreepivThemeTokens.of(context);
+    final palette = FrostPalettes.pink.palette(brightness, tone, accent);
+    final tokens = FrostThemeTokens.of(context);
     final preview = Container(
       height: vertical ? 36 : 40,
       width: vertical ? 62 : double.infinity,
@@ -258,8 +254,8 @@ class _ToneOption extends StatelessWidget {
       child: ExcludeSemantics(
         child: Material(
           color: Colors.transparent,
-          child: AppClickSurface(
-            feedback: AppClickFeedback.quiet,
+          child: FrostClickSurface(
+            feedback: FrostClickFeedback.quiet,
             borderRadius: BorderRadius.circular(8),
             onTap: enabled ? onTap : null,
             child: Container(
@@ -316,7 +312,7 @@ class _AccentSwatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     return Semantics(
       button: true,
       selected: selected,
@@ -354,13 +350,13 @@ class _SystemHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedSize(
-      duration: AppMotion.duration(context, AppMotion.expand),
+      duration: FrostMotion.duration(context, FrostMotion.expand),
       curve: Curves.easeOutCubic,
       alignment: Alignment.topCenter,
       child: visible
           ? Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: Text(text, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: FreepivThemeTokens.of(context).textSecondary)),
+              child: Text(text, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: FrostThemeTokens.of(context).textSecondary)),
             )
           : const SizedBox(width: double.infinity),
     );
@@ -375,7 +371,7 @@ class _CustomAccentButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     return Semantics(
       selected: selected,
       button: true,
@@ -401,7 +397,7 @@ class _CustomAccentButton extends StatelessWidget {
 class _CustomAccentEditor extends ConsumerStatefulWidget {
   const _CustomAccentEditor({required this.brightness, required this.tone, required this.initial});
   final Brightness brightness;
-  final AppearanceTone tone;
+  final FrostTone tone;
   final Color initial;
 
   @override
@@ -455,7 +451,7 @@ class _CustomAccentEditorState extends ConsumerState<_CustomAccentEditor> {
   Future<void> _apply() async {
     if (_saving || !_validHex) return;
     final color = _draftColor;
-    if (validateAccent(color, widget.brightness).severity == AccentSeverity.rejected) return;
+    if (validateAccent(color, widget.brightness, freepivFrostConfig.palettes).severity == FrostAccentSeverity.rejected) return;
     setState(() {
       _saving = true;
       _saveError = null;
@@ -479,10 +475,10 @@ class _CustomAccentEditorState extends ConsumerState<_CustomAccentEditor> {
   Widget build(BuildContext context) {
     final labels = t.settings.theme;
     final color = _draftColor;
-    final validation = validateAccent(color, widget.brightness);
-    final rejected = validation.severity == AccentSeverity.rejected;
-    final warning = validation.severity == AccentSeverity.warning;
-    final palette = FreepivThemeTokens.palette(widget.brightness, widget.tone, color);
+    final validation = validateAccent(color, widget.brightness, freepivFrostConfig.palettes);
+    final rejected = validation.severity == FrostAccentSeverity.rejected;
+    final warning = validation.severity == FrostAccentSeverity.warning;
+    final palette = FrostPalettes.pink.palette(widget.brightness, widget.tone, color);
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -555,7 +551,8 @@ class _CustomAccentEditorState extends ConsumerState<_CustomAccentEditor> {
         spacing: 8,
         runSpacing: 8,
         children: [
-          if (rejected) TextButton(onPressed: _saving ? null : () => _setHsv(HSVColor.fromColor(FreepivThemeTokens.brandPink)), child: Text(labels.useDefault)),
+          if (rejected)
+            TextButton(onPressed: _saving ? null : () => _setHsv(HSVColor.fromColor(freepivFrostConfig.palettes.defaultAccent(widget.brightness))), child: Text(labels.useDefault)),
           TextButton(onPressed: _saving ? null : () => Navigator.of(context).pop(), child: Text(t.common.cancel)),
           FilledButton(
             onPressed: _validHex && !rejected && !_saving ? _apply : null,

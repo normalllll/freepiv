@@ -1,12 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/rolling_text.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
 
 /// The count is about work needing attention, never retained history.
 int downloadBadgeCount(DownloadSummary summary) {
@@ -51,7 +48,7 @@ class DownloadDockButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final failures = summary.failed + summary.saveFailed;
     final active = summary.queued + summary.running + summary.savePending;
     final count = downloadBadgeCount(summary);
@@ -62,7 +59,7 @@ class DownloadDockButton extends StatelessWidget {
     final geometry = downloadDockButtonGeometry(context, size: size);
     final footprint = geometry.footprint;
     final badgeHeight = geometry.badgeHeight;
-    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppMetrics.groupRadius));
+    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(FrostMetrics.groupRadius));
 
     Widget button = SizedBox(
       width: footprint.width,
@@ -82,7 +79,7 @@ class DownloadDockButton extends StatelessWidget {
               shape: shape,
               elevation: 2,
               shadowColor: tokens.shadow,
-              child: AppClickSurface(
+              child: FrostClickSurface(
                 focusNode: focusNode,
                 customBorder: shape,
                 onTap: onPressed,
@@ -106,7 +103,7 @@ class DownloadDockButton extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         // The count rolls as tasks start and finish.
-                        child: Center(child: RollingText(downloadBadgeText(count), style: badgeStyle)),
+                        child: Center(child: FrostRollingText(downloadBadgeText(count), style: badgeStyle)),
                       ),
                     ),
                   ),

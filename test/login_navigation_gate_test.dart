@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/features/me/presentation/me_page.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
@@ -26,7 +26,7 @@ void main() {
           child: MaterialApp.router(
             theme: AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
             routerConfig: AppRouter.router,
-            builder: (context, child) => AppLayoutScope(child: child!),
+            builder: (context, child) => FrostLayoutScope(child: child!),
           ),
         ),
       ),
@@ -96,7 +96,7 @@ void main() {
           child: MaterialApp.router(
             theme: AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
             routerConfig: router,
-            builder: (context, child) => AppLayoutScope(child: child!),
+            builder: (context, child) => FrostLayoutScope(child: child!),
           ),
         ),
       ),

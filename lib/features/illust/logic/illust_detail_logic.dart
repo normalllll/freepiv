@@ -96,7 +96,7 @@ class IllustRelatedWorks extends _$IllustRelatedWorks {
   }
 }
 
-class IllustRelatedListSource extends NextUrlListSource<Illust, IllustPageResult> {
+class IllustRelatedListSource extends FrostCursorListSource<Illust, IllustPageResult> {
   IllustRelatedListSource({required this.illustId});
 
   final int illustId;

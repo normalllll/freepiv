@@ -1,14 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/app_dialog.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_feedback.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/app/theme/content_script.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html;
 import 'image.dart';
-import 'package:freepiv/shared/widgets/energetic_card.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'navigation.dart';
@@ -96,7 +91,7 @@ class PixivisionBlock extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: block.text.trim().isEmpty ? 0 : 8),
             child: _ArticleLink(
-              onTap: () => showAppDialog<void>(
+              onTap: () => showFrostDialog<void>(
                 context: context,
                 builder: (context) => Dialog.fullscreen(
                   child: Stack(
@@ -117,7 +112,7 @@ class PixivisionBlock extends StatelessWidget {
                         top: 8,
                         right: 8,
                         child: IconButton.filledTonal(
-                          style: appSecondaryButtonStyle(FreepivThemeTokens.of(context)),
+                          style: frostSecondaryButtonStyle(FrostThemeTokens.of(context)),
                           tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.close),
@@ -147,7 +142,7 @@ class PixivisionBlock extends StatelessWidget {
         for (final embed in block.embeds)
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: EnergeticCard(
+            child: FrostCard(
               onTap: () => openPixivisionLink(context, embed.url),
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -331,7 +326,7 @@ class _AuthorLink extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: contentTextStyle(context, label, Theme.of(context).textTheme.titleMedium?.copyWith(color: colors.onSurface)),
+                  style: frostContentTextStyle(context, label, Theme.of(context).textTheme.titleMedium?.copyWith(color: colors.onSurface)),
                 ),
               ),
             ),
@@ -362,7 +357,7 @@ class _ArticleTextLink extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Flexible(
-              child: Text(label, style: contentTextStyle(context, label, style?.copyWith(color: colors.onSurface))),
+              child: Text(label, style: frostContentTextStyle(context, label, style?.copyWith(color: colors.onSurface))),
             ),
             const SizedBox(width: 4),
             const ExcludeSemantics(child: Icon(Icons.chevron_right, size: 18)),
@@ -394,10 +389,10 @@ class _ArticleLinkState extends State<_ArticleLink> {
       position: DecorationPosition.foreground,
       // Paint focus without adding padding or shifting the article layout.
       decoration: BoxDecoration(
-        borderRadius: widget.showFeedback ? BorderRadius.circular(AppMetrics.controlRadius) : null,
+        borderRadius: widget.showFeedback ? BorderRadius.circular(FrostMetrics.controlRadius) : null,
         border: Border.all(
-          color: _focused && FocusManager.instance.highlightMode == FocusHighlightMode.traditional ? FreepivThemeTokens.of(context).focus : Colors.transparent,
-          width: _focused ? AppMetrics.focusBorderWidth : 1,
+          color: _focused && FocusManager.instance.highlightMode == FocusHighlightMode.traditional ? FrostThemeTokens.of(context).focus : Colors.transparent,
+          width: _focused ? FrostMetrics.focusBorderWidth : 1,
         ),
       ),
       child: InkWell(
@@ -406,9 +401,9 @@ class _ArticleLinkState extends State<_ArticleLink> {
         onHover: (value) => setState(() => _hovered = value),
         onFocusChange: (value) => setState(() => _focused = value),
         splashFactory: NoSplash.splashFactory,
-        borderRadius: widget.showFeedback ? BorderRadius.circular(AppMetrics.controlRadius) : null,
+        borderRadius: widget.showFeedback ? BorderRadius.circular(FrostMetrics.controlRadius) : null,
         overlayColor: widget.showFeedback
-            ? WidgetStateProperty.resolveWith((states) => appButtonStateLayer(FreepivThemeTokens.of(context), states, AppFeedbackRole.quiet))
+            ? WidgetStateProperty.resolveWith((states) => frostButtonStateLayer(FrostThemeTokens.of(context), states, FrostFeedbackRole.quiet))
             : const WidgetStatePropertyAll(Colors.transparent),
         child: widget.showFeedback
             ? ConstrainedBox(

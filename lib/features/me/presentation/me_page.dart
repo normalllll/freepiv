@@ -1,21 +1,12 @@
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
-import 'package:freepiv/shared/layout/fp_collapsing_header.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
+import 'package:freepiv/app/router/app_navigation.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
-import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
-import 'package:freepiv/shared/ui/fp_grouped_rows.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -30,12 +21,12 @@ class MePage extends StatefulWidget {
 
 class _MePageState extends State<MePage> {
   final _scrollController = ScrollController();
-  ValueListenable<({AppRoute route, int sequence})>? _primaryReselection;
+  ValueListenable<({int index, int sequence})>? _primaryReselection;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final next = ShellNavigationScope.maybeOf(context)?.primaryReselection;
+    final next = FrostShellNavigationScope.maybeOf(context)?.primaryReselection;
     if (identical(next, _primaryReselection)) return;
     _primaryReselection?.removeListener(_handlePrimaryReselection);
     _primaryReselection = next;
@@ -44,8 +35,8 @@ class _MePageState extends State<MePage> {
 
   void _handlePrimaryReselection() {
     final signal = _primaryReselection?.value;
-    if (signal == null || signal.route != AppRoute.me || signal.sequence == 0 || !_scrollController.hasClients) return;
-    final duration = AppMotion.duration(context, AppMotion.navigation);
+    if (signal == null || appRouteDestinations[signal.index].route != AppRoute.me || signal.sequence == 0 || !_scrollController.hasClients) return;
+    final duration = FrostMotion.duration(context, FrostMotion.navigation);
     if (duration == Duration.zero) {
       _scrollController.jumpTo(0);
     } else {
@@ -64,7 +55,7 @@ class _MePageState extends State<MePage> {
   Widget build(BuildContext context) {
     final translations = context.t;
 
-    return AutoScaffold(
+    return FrostAutoScaffold(
       builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
           body: SafeArea(
@@ -88,7 +79,7 @@ class _MePageState extends State<MePage> {
                       ],
                     ],
                     groups: [
-                      FpGroupedRows(
+                      FrostGroupedRows(
                         children: [
                           _MeNavigationEntry(
                             icon: Icons.bookmarks_outlined,
@@ -111,7 +102,7 @@ class _MePageState extends State<MePage> {
                           ),
                         ],
                       ),
-                      FpGroupedRows(
+                      FrostGroupedRows(
                         children: [
                           _MeNavigationEntry(
                             icon: Icons.download_outlined,
@@ -195,19 +186,19 @@ class _MeUserListPageState extends State<MeUserListPage> {
     };
     final source = _source;
 
-    return AutoScaffold(
+    return FrostAutoScaffold(
       builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
-          body: FpCollapsingHeader(
-            header: windowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout) ? null : FpPageHeader(title: Text(title)),
+          body: FrostCollapsingHeader(
+            header: frostWindowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout) ? null : FrostPageHeader(title: Text(title)),
             child: SafeArea(
               child: source == null
                   ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          EmptyContent(
-                            icon: Icons.account_circle_outlined,
+                          FrostEmptyContent(
+                            icon: FrostIconData.glyph(Icons.account_circle_outlined),
                             title: translations.settings.account.notSignedIn,
                             message: translations.settings.account.signedOutSubtitle,
                           ),
@@ -290,8 +281,8 @@ class _MeAccountCard extends StatelessWidget {
     // quietest line.
     final secondary = Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant);
 
-    return FpSurface(
-      role: FpSurfaceRole.glassPanel,
+    return FrostSurface(
+      role: FrostSurfaceRole.glassPanel,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -364,7 +355,7 @@ class _MeAccountAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final imageUrl = this.imageUrl;
 
     Widget avatar = DecoratedBox(
@@ -396,7 +387,7 @@ class _MeAccountAvatar extends StatelessWidget {
 
     avatar = Tooltip(
       message: context.t.me.openProfile,
-      child: AppClickSurface(customBorder: const CircleBorder(), onTap: onTap, child: avatar),
+      child: FrostClickSurface(customBorder: const CircleBorder(), onTap: onTap, child: avatar),
     );
 
     return Semantics(button: true, label: context.t.me.openProfile, child: avatar);
@@ -454,42 +445,42 @@ class _MeUserListPaneState extends State<_MeUserListPane> {
 
   @override
   Widget build(BuildContext context) {
-    return DataRefreshView(
+    return FrostRefreshView(
       onRefresh: () => widget.source.refresh(true),
       builder: (context, physics, locators) {
         return AnimatedBuilder(
           animation: widget.source,
-          builder: (context, child) => LoadStateSwitcher(phase: widget.source.phase, child: _buildPhase(context, physics, locators)),
+          builder: (context, child) => FrostLoadStateSwitcher(phase: widget.source.phase, child: _buildPhase(context, physics, locators)),
         );
       },
     );
   }
 
-  Widget _buildPhase(BuildContext context, ScrollPhysics? physics, DataRefreshLocators locators) {
+  Widget _buildPhase(BuildContext context, ScrollPhysics? physics, FrostRefreshLocators locators) {
     final source = widget.source;
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return DataLoadingCustomScrollView(physics: physics, slivers: [?locators.sliverHeader, const SliverUserPreviewerSkeletonGrid()]);
+    if (source.phase == FrostLoadPhase.loading) {
+      return FrostLoadingScrollView(physics: physics, slivers: [?locators.sliverHeader, const SliverUserPreviewerSkeletonGrid()]);
     }
 
     if (!source.initialized && lastError != null) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
     if (source.initialized && source.isEmpty) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: EmptyContent(icon: widget.emptyIcon, title: widget.emptyTitle),
+        child: FrostEmptyContent(icon: FrostIconData.glyph(widget.emptyIcon), title: widget.emptyTitle),
       );
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
         ?locators.sliverHeader,
@@ -509,7 +500,7 @@ class _MeUserListPaneState extends State<_MeUserListPane> {
 
 enum MeUserListKind { following, followers }
 
-class _MeUserListSource extends NextUrlListSource<UserPreview, UserPageResult> {
+class _MeUserListSource extends FrostCursorListSource<UserPreview, UserPageResult> {
   _MeUserListSource({required this.userId, required this.kind});
 
   final int userId;
@@ -553,7 +544,7 @@ class _MeColumns extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ContentColumn(
+    return FrostContentColumn(
       child: LayoutBuilder(
         builder: (context, constraints) {
           final sideBySide = constraints.maxWidth >= _sideBySideWidth;

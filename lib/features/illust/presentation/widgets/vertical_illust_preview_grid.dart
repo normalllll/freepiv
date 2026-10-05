@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/core/core.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
@@ -65,7 +64,7 @@ class RelatedPreviewGridSkeleton extends StatelessWidget {
             for (var index = 0; index < itemCount; index++)
               SizedBox.square(
                 dimension: itemExtent,
-                child: const ImageLoadingSkeleton(borderRadius: BorderRadius.all(Radius.circular(8))),
+                child: const FrostImageSkeleton(borderRadius: BorderRadius.all(Radius.circular(8))),
               ),
           ],
         );
@@ -101,8 +100,8 @@ class SquareIllustTile extends ConsumerWidget {
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: borderRadius,
             clipBehavior: Clip.antiAlias,
-            child: AppClickSurface(
-              feedback: AppClickFeedback.artwork,
+            child: FrostClickSurface(
+              feedback: FrostClickFeedback.media,
               onTap: () => onOpen(heroTag),
               child: Stack(
                 fit: StackFit.expand,

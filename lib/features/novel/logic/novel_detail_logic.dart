@@ -131,7 +131,7 @@ class NovelRelatedWorks extends _$NovelRelatedWorks {
   }
 }
 
-class NovelRelatedListSource extends NextUrlListSource<Novel, NovelPageResult> {
+class NovelRelatedListSource extends FrostCursorListSource<Novel, NovelPageResult> {
   NovelRelatedListSource({required this.novelId});
 
   final int novelId;

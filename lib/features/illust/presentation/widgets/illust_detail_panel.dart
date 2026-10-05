@@ -1,11 +1,7 @@
-import 'package:freepiv/app/theme/app_feedback.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/content_script.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_comments_section.dart';
@@ -43,26 +39,26 @@ class IllustDetailPanel extends StatelessWidget {
     final content = [
       SelectableText(
         illust.title,
-        style: contentTextStyle(context, illust.title, Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+        style: frostContentTextStyle(context, illust.title, Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
       ),
       const SizedBox(height: 6),
       _StatsStrip(illust: illust),
-      const SizedBox(height: AppMetrics.compactSectionGap),
+      const SizedBox(height: FrostMetrics.compactSectionGap),
       IllustUserPreviewSection(illust: illust, onIllustTap: onIllustTap, showRecentWorks: false),
-      const SizedBox(height: AppMetrics.compactSectionGap),
+      const SizedBox(height: FrostMetrics.compactSectionGap),
       _ActionRow(illust: illust, actions: actions),
-      if (illust.illustAiType == 2 || illust.xRestrict > 0) ...[const SizedBox(height: AppMetrics.compactGap), _RestrictionBadges(illust: illust)],
+      if (illust.illustAiType == 2 || illust.xRestrict > 0) ...[const SizedBox(height: FrostMetrics.compactGap), _RestrictionBadges(illust: illust)],
       if (illust.caption.trim().isNotEmpty) ...[
-        const SizedBox(height: AppMetrics.compactSectionGap),
+        const SizedBox(height: FrostMetrics.compactSectionGap),
         IllustSectionTitle(title: translations.illust.section.caption),
-        const SizedBox(height: AppMetrics.sectionHeadingGap),
+        const SizedBox(height: FrostMetrics.sectionHeadingGap),
         _CaptionBox(caption: illust.caption),
       ],
-      const SizedBox(height: AppMetrics.compactSectionGap),
+      const SizedBox(height: FrostMetrics.compactSectionGap),
       IllustSectionTitle(title: translations.illust.section.tags),
-      const SizedBox(height: AppMetrics.sectionHeadingGap),
+      const SizedBox(height: FrostMetrics.sectionHeadingGap),
       _TagWrap(tags: illust.tags),
-      const SizedBox(height: AppMetrics.compactSectionGap),
+      const SizedBox(height: FrostMetrics.compactSectionGap),
       ExpansionTile(
         key: PageStorageKey<String>('illust-metadata-${illust.id}'),
         tilePadding: EdgeInsets.zero,
@@ -79,10 +75,10 @@ class IllustDetailPanel extends StatelessWidget {
       ),
       const SizedBox(height: 8),
       IllustCommentsSection(illustId: illust.id, totalComments: illust.totalComments),
-      const SizedBox(height: AppMetrics.compactSectionGap),
+      const SizedBox(height: FrostMetrics.compactSectionGap),
       // The creator's recent works follow the work's own content.
       IllustUserPreviewSection(illust: illust, onIllustTap: onIllustTap, showHeader: false),
-      const SizedBox(height: AppMetrics.compactSectionGap),
+      const SizedBox(height: FrostMetrics.compactSectionGap),
       if (showRelatedPreview && onShowRelatedWorks != null)
         IllustRelatedSection(illustId: illust.id, onIllustTap: onIllustTap, onShowMore: onShowRelatedWorks!),
     ];
@@ -104,12 +100,12 @@ class _ActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final translations = t;
-    final tonal = IconButton.styleFrom(backgroundColor: tokens.surfaceInset, fixedSize: const Size.square(AppMetrics.controlHeight));
+    final tonal = IconButton.styleFrom(backgroundColor: tokens.surfaceInset, fixedSize: const Size.square(FrostMetrics.controlHeight));
     return Wrap(
-      spacing: AppMetrics.compactGap,
-      runSpacing: AppMetrics.compactGap,
+      spacing: FrostMetrics.compactGap,
+      runSpacing: FrostMetrics.compactGap,
       children: [
         DecoratedBox(
           decoration: BoxDecoration(color: tokens.surfaceInset, shape: BoxShape.circle),
@@ -174,7 +170,7 @@ class _InfoBadge extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         child: Row(
@@ -258,23 +254,23 @@ class _TagWrapState extends State<_TagWrap> {
     }
     final tags = widget.tags;
     final visibleTags = _expanded ? tags : tags.take(5);
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
 
     return AnimatedSize(
-      duration: AppMotion.duration(context, AppMotion.expand),
+      duration: FrostMotion.duration(context, FrostMotion.expand),
       curve: Curves.easeOutCubic,
       alignment: Alignment.topCenter,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Wrap(
-            spacing: AppMetrics.compactGap,
-            runSpacing: AppMetrics.compactGap,
+            spacing: FrostMetrics.compactGap,
+            runSpacing: FrostMetrics.compactGap,
             children: [for (final tag in visibleTags) _TagChip(tag: tag)],
           ),
           if (tags.length > 5)
             Padding(
-              padding: const EdgeInsets.only(top: AppMetrics.compactGap),
+              padding: const EdgeInsets.only(top: FrostMetrics.compactGap),
               child: TextButton.icon(
                 onPressed: () => setState(() => _expanded = !_expanded),
                 style: TextButton.styleFrom(
@@ -282,7 +278,7 @@ class _TagWrapState extends State<_TagWrap> {
                   backgroundColor: tokens.surfaceInset,
                   minimumSize: const Size(0, 44),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
                 ),
                 icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more, size: 18),
                 label: Text(_expanded ? context.t.illust.tags.showLess : context.t.illust.tags.showMore(count: tags.length - 5)),
@@ -302,8 +298,8 @@ class _TagChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final tokens = FreepivThemeTokens.of(context);
-    final borderRadius = BorderRadius.circular(AppMetrics.controlRadius);
+    final tokens = FrostThemeTokens.of(context);
+    final borderRadius = BorderRadius.circular(FrostMetrics.controlRadius);
 
     return Tooltip(
       message: context.t.common.copy(label: tag.name),
@@ -316,7 +312,7 @@ class _TagChip extends StatelessWidget {
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           shape: RoundedRectangleBorder(borderRadius: borderRadius),
-        ).copyWith(backgroundColor: WidgetStateProperty.resolveWith((states) => appButtonRestingSurface(tokens, states, resting: tokens.surfaceMuted))),
+        ).copyWith(backgroundColor: WidgetStateProperty.resolveWith((states) => frostButtonRestingSurface(tokens, states, resting: tokens.surfaceMuted))),
         child: Text(_tagLabel(tag), style: Theme.of(context).textTheme.labelMedium),
       ),
     );
@@ -333,9 +329,9 @@ class _CaptionBox extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     final textStyle = theme.brightness == Brightness.dark ? theme.textTheme.bodySmall : theme.textTheme.bodyMedium;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     return DecoratedBox(
-      decoration: BoxDecoration(color: tokens.surfaceMuted, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+      decoration: BoxDecoration(color: tokens.surfaceMuted, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: HtmlRichText(caption, style: textStyle?.copyWith(color: colorScheme.onSurface, height: 1.5)),
@@ -374,7 +370,7 @@ class _MetadataRow extends StatelessWidget {
                   IconButton(
                     tooltip: context.t.common.copy(label: label),
                     visualDensity: VisualDensity.compact,
-                    constraints: const BoxConstraints.tightFor(width: AppMetrics.controlHeight, height: AppMetrics.controlHeight),
+                    constraints: const BoxConstraints.tightFor(width: FrostMetrics.controlHeight, height: FrostMetrics.controlHeight),
                     padding: EdgeInsets.zero,
                     icon: const Icon(Icons.content_copy_outlined, size: 16),
                     onPressed: () => unawaited(_copyTextValue(label, value)),
@@ -392,9 +388,9 @@ class _MetadataRow extends StatelessWidget {
 Future<void> _copyTextValue(String label, String value) async {
   try {
     await copyTextToClipboard(value);
-    unawaited(AppToast.copied(t.illust.toast.copiedValue(label: label, value: value)));
+    FrostToast.copied(t.illust.toast.copiedValue(label: label, value: value));
   } catch (error) {
-    AppToast.errorWithCause(t.illust.toast.copyFailed(label: label), error);
+    toastErrorWithCause(t.illust.toast.copyFailed(label: label), error);
   }
 }
 

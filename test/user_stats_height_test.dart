@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_collapsible_header.dart';
 
 Future<double> _statsHeight(WidgetTester tester, {required double scale, required double width}) async {

@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/features/pixivision/article_blocks.dart';
 import 'package:freepiv/features/pixivision/article_images.dart';
@@ -15,9 +16,6 @@ import 'package:freepiv/features/pixivision/logic.dart';
 import 'package:freepiv/features/pixivision/page.dart';
 import 'package:freepiv/features/pixivision/widgets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
-import 'package:freepiv/shared/widgets/search_input.dart';
 import 'package:freepiv/src/rust/api/media.dart' as rust;
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 
@@ -272,7 +270,7 @@ void main() {
         child: TranslationProvider(
           child: MaterialApp(
             theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-            home: const AppLayoutScope(child: PixivisionPage()),
+            home: const FrostLayoutScope(child: PixivisionPage()),
           ),
         ),
       ),
@@ -280,7 +278,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(TabBar), findsOneWidget);
     expect(tester.widget<TabBar>(find.byType(TabBar)).isScrollable, isTrue);
-    expect(find.byType(SearchInput), findsNothing);
+    expect(find.byType(FrostSearchInput), findsNothing);
     expect(find.text('Color and light'), findsOneWidget);
     final tabs = find.byType(TabBar);
     await tester.ensureVisible(find.text('Monthly ranking').first);
@@ -300,10 +298,10 @@ void main() {
     expect(find.text('Topics'), findsOneWidget);
     await tester.tap(find.byTooltip('Search articles'));
     await tester.pumpAndSettle();
-    expect(find.byType(SearchInput), findsOneWidget);
+    expect(find.byType(FrostSearchInput), findsOneWidget);
     await tester.tap(find.byTooltip('Search articles'));
     await tester.pumpAndSettle();
-    expect(find.byType(SearchInput), findsNothing);
+    expect(find.byType(FrostSearchInput), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -320,7 +318,7 @@ void main() {
           child: TranslationProvider(
             child: MaterialApp(
               theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-              home: const AppLayoutScope(child: PixivisionPage()),
+              home: const FrostLayoutScope(child: PixivisionPage()),
             ),
           ),
         ),
@@ -329,7 +327,7 @@ void main() {
       final heading = tester.getRect(find.text('pixivision').first);
       final card = tester.getRect(find.byType(PixivisionCard).first);
       expect(card.left, closeTo(heading.left, 1), reason: 'content axis at $width');
-      expect(find.byType(SearchInput), findsOneWidget);
+      expect(find.byType(FrostSearchInput), findsOneWidget);
       expect(tester.takeException(), isNull);
     }
   });
@@ -351,7 +349,7 @@ void main() {
                   : AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
               home: MediaQuery(
                 data: MediaQueryData(size: size, textScaler: TextScaler.linear(scale)),
-                child: const AppLayoutScope(child: PixivisionPage()),
+                child: const FrostLayoutScope(child: PixivisionPage()),
               ),
             ),
           ),
@@ -359,7 +357,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: '$size / $scale');
-      await tester.tap(find.descendant(of: find.byType(AppMenuAnchor), matching: find.byType(TextButton)));
+      await tester.tap(find.descendant(of: find.byType(FrostMenuAnchor), matching: find.byType(TextButton)));
       await tester.pumpAndSettle();
       expect(find.text('Illustration'), findsOneWidget);
       expect(tester.takeException(), isNull, reason: '$size / $scale category menu');

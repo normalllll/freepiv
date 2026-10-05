@@ -7,17 +7,14 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/logic/user_follow_logic.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/shared/widgets/user_follow_button.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
-import 'package:freepiv/shared/widgets/energetic_card.dart';
-import 'package:freepiv/shared/widgets/constrained_segmented_button.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 
 class _Follow extends UserFollow {
@@ -130,40 +127,40 @@ void main() {
                             spacing: 12,
                             runSpacing: 12,
                             children: [
-                              AppButton(label: 'Read now', onPressed: () {}, kind: AppButtonKind.primary),
-                              AppButton(label: 'Download', onPressed: () {}),
-                              const AppButton(label: 'Unavailable', onPressed: null),
+                              FrostButton(label: 'Read now', onPressed: () {}, kind: FrostButtonKind.primary),
+                              FrostButton(label: 'Download', onPressed: () {}),
+                              const FrostButton(label: 'Unavailable', onPressed: null),
                             ],
                           ),
                           const SizedBox(height: 24),
                           Wrap(
                             spacing: 8,
                             children: [
-                              AppIconButton(icon: const Icon(Icons.arrow_back), tooltip: 'Back', onPressed: () {}),
-                              AppIconButton(icon: const Icon(Icons.favorite), selected: true, tooltip: 'Saved', onPressed: () {}),
-                              const AppIconButton(icon: Icon(Icons.download), tooltip: 'Unavailable', onPressed: null),
+                              FrostIconButton(icon: const Icon(Icons.arrow_back), tooltip: 'Back', onPressed: () {}),
+                              FrostIconButton(icon: const Icon(Icons.favorite), selected: true, tooltip: 'Saved', onPressed: () {}),
+                              const FrostIconButton(icon: Icon(Icons.download), tooltip: 'Unavailable', onPressed: null),
                             ],
                           ),
                           const SizedBox(height: 24),
                           const Wrap(
                             spacing: 8,
                             children: [
-                              EnergeticPill(child: Text('#Original')),
-                              EnergeticPill(selected: true, child: Text('#Illustration')),
+                              FrostPill(child: Text('#Original')),
+                              FrostPill(selected: true, child: Text('#Illustration')),
                             ],
                           ),
                           const SizedBox(height: 24),
-                          AppSelect<int>(
+                          FrostSelect<int>(
                             value: 1,
                             label: 'Image quality',
                             items: const [
-                              AppSelectItem(value: 1, label: 'Original quality'),
-                              AppSelectItem(value: 2, label: 'Standard'),
+                              FrostSelectItem(value: 1, label: 'Original quality'),
+                              FrostSelectItem(value: 2, label: 'Standard'),
                             ],
                             onChanged: (_) {},
                           ),
                           const SizedBox(height: 24),
-                          ConstrainedSegmentedButton<int>(
+                          FrostConstrainedSegmentedButton<int>(
                             segments: const [
                               ButtonSegment(value: 1, label: Text('Artwork')),
                               ButtonSegment(value: 2, label: Text('Novels')),
@@ -176,15 +173,15 @@ void main() {
                             spacing: 12,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              AppSwitch(value: true, onChanged: (_) {}),
-                              AppSwitch(value: false, onChanged: (_) {}),
+                              FrostSwitch(value: true, onChanged: (_) {}),
+                              FrostSwitch(value: false, onChanged: (_) {}),
                               Checkbox(value: true, onChanged: (_) {}),
                               Checkbox(value: false, onChanged: (_) {}),
                               const CircularProgressIndicator(),
                             ],
                           ),
                           const SizedBox(height: 24),
-                          const EnergeticCard(
+                          const FrostCard(
                             padding: EdgeInsets.all(16),
                             child: Text('Content stays central. Controls share a quiet, consistent visual language.'),
                           ),

@@ -1,8 +1,5 @@
-import 'package:freepiv/shared/widgets/app_tab_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
 import 'package:flutter/rendering.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_collapsible_header.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -38,8 +35,8 @@ class UserDetailTabScaffold extends StatelessWidget {
   final String storageKey;
   final bool includeTopPadding;
   final bool showBackButton;
-  final DataRefreshAction? onRefresh;
-  final DataRefreshViewBuilder builder;
+  final FrostRefreshAction? onRefresh;
+  final FrostRefreshViewBuilder builder;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +44,7 @@ class UserDetailTabScaffold extends StatelessWidget {
     final topPadding = includeTopPadding ? mediaQuery.padding.top : 0.0;
     final pinnedHeaderExtent = topPadding + UserCollapsibleHeaderSliver.collapsedHeightFor(mediaQuery.size.width, context) + UserDetailTabBarSliver.height;
 
-    return DataNestedRefreshView(
+    return FrostNestedRefreshView(
       onRefresh: onRefresh,
       builder: (context, refresh) {
         return NestedScrollView(
@@ -195,28 +192,33 @@ class _UserTabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     // Continues the collapsed header's glass once works pass beneath.
     return SizedBox.expand(
-      child: PinnedChromeGlass(
+      child: FrostPinnedChromeGlass(
         opacity: glassCoverage,
         animate: false,
-        corners: PinnedChromeCorners.bottom,
+        corners: FrostPinnedChromeCorners.bottom,
         child: Material(
           type: MaterialType.transparency,
           child: LayoutBuilder(
             builder: (context, constraints) => Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppMetrics.pageTabInset(constraints.maxWidth)),
-              child: AppTabBar(
-                controller: controller,
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                dividerColor: Colors.transparent,
-                labelPadding: EdgeInsets.symmetric(horizontal: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
-                tabs: [
-                  for (final tab in tabs)
-                    Tab(
-                      height: UserDetailTabBarSliver.height,
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(tab.icon, size: 18), const SizedBox(width: 6), Text(tab.label, maxLines: 1)]),
-                    ),
-                ],
+              padding: EdgeInsets.symmetric(horizontal: FrostMetrics.pageTabInset(constraints.maxWidth)),
+              child: MouseDragScroll(
+                child: FrostTabBar(
+                  controller: controller,
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  dividerColor: Colors.transparent,
+                  labelPadding: EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
+                  tabs: [
+                    for (final tab in tabs)
+                      Tab(
+                        height: UserDetailTabBarSliver.height,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [Icon(tab.icon, size: 18), const SizedBox(width: 6), Text(tab.label, maxLines: 1)],
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

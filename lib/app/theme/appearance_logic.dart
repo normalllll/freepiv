@@ -2,10 +2,9 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/accent_validation.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/services/app_settings.dart';
-import 'package:freepiv/core/services/appearance_settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'appearance_logic.g.dart';
@@ -13,12 +12,12 @@ part 'appearance_logic.g.dart';
 @immutable
 class AppearanceState {
   const AppearanceState({required this.settings, this.unsaved = false, this.saving = false, this.saveError});
-  final AppearanceSettings settings;
+  final FrostAppearance settings;
   final bool unsaved;
   final bool saving;
   final String? saveError;
 
-  AppearanceState copyWith({AppearanceSettings? settings, bool? unsaved, bool? saving, String? saveError, bool clearError = false}) => AppearanceState(
+  AppearanceState copyWith({FrostAppearance? settings, bool? unsaved, bool? saving, String? saveError, bool clearError = false}) => AppearanceState(
     settings: settings ?? this.settings,
     unsaved: unsaved ?? this.unsaved,
     saving: saving ?? this.saving,
@@ -30,7 +29,7 @@ class _AppearanceWrite {
   _AppearanceWrite.immediate(this.settings) : brightness = null, customColor = null, result = null;
   _AppearanceWrite.custom(this.brightness, this.customColor, this.result) : settings = null;
 
-  AppearanceSettings? settings;
+  FrostAppearance? settings;
   final Brightness? brightness;
   final Color? customColor;
   final Completer<bool>? result;
@@ -51,7 +50,7 @@ class Appearance extends _$Appearance {
     _applyImmediate(state.settings.copyWith(mode: mode));
   }
 
-  void setTone(Brightness brightness, AppearanceTone tone) {
+  void setTone(Brightness brightness, FrostTone tone) {
     final settings = state.settings;
     if (settings.toneFor(brightness) == tone) return;
     _applyImmediate(brightness == Brightness.light ? settings.copyWith(lightTone: tone) : settings.copyWith(darkTone: tone));
@@ -61,16 +60,16 @@ class Appearance extends _$Appearance {
     _setAccent(brightness, accent);
   }
 
-  void restoreDefault(Brightness brightness) => _setAccent(brightness, FreepivThemeTokens.brandPink);
+  void restoreDefault(Brightness brightness) => _setAccent(brightness, freepivFrostConfig.palettes.defaultAccent(brightness));
 
   void _setAccent(Brightness brightness, Color accent) {
-    if (!validateAccent(accent, brightness).canApply) return;
+    if (!validateAccent(accent, brightness, freepivFrostConfig.palettes).canApply) return;
     final settings = state.settings;
     if (settings.accentFor(brightness) == accent) return;
     _applyImmediate(brightness == Brightness.light ? settings.copyWith(lightAccent: accent) : settings.copyWith(darkAccent: accent));
   }
 
-  void _applyImmediate(AppearanceSettings next) {
+  void _applyImmediate(FrostAppearance next) {
     _revision++;
     state = state.copyWith(settings: next, unsaved: true, saving: true, clearError: true);
     if (_writes.isNotEmpty && _writes.last.isImmediate) {
@@ -82,7 +81,7 @@ class Appearance extends _$Appearance {
   }
 
   Future<bool> applyCustom(Brightness brightness, Color accent) async {
-    if (!validateAccent(accent, brightness).canApply) return false;
+    if (!validateAccent(accent, brightness, freepivFrostConfig.palettes).canApply) return false;
     final result = Completer<bool>();
     _writes.add(_AppearanceWrite.custom(brightness, accent, result));
     state = state.copyWith(saving: true, clearError: true);

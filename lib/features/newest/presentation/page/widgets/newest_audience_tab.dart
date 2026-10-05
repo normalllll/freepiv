@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_feed.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_labels.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
-import 'package:freepiv/shared/widgets/lazy_indexed_stack.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 class NewestAudienceTab extends StatefulWidget {
   const NewestAudienceTab({required this.audience, required this.state, super.key});
@@ -27,12 +26,12 @@ class _NewestAudienceTabState extends State<NewestAudienceTab> with AutomaticKee
     final selectedKey = widget.state.keyForAudience(widget.audience);
     final selectedIndex = feedKeys.indexOf(selectedKey);
 
-    return LazyIndexedStack(
+    return FrostLazyIndexedStack(
       index: selectedIndex < 0 ? 0 : selectedIndex,
       sizing: StackFit.expand,
       children: [
         // Filters live in the pinned toolbar; each feed only reserves its height.
-        for (final key in feedKeys) NewestFeedView(key: ValueKey(key), source: widget.state.sourceFor(key), filterSliver: const FpChromeSpacer()),
+        for (final key in feedKeys) NewestFeedView(key: ValueKey(key), source: widget.state.sourceFor(key), filterSliver: const FrostChromeSpacer()),
       ],
     );
   }

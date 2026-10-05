@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
 
 /// Every ranking mode label, in the order the pickers list them.
 List<String> _rankingModeLabels() {
@@ -76,13 +75,13 @@ void main() {
                       // The ranking header row: the page inset minus the
                       // picker's own padding on each side.
                       body: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppMetrics.browseInset(width) - 12, vertical: 8),
+                        padding: EdgeInsets.symmetric(horizontal: FrostMetrics.browseInset(width) - 12, vertical: 8),
                         child: Row(
                           key: key,
                           children: [
-                            AppValueMenuButton<int>(
+                            FrostValueMenuButton<int>(
                               value: index,
-                              items: [for (final (value, item) in labels.indexed) AppSelectItem(value: value, label: item)],
+                              items: [for (final (value, item) in labels.indexed) FrostSelectItem(value: value, label: item)],
                               onSelected: (_) {},
                             ),
                           ],
@@ -95,7 +94,7 @@ void main() {
             );
             final reason = '$locale $width ${scale}x "$label"';
             expect(tester.takeException(), isNull, reason: reason);
-            expectSingleLineTexts(tester, find.byType(AppValueMenuButton<int>), reason: reason);
+            expectSingleLineTexts(tester, find.byType(FrostValueMenuButton<int>), reason: reason);
             heights.add(tester.getSize(find.byKey(key)).height);
           }
           // Whatever the chosen mode, the header row keeps one height.

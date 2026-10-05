@@ -1,4 +1,3 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 import 'download_bulk_actions.dart';
 import 'download_dock_button.dart';
@@ -6,8 +5,6 @@ import 'download_flight.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/spring_builder.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:flutter/services.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
@@ -16,7 +13,7 @@ import 'package:freepiv/features/downloads/logic.dart';
 import 'package:freepiv/features/downloads/presentation/download_item_widgets.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
 class DesktopDownloadDock extends ConsumerStatefulWidget {
@@ -176,7 +173,7 @@ class _DesktopDownloadDockState extends ConsumerState<DesktopDownloadDock>
                         descendantsAreFocusable: _expanded,
                         onKeyEvent: _handlePanelKey,
                         // Grows out of the dock button and shrinks back into it.
-                        child: SpringReveal(
+                        child: FrostSpringReveal(
                           shown: _expanded,
                           alignment: Alignment.bottomLeft,
                           child: RepaintBoundary(
@@ -236,7 +233,7 @@ class _DownloadDockPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final actions = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -251,9 +248,9 @@ class _DownloadDockPanel extends StatelessWidget {
     );
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: maxHeight),
-      child: FpSurface(
-        role: FpSurfaceRole.overlay,
-        borderRadius: BorderRadius.circular(AppMetrics.groupRadius + 4),
+      child: FrostSurface(
+        role: FrostSurfaceRole.overlay,
+        borderRadius: BorderRadius.circular(FrostMetrics.groupRadius + 4),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
           child: Column(

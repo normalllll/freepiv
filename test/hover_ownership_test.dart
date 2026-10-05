@@ -2,13 +2,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'package:freepiv/shared/widgets/illust_bookmark_button.dart';
 import 'package:freepiv/shared/widgets/user_follow_button.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
 
 void main() {
   testWidgets('card yields hover to bookmarks, follow, menus, nested links and disabled actions', (tester) async {
@@ -17,16 +15,16 @@ void main() {
       const IllustBookmarkButton(illustId: 9002, initialIsBookmarked: false, isNovel: true),
       const IllustBookmarkButton(illustId: 9003, initialIsBookmarked: false, floating: true),
       const UserFollowButton(userId: 9001, initialIsFollowed: false),
-      AppMenuButton<int>(
+      FrostMenuButton<int>(
         value: 1,
-        items: const [AppSelectItem(value: 1, label: 'More')],
+        items: const [FrostSelectItem(value: 1, label: 'More')],
         onSelected: (_) {},
         child: const Padding(padding: EdgeInsets.all(16), child: Text('Menu')),
       ),
-      AppIconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz)),
+      FrostIconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz)),
       const IconButton(onPressed: null, icon: Icon(Icons.download)),
       TextButton(onPressed: () {}, child: const Text('Open')),
-      AppClickSurface(
+      FrostClickSurface(
         onTap: () {},
         child: const Padding(padding: EdgeInsets.all(16), child: Text('Creator')),
       ),
@@ -43,7 +41,7 @@ void main() {
               home: Scaffold(
                 body: Center(
                   child: Material(
-                    child: AppClickSurface(
+                    child: FrostClickSurface(
                       key: parentKey,
                       onTap: () => parentTaps++,
                       onHover: (value) => parentHovered = value,

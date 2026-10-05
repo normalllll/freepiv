@@ -1,6 +1,4 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_section.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
@@ -31,7 +29,7 @@ class NovelRelatedSlivers {
     ];
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
+    if (source.phase == FrostLoadPhase.loading) {
       return [...titleSlivers, const SliverPadding(padding: EdgeInsets.fromLTRB(16, 0, 16, 24), sliver: NovelRelatedListSkeleton())];
     }
 
@@ -42,8 +40,8 @@ class NovelRelatedSlivers {
           child: NovelDetailWidthLimiter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: CompactMessage(
-                icon: Icons.error_outline,
+              child: FrostCompactMessage(
+                icon: FrostIconData.glyph(Icons.error_outline),
                 message: formatPixivError(lastError),
                 details: pixivErrorDetails(lastError),
                 actionLabel: t.common.retry,
@@ -62,7 +60,7 @@ class NovelRelatedSlivers {
           child: NovelDetailWidthLimiter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: CompactMessage(icon: Icons.image_not_supported_outlined, message: t.illust.related.empty),
+              child: FrostCompactMessage(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), message: t.illust.related.empty),
             ),
           ),
         ),
@@ -71,7 +69,8 @@ class NovelRelatedSlivers {
 
     return [
       ...titleSlivers,
-      SliverDataList<Novel>(
+      FrostSliverDataList<Novel>(
+        firstLoadSkeleton: const FullScreenLoadingSkeleton(),
         source: source,
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
         itemBuilder: (context, novel, index) {
@@ -97,7 +96,7 @@ class NovelRelatedTile extends StatelessWidget {
     final accent = _novelRelatedAccent(context);
 
     return NovelDetailWidthLimiter(
-      child: EnergeticCard(
+      child: FrostCard(
         accentColor: accent,
         onTap: onTap,
         padding: const EdgeInsets.all(10),
@@ -106,7 +105,7 @@ class NovelRelatedTile extends StatelessWidget {
           children: [
             SizedBox.square(
               dimension: 92,
-              child: PixivImage(url: novel.imageUrls.squareMedium, fit: BoxFit.cover, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+              child: PixivImage(url: novel.imageUrls.squareMedium, fit: BoxFit.cover, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -153,10 +152,10 @@ class SmallNovelStatPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: tokens.surfaceRaised, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+      decoration: BoxDecoration(color: tokens.surfaceRaised, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
         child: Row(
@@ -173,8 +172,8 @@ class SmallNovelStatPill extends StatelessWidget {
 }
 
 Color _novelRelatedAccent(BuildContext context) {
-  final tokens = FreepivThemeTokens.of(context);
-  return tokens.brand;
+  final tokens = FrostThemeTokens.of(context);
+  return tokens.accent;
 }
 
 class NovelRelatedListSkeleton extends StatelessWidget {
@@ -189,11 +188,11 @@ class NovelRelatedListSkeleton extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 8),
           child: NovelDetailWidthLimiter(
             child: Skeletonizer.zone(
-              child: EnergeticCard(
+              child: FrostCard(
                 padding: const EdgeInsets.all(10),
                 child: Row(
                   children: [
-                    Bone(width: 92, height: 92, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+                    Bone(width: 92, height: 92, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Column(

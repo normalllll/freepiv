@@ -4,7 +4,6 @@ import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -83,20 +82,20 @@ class UserIllustGridBody extends StatelessWidget {
     super.key,
   });
 
-  final DataListSource<Illust> source;
+  final FrostListSource<Illust> source;
   final ScrollPhysics? physics;
   final Widget? sliverHeader;
   final List<Widget> leadingSlivers;
   final String emptyTitle;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return DataLoadingCustomScrollView(physics: physics, slivers: [...leadingSlivers, ?sliverHeader, const SliverIllustWaterfallSkeleton()]);
+    if (source.phase == FrostLoadPhase.loading) {
+      return FrostLoadingScrollView(physics: physics, slivers: [...leadingSlivers, ?sliverHeader, const SliverIllustWaterfallSkeleton()]);
     }
 
     if (!source.initialized && lastError != null) {
@@ -104,7 +103,7 @@ class UserIllustGridBody extends StatelessWidget {
         physics: physics,
         sliverHeader: sliverHeader,
         leadingSlivers: leadingSlivers,
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
@@ -113,16 +112,17 @@ class UserIllustGridBody extends StatelessWidget {
         physics: physics,
         sliverHeader: sliverHeader,
         leadingSlivers: leadingSlivers,
-        child: EmptyContent(icon: Icons.image_not_supported_outlined, title: emptyTitle),
+        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), title: emptyTitle),
       );
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
         ...leadingSlivers,
         ?sliverHeader,
-        SliverDataWaterfallGrid<Illust>(
+        FrostSliverDataWaterfallGrid<Illust>(
+          firstLoadSkeleton: const FullScreenLoadingSkeleton(),
           source: source,
           itemBuilder: (context, illust, index) {
             return IllustPreviewer(illust: illust, onOpen: (heroTag) => openIllustDetail(context, illust, heroTag));
@@ -143,6 +143,6 @@ class _SliverStateBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataSliverFillBody(physics: physics, sliverHeader: sliverHeader, leadingSlivers: leadingSlivers, child: child);
+    return FrostSliverFillBody(physics: physics, sliverHeader: sliverHeader, leadingSlivers: leadingSlivers, child: child);
   }
 }

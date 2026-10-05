@@ -1,14 +1,11 @@
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/core.dart';
-import 'package:freepiv/app/theme/app_feedback.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/logic/user_follow_logic.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
-import 'package:freepiv/shared/ui/spring_builder.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class UserFollowButton extends ConsumerStatefulWidget {
@@ -71,7 +68,7 @@ class _UserFollowButtonState extends ConsumerState<UserFollowButton> {
         if (!context.mounted || pixivAccountNotifier.value?.user.id != accountId) {
           return;
         }
-        AppToast.errorWithCause(translations.toast.followFailed, error);
+        toastErrorWithCause(translations.toast.followFailed, error);
       }
     }
 
@@ -96,7 +93,7 @@ class UserFollowButtonPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Skeletonizer.zone(
-      child: Bone(width: 82, height: AppMetrics.controlHeight, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+      child: Bone(width: 82, height: FrostMetrics.controlHeight, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
     );
   }
 }
@@ -126,7 +123,7 @@ class FollowToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final translations = t;
     // Follow is the solid accent action; Following is a persistent selection,
     // so it takes the accent wash and ink used for selection elsewhere. A
@@ -143,18 +140,18 @@ class FollowToggleButton extends StatelessWidget {
       child: TextButton(
         onPressed: updating ? null : onPressed,
         style: ButtonStyle(
-          minimumSize: WidgetStatePropertyAll(Size(0, dense ? (height ?? denseHeight) : AppMetrics.controlHeight)),
+          minimumSize: WidgetStatePropertyAll(Size(0, dense ? (height ?? denseHeight) : FrostMetrics.controlHeight)),
           padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 12, vertical: dense ? 4 : 8)),
           tapTargetSize: dense ? MaterialTapTargetSize.shrinkWrap : null,
           backgroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.disabled) && !updating ? tokens.surfaceInset : background),
           // A translucent state layer, so hovering keeps the accent wash
           // instead of replacing it with an opaque neutral.
-          backgroundBuilder: isFollowed ? appButtonFeedbackBackground : appPrimaryButtonFeedbackBackground,
+          backgroundBuilder: isFollowed ? frostButtonFeedbackBackground : frostPrimaryButtonFeedbackBackground,
           overlayColor: const WidgetStatePropertyAll(Colors.transparent),
           splashFactory: NoSplash.splashFactory,
-          mouseCursor: appClickCursor,
+          mouseCursor: frostClickCursor,
           foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.disabled) && !updating ? tokens.disabledText : foreground),
-          side: WidgetStateProperty.resolveWith((states) => appFeedbackBorder(tokens, states)),
+          side: WidgetStateProperty.resolveWith((states) => frostFeedbackBorder(tokens, states)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -164,8 +161,8 @@ class FollowToggleButton extends StatelessWidget {
             SizedBox.square(
               dimension: glyphSize,
               child: AnimatedSwitcher(
-                duration: AppMotion.duration(context, AppMotion.expand),
-                switchInCurve: SpringCurve(AppMotion.snappy, AppMotion.expand),
+                duration: FrostMotion.duration(context, FrostMotion.expand),
+                switchInCurve: FrostSpringCurve(FrostMotion.snappy, FrostMotion.expand),
                 switchOutCurve: Curves.easeInCubic,
                 transitionBuilder: (child, animation) => FadeTransition(
                   opacity: animation,
@@ -197,7 +194,7 @@ class FollowToggleButton extends StatelessWidget {
                         excluding: followed != isFollowed,
                         child: AnimatedOpacity(
                           opacity: followed == isFollowed ? 1 : 0,
-                          duration: AppMotion.duration(context, AppMotion.hover),
+                          duration: FrostMotion.duration(context, FrostMotion.hover),
                           curve: Curves.easeOut,
                           child: Text(followed ? translations.follow.followed : translations.follow.follow, textAlign: TextAlign.center),
                         ),

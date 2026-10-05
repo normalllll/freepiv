@@ -1,18 +1,13 @@
-import 'package:freepiv/shared/widgets/app_tab_bar.dart';
+import 'package:freepiv/app/router/app_navigation.dart';
 import 'dart:math' as math;
 
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/shared/widgets/content_shelf.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
@@ -32,7 +27,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
 
   late final TabController _homeTabController;
   final _scrollKeys = List.generate(4, (_) => GlobalKey<NestedScrollViewState>());
-  ValueListenable<({AppRoute route, int sequence})>? _primaryReselection;
+  ValueListenable<({int index, int sequence})>? _primaryReselection;
 
   @override
   void initState() {
@@ -41,7 +36,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
     _homeTabController = TabController(
       length: _homeTypes.length,
       initialIndex: _homeTypeIndex(ref.read(homeProvider)),
-      animationDuration: AppMotion.navigation,
+      animationDuration: FrostMotion.navigation,
       vsync: this,
     );
     _homeTabController.addListener(_handleHomeTabChanged);
@@ -67,7 +62,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final next = ShellNavigationScope.maybeOf(context)?.primaryReselection;
+    final next = FrostShellNavigationScope.maybeOf(context)?.primaryReselection;
     if (identical(next, _primaryReselection)) return;
     _primaryReselection?.removeListener(_handlePrimaryReselection);
     _primaryReselection = next;
@@ -76,10 +71,10 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
 
   void _handlePrimaryReselection() {
     final signal = _primaryReselection?.value;
-    if (signal == null || signal.route != AppRoute.home || signal.sequence == 0) return;
+    if (signal == null || appRouteDestinations[signal.index].route != AppRoute.home || signal.sequence == 0) return;
     final scroll = _scrollKeys[_homeTabController.index].currentState?.innerController;
     if (scroll == null || !scroll.hasClients) return;
-    final duration = AppMotion.duration(context, AppMotion.navigation);
+    final duration = FrostMotion.duration(context, FrostMotion.navigation);
     if (duration == Duration.zero) {
       scroll.jumpTo(0);
     } else {
@@ -115,13 +110,13 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
       body: PageStorage(
         bucket: _homePageStorageBucket,
         // The type tabs float over the feed; artwork scrolls beneath them.
-        child: FpPinnedChrome(
+        child: FrostPinnedChrome(
           extent: MediaQuery.paddingOf(context).top + kTextTabBarHeight,
           chrome: SafeArea(
             bottom: false,
             child: LayoutBuilder(
               builder: (context, constraints) => Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppMetrics.pageTabInset(constraints.maxWidth)),
+                padding: EdgeInsets.symmetric(horizontal: FrostMetrics.pageTabInset(constraints.maxWidth)),
                 child: _HomeTypeSelector(controller: _homeTabController, onTypeChanged: (type) => ref.read(homeProvider.notifier).setType(type)),
               ),
             ),
@@ -129,19 +124,21 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
           body: AnimatedBuilder(
             animation: Listenable.merge([illustSource, mangaSource, novelSource, userSource]),
             builder: (context, child) {
-              return TabBarView(
-                controller: _homeTabController,
-                children: [
-                  _IllustHomeTab(
-                    key: const PageStorageKey('home-illustrations'),
-                    scrollKey: _scrollKeys[0],
-                    source: illustSource,
-                    homeType: HomeType.illustrations,
-                  ),
-                  _IllustHomeTab(key: const PageStorageKey('home-manga'), scrollKey: _scrollKeys[1], source: mangaSource, homeType: HomeType.manga),
-                  _NovelHomeTab(key: const PageStorageKey('home-novels'), scrollKey: _scrollKeys[2], source: novelSource),
-                  _UserHomeTab(key: const PageStorageKey('home-users'), scrollKey: _scrollKeys[3], source: userSource),
-                ],
+              return MouseDragScroll(
+                child: TabBarView(
+                  controller: _homeTabController,
+                  children: [
+                    _IllustHomeTab(
+                      key: const PageStorageKey('home-illustrations'),
+                      scrollKey: _scrollKeys[0],
+                      source: illustSource,
+                      homeType: HomeType.illustrations,
+                    ),
+                    _IllustHomeTab(key: const PageStorageKey('home-manga'), scrollKey: _scrollKeys[1], source: mangaSource, homeType: HomeType.manga),
+                    _NovelHomeTab(key: const PageStorageKey('home-novels'), scrollKey: _scrollKeys[2], source: novelSource),
+                    _UserHomeTab(key: const PageStorageKey('home-users'), scrollKey: _scrollKeys[3], source: userSource),
+                  ],
+                ),
               );
             },
           ),
@@ -176,7 +173,7 @@ class _IllustHomeTabState extends _KeepAliveHomeTabState<_IllustHomeTab> {
   Widget build(BuildContext context) {
     super.build(context);
 
-    return DataNestedRefreshView(
+    return FrostNestedRefreshView(
       onRefresh: () => widget.source.refresh(widget.source.isEmpty),
       builder: (context, refresh) {
         return NestedScrollView(
@@ -212,7 +209,7 @@ class _NovelHomeTabState extends _KeepAliveHomeTabState<_NovelHomeTab> {
   Widget build(BuildContext context) {
     super.build(context);
 
-    return DataNestedRefreshView(
+    return FrostNestedRefreshView(
       onRefresh: () => widget.source.refresh(widget.source.isEmpty),
       builder: (context, refresh) {
         return NestedScrollView(
@@ -248,7 +245,7 @@ class _UserHomeTabState extends _KeepAliveHomeTabState<_UserHomeTab> {
   Widget build(BuildContext context) {
     super.build(context);
 
-    return DataNestedRefreshView(
+    return FrostNestedRefreshView(
       onRefresh: () => widget.source.refresh(widget.source.isEmpty),
       builder: (context, refresh) {
         return NestedScrollView(
@@ -275,19 +272,19 @@ class _IllustHomeBody extends StatelessWidget {
   final HomeIllustListSource source;
   final HomeType homeType;
   final ScrollPhysics? physics;
-  final DataRefreshLocators locators;
+  final FrostRefreshLocators locators;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return DataLoadingCustomScrollView(
+    if (source.phase == FrostLoadPhase.loading) {
+      return FrostLoadingScrollView(
         physics: physics,
         slivers: [
-          const FpChromeSpacer(),
+          const FrostChromeSpacer(),
           ?locators.sliverHeader,
           const _IllustRankingPreviewSkeleton(),
           const _HomeSectionHeader(skeleton: true),
@@ -300,7 +297,7 @@ class _IllustHomeBody extends StatelessWidget {
       return _SliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
@@ -308,19 +305,24 @@ class _IllustHomeBody extends StatelessWidget {
       return _SliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: EmptyContent(icon: Icons.image_not_supported_outlined, title: context.t.home.emptyTitle, message: context.t.home.emptyMessage),
+        child: FrostEmptyContent(
+          icon: FrostIconData.glyph(Icons.image_not_supported_outlined),
+          title: context.t.home.emptyTitle,
+          message: context.t.home.emptyMessage,
+        ),
       );
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       key: PageStorageKey<String>('home-${homeType.name}-body-scroll'),
       physics: physics,
       slivers: [
-        const FpChromeSpacer(),
+        const FrostChromeSpacer(),
         ?locators.sliverHeader,
         _IllustRankingPreviewSection(items: source.rankingIllusts, homeType: homeType),
         const _HomeSectionHeader(),
-        SliverDataWaterfallGrid<Illust>(
+        FrostSliverDataWaterfallGrid<Illust>(
+          firstLoadSkeleton: const FullScreenLoadingSkeleton(),
           source: source,
           itemBuilder: (context, illust, index) {
             return IllustPreviewer(illust: illust, onOpen: (heroTag) => openIllustDetail(context, illust, heroTag));
@@ -336,19 +338,19 @@ class _NovelHomeBody extends StatelessWidget {
 
   final HomeNovelListSource source;
   final ScrollPhysics? physics;
-  final DataRefreshLocators locators;
+  final FrostRefreshLocators locators;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return DataLoadingCustomScrollView(
+    if (source.phase == FrostLoadPhase.loading) {
+      return FrostLoadingScrollView(
         physics: physics,
         slivers: [
-          const FpChromeSpacer(),
+          const FrostChromeSpacer(),
           ?locators.sliverHeader,
           const _NovelRankingPreviewSkeleton(),
           const _HomeSectionHeader(alignToNovelList: true, skeleton: true),
@@ -361,7 +363,7 @@ class _NovelHomeBody extends StatelessWidget {
       return _SliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
@@ -369,19 +371,20 @@ class _NovelHomeBody extends StatelessWidget {
       return _SliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: EmptyContent(icon: Icons.menu_book_outlined, title: context.t.home.emptyTitle, message: context.t.home.emptyMessage),
+        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.menu_book_outlined), title: context.t.home.emptyTitle, message: context.t.home.emptyMessage),
       );
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       key: const PageStorageKey<String>('home-novels-body-scroll'),
       physics: physics,
       slivers: [
-        const FpChromeSpacer(),
+        const FrostChromeSpacer(),
         ?locators.sliverHeader,
         _NovelRankingPreviewSection(items: source.rankingNovels),
         const _HomeSectionHeader(alignToNovelList: true),
-        SliverDataList<Novel>(
+        FrostSliverDataList<Novel>(
+          firstLoadSkeleton: const FullScreenLoadingSkeleton(),
           source: source,
           padding: _homeListPadding(context),
           itemBuilder: (context, novel, index) {
@@ -406,23 +409,23 @@ class _UserHomeBody extends StatelessWidget {
 
   final HomeUserListSource source;
   final ScrollPhysics? physics;
-  final DataRefreshLocators locators;
+  final FrostRefreshLocators locators;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return DataLoadingCustomScrollView(physics: physics, slivers: [const FpChromeSpacer(), ?locators.sliverHeader, const SliverUserPreviewerSkeletonGrid()]);
+    if (source.phase == FrostLoadPhase.loading) {
+      return FrostLoadingScrollView(physics: physics, slivers: [const FrostChromeSpacer(), ?locators.sliverHeader, const SliverUserPreviewerSkeletonGrid()]);
     }
 
     if (!source.initialized && lastError != null) {
       return _SliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
@@ -430,15 +433,15 @@ class _UserHomeBody extends StatelessWidget {
       return _SliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: EmptyContent(icon: Icons.people_outline, title: context.t.home.emptyTitle, message: context.t.home.emptyMessage),
+        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.people_outline), title: context.t.home.emptyTitle, message: context.t.home.emptyMessage),
       );
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       key: const PageStorageKey<String>('home-users-body-scroll'),
       physics: physics,
       slivers: [
-        const FpChromeSpacer(),
+        const FrostChromeSpacer(),
         ?locators.sliverHeader,
         SliverUserPreviewGrid(source: source),
       ],
@@ -448,10 +451,10 @@ class _UserHomeBody extends StatelessWidget {
 
 /// Square ranking tiles that fill the row with whole items at any width.
 double _rankingTileExtent(double width) {
-  final inset = AppMetrics.browseInset(width);
+  final inset = FrostMetrics.browseInset(width);
   final available = width - inset * 2;
-  final count = math.max(1, ((available + AppMetrics.itemGap) / (190 + AppMetrics.itemGap)).floor());
-  return ContentShelf.fillingExtent(width: available, count: count, min: 150, max: 220);
+  final count = math.max(1, ((available + FrostMetrics.itemGap) / (190 + FrostMetrics.itemGap)).floor());
+  return FrostShelf.fillingExtent(width: available, count: count, min: 150, max: 220);
 }
 
 class _IllustRankingPreviewSection extends StatelessWidget {
@@ -470,7 +473,7 @@ class _IllustRankingPreviewSection extends StatelessWidget {
     final extent = _rankingTileExtent(MediaQuery.sizeOf(context).width);
 
     return SliverToBoxAdapter(
-      child: ContentShelf(
+      child: FrostShelf(
         title: translations.home.rankings,
         itemCount: items.length,
         itemExtent: extent,
@@ -499,7 +502,7 @@ class _RankBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: DecoratedBox(
-        decoration: BoxDecoration(color: Colors.black.withValues(alpha: .6), borderRadius: BorderRadius.circular(AppMetrics.badgeRadius)),
+        decoration: BoxDecoration(color: Colors.black.withValues(alpha: .6), borderRadius: BorderRadius.circular(FrostMetrics.badgeRadius)),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
           child: Text(
@@ -519,12 +522,12 @@ class _IllustRankingPreviewSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final extent = _rankingTileExtent(width);
-    final inset = AppMetrics.browseInset(width);
+    final inset = FrostMetrics.browseInset(width);
     return SliverToBoxAdapter(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ContentShelfHeader(title: context.t.home.rankings, inset: inset, skeleton: true),
+          FrostShelfHeader(title: context.t.home.rankings, inset: inset, skeleton: true),
           SizedBox(
             height: extent,
             child: Skeletonizer.zone(
@@ -532,7 +535,7 @@ class _IllustRankingPreviewSkeleton extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: inset),
                 itemCount: 8,
-                separatorBuilder: (context, index) => const SizedBox(width: AppMetrics.itemGap),
+                separatorBuilder: (context, index) => const SizedBox(width: FrostMetrics.itemGap),
                 itemBuilder: (context, index) => SizedBox.square(dimension: extent, child: const _IllustRankingCardSkeleton()),
               ),
             ),
@@ -548,8 +551,8 @@ class _IllustRankingCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EnergeticCard(
-      child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+    return FrostCard(
+      child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
     );
   }
 }
@@ -561,14 +564,14 @@ class _NovelColumn extends StatelessWidget {
 
   final Widget child;
 
-  static double inset(BuildContext context) => AppMetrics.browseInset(MediaQuery.sizeOf(context).width);
+  static double inset(BuildContext context) => FrostMetrics.browseInset(MediaQuery.sizeOf(context).width);
 
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: AppMetrics.contentMaxWidth),
+        constraints: const BoxConstraints(maxWidth: FrostMetrics.contentMaxWidth),
         child: child,
       ),
     );
@@ -593,7 +596,7 @@ class _NovelRankingPreviewSection extends StatelessWidget {
 
     return SliverToBoxAdapter(
       child: _NovelColumn(
-        child: ContentShelf(
+        child: FrostShelf(
           title: translations.home.rankings,
           inset: _NovelColumn.inset(context),
           itemCount: items.length,
@@ -629,7 +632,7 @@ class _NovelRankingPreviewSkeleton extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ContentShelfHeader(title: context.t.home.rankings, inset: inset, skeleton: true),
+            FrostShelfHeader(title: context.t.home.rankings, inset: inset, skeleton: true),
             SizedBox(
               height: NovelPreviewer.contentHeight(context) + 24,
               child: Skeletonizer.zone(
@@ -637,7 +640,7 @@ class _NovelRankingPreviewSkeleton extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.symmetric(horizontal: inset),
                   itemCount: 4,
-                  separatorBuilder: (context, index) => const SizedBox(width: AppMetrics.itemGap),
+                  separatorBuilder: (context, index) => const SizedBox(width: FrostMetrics.itemGap),
                   itemBuilder: (context, index) => SizedBox(
                     width: width,
                     child: _NovelPreviewerSkeleton(maxWidth: width),
@@ -660,7 +663,7 @@ class _HomeSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final header = ContentShelfHeader(title: context.t.home.recommended, inset: AppMetrics.browseInset(MediaQuery.sizeOf(context).width), skeleton: skeleton);
+    final header = FrostShelfHeader(title: context.t.home.recommended, inset: FrostMetrics.browseInset(MediaQuery.sizeOf(context).width), skeleton: skeleton);
     return SliverToBoxAdapter(child: alignToNovelList ? _NovelColumn(child: header) : header);
   }
 }
@@ -668,7 +671,7 @@ class _HomeSectionHeader extends StatelessWidget {
 /// The novel list and its skeleton on the shared content column.
 EdgeInsets _homeListPadding(BuildContext context) {
   final width = MediaQuery.sizeOf(context).width;
-  return AppMetrics.columnPadding(width).copyWith(top: 4, bottom: AppMetrics.browseInset(width));
+  return FrostMetrics.columnPadding(width).copyWith(top: 4, bottom: FrostMetrics.browseInset(width));
 }
 
 class _SliverNovelPreviewerSkeletonList extends StatelessWidget {
@@ -732,7 +735,7 @@ class _SliverFillBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataSliverFillBody(physics: physics, sliverHeader: sliverHeader, leadingSlivers: const [FpChromeSpacer()], child: child);
+    return FrostSliverFillBody(physics: physics, sliverHeader: sliverHeader, leadingSlivers: const [FrostChromeSpacer()], child: child);
   }
 }
 
@@ -745,19 +748,21 @@ class _HomeTypeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final translations = context.t;
-    return AppTabBar(
-      controller: controller,
-      isScrollable: true,
-      tabAlignment: TabAlignment.start,
-      dividerColor: Colors.transparent,
-      labelPadding: EdgeInsets.symmetric(horizontal: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
-      tabs: [
-        Tab(text: translations.home.illustrations),
-        Tab(text: translations.home.manga),
-        Tab(text: translations.home.novels),
-        Tab(text: translations.home.users),
-      ],
-      onTap: (index) => onTypeChanged(_HomePageState._homeTypeForIndex(index)),
+    return MouseDragScroll(
+      child: FrostTabBar(
+        controller: controller,
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
+        dividerColor: Colors.transparent,
+        labelPadding: EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
+        tabs: [
+          Tab(text: translations.home.illustrations),
+          Tab(text: translations.home.manga),
+          Tab(text: translations.home.novels),
+          Tab(text: translations.home.users),
+        ],
+        onTap: (index) => onTypeChanged(_HomePageState._homeTypeForIndex(index)),
+      ),
     );
   }
 }

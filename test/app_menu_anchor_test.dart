@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 void main() {
   _tickerModeCase();
@@ -16,10 +16,10 @@ void main() {
           home: Scaffold(
             body: Align(
               alignment: Alignment.topLeft,
-              child: AppMenuAnchor(
+              child: FrostMenuAnchor(
                 menuChildren: [
-                  AppMenuItem(onPressed: () => picked = 'one', child: const Text('One')),
-                  AppMenuItem(onPressed: () => picked = 'two', child: const Text('Two')),
+                  FrostMenuItem(onPressed: () => picked = 'one', child: const Text('One')),
+                  FrostMenuItem(onPressed: () => picked = 'two', child: const Text('Two')),
                 ],
                 builder: (context, focusNode, toggle) => TextButton(focusNode: focusNode, onPressed: toggle, child: const Text('Open')),
               ),
@@ -65,8 +65,8 @@ void _tickerModeCase() {
                 valueListenable: ticking,
                 builder: (context, enabled, _) => TickerMode(
                   enabled: enabled,
-                  child: AppMenuAnchor(
-                    menuChildren: [AppMenuItem(onPressed: () {}, child: const Text('Delete'))],
+                  child: FrostMenuAnchor(
+                    menuChildren: [FrostMenuItem(onPressed: () {}, child: const Text('Delete'))],
                     builder: (context, focusNode, toggle) => TextButton(focusNode: focusNode, onPressed: toggle, child: const Text('More')),
                   ),
                 ),

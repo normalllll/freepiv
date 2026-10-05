@@ -1,16 +1,9 @@
 import 'login_panel.dart';
-import 'package:freepiv/shared/widgets/data_refresh_view.dart';
-import 'package:freepiv/shared/widgets/refresh_indicator.dart';
-import 'package:freepiv/shared/widgets/sliver_paged_data_list.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'skeletons.dart';
-import 'package:freepiv/shared/widgets/search_input.dart';
 import 'navigation.dart';
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -126,8 +119,8 @@ class _FanboxPageState extends ConsumerState<FanboxPage> with SingleTickerProvid
                       ),
                     ),
                   if (_searchExpanded)
-                    SearchInputRegion(
-                      child: SearchInput(
+                    FrostSearchInputRegion(
+                      child: FrostSearchInput(
                         controller: _search,
                         focusNode: _searchFocus,
                         hintText: t.searchHint,
@@ -142,13 +135,13 @@ class _FanboxPageState extends ConsumerState<FanboxPage> with SingleTickerProvid
                           }
                         },
                         actions: [
-                          AppMenuAnchor(
+                          FrostMenuAnchor(
                             menuChildren: [
                               for (final (section, label) in [
                                 (FanboxSection.creatorPosts, t.creatorId),
                                 for (final section in [FanboxSection.searchCreators, FanboxSection.searchTags]) (section, fanboxSectionLabel(context, section)),
                               ])
-                                AppMenuItem(
+                                FrostMenuItem(
                                   onPressed: () {
                                     final query = _search.text.trim();
                                     if (section == FanboxSection.creatorPosts) {
@@ -170,11 +163,11 @@ class _FanboxPageState extends ConsumerState<FanboxPage> with SingleTickerProvid
                     child: PageStorage(
                       bucket: _fanboxBrowseStorage,
                       // The tabs stay put while the groups slide beneath them.
-                      child: FpPinnedChrome(
+                      child: FrostPinnedChrome(
                         extent: fanboxNavigationHeight(context),
                         // Tabs carry their label padding, so the row bleeds by it.
-                        chrome: ContentColumn(
-                          bleed: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
+                        chrome: FrostContentColumn(
+                          bleed: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(0, 12, 0, 2),
                             child: AnimatedBuilder(
@@ -190,7 +183,7 @@ class _FanboxPageState extends ConsumerState<FanboxPage> with SingleTickerProvid
                           controller: _tabs,
                           children: [
                             for (final group in FanboxGroup.values)
-                              FanboxCollectionView(key: ValueKey(_locationOf(group)), location: _locationOf(group), filterSliver: const FpChromeSpacer()),
+                              FanboxCollectionView(key: ValueKey(_locationOf(group)), location: _locationOf(group), filterSliver: const FrostChromeSpacer()),
                           ],
                         ),
                       ),
@@ -212,7 +205,7 @@ class FanboxCollectionView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = fanboxBrowseProvider(location);
     final state = ref.watch(provider);
-    return DataRefreshView(
+    return FrostRefreshView(
       onRefresh: () async {
         ref.invalidate(provider);
         await ref.read(provider.future);
@@ -222,7 +215,7 @@ class FanboxCollectionView extends ConsumerWidget {
         builder: (context, constraints) {
           final data = state.value;
           final entries = data?.entries ?? const <FanboxEntry>[];
-          return DataLoadingCustomScrollView(
+          return FrostLoadingScrollView(
             key: PageStorageKey(header == null ? location : ('fanbox-creator', location.creatorId)),
             physics: physics,
             slivers: [
@@ -252,10 +245,10 @@ class FanboxCollectionView extends ConsumerWidget {
               else if (entries.isEmpty && !data.hasMore && data.error == null && !data.loadingMore)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: EmptyContent(icon: Icons.inbox_outlined, title: context.t.fanbox.empty),
+                  child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.inbox_outlined), title: context.t.fanbox.empty),
                 )
               else
-                SliverPagedDataList<FanboxEntry>(
+                FrostSliverPagedList<FanboxEntry>(
                   key: ValueKey(location),
                   items: entries,
                   hasMore: data.hasMore,

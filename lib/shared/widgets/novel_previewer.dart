@@ -1,18 +1,16 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/content_script.dart';
 import 'dart:math' as math;
 import 'package:html/parser.dart' as html_parser;
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/energetic_card.dart';
 import 'package:freepiv/shared/widgets/illust_bookmark_button.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class NovelPreviewer extends StatelessWidget {
-  const NovelPreviewer({required this.novel, this.onTap, this.rank, this.maxWidth = AppMetrics.contentMaxWidth, super.key});
+  const NovelPreviewer({required this.novel, this.onTap, this.rank, this.maxWidth = FrostMetrics.contentMaxWidth, super.key});
 
   final Novel novel;
   final int? rank;
@@ -24,7 +22,7 @@ class NovelPreviewer extends StatelessWidget {
     // Horizontal recommendation strips must reserve two title lines. Ordinary
     // list cards remain content-sized, including accessibility text scaling.
     return math.max(
-      AppMetrics.novelCoverHeight,
+      PivMetrics.novelCoverHeight,
       _lineHeight(context, text.titleSmall!) * 2 +
           _lineHeight(context, text.bodySmall!) * 3 +
           _tagHeight(context) +
@@ -36,24 +34,24 @@ class NovelPreviewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = _novelAccent(context);
-    final card = EnergeticCard(
+    final card = FrostCard(
       accentColor: accent,
       onTap: onTap,
       padding: const EdgeInsets.all(12),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: AppMetrics.novelCoverHeight),
+        constraints: const BoxConstraints(minHeight: PivMetrics.novelCoverHeight),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Stack(
               children: [
-                NovelCoverImage(url: novel.imageUrls.medium, width: AppMetrics.novelCoverWidth, height: AppMetrics.novelCoverHeight),
+                NovelCoverImage(url: novel.imageUrls.medium, width: PivMetrics.novelCoverWidth, height: PivMetrics.novelCoverHeight),
                 if (rank case final number?)
                   PositionedDirectional(
                     start: 4,
                     top: 4,
                     child: DecoratedBox(
-                      decoration: BoxDecoration(color: FreepivThemeTokens.of(context).surfaceRaised, borderRadius: BorderRadius.circular(6)),
+                      decoration: BoxDecoration(color: FrostThemeTokens.of(context).surfaceRaised, borderRadius: BorderRadius.circular(6)),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                         child: Text('#$number', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w800)),
@@ -92,16 +90,16 @@ class NovelPreviewerSkeleton extends StatelessWidget {
   Widget build(BuildContext context) => Align(
     alignment: Alignment.topCenter,
     child: ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: AppMetrics.contentMaxWidth),
+      constraints: const BoxConstraints(maxWidth: FrostMetrics.contentMaxWidth),
       child: Skeletonizer.zone(
-        child: EnergeticCard(
+        child: FrostCard(
           padding: const EdgeInsets.all(12),
           child: SizedBox(
             height: NovelPreviewer.contentHeight(context),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Bone(width: AppMetrics.novelCoverWidth, height: AppMetrics.novelCoverHeight, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+                Bone(width: PivMetrics.novelCoverWidth, height: PivMetrics.novelCoverHeight, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
                 const SizedBox(width: 12),
                 const Expanded(
                   child: Column(
@@ -116,7 +114,7 @@ class NovelPreviewerSkeleton extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Bone.circle(size: AppMetrics.controlHeight),
+                const Bone.circle(size: FrostMetrics.controlHeight),
               ],
             ),
           ),
@@ -131,7 +129,7 @@ class NovelCoverImage extends StatelessWidget {
     required this.url,
     required this.width,
     required this.height,
-    this.borderRadius = const BorderRadius.all(Radius.circular(AppMetrics.controlRadius)),
+    this.borderRadius = const BorderRadius.all(Radius.circular(FrostMetrics.controlRadius)),
     super.key,
   });
 
@@ -142,7 +140,7 @@ class NovelCoverImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
 
     return SizedBox(
       width: width,
@@ -196,7 +194,7 @@ class _NovelPreviewBody extends StatelessWidget {
     final caption = _previewCaption(novel.caption);
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: AppMetrics.novelCoverHeight),
+      constraints: const BoxConstraints(minHeight: PivMetrics.novelCoverHeight),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -205,7 +203,7 @@ class _NovelPreviewBody extends StatelessWidget {
             novel.title,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: contentTextStyle(context, novel.title, Theme.of(context).textTheme.titleSmall),
+            style: frostContentTextStyle(context, novel.title, Theme.of(context).textTheme.titleSmall),
           ),
           const SizedBox(height: 4),
           Text(
@@ -315,7 +313,7 @@ class _NovelTagChip extends StatelessWidget {
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: compact ? 112 : 180),
-      child: EnergeticPill(
+      child: FrostPill(
         accentColor: accent,
         padding: EdgeInsets.symmetric(horizontal: compact ? 7 : 9, vertical: compact ? 3 : 5),
         child: Text(
@@ -337,10 +335,10 @@ class _MetaPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: tokens.surfaceRaised, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+      decoration: BoxDecoration(color: tokens.surfaceRaised, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
         child: Text(
@@ -368,13 +366,13 @@ String _previewCaption(String html) {
 }
 
 Color _novelAccent(BuildContext context) {
-  final tokens = FreepivThemeTokens.of(context);
-  return tokens.brand;
+  final tokens = FrostThemeTokens.of(context);
+  return tokens.accent;
 }
 
 Color _tagAccent(BuildContext context) {
-  final tokens = FreepivThemeTokens.of(context);
-  return tokens.brand;
+  final tokens = FrostThemeTokens.of(context);
+  return tokens.accent;
 }
 
 double _lineHeight(BuildContext context, TextStyle style) {

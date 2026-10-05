@@ -4,15 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/router/navigator_stack_observer.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/app/router_shell.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
 import 'package:freepiv/core/downloads/download_manager.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:go_router/go_router.dart';
 
 /// An unfolded Galaxy Z Fold: wide enough for the sidebar, with a status bar
@@ -38,8 +34,8 @@ void main() {
 
     final navigatorKey = GlobalKey<NavigatorState>();
     canPop = ValueNotifier<bool>(false);
-    late final NavigatorStackObserver observer;
-    observer = NavigatorStackObserver(() => canPop.value = observer.canPopPageRoute);
+    late final FrostNavigatorStackObserver observer;
+    observer = FrostNavigatorStackObserver(() => canPop.value = observer.canPopPageRoute);
     router = GoRouter(
       routes: [
         ShellRoute(
@@ -64,7 +60,7 @@ void main() {
           child: MaterialApp.router(
             theme: AppTheme.dark(platform: platform, locale: const Locale('en')),
             routerConfig: router,
-            builder: (context, child) => AppLayoutScope(child: child!),
+            builder: (context, child) => FrostLayoutScope(child: child!),
           ),
         ),
       ),
@@ -81,7 +77,7 @@ void main() {
   }
 
   Rect sidebarRect(WidgetTester tester) {
-    final surfaces = find.ancestor(of: find.byType(DesktopNavItem).first, matching: find.byType(FpSurface));
+    final surfaces = find.ancestor(of: find.byType(FrostNavItem).first, matching: find.byType(FrostSurface));
     return surfaces.evaluate().map((element) => tester.getRect(find.byWidget(element.widget))).reduce((a, b) => a.height >= b.height ? a : b);
   }
 
@@ -103,7 +99,7 @@ void main() {
     // Scrolled content brings in the floating glass, flush with the sidebar.
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -300));
     await tester.pumpAndSettle();
-    final glass = find.descendant(of: find.byType(PinnedChromeGlass), matching: find.byType(FpSurface));
+    final glass = find.descendant(of: find.byType(FrostPinnedChromeGlass), matching: find.byType(FrostSurface));
     expect(tester.getRect(glass).top, sidebar.top);
 
     // Folding to the phone layout keeps the page's state.
@@ -111,7 +107,7 @@ void main() {
     await tester.pump();
     tester.view.physicalSize = const Size(400, 832);
     await tester.pumpAndSettle();
-    expect(find.byType(DesktopNavItem), findsNothing);
+    expect(find.byType(FrostNavItem), findsNothing);
     expect(find.text('Count: 1'), findsOneWidget);
     expect(tester.getTopLeft(page).dy, 0, reason: 'the phone layout stays edge to edge under the status bar');
     await disposeShell(tester);
@@ -142,11 +138,11 @@ void main() {
     final ordinaryPage = tester.getRect(page);
     router.go('/novel/7/read');
     await tester.pumpAndSettle();
-    expect(find.byType(DesktopNavItem), findsWidgets);
+    expect(find.byType(FrostNavItem), findsWidgets);
     expect(sidebarRect(tester), sidebar);
     expect(tester.getRect(page), ordinaryPage);
     expect(ordinaryPage.left, greaterThan(sidebar.right));
-    expect(ShellNavigationScope.maybeOf(tester.element(page))!.ownsBackControl, isTrue);
+    expect(FrostShellNavigationScope.maybeOf(tester.element(page))!.ownsBackControl, isTrue);
     expect(tester.takeException(), isNull);
     await disposeShell(tester);
   });
@@ -164,7 +160,7 @@ class _PinnedPageState extends State<_PinnedPage> {
 
   @override
   Widget build(BuildContext context) {
-    return FpPinnedChrome(
+    return FrostPinnedChrome(
       key: const ValueKey('page'),
       chrome: SizedBox(
         height: 48,
@@ -174,7 +170,7 @@ class _PinnedPageState extends State<_PinnedPage> {
       ),
       body: CustomScrollView(
         slivers: [
-          const FpChromeSpacer(),
+          const FrostChromeSpacer(),
           SliverList.builder(itemCount: 40, itemBuilder: (context, index) => SizedBox(height: 60, child: Text('Row $index'))),
         ],
       ),

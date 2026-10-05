@@ -1,15 +1,11 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:go_router/go_router.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
-import 'package:freepiv/app/theme/content_script.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_section.dart';
 import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
@@ -28,10 +24,10 @@ class NovelHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ContentColumn(
+    return FrostContentColumn(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final desktop = AutoScaffold.usesHorizontalLayoutOf(context) && constraints.maxWidth >= 720;
+          final desktop = FrostAutoScaffold.usesHorizontalLayoutOf(context) && constraints.maxWidth >= 720;
           final coverUrl = novelCoverUrl(novel, webviewNovel);
           final cover = coverUrl.isEmpty ? null : LargeNovelCoverImage(url: coverUrl, desktop: desktop);
           final info = NovelHeaderInfo(novel: novel, webviewNovel: webviewNovel, onStartReading: onStartReading);
@@ -94,8 +90,8 @@ class LargeNovelCoverImage extends StatelessWidget {
           image: true,
           button: true,
           label: t.novel.detail.images,
-          child: AppClickSurface(
-            feedback: AppClickFeedback.artwork,
+          child: FrostClickSurface(
+            feedback: FrostClickFeedback.media,
             borderRadius: borderRadius,
             onTap: () => context.pushNamed(
               AppRoute.originalImageViewer.name,
@@ -135,7 +131,7 @@ class NovelHeaderInfo extends StatelessWidget {
       children: [
         if (!supportingOnly) ...[
           _NovelTitleGroup(novel: novel),
-          const SizedBox(height: AppMetrics.compactSectionGap),
+          const SizedBox(height: FrostMetrics.compactSectionGap),
           _NovelReadButton(novel: novel, webviewNovel: webviewNovel, onStartReading: onStartReading),
           const SizedBox(height: 14),
         ],
@@ -143,10 +139,10 @@ class NovelHeaderInfo extends StatelessWidget {
           IllustSectionTitle(title: translations.illust.section.caption, icon: Icons.notes_outlined),
           const SizedBox(height: 7),
           NovelCaptionBox(caption: caption),
-          const SizedBox(height: AppMetrics.compactSectionGap),
+          const SizedBox(height: FrostMetrics.compactSectionGap),
         ],
         NovelTagChips(tags: novel.tags, maxTags: 3),
-        const SizedBox(height: AppMetrics.compactSectionGap),
+        const SizedBox(height: FrostMetrics.compactSectionGap),
         NovelStatsStrip(novel: novel, webviewNovel: webviewNovel),
         const SizedBox(height: 8),
         NovelRestrictionBadges(novel: novel, webviewNovel: webviewNovel),
@@ -180,7 +176,7 @@ class _NovelTitleGroup extends StatelessWidget {
           Expanded(
             child: Text(
               novel.title,
-              style: contentTextStyle(context, novel.title, Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+              style: frostContentTextStyle(context, novel.title, Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
             ),
           ),
           const SizedBox(width: 4),
@@ -298,7 +294,7 @@ class NovelInfoBadge extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         child: Row(

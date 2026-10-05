@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
 import 'package:freepiv/features/comments/presentation/widgets/comments_skeleton.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class NovelDetailSkeletonPage extends StatelessWidget {
@@ -12,8 +8,8 @@ class NovelDetailSkeletonPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+    return FrostAutoScaffold(
+      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
           body: SafeArea(
             bottom: false,
@@ -24,11 +20,11 @@ class NovelDetailSkeletonPage extends StatelessWidget {
                     pinned: true,
                     backgroundColor: Colors.transparent,
                     surfaceTintColor: Colors.transparent,
-                    flexibleSpace: const PinnedChromeGlass(opacity: 1),
+                    flexibleSpace: const FrostPinnedChromeGlass(opacity: 1),
                     automaticallyImplyLeading: false,
-                    leading: FpPageHeader.leadingFor(context),
-                    leadingWidth: FpPageHeader.leadingWidth,
-                    titleSpacing: FpPageHeader.titleSpacingOf(context),
+                    leading: FrostPageHeader.leadingFor(context),
+                    leadingWidth: FrostPageHeader.leadingWidth,
+                    titleSpacing: FrostPageHeader.titleSpacingOf(context),
                     title: const _TitleSkeleton(),
                   ),
                 const SliverToBoxAdapter(child: _HeaderSkeleton()),
@@ -56,13 +52,13 @@ class _HeaderSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ContentColumn(
+    return FrostContentColumn(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final desktop = AutoScaffold.usesHorizontalLayoutOf(context) && constraints.maxWidth >= 720;
+          final desktop = FrostAutoScaffold.usesHorizontalLayoutOf(context) && constraints.maxWidth >= 720;
 
           final cover = Skeletonizer.zone(
-            child: Bone(width: desktop ? 220 : 96, height: desktop ? 308 : 136, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+            child: Bone(width: desktop ? 220 : 96, height: desktop ? 308 : 136, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
           );
           final info = const _InfoSkeleton(includeSupporting: false);
 
@@ -90,7 +86,7 @@ class _HeaderSkeleton extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Skeletonizer.zone(
-                        child: Bone(width: 180, height: AppMetrics.controlHeight, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+                        child: Bone(width: 180, height: FrostMetrics.controlHeight, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
                       ),
                       const SizedBox(height: 14),
                       const _SupportingSkeleton(),
@@ -119,7 +115,7 @@ class _InfoSkeleton extends StatelessWidget {
           const Bone.text(width: 180),
           if (includeSupporting) ...[
             const SizedBox(height: 14),
-            Bone(width: 180, height: AppMetrics.controlHeight, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+            Bone(width: 180, height: FrostMetrics.controlHeight, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
             const SizedBox(height: 14),
             const _SupportingSkeleton(),
           ],
@@ -144,7 +140,7 @@ class _SupportingSkeleton extends StatelessWidget {
         Wrap(
           spacing: 8,
           children: [
-            for (final width in [80.0, 100.0, 76.0]) Bone(width: width, height: 24, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+            for (final width in [80.0, 100.0, 76.0]) Bone(width: width, height: 24, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
           ],
         ),
         const SizedBox(height: 14),
@@ -159,7 +155,7 @@ class _BottomSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ContentColumn(
+    return FrostContentColumn(
       bleed: 20,
       child: Skeletonizer.zone(
         child: Padding(
@@ -181,7 +177,7 @@ class _BottomSkeleton extends StatelessWidget {
                 child: Row(
                   children: [
                     for (var index = 0; index < 4; index++) ...[
-                      Bone(width: 68, height: 96, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+                      Bone(width: 68, height: 96, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
                       if (index != 3) const SizedBox(width: 8),
                     ],
                   ],

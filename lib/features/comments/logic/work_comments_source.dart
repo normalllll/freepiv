@@ -10,7 +10,7 @@ extension CommentWorkTypeX on CommentWorkType {
   bool get supportsPosting => true;
 }
 
-class WorkCommentsListSource extends NextUrlListSource<Comment, CommentPageResult> {
+class WorkCommentsListSource extends FrostCursorListSource<Comment, CommentPageResult> {
   WorkCommentsListSource({required this.workType, required this.workId});
 
   final CommentWorkType workType;
@@ -74,7 +74,7 @@ class WorkCommentsListSource extends NextUrlListSource<Comment, CommentPageResul
   }
 }
 
-class CommentRepliesListSource extends NextUrlListSource<Comment, CommentPageResult> {
+class CommentRepliesListSource extends FrostCursorListSource<Comment, CommentPageResult> {
   CommentRepliesListSource({required this.workType, required this.parentCommentId});
 
   final CommentWorkType workType;

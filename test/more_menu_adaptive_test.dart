@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router_shell.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/downloads/download_manager.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/ui/fp_icon.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
@@ -78,7 +76,7 @@ void main() {
             routerConfig: router,
             builder: (context, child) => MediaQuery(
               data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
-              child: AppLayoutScope(child: child!),
+              child: FrostLayoutScope(child: child!),
             ),
           ),
         ),
@@ -90,7 +88,7 @@ void main() {
 
   testWidgets('desktop more menu stays visible in a short window and Escape dismisses it', (tester) async {
     await mountShell(tester, const Size(800, 340));
-    final more = find.byWidgetPredicate((widget) => widget is DesktopNavItem && widget.label == t.navigation.more);
+    final more = find.byWidgetPredicate((widget) => widget is FrostNavItem && widget.label == t.navigation.more);
     await tester.scrollUntilVisible(
       more,
       80,
@@ -101,7 +99,7 @@ void main() {
     await tester.tap(more);
     await tester.pumpAndSettle();
 
-    final menuSurface = find.byWidgetPredicate((widget) => widget is FpSurface && widget.role == FpSurfaceRole.overlay);
+    final menuSurface = find.byWidgetPredicate((widget) => widget is FrostSurface && widget.role == FrostSurfaceRole.overlay);
     final menuItems = find.descendant(of: menuSurface, matching: find.byType(TextButton));
     expect(menuSurface, findsOneWidget);
     expect(find.descendant(of: menuSurface, matching: find.byType(BackdropFilter)), findsOneWidget);
@@ -161,7 +159,7 @@ void main() {
             final text = find.descendant(of: destination, matching: find.text(label));
             expect(text, findsOneWidget);
             expect((tester.widget<Text>(text)).maxLines, isNull);
-            iconCenters.add(tester.getCenter(find.descendant(of: destination, matching: find.byType(FpIcon))).dy);
+            iconCenters.add(tester.getCenter(find.descendant(of: destination, matching: find.byType(FrostIcon))).dy);
             labelTops.add(tester.getTopLeft(text).dy);
           }
           for (final center in iconCenters.skip(1)) {
@@ -179,7 +177,7 @@ void main() {
 
   testWidgets('desktop menu can reach its last item when shorter than the menu', (tester) async {
     await mountShell(tester, const Size(800, 200));
-    final more = find.byWidgetPredicate((widget) => widget is DesktopNavItem && widget.label == t.navigation.more);
+    final more = find.byWidgetPredicate((widget) => widget is FrostNavItem && widget.label == t.navigation.more);
     await tester.scrollUntilVisible(
       more,
       80,
@@ -191,7 +189,7 @@ void main() {
     await tester.pumpAndSettle();
     // The collapsed sidebar keeps its hidden secondary column mounted, so
     // look for the item inside the menu surface only.
-    final menuSurface = find.byWidgetPredicate((widget) => widget is FpSurface && widget.role == FpSurfaceRole.overlay);
+    final menuSurface = find.byWidgetPredicate((widget) => widget is FrostSurface && widget.role == FrostSurfaceRole.overlay);
     final last = find.descendant(of: menuSurface, matching: find.text(t.navigation.about));
     await tester.ensureVisible(last);
     await tester.pumpAndSettle();

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_router.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 
 class _Badge implements DownloadFlightTarget {
@@ -24,7 +24,10 @@ Future<void> _pumpApp(WidgetTester tester, {bool reduceMotion = false}) async {
       child: MaterialApp(
         navigatorKey: AppRouter.rootNavigatorKey,
         theme: AppTheme.dark(platform: TargetPlatform.windows, locale: const Locale('en')),
-        builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(disableAnimations: reduceMotion), child: child!),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: reduceMotion),
+          child: child!,
+        ),
         home: const Scaffold(body: SizedBox.expand()),
       ),
     ),

@@ -2,13 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:freepiv/features/downloads/logic.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
@@ -88,7 +84,7 @@ class DownloadSourceThumbnail extends StatelessWidget {
       }, color: colorScheme.onSurfaceVariant),
     );
     return ClipRRect(
-      borderRadius: BorderRadius.circular(AppMetrics.controlRadius),
+      borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
       child: SizedBox.square(
         dimension: size,
         child: url == null || url.isEmpty
@@ -118,7 +114,7 @@ class DownloadItemTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final progress = item.progress;
     final sourceLabel = _sourceLabel(item.source, compact: compact);
     final onlyTask = item.onlyTask;
@@ -217,7 +213,7 @@ Color _itemStatusColor(BuildContext context, DownloadItem item) {
   final colorScheme = Theme.of(context).colorScheme;
   return switch (item.state) {
     DownloadItemState.failed => colorScheme.error,
-    DownloadItemState.active || DownloadItemState.collecting || DownloadItemState.completed => FreepivThemeTokens.of(context).textPrimary,
+    DownloadItemState.active || DownloadItemState.collecting || DownloadItemState.completed => FrostThemeTokens.of(context).textPrimary,
     DownloadItemState.cancelled => colorScheme.onSurfaceVariant,
   };
 }
@@ -264,8 +260,8 @@ class _DownloadItemAction extends ConsumerWidget {
       ),
     };
     return SizedBox.square(
-      dimension: AppMetrics.compactTargetHeight,
-      child: AnimatedSwitcher(duration: AppMotion.duration(context, AppMotion.hover), child: action),
+      dimension: FrostMetrics.compactTargetHeight,
+      child: AnimatedSwitcher(duration: FrostMotion.duration(context, FrostMotion.hover), child: action),
     );
   }
 }
@@ -274,7 +270,7 @@ Future<void> _run(Future<void> Function() action) async {
   try {
     await action();
   } catch (error) {
-    AppToast.errorWithCause(t.settings.downloads.actionFailed, error);
+    toastErrorWithCause(t.settings.downloads.actionFailed, error);
   }
 }
 
@@ -301,7 +297,7 @@ class DownloadItemList extends StatelessWidget {
       children: [
         for (final (index, item) in shown.indexed) ...[
           if (index > 0) const Divider(height: 1),
-          AppClickSurface(
+          FrostClickSurface(
             key: ValueKey<String>(item.key),
             onTap: () => onOpenItem(item),
             child: DownloadItemTile(item: item, compact: true, showTooltips: false),
@@ -334,23 +330,23 @@ class DownloadItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final labels = t.settings.downloads;
     final savedPath = item.tasks.map((task) => task.localPath).nonNulls.where((path) => path.isNotEmpty && !path.startsWith('content:')).firstOrNull;
-    final menu = AppMenuAnchor(
+    final menu = FrostMenuAnchor(
       menuChildren: [
         if (_hasPage(item.source))
-          AppMenuItem(
+          FrostMenuItem(
             autofocus: true,
             onPressed: () => openDownloadSource(GoRouter.of(context), item.source),
             leadingIcon: const Icon(Icons.open_in_new_rounded),
             child: Text(labels.openSource),
           ),
         if (isDesktopPlatform && savedPath != null)
-          AppMenuItem(
+          FrostMenuItem(
             onPressed: () => unawaited(_run(() => launchUrl(Uri.file(p.dirname(savedPath))))),
             leadingIcon: const Icon(Icons.folder_open_outlined),
             child: Text(labels.openFolder),
           ),
         if (item.tasks.isNotEmpty)
-          AppMenuItem(
+          FrostMenuItem(
             onPressed: () => unawaited(_run(() => deleteDownloadItem(item))),
             leadingIcon: const Icon(Icons.delete_outline),
             child: Text(labels.deleteItem),
@@ -361,7 +357,7 @@ class DownloadItemCard extends StatelessWidget {
         tooltip: MaterialLocalizations.of(context).showMenuTooltip,
         onPressed: toggle,
         icon: const Icon(Icons.more_horiz),
-        constraints: const BoxConstraints.tightFor(width: AppMetrics.compactTargetHeight, height: AppMetrics.compactTargetHeight),
+        constraints: const BoxConstraints.tightFor(width: FrostMetrics.compactTargetHeight, height: FrostMetrics.compactTargetHeight),
         padding: EdgeInsets.zero,
       ),
     );
@@ -371,13 +367,13 @@ class DownloadItemCard extends StatelessWidget {
         Semantics(
           expanded: expanded,
           hint: expanded ? labels.collapseItem : labels.expandItem,
-          child: AppClickSurface(
+          child: FrostClickSurface(
             onTap: item.tasks.isEmpty ? null : onToggle,
             child: DownloadItemTile(item: item, trailing: menu),
           ),
         ),
         AnimatedSize(
-          duration: AppMotion.duration(context, AppMotion.expand),
+          duration: FrostMotion.duration(context, FrostMotion.expand),
           curve: Curves.easeInOutCubic,
           alignment: Alignment.topCenter,
           child: expanded && item.tasks.isNotEmpty
@@ -429,7 +425,7 @@ class _DownloadItemFilesState extends State<DownloadItemFiles> {
             }),
           ),
           AnimatedSize(
-            duration: AppMotion.duration(context, AppMotion.expand),
+            duration: FrostMotion.duration(context, FrostMotion.expand),
             curve: Curves.easeInOutCubic,
             alignment: Alignment.topCenter,
             child: _openParts.contains(part?.id ?? '')
@@ -460,7 +456,7 @@ class _PartHeader extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final saved = tasks.where((task) => task.isCompleted).length;
     final failed = tasks.where((task) => task.needsRetry).length;
-    return AppClickSurface(
+    return FrostClickSurface(
       onTap: onToggle,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
@@ -491,7 +487,7 @@ class _PartHeader extends StatelessWidget {
             ),
             AnimatedRotation(
               turns: open ? .5 : 0,
-              duration: AppMotion.duration(context, AppMotion.expand),
+              duration: FrostMotion.duration(context, FrostMotion.expand),
               child: Icon(Icons.expand_more_rounded, color: colorScheme.onSurfaceVariant),
             ),
           ],
@@ -546,7 +542,7 @@ class _StatusGroupsState extends State<_StatusGroups> {
         if (done.isNotEmpty) ...[
           _GroupLabel(label: labels.completed, count: done.length, open: _savedOpen, onToggle: () => setState(() => _savedOpen = !_savedOpen)),
           AnimatedSize(
-            duration: AppMotion.duration(context, AppMotion.expand),
+            duration: FrostMotion.duration(context, FrostMotion.expand),
             curve: Curves.easeInOutCubic,
             alignment: Alignment.topCenter,
             child: _savedOpen
@@ -586,13 +582,13 @@ class _GroupLabel extends StatelessWidget {
           if (open != null)
             AnimatedRotation(
               turns: open ? .5 : 0,
-              duration: AppMotion.duration(context, AppMotion.expand),
+              duration: FrostMotion.duration(context, FrostMotion.expand),
               child: Icon(Icons.expand_more_rounded, size: 18, color: style?.color),
             ),
         ],
       ),
     );
     final onToggle = this.onToggle;
-    return onToggle == null ? row : AppClickSurface(onTap: onToggle, child: row);
+    return onToggle == null ? row : FrostClickSurface(onTap: onToggle, child: row);
   }
 }

@@ -1,10 +1,9 @@
 import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/app/window/window_title.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_creator_section.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_detail_constraints.dart';
@@ -15,8 +14,6 @@ import 'package:freepiv/features/novel/presentation/detail/widgets/novel_related
 import 'package:freepiv/features/novel/presentation/widgets/novel_comments_section.dart';
 import 'package:freepiv/features/novel/presentation/widgets/novel_detail_skeleton.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -44,14 +41,14 @@ class NovelDetailPage extends ConsumerWidget {
           return const NovelNotFoundPage();
         }
 
-        return ErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
+        return FrostErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
     );
     final id = novelId ?? novel?.id;
     if (id == null) return content;
-    return WindowTitleContribution(
+    return FrostWindowTitleContribution(
       path: '/novel/$id',
-      work: visibleNovel == null ? null : WorkWindowTitle(id: id, title: visibleNovel.title, kind: 'novel', artworkUrl: visibleNovel.imageUrls.squareMedium),
+      page: visibleNovel == null ? null : FrostPageTitle(id: id, title: visibleNovel.title, kind: 'novel', imageUrl: visibleNovel.imageUrls.squareMedium),
       child: content,
     );
   }
@@ -91,15 +88,15 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
 
     return DownloadSourceScope(
       source: novelDownloadSource(_novel),
-      child: AutoScaffold(
-        builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+      child: FrostAutoScaffold(
+        builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
           return Scaffold(
             body: SafeArea(
               bottom: false,
               child: AnimatedBuilder(
                 animation: relatedSource,
                 builder: (context, child) {
-                  return DataLoadingCustomScrollView(
+                  return FrostLoadingScrollView(
                     slivers: [
                       if (!useHorizontalLayout)
                         SliverAppBar(
@@ -108,11 +105,11 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
                           snap: true,
                           backgroundColor: Colors.transparent,
                           surfaceTintColor: Colors.transparent,
-                          flexibleSpace: const PinnedChromeGlass(opacity: 1),
+                          flexibleSpace: const FrostPinnedChromeGlass(opacity: 1),
                           automaticallyImplyLeading: false,
-                          leading: FpPageHeader.leadingFor(context),
-                          leadingWidth: FpPageHeader.leadingWidth,
-                          titleSpacing: FpPageHeader.titleSpacingOf(context),
+                          leading: FrostPageHeader.leadingFor(context),
+                          leadingWidth: FrostPageHeader.leadingWidth,
+                          titleSpacing: FrostPageHeader.titleSpacingOf(context),
                           title: Text(_novel.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                         ),
                       SliverToBoxAdapter(

@@ -1,36 +1,28 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/shared/layout/fp_collapsing_header.dart';
-import 'package:freepiv/shared/widgets/refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/core/utils/text_format.dart';
-import 'package:freepiv/shared/widgets/error.dart';
+import 'package:freepiv/shared/widgets/mouse_drag_scroll.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/energetic_card.dart';
 import 'image.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'navigation.dart';
 
-EdgeInsets pixivisionPadding(double width) => AppMetrics.columnPadding(width).copyWith(top: 12, bottom: 12);
+EdgeInsets pixivisionPadding(double width) => FrostMetrics.columnPadding(width).copyWith(top: 12, bottom: 12);
 
-EdgeInsets pixivisionReadingPadding(double width) => AppMetrics.columnPadding(width, maxWidth: AppMetrics.readingMaxWidth).copyWith(top: 24, bottom: 24);
+EdgeInsets pixivisionReadingPadding(double width) => FrostMetrics.columnPadding(width, maxWidth: FrostMetrics.readingMaxWidth).copyWith(top: 24, bottom: 24);
 
 class PixivisionScaffold extends StatelessWidget {
   const PixivisionScaffold({required this.child, this.title = 'pixivision', super.key});
   final Widget child;
   final String title;
   @override
-  Widget build(BuildContext context) => AutoScaffold(
+  Widget build(BuildContext context) => FrostAutoScaffold(
     builder: (context, layout, orientation, desktop) => Scaffold(
-      body: FpCollapsingHeader(
-        header: desktop ? null : FpPageHeader(title: Text(title), onBack: () => context.canPop() ? context.pop() : context.go('/search')),
-        child: ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(dragDevices: dataRefreshScrollBehavior.dragDevices),
-          child: SafeArea(bottom: false, child: child),
-        ),
+      body: FrostCollapsingHeader(
+        header: desktop ? null : FrostPageHeader(title: Text(title), onBack: () => context.canPop() ? context.pop() : context.go('/search')),
+        child: MouseDragScroll(child: SafeArea(bottom: false, child: child)),
       ),
     ),
   );
@@ -41,7 +33,7 @@ class PixivisionError extends StatelessWidget {
   final VoidCallback retry;
   final Object? error;
   @override
-  Widget build(BuildContext context) => ErrorContent(
+  Widget build(BuildContext context) => FrostErrorContent(
     message: context.t.pixivision.requestFailed,
     details: switch (error) {
       final error? => pixivErrorDetails(error),
@@ -61,11 +53,11 @@ class PixivisionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Skeletonizer(
     enabled: article == null,
-    child: EnergeticCard(
+    child: FrostCard(
       onTap: article == null ? null : () => openPixivisionLink(context, article!.url, summary: article),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final horizontal = !preview && AutoScaffold.usesHorizontalLayoutOf(context) && constraints.maxWidth >= AppMetrics.gridExtent * 2;
+          final horizontal = !preview && FrostAutoScaffold.usesHorizontalLayoutOf(context) && constraints.maxWidth >= FrostMetrics.gridExtent * 2;
           final image = Skeleton.replace(
             width: double.infinity,
             height: double.infinity,
@@ -77,18 +69,18 @@ class PixivisionCard extends StatelessWidget {
                 : PixivisionImage(url: article!.thumbnail!),
           );
           final details = Padding(
-            padding: preview ? AppMetrics.contentSectionPadding : AppMetrics.panelPadding,
+            padding: preview ? FrostMetrics.contentSectionPadding : FrostMetrics.panelPadding,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _CardTitle(pixivisionArticleTitle(article?.title ?? 'Article title')),
                 if (!preview) ...[
-                  const SizedBox(height: AppMetrics.compactSectionGap),
+                  const SizedBox(height: FrostMetrics.compactSectionGap),
                   Row(
                     children: [
                       Expanded(child: Text(article?.category?.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis)),
-                      const SizedBox(width: AppMetrics.compactSectionGap),
+                      const SizedBox(width: FrostMetrics.compactSectionGap),
                       Flexible(child: Text(pixivisionDate(context, article?.publishDate ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis)),
                     ],
                   ),
@@ -99,7 +91,7 @@ class PixivisionCard extends StatelessWidget {
           if (horizontal) {
             return Row(
               children: [
-                SizedBox(width: AppMetrics.gridExtent, height: AppMetrics.gridExtent * 9 / 16, child: image),
+                SizedBox(width: FrostMetrics.gridExtent, height: FrostMetrics.gridExtent * 9 / 16, child: image),
                 Expanded(child: details),
               ],
             );

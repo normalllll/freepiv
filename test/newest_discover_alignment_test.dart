@@ -6,13 +6,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/newest/presentation/page/newest_page.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_filters.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_toolbar.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
 
 class _EmptyFeed extends NewestListSource {
   _EmptyFeed(NewestFeedKey key) : super(key: key);
@@ -52,7 +52,7 @@ void main() {
                   theme: AppTheme.light(platform: TargetPlatform.android, locale: locale.flutterLocale),
                   home: MediaQuery(
                     data: MediaQueryData(size: Size(width, 844), textScaler: TextScaler.linear(scale)),
-                    child: const AppLayoutScope(child: NewestPage()),
+                    child: const FrostLayoutScope(child: NewestPage()),
                   ),
                 ),
               ),
@@ -82,7 +82,7 @@ void main() {
         child: TranslationProvider(
           child: MaterialApp(
             theme: AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
-            home: const AppLayoutScope(child: NewestPage()),
+            home: const FrostLayoutScope(child: NewestPage()),
           ),
         ),
       ),
@@ -126,7 +126,7 @@ void main() {
                     : AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
                 home: MediaQuery(
                   data: MediaQueryData(size: size),
-                  child: AppLayoutScope(
+                  child: FrostLayoutScope(
                     child: RepaintBoundary(key: boundary, child: const NewestPage()),
                   ),
                 ),

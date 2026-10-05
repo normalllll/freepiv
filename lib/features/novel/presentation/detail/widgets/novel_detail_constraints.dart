@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 /// The shared content column for novel detail blocks, whose children pad
 /// their content by 20 themselves.
@@ -10,7 +9,7 @@ class NovelDetailWidthLimiter extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => ContentColumn(bleed: 20, child: child);
+  Widget build(BuildContext context) => FrostContentColumn(bleed: 20, child: child);
 }
 
 /// Reading column for novel text shown on the detail page.
@@ -20,8 +19,8 @@ class NovelReaderWidthLimiter extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => ContentColumn(
-    maxWidth: AppMetrics.readingMaxWidth,
+  Widget build(BuildContext context) => FrostContentColumn(
+    maxWidth: FrostMetrics.readingMaxWidth,
     bleed: 20,
     child: SizedBox(width: double.infinity, child: child),
   );

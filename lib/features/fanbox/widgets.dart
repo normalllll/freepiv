@@ -1,12 +1,11 @@
+import 'package:freepiv/app/frost_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:freepiv/core/downloads/download_manager.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
-import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/core/utils/text_format.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/core/media/logic.dart';
@@ -86,7 +85,7 @@ class FanboxImageView extends ConsumerWidget {
     return ref
         .watch(fanboxSessionProvider)
         .when(
-          loading: () => SizedBox(height: height ?? 100, child: const ImageLoadingSkeleton()),
+          loading: () => SizedBox(height: height ?? 100, child: const FrostImageSkeleton()),
           error: (_, _) => SizedBox(
             height: height ?? 100,
             child: Center(
@@ -106,7 +105,7 @@ class FanboxImageView extends ConsumerWidget {
             width: double.infinity,
             fit: fit,
             loadStateChanged: (state) => switch (state.extendedImageLoadState) {
-              LoadState.loading => SizedBox(height: height ?? 100, child: const ImageLoadingSkeleton()),
+              LoadState.loading => SizedBox(height: height ?? 100, child: const FrostImageSkeleton()),
               LoadState.failed => SizedBox(
                 height: height ?? 100,
                 child: Center(
@@ -153,7 +152,7 @@ class FanboxErrorView extends ConsumerWidget {
             constraints: const BoxConstraints(maxWidth: 560),
             child: Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: ErrorDetails(details: pixivErrorDetails(error)),
+              child: FrostErrorDetails(details: pixivErrorDetails(error)),
             ),
           ),
       ],
@@ -177,11 +176,11 @@ Future<void> downloadFanboxFile(
     await downloadManager.ensureReadyForDownloads();
     DownloadFlight.launch(origin: origin, artwork: image ? FanboxImageView(url) : null);
     final file = await downloads.downloadFile(url: url, filename: filename, source: source, image: image);
-    AppToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
+    FrostToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
   } on DownloadAlreadyQueued {
-    AppToast.info(t.illust.toast.alreadyDownloading);
+    FrostToast.info(t.illust.toast.alreadyDownloading);
   } catch (error) {
-    AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
+    toastErrorWithCause(t.illust.toast.downloadFailed, error);
   }
 }
 

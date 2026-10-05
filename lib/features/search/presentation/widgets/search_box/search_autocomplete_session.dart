@@ -5,7 +5,7 @@ import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_models.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_suggestion.dart';
-import 'package:freepiv/shared/widgets/highlight_text_field.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class SearchAutocompleteSession extends ChangeNotifier {
@@ -20,7 +20,7 @@ class SearchAutocompleteSession extends ChangeNotifier {
   static final _numericPattern = RegExp(r'^\d+$');
   static const _debounceDuration = Duration(milliseconds: 250);
 
-  final controller = HighlightTextEditingController();
+  final controller = FrostHighlightTextEditingController();
   final focusNode = FocusNode();
 
   Timer? _debounceTimer;

@@ -1,7 +1,7 @@
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/router/detail_transition_page.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/about/presentation/about_page.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/comments/presentation/work_comments_page.dart';
@@ -22,7 +22,6 @@ import 'package:freepiv/features/search/presentation/search_user_result_page.dar
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:freepiv/shared/widgets/artwork_hero.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -89,29 +88,29 @@ Page<void> mePage(BuildContext context, GoRouterState state) {
 }
 
 Page<void> meFollowingPage(BuildContext context, GoRouterState state) {
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: state.pageKey,
     child: const MeUserListPage(kind: MeUserListKind.following),
   );
 }
 
 Page<void> meFollowersPage(BuildContext context, GoRouterState state) {
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: state.pageKey,
     child: const MeUserListPage(kind: MeUserListKind.followers),
   );
 }
 
 Page<void> settingsPage(BuildContext context, GoRouterState state) {
-  return detailTransitionPage(key: state.pageKey, child: const SettingsPage());
+  return FrostDetailPage(key: state.pageKey, child: const SettingsPage());
 }
 
 Page<void> aboutPage(BuildContext context, GoRouterState state) {
-  return detailTransitionPage(key: state.pageKey, child: const AboutPage());
+  return FrostDetailPage(key: state.pageKey, child: const AboutPage());
 }
 
 Page<void> downloadsPage(BuildContext context, GoRouterState state) {
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: state.pageKey,
     child: DownloadsPage(focusItem: state.uri.queryParameters['item']),
   );
@@ -123,7 +122,7 @@ Page<void> originalImageViewerPage(BuildContext context, GoRouterState state) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
   }
 
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: state.pageKey,
     child: OriginalImageViewerPage(args: extra),
   );
@@ -143,7 +142,7 @@ Page<void> illustDetailPage(BuildContext context, GoRouterState state) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
   }
 
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: state.pageKey,
     heroLed: heroTag != null,
     child: ArtworkHeroScope(
@@ -159,7 +158,7 @@ Page<void> illustCommentsPage(BuildContext context, GoRouterState state) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
   }
 
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: state.pageKey,
     child: WorkCommentsPage(workType: CommentWorkType.illust, workId: illustId, totalComments: _commentCountFromExtra(state.extra)),
   );
@@ -168,7 +167,7 @@ Page<void> illustCommentsPage(BuildContext context, GoRouterState state) {
 Page<void> illustRelatedPage(BuildContext context, GoRouterState state) {
   final illustId = int.tryParse(state.pathParameters['id'] ?? '');
   if (illustId == null) return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: state.pageKey,
     child: IllustRelatedPage(illustId: illustId, sourceIllust: state.extra is Illust ? state.extra as Illust : null),
   );
@@ -183,7 +182,7 @@ Page<void> novelDetailPage(BuildContext context, GoRouterState state) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
   }
 
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: state.pageKey,
     child: NovelDetailPage(novelId: novel == null ? novelId : null, novel: novel),
   );
@@ -198,7 +197,7 @@ Page<void> novelReaderPage(BuildContext context, GoRouterState state) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
   }
 
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: state.pageKey,
     child: NovelReaderPage(novelId: novel == null ? novelId : null, novel: novel),
   );
@@ -210,7 +209,7 @@ Page<void> novelCommentsPage(BuildContext context, GoRouterState state) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
   }
 
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: state.pageKey,
     child: WorkCommentsPage(workType: CommentWorkType.novel, workId: novelId, totalComments: _commentCountFromExtra(state.extra)),
   );
@@ -220,7 +219,7 @@ Page<void> userDetailPage(BuildContext context, GoRouterState state) {
   final extra = state.extra;
 
   if (extra is UserDetailResult) {
-    return detailTransitionPage(
+    return FrostDetailPage(
       key: state.pageKey,
       child: UserDetailPage(
         userDetail: extra,
@@ -234,7 +233,7 @@ Page<void> userDetailPage(BuildContext context, GoRouterState state) {
     return _missingRoutePage(key: state.pageKey, message: t.user.error.missingUser);
   }
 
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: state.pageKey,
     child: UserDetailPage(
       userId: userId,
@@ -248,10 +247,10 @@ int? _commentCountFromExtra(Object? extra) {
 }
 
 Page<void> _missingRoutePage({required LocalKey key, required String message}) {
-  return detailTransitionPage(
+  return FrostDetailPage(
     key: key,
-    child: AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+    child: FrostAutoScaffold(
+      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
           appBar: useHorizontalLayout ? null : AppBar(title: Text(context.t.common.notFound)),
           body: Center(child: Text(message)),

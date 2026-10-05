@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/shared/ui/layout_crossfade.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 class _Draft extends StatefulWidget {
   const _Draft();
@@ -27,7 +27,7 @@ void main() {
     home: MediaQuery(
       data: MediaQueryData(disableAnimations: reduced),
       child: Scaffold(
-        body: LayoutCrossfade(layoutIdentity: layout, child: const _Draft()),
+        body: FrostLayoutCrossfade(layoutIdentity: layout, child: const _Draft()),
       ),
     ),
   );

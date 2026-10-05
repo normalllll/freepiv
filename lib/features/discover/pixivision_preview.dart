@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
-import 'package:freepiv/shared/widgets/compact_message.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/pixivision/logic.dart';
 import 'package:freepiv/features/pixivision/widgets.dart';
@@ -21,7 +20,7 @@ class DiscoveryPixivisionPreview extends ConsumerWidget {
       final page when page.recommended.isNotEmpty => page.recommended.take(3).toList(),
       final page => page.articles.take(3).toList(),
     };
-    return ContentColumn(
+    return FrostContentColumn(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 20),
         child: Column(
@@ -53,7 +52,7 @@ class DiscoveryPixivisionPreview extends ConsumerWidget {
                   height: height,
                   child: switch ((articles, state.hasError)) {
                     (null, true) => SingleChildScrollView(
-                      child: CompactMessage.error(error: state.error!, onAction: () => ref.invalidate(provider)),
+                      child: FrostCompactMessage.error(error: state.error!, onAction: () => ref.invalidate(provider)),
                     ),
                     (final items?, _) when items.isEmpty => Center(child: Text(context.t.pixivision.empty)),
                     _ => ListView.separated(

@@ -4,7 +4,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
@@ -62,9 +63,9 @@ Future<void> _downloadThroughManager({
       thumbnailUrl: url,
       title: title,
     );
-    AppToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
+    FrostToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
   } catch (error) {
-    AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
+    toastErrorWithCause(t.illust.toast.downloadFailed, error);
   }
 }
 
@@ -130,9 +131,9 @@ class ContentImageMenuRegion extends ConsumerWidget {
         bytes.add(chunk.bytes);
       }
       await copyImageBytesToClipboard(bytes.takeBytes(), mimeType: imageMimeTypeFromUrl(actions.url));
-      unawaited(AppToast.copied(t.illust.toast.copied(label: label)));
+      FrostToast.copied(t.illust.toast.copied(label: label));
     } catch (error) {
-      AppToast.errorWithCause(t.illust.toast.copyFailed(label: label), error);
+      toastErrorWithCause(t.illust.toast.copyFailed(label: label), error);
     }
   }
 }

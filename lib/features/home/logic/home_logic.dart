@@ -9,7 +9,7 @@ part 'home_logic.g.dart';
 
 enum HomeType { illustrations, manga, novels, users }
 
-class HomeIllustListSource extends NextUrlListSource<Illust, IllustPageResult> {
+class HomeIllustListSource extends FrostCursorListSource<Illust, IllustPageResult> {
   HomeIllustListSource({required this.illustType});
 
   final IllustType illustType;
@@ -50,7 +50,7 @@ class HomeIllustListSource extends NextUrlListSource<Illust, IllustPageResult> {
   }
 }
 
-class HomeNovelListSource extends NextUrlListSource<Novel, NovelPageResult> {
+class HomeNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> {
   List<Novel> _rankingNovels = const [];
 
   List<Novel> get rankingNovels => _rankingNovels;
@@ -87,7 +87,7 @@ class HomeNovelListSource extends NextUrlListSource<Novel, NovelPageResult> {
   }
 }
 
-class HomeUserListSource extends NextUrlListSource<UserPreview, UserPageResult> {
+class HomeUserListSource extends FrostCursorListSource<UserPreview, UserPageResult> {
   @override
   Future<UserPageResult> loadFirstPage() {
     return pixivApi.getRecommendedUserPage();

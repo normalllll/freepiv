@@ -3,7 +3,6 @@ import 'package:freepiv/core/downloads/models/download_origin.dart';
 import 'package:freepiv/core/utils/illust_image_url.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/app/window/window_title.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_image_viewer.dart';
@@ -11,13 +10,10 @@ import 'package:freepiv/features/illust/presentation/widgets/illust_detail_layou
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_skeleton.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
-import 'package:freepiv/shared/ui/layout_crossfade.dart';
 
 class IllustDetailPage extends ConsumerWidget {
   const IllustDetailPage({this.illustId, this.illust, super.key}) : assert(illustId != null || illust != null);
@@ -47,22 +43,22 @@ class IllustDetailPage extends ConsumerWidget {
           return const _IllustNotFoundPage();
         }
 
-        return ErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
+        return FrostErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
     );
     final id = illustId ?? illust?.id;
     if (id == null) return content;
-    return WindowTitleContribution(
+    return FrostWindowTitleContribution(
       path: '/illust/$id',
-      work: visibleIllust == null
+      page: visibleIllust == null
           ? null
           // The list tile's own image: its bytes are already cached, so the
           // backdrop tint arrives with the page transition, not after it.
-          : WorkWindowTitle(
+          : FrostPageTitle(
               id: id,
               title: visibleIllust.title,
               kind: visibleIllust.kind,
-              artworkUrl: illustPreviewImageUrl(visibleIllust.imageUrls, ref.watch(previewImageQualityProvider)),
+              imageUrl: illustPreviewImageUrl(visibleIllust.imageUrls, ref.watch(previewImageQualityProvider)),
             ),
       child: content,
     );
@@ -105,11 +101,11 @@ class _IllustDetailContentState extends ConsumerState<IllustDetailContent> {
     final viewerQuality = ref.watch(viewerImageQualityProvider);
     final imagePages = illustPageImages(widget.illust, viewerQuality, ref.watch(previewImageQualityProvider));
 
-    return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+    return FrostAutoScaffold(
+      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
         final splitDetail = layout.width >= 960;
         return Scaffold(
-          body: LayoutCrossfade(
+          body: FrostLayoutCrossfade(
             layoutIdentity: splitDetail,
             child: splitDetail
                 ? DesktopIllustDetailLayout(
@@ -191,12 +187,14 @@ class _IllustNotFoundPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+    return FrostAutoScaffold(
+      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
-          appBar: windowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout) ? null : FpPageHeader(title: Text(context.t.common.notFound)),
+          appBar: frostWindowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout)
+              ? null
+              : FrostPageHeader(title: Text(context.t.common.notFound)),
           body: SafeArea(
-            child: EmptyContent(icon: Icons.image_not_supported_outlined, title: context.t.common.notFound),
+            child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), title: context.t.common.notFound),
           ),
         );
       },

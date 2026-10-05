@@ -1,9 +1,4 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/shared/layout/fp_collapsing_header.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -11,8 +6,6 @@ import 'package:freepiv/features/ranking/logic/ranking_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_list_tab.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -92,11 +85,14 @@ class _RankingIllustPageState extends ConsumerState<RankingIllustPage> with Sing
       body: AnimatedBuilder(
         animation: Listenable.merge(state.illustSources.values.toList()),
         builder: (context, child) {
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              for (final mode in IllustRankingMode.values) _IllustRankingTab(key: PageStorageKey('ranking-illust-$mode'), source: state.illustSourceFor(mode)),
-            ],
+          return MouseDragScroll(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                for (final mode in IllustRankingMode.values)
+                  _IllustRankingTab(key: PageStorageKey('ranking-illust-$mode'), source: state.illustSourceFor(mode)),
+              ],
+            ),
           );
         },
       ),
@@ -178,11 +174,13 @@ class _RankingMangaPageState extends ConsumerState<RankingMangaPage> with Single
       body: AnimatedBuilder(
         animation: Listenable.merge(state.mangaSources.values.toList()),
         builder: (context, child) {
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              for (final mode in MangaRankingMode.values) _MangaRankingTab(key: PageStorageKey('ranking-manga-$mode'), source: state.mangaSourceFor(mode)),
-            ],
+          return MouseDragScroll(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                for (final mode in MangaRankingMode.values) _MangaRankingTab(key: PageStorageKey('ranking-manga-$mode'), source: state.mangaSourceFor(mode)),
+              ],
+            ),
           );
         },
       ),
@@ -266,11 +264,13 @@ class _RankingNovelPageState extends ConsumerState<RankingNovelPage> with Single
       body: AnimatedBuilder(
         animation: Listenable.merge(state.novelSources.values.toList()),
         builder: (context, child) {
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              for (final mode in NovelRankingMode.values) _NovelRankingTab(key: PageStorageKey('ranking-novel-$mode'), source: state.novelSourceFor(mode)),
-            ],
+          return MouseDragScroll(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                for (final mode in NovelRankingMode.values) _NovelRankingTab(key: PageStorageKey('ranking-novel-$mode'), source: state.novelSourceFor(mode)),
+              ],
+            ),
           );
         },
       ),
@@ -289,15 +289,15 @@ class _RankingPageScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+    return FrostAutoScaffold(
+      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
-          body: FpCollapsingHeader(
-            header: windowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout)
+          body: FrostCollapsingHeader(
+            header: frostWindowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout)
                 ? null
-                : FpPageHeader(title: Text(appRouteLabel(context.t, route))),
+                : FrostPageHeader(title: Text(appRouteLabel(context.t, route))),
             // The mode picker floats over the ranking as glass.
-            child: FpPinnedChrome(chrome: header, body: body),
+            child: FrostPinnedChrome(chrome: header, body: body),
           ),
         );
       },
@@ -330,9 +330,9 @@ class _RankingHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: onContentColumn
-            ? ContentColumn(bleed: _pickerPadding, child: row)
+            ? FrostContentColumn(bleed: _pickerPadding, child: row)
             : Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppMetrics.browseInset(MediaQuery.sizeOf(context).width) - _pickerPadding),
+                padding: EdgeInsets.symmetric(horizontal: FrostMetrics.browseInset(MediaQuery.sizeOf(context).width) - _pickerPadding),
                 child: row,
               ),
       ),
@@ -353,9 +353,9 @@ class _RankingModePicker<T extends Enum> extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (context, _) => AppValueMenuButton<T>(
+      builder: (context, _) => FrostValueMenuButton<T>(
         value: modes[controller.index],
-        items: [for (final mode in modes) AppSelectItem(value: mode, label: _rankingModeNameLabel(mode.name, t))],
+        items: [for (final mode in modes) FrostSelectItem(value: mode, label: _rankingModeNameLabel(mode.name, t))],
         onSelected: (mode) {
           controller.animateTo(mode.index, duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 200));
           onModeChanged(mode);
@@ -390,11 +390,11 @@ class _MangaRankingTab extends StatelessWidget {
 class _ImageRankingTab extends StatelessWidget {
   const _ImageRankingTab({required this.source});
 
-  final DataListSource<Illust> source;
+  final FrostListSource<Illust> source;
 
   @override
   Widget build(BuildContext context) {
-    return DataNestedRefreshView(
+    return FrostNestedRefreshView(
       onRefresh: () => source.refresh(source.isEmpty),
       builder: (context, refresh) {
         return NestedScrollView(
@@ -421,7 +421,7 @@ class _NovelRankingTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataNestedRefreshView(
+    return FrostNestedRefreshView(
       onRefresh: () => source.refresh(source.isEmpty),
       builder: (context, refresh) {
         return NestedScrollView(
@@ -444,41 +444,46 @@ class _NovelRankingTab extends StatelessWidget {
 class _ImageRankingBody extends StatelessWidget {
   const _ImageRankingBody({required this.source, required this.physics, required this.locators});
 
-  final DataListSource<Illust> source;
+  final FrostListSource<Illust> source;
   final ScrollPhysics? physics;
-  final DataRefreshLocators locators;
+  final FrostRefreshLocators locators;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return IllustWaterfallSkeleton(physics: physics, sliverHeader: chromeSliverHeader(locators.sliverHeader));
+    if (source.phase == FrostLoadPhase.loading) {
+      return IllustWaterfallSkeleton(physics: physics, sliverHeader: frostChromeSliverHeader(locators.sliverHeader));
     }
 
     if (!source.initialized && lastError != null) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
-        sliverHeader: chromeSliverHeader(locators.sliverHeader),
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
     if (source.initialized && source.isEmpty) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
-        sliverHeader: chromeSliverHeader(locators.sliverHeader),
-        child: EmptyContent(icon: Icons.emoji_events_outlined, title: context.t.ranking.emptyTitle, message: context.t.ranking.emptyMessage),
+        sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
+        child: FrostEmptyContent(
+          icon: FrostIconData.glyph(Icons.emoji_events_outlined),
+          title: context.t.ranking.emptyTitle,
+          message: context.t.ranking.emptyMessage,
+        ),
       );
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
-        chromeSliverHeader(locators.sliverHeader),
-        SliverDataWaterfallGrid<Illust>(
+        frostChromeSliverHeader(locators.sliverHeader),
+        FrostSliverDataWaterfallGrid<Illust>(
+          firstLoadSkeleton: const FullScreenLoadingSkeleton(),
           source: source,
           itemBuilder: (context, illust, index) {
             return IllustPreviewer(illust: illust, rank: index + 1, onOpen: (heroTag) => openIllustDetail(context, illust, heroTag));
@@ -494,20 +499,20 @@ class _NovelRankingBody extends StatelessWidget {
 
   final RankingNovelListSource source;
   final ScrollPhysics? physics;
-  final DataRefreshLocators locators;
+  final FrostRefreshLocators locators;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return DataLoadingCustomScrollView(
+    if (source.phase == FrostLoadPhase.loading) {
+      return FrostLoadingScrollView(
         physics: physics,
         slivers: [
-          chromeSliverHeader(locators.sliverHeader),
-          const SliverContentColumn(
+          frostChromeSliverHeader(locators.sliverHeader),
+          const FrostSliverContentColumn(
             sliver: SliverPadding(padding: EdgeInsets.symmetric(vertical: 12), sliver: SliverListSkeleton(itemExtent: 140, itemCount: 8)),
           ),
         ],
@@ -515,30 +520,35 @@ class _NovelRankingBody extends StatelessWidget {
     }
 
     if (!source.initialized && lastError != null) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
-        sliverHeader: chromeSliverHeader(locators.sliverHeader),
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
     if (source.initialized && source.isEmpty) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
-        sliverHeader: chromeSliverHeader(locators.sliverHeader),
-        child: EmptyContent(icon: Icons.menu_book_outlined, title: context.t.ranking.emptyTitle, message: context.t.ranking.emptyMessage),
+        sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
+        child: FrostEmptyContent(
+          icon: FrostIconData.glyph(Icons.menu_book_outlined),
+          title: context.t.ranking.emptyTitle,
+          message: context.t.ranking.emptyMessage,
+        ),
       );
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
-        chromeSliverHeader(locators.sliverHeader),
-        SliverDataList<Novel>(
+        frostChromeSliverHeader(locators.sliverHeader),
+        FrostSliverDataList<Novel>(
+          firstLoadSkeleton: const FullScreenLoadingSkeleton(),
           source: source,
           padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
           itemBuilder: (context, novel, index) {
-            return ContentColumn(
+            return FrostContentColumn(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: NovelPreviewer(

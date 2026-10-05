@@ -140,7 +140,7 @@ class NewestState {
   }
 }
 
-class NewestListSource extends NextUrlListSource<NewestItem, Object> {
+class NewestListSource extends FrostCursorListSource<NewestItem, Object> {
   NewestListSource({required this.key});
 
   final NewestFeedKey key;

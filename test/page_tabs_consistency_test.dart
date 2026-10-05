@@ -6,8 +6,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/fanbox/navigation.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
@@ -134,9 +134,9 @@ void main() {
       // The theme owns the rounded accent indicator; page tab bars only set
       // the shared label padding.
       final indicator = Theme.of(tester.element(find.byType(TabBar))).tabBarTheme.indicator;
-      expect(indicator, isA<UnderlineTabIndicator>().having((it) => it.borderSide.width, 'width', AppMetrics.selectionIndicatorWidth));
+      expect(indicator, isA<UnderlineTabIndicator>().having((it) => it.borderSide.width, 'width', FrostMetrics.selectionIndicatorWidth));
       expect(tabBar.indicator, isNull);
-      expect(tabBar.labelPadding, EdgeInsets.symmetric(horizontal: AppMetrics.tabLabelPadding(width)));
+      expect(tabBar.labelPadding, EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(width)));
       expect(tester.takeException(), isNull);
       await tester.runAsync(() async {
         final image = await (boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary).toImage();

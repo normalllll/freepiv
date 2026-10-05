@@ -1,9 +1,8 @@
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/content_script.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:html/dom.dart' as html;
 import 'package:html/parser.dart' as html_parser;
@@ -76,7 +75,7 @@ TextSpan buildHtmlTextSpan(
   // Captions and comments are user content: draw CJK in the content's own
   // regional glyphs rather than the interface language's.
   return TextSpan(
-    style: contentTextStyle(
+    style: frostContentTextStyle(
       context,
       htmlString,
       style ?? Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurface, height: 1.35) ?? TextStyle(color: colorScheme.onSurface),
@@ -217,11 +216,11 @@ class _HtmlTextSpanBuilder {
 const _strongStyle = TextStyle(fontWeight: FontWeight.w700);
 
 TextStyle _genericLinkStyle(BuildContext context, bool isStrong) {
-  return TextStyle(color: FreepivThemeTokens.of(context).selectionInk, decoration: TextDecoration.underline, fontWeight: isStrong ? FontWeight.w700 : null);
+  return TextStyle(color: FrostThemeTokens.of(context).selectionInk, decoration: TextDecoration.underline, fontWeight: isStrong ? FontWeight.w700 : null);
 }
 
 TextStyle _knownLinkStyle(BuildContext context, bool isStrong) {
-  return TextStyle(color: FreepivThemeTokens.of(context).selectionInk, decoration: TextDecoration.underline, fontWeight: isStrong ? FontWeight.w700 : null);
+  return TextStyle(color: FrostThemeTokens.of(context).selectionInk, decoration: TextDecoration.underline, fontWeight: isStrong ? FontWeight.w700 : null);
 }
 
 Future<void> _openTwitterUser(String username, {String? fallbackUrl}) async {

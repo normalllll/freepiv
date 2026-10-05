@@ -3,12 +3,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_header.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/widgets/search_input.dart';
 
 Future<void> _pumpHeader(
   WidgetTester tester, {
@@ -30,7 +29,7 @@ Future<void> _pumpHeader(
           theme: AppTheme.light(platform: TargetPlatform.windows, locale: locale.flutterLocale),
           home: MediaQuery(
             data: MediaQueryData(size: Size(width, 900), textScaler: TextScaler.linear(textScale)),
-            child: AppLayoutScope(
+            child: FrostLayoutScope(
               child: Scaffold(
                 body: typeController == null
                     ? SearchHeader(onSearch: (_) {}, onSelected: (_) {}, typePlacement: typePlacement, onTypeChanged: onTypeChanged)
@@ -89,7 +88,7 @@ void main() {
           final reason = '$locale at $width and $textScale×';
           await _pumpHeader(tester, width: width, textScale: textScale, locale: locale);
           expect(tester.takeException(), isNull, reason: reason);
-          final input = tester.getRect(find.byType(SearchInput));
+          final input = tester.getRect(find.byType(FrostSearchInput));
           if (width < 600) {
             // Phone: the query row keeps its room; the type is a tab row.
             expect(_besideQuery, findsNothing, reason: reason);

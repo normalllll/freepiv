@@ -1,21 +1,15 @@
-import 'package:freepiv/shared/ui/fp_icon.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/newest/presentation/page/newest_page.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_toolbar.dart';
-import 'package:freepiv/app/router_shell.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_collapsible_header.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_header.dart';
 import 'package:freepiv/features/pixivision/widgets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/widgets/search_input.dart';
-import 'package:freepiv/shared/widgets/constrained_segmented_button.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 
 class _EmptyFeed extends NewestListSource {
@@ -45,7 +39,7 @@ void main() {
         child: TranslationProvider(
           child: MaterialApp(
             theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-            home: const AppLayoutScope(child: NewestPage()),
+            home: const FrostLayoutScope(child: NewestPage()),
           ),
         ),
       ),
@@ -64,7 +58,7 @@ void main() {
   });
 
   testWidgets('sidebar footer and scrollable destinations share the same hit area', (tester) async {
-    Widget item(String label) => DesktopNavItem(label: label, fpIcon: FpIconName.home, selected: false, onTap: () {});
+    Widget item(String label) => FrostNavItem(label: label, icon: PivIcons.home, selected: false, onTap: () {});
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -83,7 +77,7 @@ void main() {
         ),
       ),
     );
-    final surfaces = find.byType(AppClickSurface);
+    final surfaces = find.byType(FrostClickSurface);
     expect(tester.getSize(surfaces.first), tester.getSize(surfaces.last));
     expect(tester.getSize(surfaces.last).width, 76);
     expect(tester.takeException(), isNull);
@@ -94,8 +88,8 @@ void main() {
     // loaded header never differ in height.
     for (final width in [390.0, 700.0, 1280.0]) {
       final layout = UserCollapsibleHeaderLayout.forWidth(width);
-      expect(layout.avatarTop, greaterThanOrEqualTo(AppMetrics.controlHeight + AppMetrics.compactGap));
-      expect(layout.horizontalPadding, AppMetrics.columnPadding(width).left);
+      expect(layout.avatarTop, greaterThanOrEqualTo(FrostMetrics.controlHeight + FrostMetrics.compactGap));
+      expect(layout.horizontalPadding, FrostMetrics.columnPadding(width).left);
     }
   });
   testWidgets('search keeps one search action and adapts type controls without overflow', (tester) async {
@@ -112,7 +106,7 @@ void main() {
                 theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
                 home: MediaQuery(
                   data: MediaQueryData(size: size, textScaler: TextScaler.linear(scale)),
-                  child: AppLayoutScope(
+                  child: FrostLayoutScope(
                     child: Scaffold(
                       body: SearchHeader(onSearch: (_) {}, onSelected: (_) {}),
                     ),
@@ -125,7 +119,7 @@ void main() {
         await tester.pump();
         expect(find.byIcon(Icons.search), findsOneWidget);
         expect(tester.takeException(), isNull);
-        final input = tester.getRect(find.byType(SearchInput));
+        final input = tester.getRect(find.byType(FrostSearchInput));
         if (size.width < 600) {
           // Phones keep the query row for the field and put the type in tabs.
           expect(tester.getRect(find.byType(SearchTypeTabs)).top, greaterThanOrEqualTo(input.bottom));
@@ -144,7 +138,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: Center(
-              child: AppSegmentedButton<int>(
+              child: FrostSegmentedButton<int>(
                 showSelectedIcon: false,
                 segments: const [
                   ButtonSegment(value: 0, icon: Icon(Icons.image_outlined), label: Text('Illustrations')),
@@ -178,7 +172,7 @@ void main() {
               theme: dark
                   ? AppTheme.dark(platform: TargetPlatform.windows, locale: const Locale('en'))
                   : AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-              home: AppLayoutScope(
+              home: FrostLayoutScope(
                 child: Scaffold(
                   body: ListView(
                     children: const [

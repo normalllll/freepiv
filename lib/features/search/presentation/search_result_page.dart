@@ -1,9 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
-import 'package:freepiv/shared/widgets/keep_alive_tab.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
@@ -12,7 +9,6 @@ import 'package:freepiv/features/search/presentation/widgets/search_header.dart'
 import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_list_tab.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
@@ -70,12 +66,12 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
     ref.listen(searchDraftProvider.select((draft) => draft.text.trim().isEmpty), (_, empty) {
       if (empty && !_cleared) setState(() => _cleared = true);
     });
-    return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+    return FrostAutoScaffold(
+      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
         // The query bar floats over the results; they scroll beneath it.
         return Scaffold(
-          body: FpPinnedChrome(
-            estimatedExtent: MediaQuery.paddingOf(context).top + AppMetrics.compactTargetHeight + AppMetrics.compactGap * 2,
+          body: FrostPinnedChrome(
+            estimatedExtent: MediaQuery.paddingOf(context).top + FrostMetrics.compactTargetHeight + FrostMetrics.compactGap * 2,
             chrome: SafeArea(
               bottom: false,
               child: SearchHeader(
@@ -89,23 +85,25 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
             ),
             body: _cleared
                 ? const SizedBox.expand()
-                : TabBarView(
-                    controller: _tabs,
-                    children: [
-                      // A new keyword gets fresh tabs, so each starts at the top.
-                      KeepAliveTab(
-                        key: ValueKey(('illust', _keyword)),
-                        child: Consumer(builder: (context, ref, _) => _buildIllustResult(ref)),
-                      ),
-                      KeepAliveTab(
-                        key: ValueKey(('novel', _keyword)),
-                        child: Consumer(builder: (context, ref, _) => _buildNovelResult(ref)),
-                      ),
-                      KeepAliveTab(
-                        key: ValueKey(('user', _keyword)),
-                        child: Consumer(builder: (context, ref, _) => _buildUserResult(ref)),
-                      ),
-                    ],
+                : MouseDragScroll(
+                    child: TabBarView(
+                      controller: _tabs,
+                      children: [
+                        // A new keyword gets fresh tabs, so each starts at the top.
+                        FrostKeepAlive(
+                          key: ValueKey(('illust', _keyword)),
+                          child: Consumer(builder: (context, ref, _) => _buildIllustResult(ref)),
+                        ),
+                        FrostKeepAlive(
+                          key: ValueKey(('novel', _keyword)),
+                          child: Consumer(builder: (context, ref, _) => _buildNovelResult(ref)),
+                        ),
+                        FrostKeepAlive(
+                          key: ValueKey(('user', _keyword)),
+                          child: Consumer(builder: (context, ref, _) => _buildUserResult(ref)),
+                        ),
+                      ],
+                    ),
                   ),
           ),
         );
@@ -118,7 +116,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
     final source = ref.watch(searchIllustResultSourceProvider(SearchResultRequest(keyword: _keyword, filter: filter)));
     _ensureLoaded(source);
 
-    return DataRefreshView(
+    return FrostRefreshView(
       key: ValueKey(filter),
       onRefresh: () => source.refresh(source.isEmpty),
       builder: (context, physics, locators) {
@@ -143,7 +141,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
     final source = ref.watch(searchNovelResultSourceProvider(SearchResultRequest(keyword: _keyword, filter: filter)));
     _ensureLoaded(source);
 
-    return DataRefreshView(
+    return FrostRefreshView(
       key: ValueKey(filter),
       onRefresh: () => source.refresh(source.isEmpty),
       builder: (context, physics, locators) {
@@ -151,13 +149,13 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
           animation: source,
           builder: (context, child) {
             if (source.initialized && source.isEmpty && filter != const SearchFilterState()) {
-              return DataSliverFillBody(
+              return FrostSliverFillBody(
                 physics: physics,
-                sliverHeader: chromeSliverHeader(locators.sliverHeader),
+                sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    EmptyContent(icon: Icons.menu_book_outlined, title: context.t.search.empty.novels),
+                    FrostEmptyContent(icon: FrostIconData.glyph(Icons.menu_book_outlined), title: context.t.search.empty.novels),
                     TextButton(
                       onPressed: () => ref.read(searchFiltersProvider.notifier).setFilter(SearchType.novel, const SearchFilterState()),
                       child: Text(context.t.common.reset),
@@ -169,7 +167,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
             return UserNovelListBody(
               source: source,
               physics: physics,
-              sliverHeader: chromeSliverHeader(locators.sliverHeader),
+              sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
               emptyTitle: context.t.search.empty.novels,
             );
           },
@@ -182,7 +180,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
     final source = ref.watch(searchUserResultSourceProvider(_keyword));
     _ensureLoaded(source);
 
-    return DataRefreshView(
+    return FrostRefreshView(
       onRefresh: () => source.refresh(source.isEmpty),
       builder: (context, physics, locators) {
         return AnimatedBuilder(
@@ -236,7 +234,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
     }
   }
 
-  void _ensureLoaded<T>(DataListSource<T> source) {
+  void _ensureLoaded<T>(FrostListSource<T> source) {
     if (source.initialized || source.refreshing || source.lastError != null) {
       return;
     }
@@ -255,47 +253,48 @@ class _IllustResultBody extends StatelessWidget {
 
   final SearchIllustListSource source;
   final ScrollPhysics? physics;
-  final DataRefreshLocators locators;
+  final FrostRefreshLocators locators;
   final bool hasActiveFilter;
   final VoidCallback onResetFilters;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return DataLoadingCustomScrollView(physics: physics, slivers: [chromeSliverHeader(locators.sliverHeader), const SliverIllustWaterfallSkeleton()]);
+    if (source.phase == FrostLoadPhase.loading) {
+      return FrostLoadingScrollView(physics: physics, slivers: [frostChromeSliverHeader(locators.sliverHeader), const SliverIllustWaterfallSkeleton()]);
     }
 
     if (!source.initialized && lastError != null) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
-        sliverHeader: chromeSliverHeader(locators.sliverHeader),
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
     if (source.initialized && source.isEmpty) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
-        sliverHeader: chromeSliverHeader(locators.sliverHeader),
+        sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            EmptyContent(icon: Icons.image_not_supported_outlined, title: context.t.search.empty.illustrations),
+            FrostEmptyContent(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), title: context.t.search.empty.illustrations),
             if (hasActiveFilter) TextButton(onPressed: onResetFilters, child: Text(context.t.common.reset)),
           ],
         ),
       );
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
-        chromeSliverHeader(locators.sliverHeader),
-        SliverDataWaterfallGrid<Illust>(
+        frostChromeSliverHeader(locators.sliverHeader),
+        FrostSliverDataWaterfallGrid<Illust>(
+          firstLoadSkeleton: const FullScreenLoadingSkeleton(),
           source: source,
           itemBuilder: (context, illust, index) {
             return IllustPreviewer(illust: illust, onOpen: (heroTag) => openIllustDetail(context, illust, heroTag));
@@ -311,38 +310,38 @@ class _UserResultBody extends StatelessWidget {
 
   final SearchUserListSource source;
   final ScrollPhysics? physics;
-  final DataRefreshLocators locators;
+  final FrostRefreshLocators locators;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return DataLoadingCustomScrollView(physics: physics, slivers: [chromeSliverHeader(locators.sliverHeader), const SliverUserPreviewerSkeletonGrid()]);
+    if (source.phase == FrostLoadPhase.loading) {
+      return FrostLoadingScrollView(physics: physics, slivers: [frostChromeSliverHeader(locators.sliverHeader), const SliverUserPreviewerSkeletonGrid()]);
     }
 
     if (!source.initialized && lastError != null) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
-        sliverHeader: chromeSliverHeader(locators.sliverHeader),
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
     if (source.initialized && source.isEmpty) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
-        sliverHeader: chromeSliverHeader(locators.sliverHeader),
-        child: EmptyContent(icon: Icons.people_outline, title: context.t.search.empty.users),
+        sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
+        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.people_outline), title: context.t.search.empty.users),
       );
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
-        chromeSliverHeader(locators.sliverHeader),
+        frostChromeSliverHeader(locators.sliverHeader),
         SliverUserPreviewGrid(source: source),
       ],
     );

@@ -3,13 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/accent_validation.dart';
-import 'package:freepiv/app/theme/accent_color_math.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/app/theme/appearance_logic.dart';
 import 'package:freepiv/core/services/app_settings.dart';
-import 'package:freepiv/core/services/appearance_settings.dart';
 
 class MemorySettingsStore implements AppSettingsStore {
   MemorySettingsStore([Map<String, dynamic>? seed]) : values = {...?seed};
@@ -30,36 +27,33 @@ class MemorySettingsStore implements AppSettingsStore {
 
 void main() {
   test('system always resolves neutral without erasing manual tones or accents', () {
-    const saved = AppearanceSettings(
-      lightTone: AppearanceTone.cool,
-      darkTone: AppearanceTone.warm,
-      lightAccent: Color(0xFF4C8DFF),
-      darkAccent: Color(0xFF00A68C),
-    );
-    expect(saved.effectiveToneFor(Brightness.light), AppearanceTone.neutral);
-    expect(saved.effectiveToneFor(Brightness.dark), AppearanceTone.neutral);
+    final saved = FrostAppearance.initial(
+      FrostPalettes.pink,
+    ).copyWith(lightTone: FrostTone.cool, darkTone: FrostTone.warm, lightAccent: Color(0xFF4C8DFF), darkAccent: Color(0xFF00A68C));
+    expect(saved.effectiveToneFor(Brightness.light), FrostTone.neutral);
+    expect(saved.effectiveToneFor(Brightness.dark), FrostTone.neutral);
     expect(saved.accentFor(Brightness.light), const Color(0xFF4C8DFF));
     expect(saved.accentFor(Brightness.dark), const Color(0xFF00A68C));
     final manual = saved.copyWith(mode: ThemeMode.dark);
-    expect(manual.effectiveToneFor(Brightness.dark), AppearanceTone.warm);
-    expect(manual.copyWith(mode: ThemeMode.system).lightTone, AppearanceTone.cool);
+    expect(manual.effectiveToneFor(Brightness.dark), FrostTone.warm);
+    expect(manual.copyWith(mode: ThemeMode.system).lightTone, FrostTone.cool);
   });
 
   test('all six palettes feed neutral ThemeData surfaces and readable text', () {
     const expectedCanvas = {
-      (Brightness.light, AppearanceTone.neutral): Color(0xFFF6F6F6),
-      (Brightness.light, AppearanceTone.cool): Color(0xFFF4F7FA),
-      (Brightness.light, AppearanceTone.warm): Color(0xFFF7F7F4),
-      (Brightness.dark, AppearanceTone.neutral): Color(0xFF202124),
-      (Brightness.dark, AppearanceTone.cool): Color(0xFF1B2026),
-      (Brightness.dark, AppearanceTone.warm): Color(0xFF20201E),
+      (Brightness.light, FrostTone.neutral): Color(0xFFF6F6F6),
+      (Brightness.light, FrostTone.cool): Color(0xFFF4F7FA),
+      (Brightness.light, FrostTone.warm): Color(0xFFF7F7F4),
+      (Brightness.dark, FrostTone.neutral): Color(0xFF202124),
+      (Brightness.dark, FrostTone.cool): Color(0xFF1B2026),
+      (Brightness.dark, FrostTone.warm): Color(0xFF20201E),
     };
     for (final brightness in Brightness.values) {
-      for (final tone in AppearanceTone.values) {
+      for (final tone in FrostTone.values) {
         final theme = brightness == Brightness.light
             ? AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en'), tone: tone)
             : AppTheme.dark(platform: TargetPlatform.android, locale: const Locale('en'), tone: tone);
-        final tokens = theme.extension<FreepivThemeTokens>()!;
+        final tokens = theme.extension<FrostThemeTokens>()!;
         expect(tokens.canvas, expectedCanvas[(brightness, tone)]);
         // Pages are transparent; the window ambient backdrop paints the canvas.
         expect(theme.scaffoldBackgroundColor, Colors.transparent);
@@ -83,9 +77,9 @@ void main() {
 
   test('six presets pass all matching-brightness surfaces', () {
     for (final brightness in Brightness.values) {
-      for (final color in accentPresets) {
-        final result = validateAccent(color, brightness);
-        expect(result.severity, AccentSeverity.allowed);
+      for (final color in freepivFrostConfig.palettes.accentPresets) {
+        final result = validateAccent(color, brightness, freepivFrostConfig.palettes);
+        expect(result.severity, FrostAccentSeverity.allowed);
         expect(result.minimumContrast, greaterThanOrEqualTo(2));
       }
     }
@@ -98,18 +92,21 @@ void main() {
       expect(parseAccentHex(bad), isNull);
     }
     for (final light in ['FFFFFF', 'FFFFFE', 'F6F6F6']) {
-      expect(validateAccent(parseAccentHex(light)!, Brightness.light).canApply, isFalse);
+      expect(validateAccent(parseAccentHex(light)!, Brightness.light, freepivFrostConfig.palettes).canApply, isFalse);
     }
     for (final dark in ['000000', '202124']) {
-      expect(validateAccent(parseAccentHex(dark)!, Brightness.dark).canApply, isFalse);
+      expect(validateAccent(parseAccentHex(dark)!, Brightness.dark, freepivFrostConfig.palettes).canApply, isFalse);
     }
-    expect(validateAccent(Colors.black, Brightness.light).canApply, isTrue);
-    expect(validateAccent(Colors.white, Brightness.dark).canApply, isTrue);
+    // Pure black and white match the text colour, so they are never an accent.
+    expect(validateAccent(Colors.black, Brightness.light, freepivFrostConfig.palettes).canApply, isFalse);
+    expect(validateAccent(Colors.white, Brightness.dark, freepivFrostConfig.palettes).canApply, isFalse);
   });
 
   test('severity uses the raw minimum contrast on both sides of each threshold', () {
     for (final brightness in Brightness.values) {
-      final results = [for (var value = 0; value <= 255; value++) validateAccent(Color.fromARGB(255, value, value, value), brightness)];
+      final results = [
+        for (var value = 0; value <= 255; value++) validateAccent(Color.fromARGB(255, value, value, value), brightness, freepivFrostConfig.palettes),
+      ];
       for (final threshold in [1.5, 2.0]) {
         final below = results.where((result) => result.minimumContrast < threshold).toList()..sort((a, b) => b.minimumContrast.compareTo(a.minimumContrast));
         final above = results.where((result) => result.minimumContrast >= threshold).toList()..sort((a, b) => a.minimumContrast.compareTo(b.minimumContrast));
@@ -117,8 +114,8 @@ void main() {
         expect(above, isNotEmpty);
         expect(below.first.minimumContrast, lessThan(threshold));
         expect(above.first.minimumContrast, greaterThanOrEqualTo(threshold));
-        expect(below.first.severity, threshold == 1.5 ? AccentSeverity.rejected : AccentSeverity.warning);
-        expect(above.first.severity, threshold == 1.5 ? AccentSeverity.warning : AccentSeverity.allowed);
+        expect(below.first.severity, threshold == 1.5 ? FrostAccentSeverity.rejected : FrostAccentSeverity.warning);
+        expect(above.first.severity, threshold == 1.5 ? FrostAccentSeverity.warning : FrostAccentSeverity.allowed);
       }
     }
   });
@@ -129,8 +126,8 @@ void main() {
         for (var green = 0; green <= 255; green += 51) {
           for (var blue = 0; blue <= 255; blue += 51) {
             final candidate = Color.fromARGB(255, red, green, blue);
-            if (!validateAccent(candidate, brightness).canApply) continue;
-            final palette = FreepivThemeTokens.palette(brightness, AppearanceTone.neutral, candidate);
+            if (!validateAccent(candidate, brightness, freepivFrostConfig.palettes).canApply) continue;
+            final palette = FrostPalettes.pink.palette(brightness, FrostTone.neutral, candidate);
             // Glyphs on the raw accent keep full text contrast.
             expect(colorContrast(candidate, palette.onAccent), greaterThanOrEqualTo(4.5));
             // Solid buttons keep the exact accent (never a darkened wine
@@ -183,8 +180,8 @@ void main() {
     await AppSettings.initialize(store: store);
     final loaded = AppSettings.appearance;
     expect(loaded.mode, ThemeMode.light);
-    expect(loaded.lightTone, AppearanceTone.cool);
-    expect(loaded.darkTone, AppearanceTone.warm);
+    expect(loaded.lightTone, FrostTone.cool);
+    expect(loaded.darkTone, FrostTone.warm);
     expect(loaded.lightAccent, const Color(0xFFFC619D));
     expect(loaded.darkAccent, const Color(0xFF00A68C));
     expect(loaded.lightCustomAccent, isNull);
@@ -195,7 +192,7 @@ void main() {
   test('the persistence boundary refuses unsafe accents without touching disk', () async {
     final store = MemorySettingsStore();
     await AppSettings.initialize(store: store);
-    await expectLater(AppSettings.saveAppearance(const AppearanceSettings(lightAccent: Colors.white)), throwsArgumentError);
+    await expectLater(AppSettings.saveAppearance(FrostAppearance.initial(FrostPalettes.pink).copyWith(lightAccent: Colors.white)), throwsArgumentError);
     expect(store.writes, isEmpty);
     expect(AppSettings.appearance.lightAccent, const Color(0xFFFC619D));
   });
@@ -213,13 +210,13 @@ void main() {
     addTearDown(container.dispose);
     final notifier = container.read(appearanceProvider.notifier);
     notifier.setMode(ThemeMode.light);
-    notifier.setTone(Brightness.light, AppearanceTone.cool);
+    notifier.setTone(Brightness.light, FrostTone.cool);
     notifier.setPreset(Brightness.light, const Color(0xFF4C8DFF));
     firstWrite.complete();
     await notifier.retrySave();
     final saved = AppSettings.appearance;
     expect(saved.mode, ThemeMode.light);
-    expect(saved.lightTone, AppearanceTone.cool);
+    expect(saved.lightTone, FrostTone.cool);
     expect(saved.lightAccent, const Color(0xFF4C8DFF));
     expect(container.read(appearanceProvider).unsaved, isFalse);
     expect(store.writes.every((entry) => entry.key == 'appearance'), isTrue);

@@ -1,21 +1,14 @@
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
-import 'package:freepiv/shared/widgets/constrained_segmented_button.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
-import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/app_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:freepiv/src/rust/api/proxy.dart' as system_proxy;
 
 Future<void> showProxySettingsDialog(BuildContext context) {
-  return showAppDialog<void>(context: context, builder: (context) => const ProxySettingsDialog());
+  return showFrostDialog<void>(context: context, builder: (context) => const ProxySettingsDialog());
 }
 
 class ProxySettingsDialog extends ConsumerStatefulWidget {
@@ -56,7 +49,7 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
   Widget build(BuildContext context) {
     final translations = context.t;
     final proxyTranslations = translations.settings.proxy;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final media = MediaQuery.of(context);
     final maxHeight = media.size.height - media.viewInsets.bottom - media.padding.vertical - 32;
 
@@ -64,13 +57,13 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       backgroundColor: Colors.transparent,
       child: AnimatedPadding(
-        duration: AppMotion.duration(context, const Duration(milliseconds: 180)),
+        duration: FrostMotion.duration(context, const Duration(milliseconds: 180)),
         curve: Curves.easeOutCubic,
         padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 560, maxHeight: maxHeight.clamp(200.0, double.infinity).toDouble()),
-          child: FpSurface(
-            role: FpSurfaceRole.overlay,
+          child: FrostSurface(
+            role: FrostSurfaceRole.overlay,
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
               child: Column(
@@ -140,7 +133,7 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
                       child: OutlinedButton.icon(
                         onPressed: _isFetchingSystemProxy ? null : _loadSystemProxy,
                         icon: _isFetchingSystemProxy
-                            ? const SizedBox.square(dimension: 16, child: LoadingSkeletonBlock())
+                            ? const SizedBox.square(dimension: 16, child: FrostSkeletonBlock())
                             : const Icon(Icons.travel_explore_outlined),
                         label: Text(proxyTranslations.loadSystem),
                       ),
@@ -169,7 +162,7 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
     final translations = t.settings.proxy;
 
     if (!isDesktopPlatform) {
-      AppToast.warning(translations.systemUnsupported);
+      FrostToast.warning(translations.systemUnsupported);
       return;
     }
 
@@ -186,7 +179,7 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
 
       final normalizedProxy = proxy == null ? null : normalizeProxyUrl(proxy);
       if (normalizedProxy == null) {
-        AppToast.warning(translations.systemNotFound);
+        FrostToast.warning(translations.systemNotFound);
         return;
       }
 
@@ -203,12 +196,12 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
         _protocol = proxyProtocolFromUrl(normalizedProxy);
         _clearErrors();
       });
-      AppToast.success(translations.systemLoaded);
+      FrostToast.success(translations.systemLoaded);
     } catch (error) {
       if (!mounted) {
         return;
       }
-      AppToast.errorWithCause(translations.systemLoadFailed, error);
+      toastErrorWithCause(translations.systemLoadFailed, error);
     } finally {
       if (mounted) {
         setState(() => _isFetchingSystemProxy = false);
@@ -258,10 +251,10 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
 
     try {
       ref.read(proxySettingsProvider.notifier).setProxySettings(AppProxySettings(enabled: _enabled, url: normalizedUrl));
-      AppToast.success(translations.saved);
+      FrostToast.success(translations.saved);
       Navigator.of(context).pop();
     } catch (error) {
-      AppToast.errorWithCause(translations.saveFailed, error);
+      toastErrorWithCause(translations.saveFailed, error);
     }
   }
 
@@ -274,7 +267,7 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
 class _HeaderIcon extends StatelessWidget {
   const _HeaderIcon({required this.tokens});
 
-  final FreepivThemeTokens tokens;
+  final FrostThemeTokens tokens;
 
   @override
   Widget build(BuildContext context) {
@@ -294,16 +287,16 @@ class _ProxyPowerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final translations = context.t.settings.proxy;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
       color: Colors.transparent,
-      child: AppClickSurface(
+      child: FrostClickSurface(
         borderRadius: BorderRadius.circular(8),
         onTap: () => onChanged(!enabled),
         child: AnimatedContainer(
-          duration: AppMotion.duration(context, const Duration(milliseconds: 180)),
+          duration: FrostMotion.duration(context, const Duration(milliseconds: 180)),
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
           decoration: BoxDecoration(
@@ -314,7 +307,7 @@ class _ProxyPowerTile extends StatelessWidget {
           child: Row(
             children: [
               SizedBox(
-                width: AppMetrics.selectionIndicatorWidth,
+                width: FrostMetrics.selectionIndicatorWidth,
                 height: 16,
                 child: DecoratedBox(
                   decoration: BoxDecoration(color: enabled ? tokens.selectionLine : Colors.transparent, borderRadius: BorderRadius.circular(2)),
@@ -339,7 +332,7 @@ class _ProxyPowerTile extends StatelessWidget {
                   ],
                 ),
               ),
-              AppSwitch(value: enabled, onChanged: onChanged),
+              FrostSwitch(value: enabled, onChanged: onChanged),
             ],
           ),
         ),
@@ -360,7 +353,7 @@ class _ProxyProtocolSelector extends StatelessWidget {
     final translations = context.t.settings.proxy;
 
     return AnimatedOpacity(
-      duration: AppMotion.duration(context, const Duration(milliseconds: 160)),
+      duration: FrostMotion.duration(context, const Duration(milliseconds: 160)),
       opacity: enabled ? 1 : 0.62,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,7 +362,7 @@ class _ProxyProtocolSelector extends StatelessWidget {
           const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
-            child: AppSegmentedButton<AppProxyProtocol>(
+            child: FrostSegmentedButton<AppProxyProtocol>(
               selected: {protocol},
               onSelectionChanged: enabled ? (selected) => onChanged(selected.first) : null,
               segments: [
@@ -408,7 +401,7 @@ class _ProxyEndpointFields extends StatelessWidget {
     final hasError = hostErrorText != null || portErrorText != null;
 
     return AnimatedOpacity(
-      duration: AppMotion.duration(context, const Duration(milliseconds: 160)),
+      duration: FrostMotion.duration(context, const Duration(milliseconds: 160)),
       opacity: enabled ? 1 : 0.62,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

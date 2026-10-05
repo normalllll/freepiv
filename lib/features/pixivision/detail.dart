@@ -1,14 +1,10 @@
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/data/data_list_source.dart';
-import 'package:freepiv/shared/widgets/load_state_switcher.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/refresh_dots.dart';
-import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'logic.dart';
 import 'navigation.dart';
@@ -40,17 +36,17 @@ class _PixivisionArticlePageState extends ConsumerState<PixivisionArticlePage> {
     final article = document?.article;
     return PixivisionScaffold(
       title: pixivisionArticleTitle(article?.title ?? 'pixivision'),
-      child: DotsRefreshIndicator(
+      child: FrostDotsRefreshIndicator(
         onRefresh: () async {
           ref.invalidate(pixivisionArticleProvider(widget.url));
           await ref.read(pixivisionArticleProvider(widget.url).future);
         },
         child: LayoutBuilder(
-          builder: (context, constraints) => LoadStateSwitcher(
+          builder: (context, constraints) => FrostLoadStateSwitcher(
             phase: switch (article) {
-              null when state.hasError => LoadPhase.error,
-              null => LoadPhase.loading,
-              _ => LoadPhase.content,
+              null when state.hasError => FrostLoadPhase.error,
+              null => FrostLoadPhase.loading,
+              _ => FrostLoadPhase.content,
             },
             child: _buildPhase(context, state, article, document, constraints),
           ),
@@ -214,9 +210,9 @@ class _ArticleHeader extends StatelessWidget {
             children: [
               if (category != null) ActionChip(label: Text(category.title), onPressed: () => onLink(category.url)),
               for (final tag in tags) ActionChip(label: Text('#${tag.name}'), onPressed: () => onLink(tag.url)),
-              AppMenuAnchor(
+              FrostMenuAnchor(
                 menuChildren: [
-                  for (final item in article?.translations ?? const <ArticleLink>[]) AppMenuItem(onPressed: () => onLink(item.url), child: Text(item.title)),
+                  for (final item in article?.translations ?? const <ArticleLink>[]) FrostMenuItem(onPressed: () => onLink(item.url), child: Text(item.title)),
                 ],
                 builder: (context, focusNode, toggle) => ActionChip(
                   focusNode: focusNode,
@@ -233,7 +229,7 @@ class _ArticleHeader extends StatelessWidget {
             // thumbnail here resized the skeleton once, and the loaded page
             // may place or drop the banner anyway, which resized it again.
             if (loaded == null)
-              const AspectRatio(aspectRatio: pixivisionBannerRatio, child: ImageLoadingSkeleton())
+              const AspectRatio(aspectRatio: pixivisionBannerRatio, child: FrostImageSkeleton())
             else
               PixivisionImageMenu(
                 url: thumbnail,
@@ -294,21 +290,21 @@ class _ArticleBodySkeleton extends StatelessWidget {
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
               widthFactor: line == 4 ? .65 : 1,
-              child: const LoadingSkeletonBlock(width: double.infinity, height: 16),
+              child: const FrostSkeletonBlock(width: double.infinity, height: 16),
             ),
           ),
         const SizedBox(height: 12),
-        const LoadingSkeletonBlock(width: double.infinity, height: 24),
+        const FrostSkeletonBlock(width: double.infinity, height: 24),
         const SizedBox(height: 8),
         const Row(
           children: [
-            ClipOval(child: SizedBox.square(dimension: 32, child: ImageLoadingSkeleton())),
+            ClipOval(child: SizedBox.square(dimension: 32, child: FrostImageSkeleton())),
             SizedBox(width: 8),
-            Flexible(child: LoadingSkeletonBlock(width: 120, height: 20)),
+            Flexible(child: FrostSkeletonBlock(width: 120, height: 20)),
           ],
         ),
         const SizedBox(height: 8),
-        const AspectRatio(aspectRatio: 16 / 9, child: ImageLoadingSkeleton()),
+        const AspectRatio(aspectRatio: 16 / 9, child: FrostImageSkeleton()),
         const SizedBox(height: 12),
       ],
     ],

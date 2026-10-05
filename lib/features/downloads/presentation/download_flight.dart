@@ -3,8 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:freepiv/app/router/app_router.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 /// A download entry (the sidebar dock or the phone's floating button) that
 /// can receive a flight: where its count badge is on screen, even before the
@@ -151,7 +150,7 @@ class _Token extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -194,7 +193,7 @@ mixin DownloadLandingBounce<T extends StatefulWidget> on State<T>, TickerProvide
   void bounce() {
     if (!mounted) return;
     if (MediaQuery.disableAnimationsOf(context)) return;
-    _landing.animateWith(SpringSimulation(AppMotion.snappy, _landing.value, 0, _landing.velocity + _kick));
+    _landing.animateWith(SpringSimulation(FrostMotion.snappy, _landing.value, 0, _landing.velocity + _kick));
   }
 
   Widget landingScale({required Widget child}) => AnimatedBuilder(

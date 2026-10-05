@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/error.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 class UserSliverFillBody extends StatelessWidget {
   const UserSliverFillBody({required this.child, required this.physics, this.sliverHeader, super.key});
@@ -11,7 +11,7 @@ class UserSliverFillBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataSliverFillBody(physics: physics, sliverHeader: sliverHeader, child: child);
+    return FrostSliverFillBody(physics: physics, sliverHeader: sliverHeader, child: child);
   }
 }
 
@@ -28,7 +28,7 @@ class UserErrorBody extends StatelessWidget {
     return UserSliverFillBody(
       physics: physics,
       sliverHeader: sliverHeader,
-      child: ErrorContent.fromError(error: error, onRetry: onRetry),
+      child: FrostErrorContent.fromError(error: error, onRetry: onRetry),
     );
   }
 }
@@ -47,7 +47,7 @@ class UserEmptyBody extends StatelessWidget {
     return UserSliverFillBody(
       physics: physics,
       sliverHeader: sliverHeader,
-      child: EmptyContent(icon: icon, title: title, message: message),
+      child: FrostEmptyContent(icon: FrostIconData.glyph(icon), title: title, message: message),
     );
   }
 }

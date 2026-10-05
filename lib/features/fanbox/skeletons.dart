@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'logic.dart';
@@ -18,8 +17,8 @@ class FanboxHomeSkeleton extends StatelessWidget {
           builder: (context, constraints) {
             return SizedBox(
               height: fanboxNavigationHeight(context),
-              child: ContentColumn(
-                bleed: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
+              child: FrostContentColumn(
+                bleed: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(0, 12, 0, 2),
                   child: Skeletonizer(

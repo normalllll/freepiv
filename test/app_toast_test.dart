@@ -2,8 +2,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 
 Future<void> _pumpHost(WidgetTester tester, TargetPlatform platform, {bool reduceMotion = false}) async {
@@ -16,7 +16,7 @@ Future<void> _pumpHost(WidgetTester tester, TargetPlatform platform, {bool reduc
         theme: AppTheme.dark(platform: platform, locale: const Locale('en')),
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(disableAnimations: reduceMotion),
-          child: AppToastHost(child: child!),
+          child: FrostToastHost(child: child!),
         ),
         home: const Scaffold(body: SizedBox.expand()),
       ),
@@ -29,7 +29,7 @@ void main() {
   duplicateToastTests();
   testWidgets('touch: a newer notice morphs the one capsule, and it leaves after its time', (tester) async {
     await _pumpHost(tester, TargetPlatform.android);
-    AppToast.success('Link copied');
+    FrostToast.success('Link copied');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('Link copied'), findsOneWidget);
@@ -38,7 +38,7 @@ void main() {
     expect(first.top, lessThan(80));
     expect(first.center.dx, closeTo(450, 120));
 
-    AppToast.info('Saved to downloads');
+    FrostToast.info('Saved to downloads');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
     expect(find.text('Saved to downloads'), findsOneWidget);
@@ -52,7 +52,7 @@ void main() {
 
   testWidgets('touch: swiping the capsule up dismisses it; a short drag springs back', (tester) async {
     await _pumpHost(tester, TargetPlatform.android);
-    AppToast.success('Link copied');
+    FrostToast.success('Link copied');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     await tester.drag(find.text('Link copied'), const Offset(0, -8));
@@ -65,9 +65,9 @@ void main() {
 
   testWidgets('desktop: cards stack bottom-right, spread on hover and close individually', (tester) async {
     await _pumpHost(tester, TargetPlatform.windows);
-    AppToast.success('First');
-    AppToast.error('Second');
-    AppToast.info('Third');
+    FrostToast.success('First');
+    FrostToast.error('Second');
+    FrostToast.info('Third');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
     for (final text in ['First', 'Second', 'Third']) {
@@ -113,7 +113,7 @@ void main() {
 
   testWidgets('reduced motion shows and removes notices without movement', (tester) async {
     await _pumpHost(tester, TargetPlatform.android, reduceMotion: true);
-    AppToast.success('Link copied');
+    FrostToast.success('Link copied');
     await tester.pump();
     await tester.pump();
     expect(find.text('Link copied'), findsOneWidget);
@@ -130,7 +130,7 @@ void main() {
 void errorToastTests() {
   testWidgets('a failed action shows one readable line without technical detail', (tester) async {
     await _pumpHost(tester, TargetPlatform.android);
-    AppToast.errorWithCause('Bookmark failed', const PixivError(kind: PixivErrorKind.httpClient, message: 'reqwest display: error sending request'));
+    toastErrorWithCause('Bookmark failed', const PixivError(kind: PixivErrorKind.httpClient, message: 'reqwest display: error sending request'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
     expect(find.textContaining('Bookmark failed'), findsOneWidget);
@@ -145,14 +145,14 @@ void duplicateToastTests() {
   testWidgets('desktop: identical notices fold into one card with a count', (tester) async {
     await _pumpHost(tester, TargetPlatform.windows);
     for (var i = 0; i < 3; i++) {
-      AppToast.success('Link copied');
+      FrostToast.success('Link copied');
       await tester.pump();
     }
     await tester.pump(const Duration(milliseconds: 600));
     expect(find.textContaining('Link copied'), findsOneWidget);
     expect(find.textContaining('×3'), findsOneWidget);
 
-    AppToast.info('Other');
+    FrostToast.info('Other');
     await tester.pump(const Duration(milliseconds: 600));
     expect(find.textContaining('Other'), findsOneWidget);
     await tester.pump(const Duration(seconds: 6));

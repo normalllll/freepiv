@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_related_waterfall.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
 import 'package:freepiv/shared/widgets/artwork_hero.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
@@ -35,7 +33,7 @@ class _IllustRelatedPageState extends ConsumerState<IllustRelatedPage> {
   @override
   Widget build(BuildContext context) {
     final source = ref.watch(illustRelatedWorksProvider(widget.illustId));
-    final desktop = AutoScaffold.usesHorizontalLayoutOf(context);
+    final desktop = FrostAutoScaffold.usesHorizontalLayoutOf(context);
     return Scaffold(
       body: SafeArea(
         top: false,
@@ -53,11 +51,11 @@ class _IllustRelatedPageState extends ConsumerState<IllustRelatedPage> {
                   snap: true,
                   backgroundColor: Colors.transparent,
                   surfaceTintColor: Colors.transparent,
-                  flexibleSpace: const PinnedChromeGlass(opacity: 1),
+                  flexibleSpace: const FrostPinnedChromeGlass(opacity: 1),
                   automaticallyImplyLeading: false,
-                  leading: FpPageHeader.leadingFor(context, onBack: _goBack),
-                  leadingWidth: FpPageHeader.leadingWidth,
-                  titleSpacing: FpPageHeader.titleSpacingOf(context, onBack: _goBack),
+                  leading: FrostPageHeader.leadingFor(context, onBack: _goBack),
+                  leadingWidth: FrostPageHeader.leadingWidth,
+                  titleSpacing: FrostPageHeader.titleSpacingOf(context, onBack: _goBack),
                   title: Text(context.t.illust.section.relatedWorks),
                 ),
         ),

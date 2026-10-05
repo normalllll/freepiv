@@ -7,10 +7,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/shared/ui/fp_grouped_rows.dart';
-import 'package:freepiv/shared/widgets/grouped_settings_list.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 void main() {
   testWidgets('settings rows share an undivided group with square middle feedback', (tester) async {
@@ -33,7 +31,7 @@ void main() {
           home: RepaintBoundary(
             key: boundary,
             child: Scaffold(
-              body: GroupedSettingsList(
+              body: FrostGroupedSettingsList(
                 groups: [
                   [
                     for (final label in ['First', 'Middle', 'Last']) ListTile(title: Text(label), onTap: () {}),
@@ -46,7 +44,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final group = find.byType(FpGroupedRows);
+    final group = find.byType(FrostGroupedRows);
     expect(group, findsOneWidget);
     expect(find.descendant(of: group, matching: find.byType(Divider)), findsNothing);
 
@@ -62,10 +60,10 @@ void main() {
       return value!.resolve(TextDirection.ltr);
     }
 
-    expect(corners('First').topLeft.x, AppMetrics.groupRadius);
+    expect(corners('First').topLeft.x, FrostMetrics.groupRadius);
     expect(corners('First').bottomLeft.x, 0);
     expect(corners('Middle'), BorderRadius.zero);
-    expect(corners('Last').bottomLeft.x, AppMetrics.groupRadius);
+    expect(corners('Last').bottomLeft.x, FrostMetrics.groupRadius);
 
     final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
     await mouse.addPointer();

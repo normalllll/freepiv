@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/shared/widgets/search_input.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_autocomplete_session.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_filter_bar.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/highlight_text_field.dart';
 
 class SearchField extends StatelessWidget {
   const SearchField({required this.type, required this.session, required this.onSubmitted, this.showFilters = true, super.key});
@@ -55,14 +53,14 @@ class SearchInputSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SearchInput(
+    return FrostSearchInput(
       controller: session.controller,
       focusNode: session.focusNode,
       hintText: context.t.discover.searchHint,
       onSubmitted: onSubmitted,
       onClear: session.clearAll,
       actions: [if (showFilters && type != SearchType.user) SearchFilterButton(type: type, allowTypeSelection: false, compact: true)],
-      field: HighlightTextField(
+      field: FrostHighlightTextField(
         autofocus: autofocus,
         controller: session.controller,
         rules: searchHighlightRules(context),
@@ -72,16 +70,16 @@ class SearchInputSurface extends StatelessWidget {
         onTapOutside: onTapOutside,
         maxLines: 1,
         style: Theme.of(context).textTheme.bodyMedium,
-        decoration: searchInputDecoration(context, context.t.discover.searchHint),
+        decoration: frostSearchInputDecoration(context, context.t.discover.searchHint),
       ),
     );
   }
 }
 
-List<HighlightRule> searchHighlightRules(BuildContext context) {
-  final tokens = FreepivThemeTokens.of(context);
+List<FrostHighlightRule> searchHighlightRules(BuildContext context) {
+  final tokens = FrostThemeTokens.of(context);
   return [
-    HighlightRule(
+    FrostHighlightRule(
       pattern: RegExp(r'^\S+$'),
       style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.w700),
     ),

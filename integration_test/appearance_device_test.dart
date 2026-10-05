@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/app/theme/appearance_logic.dart';
 import 'package:freepiv/core/services/app_settings.dart';
-import 'package:freepiv/core/services/appearance_settings.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:integration_test/integration_test.dart';
@@ -27,13 +26,17 @@ class _DeviceAppearanceApp extends ConsumerWidget {
     const locale = Locale('en', 'US');
     return MaterialApp(
       locale: locale,
-      theme: AppTheme.light(
+      theme: FrostTheme.build(
+        config: freepivFrostConfig,
+        brightness: Brightness.light,
         platform: defaultTargetPlatform,
         locale: locale,
         tone: appearance.effectiveToneFor(Brightness.light),
         accent: appearance.lightAccent,
       ),
-      darkTheme: AppTheme.dark(
+      darkTheme: FrostTheme.build(
+        config: freepivFrostConfig,
+        brightness: Brightness.dark,
         platform: defaultTargetPlatform,
         locale: locale,
         tone: appearance.effectiveToneFor(Brightness.dark),
@@ -55,7 +58,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(SettingsPage), findsOneWidget);
     void expectCanvas(Color expected) {
-      expect(FreepivThemeTokens.of(tester.element(find.byType(SettingsPage))).canvas, expected);
+      expect(FrostThemeTokens.of(tester.element(find.byType(SettingsPage))).canvas, expected);
       expect(tester.takeException(), isNull);
     }
 
@@ -92,8 +95,8 @@ void main() {
     await tester.pumpAndSettle();
     expectCanvas(const Color(0xFFF4F7FA));
     final appearance = ProviderScope.containerOf(tester.element(find.byType(SettingsPage))).read(appearanceProvider).settings;
-    expect(appearance.lightTone, AppearanceTone.cool);
-    expect(appearance.darkTone, AppearanceTone.warm);
+    expect(appearance.lightTone, FrostTone.cool);
+    expect(appearance.darkTone, FrostTone.warm);
 
     await tester.ensureVisible(find.text(t.settings.theme.custom));
     await tester.tap(find.text(t.settings.theme.custom));

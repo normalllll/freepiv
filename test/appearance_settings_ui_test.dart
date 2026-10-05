@@ -3,11 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/app/theme/appearance_logic.dart';
 import 'package:freepiv/core/services/app_settings.dart';
-import 'package:freepiv/core/services/appearance_settings.dart';
 import 'package:freepiv/features/settings/presentation/appearance_settings_section.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -180,7 +179,7 @@ void main() {
     });
     LocaleSettings.setLocaleSync(AppLocale.enUs);
     const chosen = Color(0xFF4C8DFF);
-    final settings = AppearanceSettings(mode: ThemeMode.light, lightTone: AppearanceTone.cool);
+    final settings = FrostAppearance.initial(FrostPalettes.pink).copyWith(mode: ThemeMode.light, lightTone: FrostTone.cool);
     await AppSettings.initialize(store: _MemoryStore({'appearance': settings.toRecord()}));
     await _pumpAppearance(tester, width: 800, scale: 1);
     await tester.tap(find.text(t.settings.theme.custom));
@@ -191,12 +190,12 @@ void main() {
     expect(find.text(t.settings.theme.rejectedLight), findsOneWidget);
     expect(tester.widget<FilledButton>(find.byType(FilledButton).last).onPressed, isNull);
     final container = ProviderScope.containerOf(tester.element(find.byType(_AppearanceHarness)));
-    expect(container.read(appearanceProvider).settings.lightAccent, FreepivThemeTokens.brandPink);
+    expect(container.read(appearanceProvider).settings.lightAccent, FrostPalettes.pink.lightDefaultAccent);
 
     await tester.enterText(find.byType(TextField).last, '#4c8dff');
     await tester.pump();
     final icon = tester.widget<Icon>(find.byIcon(Icons.favorite).last);
-    final palette = FreepivThemeTokens.palette(Brightness.light, AppearanceTone.cool, chosen);
+    final palette = FrostPalettes.pink.palette(Brightness.light, FrostTone.cool, chosen);
     expect(icon.color, palette.keyGraphicOn(palette.canvas));
     await tester.tap(find.byType(FilledButton).last);
     await tester.pumpAndSettle();

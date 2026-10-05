@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/router/navigator_stack_observer.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/app/router_shell.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
 import 'package:freepiv/core/downloads/download_manager.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/ui/fp_icon.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
@@ -23,13 +21,8 @@ void main() {
             width: 64,
             child: Column(
               children: [
-                for (final (label, icon) in [
-                  ('Home', FpIconName.home),
-                  ('Discover', FpIconName.compass),
-                  ('Activity', FpIconName.activity),
-                  ('More', FpIconName.more),
-                ])
-                  DesktopNavItem(label: label, fpIcon: icon, selected: false, onTap: () {}),
+                for (final (label, icon) in [('Home', PivIcons.home), ('Discover', PivIcons.compass), ('Activity', PivIcons.activity), ('More', PivIcons.more)])
+                  FrostNavItem(label: label, icon: icon, selected: false, onTap: () {}),
               ],
             ),
           ),
@@ -39,8 +32,8 @@ void main() {
     await tester.pumpAndSettle();
     final iconCenters = <double>[];
     for (final label in ['Home', 'Discover', 'Activity', 'More']) {
-      final row = find.byWidgetPredicate((widget) => widget is DesktopNavItem && widget.label == label);
-      iconCenters.add(tester.getCenter(find.descendant(of: row, matching: find.byType(FpIcon))).dx);
+      final row = find.byWidgetPredicate((widget) => widget is FrostNavItem && widget.label == label);
+      iconCenters.add(tester.getCenter(find.descendant(of: row, matching: find.byType(FrostIcon))).dx);
     }
     for (final center in iconCenters.skip(1)) {
       expect(center, closeTo(iconCenters.first, .1));
@@ -66,8 +59,8 @@ void main() {
     var homeMounts = 0;
     final navigatorKey = GlobalKey<NavigatorState>();
     final canPop = ValueNotifier<bool>(false);
-    late final NavigatorStackObserver observer;
-    observer = NavigatorStackObserver(() => canPop.value = observer.canPopPageRoute);
+    late final FrostNavigatorStackObserver observer;
+    observer = FrostNavigatorStackObserver(() => canPop.value = observer.canPopPageRoute);
     final router = GoRouter(
       routes: [
         ShellRoute(
@@ -98,7 +91,7 @@ void main() {
           child: MaterialApp.router(
             theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
             routerConfig: router,
-            builder: (context, child) => AppLayoutScope(child: child!),
+            builder: (context, child) => FrostLayoutScope(child: child!),
           ),
         ),
       ),
@@ -114,7 +107,7 @@ void main() {
     final navigationScroll = find.descendant(of: navigationList, matching: find.byType(Scrollable)).first;
     expect(tester.state<ScrollableState>(navigationScroll).position.maxScrollExtent, greaterThan(0));
     expect(find.byType(Scrollbar), findsNothing);
-    final downloads = find.byWidgetPredicate((widget) => widget is DesktopNavItem && widget.label == t.navigation.downloads);
+    final downloads = find.byWidgetPredicate((widget) => widget is FrostNavItem && widget.label == t.navigation.downloads);
     await tester.tap(downloads);
     await tester.pumpAndSettle();
     expect(find.text('Download destination'), findsOneWidget);

@@ -33,7 +33,7 @@ class IllustRelatedWaterfallView extends StatelessWidget {
     return AnimatedBuilder(
       animation: source,
       builder: (context, child) {
-        return DataLoadingCustomScrollView(
+        return FrostLoadingScrollView(
           slivers: [
             ?headerSliver,
             if (sourceIllust case final source?)
@@ -100,7 +100,7 @@ class IllustRelatedSlivers {
           ]
         : <Widget>[SliverToBoxAdapter(child: SizedBox(height: topPadding))];
 
-    if (source.phase == LoadPhase.loading) {
+    if (source.phase == FrostLoadPhase.loading) {
       return [
         ...titleSliver,
         const SliverIllustWaterfallSkeleton(
@@ -117,8 +117,8 @@ class IllustRelatedSlivers {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: CompactMessage(
-              icon: Icons.error_outline,
+            child: FrostCompactMessage(
+              icon: FrostIconData.glyph(Icons.error_outline),
               message: formatPixivError(lastError),
               details: pixivErrorDetails(lastError),
               actionLabel: translations.common.retry,
@@ -135,7 +135,7 @@ class IllustRelatedSlivers {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: CompactMessage(icon: Icons.image_not_supported_outlined, message: translations.illust.related.empty),
+            child: FrostCompactMessage(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), message: translations.illust.related.empty),
           ),
         ),
       ];
@@ -143,7 +143,8 @@ class IllustRelatedSlivers {
 
     return [
       ...titleSliver,
-      SliverDataWaterfallGrid<Illust>(
+      FrostSliverDataWaterfallGrid<Illust>(
+        firstLoadSkeleton: const FullScreenLoadingSkeleton(),
         source: source,
         padding: _relatedWaterfallPadding,
         crossAxisSpacing: _relatedWaterfallSpacing,

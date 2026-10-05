@@ -1,15 +1,12 @@
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:flutter/gestures.dart';
-import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/platform/reader_volume_keys.dart';
-import 'package:freepiv/app/router/reader_route_observer.dart';
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_header.dart';
 import 'package:freepiv/features/novel/presentation/reader/novel_reader_page.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
@@ -276,13 +273,13 @@ void main() {
   });
 
   testWidgets('reader back control uses shell ownership and mobile back action', (tester) async {
-    final reselection = ValueNotifier<({AppRoute route, int sequence})>((route: AppRoute.home, sequence: 0));
+    final reselection = ValueNotifier<({int index, int sequence})>((index: 0, sequence: 0));
     addTearDown(reselection.dispose);
     var returned = 0;
     Widget shellHost(bool desktop) => ProviderScope(
       child: MaterialApp(
         theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en', 'US')),
-        home: ShellNavigationScope(
+        home: FrostShellNavigationScope(
           ownsBackControl: desktop,
           canGoBack: true,
           goBack: () => returned++,
@@ -295,11 +292,11 @@ void main() {
     );
     await tester.pumpWidget(shellHost(true));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.arrow_back), findsNothing);
+    expect(find.byType(FrostCompactBackButton), findsNothing);
     await tester.pumpWidget(shellHost(false));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.arrow_back), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.arrow_back));
+    expect(find.byType(FrostCompactBackButton), findsOneWidget);
+    await tester.tap(find.byType(FrostCompactBackButton));
     expect(returned, 1);
   });
 
@@ -311,18 +308,18 @@ void main() {
     await tester.pumpWidget(_readerHost('Long reading ${'words ' * 180}[newpage]Final section.'));
     await tester.pumpAndSettle();
     expect(find.text('Auto scroll'), findsOneWidget);
-    final toggle = find.byType(AppSwitch);
-    expect(tester.widget<AppSwitch>(toggle).value, false);
+    final toggle = find.byType(FrostSwitch);
+    expect(tester.widget<FrostSwitch>(toggle).value, false);
     final scroll = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView).first).controller!;
     expect(scroll.position.maxScrollExtent, greaterThan(0));
     await tester.tap(toggle);
     await tester.pump();
-    expect(tester.widget<AppSwitch>(toggle).value, true);
+    expect(tester.widget<FrostSwitch>(toggle).value, true);
     scroll.jumpTo(scroll.position.maxScrollExtent);
     await tester.pump(const Duration(milliseconds: 16));
     expect(find.text('2 / 2 pages'), findsOneWidget);
     await tester.pump();
-    expect(tester.widget<AppSwitch>(toggle).value, false);
+    expect(tester.widget<FrostSwitch>(toggle).value, false);
     expect(find.text('Final section.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -355,7 +352,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(find.text(t.novel.reader.autoScroll).hitTestable(), findsOneWidget, reason: '$locale scale $scale');
-        expect(find.byType(AppSwitch).hitTestable(), findsOneWidget, reason: '$locale scale $scale');
+        expect(find.byType(FrostSwitch).hitTestable(), findsOneWidget, reason: '$locale scale $scale');
         expect(tester.takeException(), isNull, reason: '$locale scale $scale');
       }
     }
@@ -439,7 +436,7 @@ void main() {
     expect(enabled.last, false);
     await tester.tap(find.byTooltip('Reading settings'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(AppSwitchListTile));
+    await tester.tap(find.byType(FrostSwitchListTile));
     await tester.pumpAndSettle();
     expect(enabled.last, false);
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
@@ -526,7 +523,7 @@ WebviewNovel _webviewWithText(String text) => WebviewNovel(
 
 Widget _readerHost(String text, {ReaderVolumeKeys? volumeKeys, bool reducedMotion = false}) => ProviderScope(
   child: MaterialApp(
-    navigatorObservers: [readerRootRouteObserver],
+    navigatorObservers: [frostRootRouteObserver],
     theme: AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
     builder: (context, child) => MediaQuery(
       data: MediaQuery.of(context).copyWith(disableAnimations: reducedMotion),

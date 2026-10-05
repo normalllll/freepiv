@@ -172,7 +172,7 @@ SearchUserListSource searchUserResultSource(Ref ref, String keyword) {
   return source;
 }
 
-class SearchIllustListSource extends NextUrlListSource<Illust, SearchIllustPageResult> {
+class SearchIllustListSource extends FrostCursorListSource<Illust, SearchIllustPageResult> {
   SearchIllustListSource({required this.request});
 
   final SearchResultRequest request;
@@ -223,7 +223,7 @@ class SearchIllustListSource extends NextUrlListSource<Illust, SearchIllustPageR
   }
 }
 
-class SearchNovelListSource extends NextUrlListSource<Novel, SearchNovelPageResult> {
+class SearchNovelListSource extends FrostCursorListSource<Novel, SearchNovelPageResult> {
   SearchNovelListSource({required this.request});
 
   final SearchResultRequest request;
@@ -272,7 +272,7 @@ class SearchNovelListSource extends NextUrlListSource<Novel, SearchNovelPageResu
   }
 }
 
-class SearchUserListSource extends NextUrlListSource<UserPreview, UserPageResult> {
+class SearchUserListSource extends FrostCursorListSource<UserPreview, UserPageResult> {
   SearchUserListSource({required this.keyword});
 
   final String keyword;

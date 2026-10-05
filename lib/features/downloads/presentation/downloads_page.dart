@@ -1,23 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/shared/layout/fp_collapsing_header.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/downloads/presentation/download_bulk_actions.dart';
-import 'package:freepiv/shared/widgets/constrained_segmented_button.dart';
-import 'package:freepiv/shared/widgets/error.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/shared/widgets/refresh_dots.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/downloads/logic.dart';
 import 'package:freepiv/features/downloads/presentation/download_item_widgets.dart';
 import 'package:freepiv/features/downloads/presentation/download_task_widgets.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
 
 class DownloadsPage extends StatelessWidget {
   const DownloadsPage({this.focusItem, this.taskStream, super.key});
@@ -32,17 +26,17 @@ class DownloadsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+    return FrostAutoScaffold(
+      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
-          body: FpCollapsingHeader(
+          body: FrostCollapsingHeader(
             header: useHorizontalLayout ? null : _downloadsAppBar(),
             child: SafeArea(
               top: useHorizontalLayout,
               child: Column(
                 children: [
                   if (useHorizontalLayout)
-                    FpInlinePageHeading(
+                    FrostInlinePageHeading(
                       title: t.settings.downloads.tasksTitle,
                       actions: [
                         IconButton(tooltip: t.settings.downloads.sync, icon: const Icon(Icons.sync_outlined), onPressed: () => unawaited(_syncDownloads())),
@@ -61,8 +55,8 @@ class DownloadsPage extends StatelessWidget {
     );
   }
 
-  FpPageHeader _downloadsAppBar() {
-    return FpPageHeader(
+  FrostPageHeader _downloadsAppBar() {
+    return FrostPageHeader(
       title: Text(t.settings.downloads.tasksTitle),
       actions: [IconButton(tooltip: t.settings.downloads.sync, icon: const Icon(Icons.sync_outlined), onPressed: () => unawaited(_syncDownloads()))],
     );
@@ -72,7 +66,7 @@ class DownloadsPage extends StatelessWidget {
     try {
       await downloadManager.sync();
     } catch (error) {
-      AppToast.errorWithCause(t.settings.downloads.syncFailed, error);
+      toastErrorWithCause(t.settings.downloads.syncFailed, error);
     }
   }
 }
@@ -110,7 +104,7 @@ class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
       final focused = _focusKey.currentContext;
       if (!mounted || focused == null || _focusShown) return;
       _focusShown = true;
-      unawaited(Scrollable.ensureVisible(focused, duration: AppMotion.duration(context, AppMotion.expand), curve: Curves.easeInOutCubic, alignment: .1));
+      unawaited(Scrollable.ensureVisible(focused, duration: FrostMotion.duration(context, FrostMotion.expand), curve: Curves.easeInOutCubic, alignment: .1));
     });
   }
 
@@ -121,7 +115,7 @@ class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
       stream: _tasks,
       builder: (context, snapshot) {
         if (snapshot.hasError && !snapshot.hasData) {
-          return ErrorContent.fromError(error: snapshot.error!, onRetry: _retry);
+          return FrostErrorContent.fromError(error: snapshot.error!, onRetry: _retry);
         }
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         final tasks = snapshot.data!;
@@ -138,11 +132,11 @@ class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
             .toList(growable: false);
         if (widget.focusItem case final focus? when visible.any((item) => item.key == focus)) _showFocusedItem();
         final summary = DownloadSummary.fromTasks(tasks);
-        return DotsRefreshIndicator(
+        return FrostDotsRefreshIndicator(
           onRefresh: widget.onSync,
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final inset = AppMetrics.columnPadding(constraints.maxWidth).left;
+              final inset = FrostMetrics.columnPadding(constraints.maxWidth).left;
               return CustomScrollView(
                 key: const PageStorageKey('download-tasks'),
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -154,7 +148,7 @@ class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
                       // filter and bulk actions; ease the height instead of
                       // jumping the list.
                       child: AnimatedSize(
-                        duration: AppMotion.duration(context, AppMotion.expand),
+                        duration: FrostMotion.duration(context, FrostMotion.expand),
                         curve: Curves.easeInOutCubic,
                         alignment: Alignment.topCenter,
                         child: Column(
@@ -170,7 +164,7 @@ class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
                               alignment: WrapAlignment.spaceBetween,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                AppSegmentedButton<_TaskFilter>(
+                                FrostSegmentedButton<_TaskFilter>(
                                   showSelectedIcon: false,
                                   segments: [
                                     for (final filter in _TaskFilter.values)
@@ -190,7 +184,7 @@ class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
                                 DownloadBulkActions(tasks: tasks),
                               ],
                             ),
-                            if (snapshot.hasError) ErrorContent.fromError(error: snapshot.error!, onRetry: _retry),
+                            if (snapshot.hasError) FrostErrorContent.fromError(error: snapshot.error!, onRetry: _retry),
                             const SizedBox(height: 24),
                             if (visible.isEmpty) const DownloadEmptyState(),
                           ],
@@ -238,7 +232,7 @@ class _AnimatedItemListState extends State<_AnimatedItemList> {
     super.didUpdateWidget(oldWidget);
     if (identical(oldWidget.items, widget.items)) return;
     final list = _listKey.currentState;
-    final duration = AppMotion.duration(context, AppMotion.expand);
+    final duration = FrostMotion.duration(context, FrostMotion.expand);
     final next = widget.items;
     final nextKeys = {for (final item in next) item.key};
     if (list == null) {

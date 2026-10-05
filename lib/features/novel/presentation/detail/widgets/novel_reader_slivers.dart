@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -99,8 +99,8 @@ class _NovelEmbeddedMedia extends StatelessWidget {
             label: t.novel.detail.images,
             image: true,
             button: true,
-            child: AppClickSurface(
-              feedback: AppClickFeedback.artwork,
+            child: FrostClickSurface(
+              feedback: FrostClickFeedback.media,
               borderRadius: BorderRadius.circular(12),
               onTap: () => context.pushNamed(
                 AppRoute.originalImageViewer.name,

@@ -4,10 +4,9 @@ import 'dart:typed_data';
 
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
@@ -105,8 +104,8 @@ class IllustImagePager extends StatelessWidget {
               top: 0,
               bottom: 0,
               child: Center(
-                child: SurfaceIconButton(
-                  icon: Icons.chevron_left,
+                child: FrostSurfaceIconButton(
+                  icon: FrostIconData.glyph(Icons.chevron_left),
                   tooltip: context.t.illust.tooltip.previousImage,
                   onPressed: pageIndex == 0 ? null : () => _animateToPage(context, pageIndex - 1),
                 ),
@@ -117,8 +116,8 @@ class IllustImagePager extends StatelessWidget {
               top: 0,
               bottom: 0,
               child: Center(
-                child: SurfaceIconButton(
-                  icon: Icons.chevron_right,
+                child: FrostSurfaceIconButton(
+                  icon: FrostIconData.glyph(Icons.chevron_right),
                   tooltip: context.t.illust.tooltip.nextImage,
                   onPressed: pageIndex >= pageCount - 1 ? null : () => _animateToPage(context, pageIndex + 1),
                 ),
@@ -135,7 +134,7 @@ class IllustImagePager extends StatelessWidget {
       pageController.jumpToPage(index);
       return;
     }
-    pageController.animateToPage(index, duration: AppMotion.exit, curve: Curves.easeOutCubic);
+    pageController.animateToPage(index, duration: FrostMotion.exit, curve: Curves.easeOutCubic);
   }
 }
 
@@ -450,9 +449,9 @@ Future<void> _copyIllustLink(int illustId) async {
   final url = 'https://www.pixiv.net/artworks/$illustId';
   try {
     await copyTextToClipboard(url);
-    unawaited(AppToast.copied(t.illust.toast.linkCopied));
+    FrostToast.copied(t.illust.toast.linkCopied);
   } catch (error) {
-    AppToast.errorWithCause(t.illust.toast.linkCopyFailed, error);
+    toastErrorWithCause(t.illust.toast.linkCopyFailed, error);
   }
 }
 
@@ -463,7 +462,7 @@ Future<void> _openIllustOnPixiv(int illustId) async {
       throw StateError('No external application accepted the artwork URL.');
     }
   } catch (error) {
-    AppToast.errorWithCause(t.illust.toast.openFailed, error);
+    toastErrorWithCause(t.illust.toast.openFailed, error);
   }
 }
 
@@ -494,9 +493,9 @@ Future<void> _downloadImage(ArtworkSource artwork, int pageIndex, IllustPageImag
             sourceUrl: downloadUri,
             thumbnailUrl: image.previewUrl,
           );
-    AppToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
+    FrostToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
   } catch (error) {
-    AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
+    toastErrorWithCause(t.illust.toast.downloadFailed, error);
   }
 }
 
@@ -522,9 +521,9 @@ Future<void> _downloadAllImages(ArtworkSource artwork, List<IllustPageImage> ima
         ),
     ];
     final queuedCount = await downloadManager.enqueue(jobs);
-    AppToast.info(t.illust.toast.downloadAllQueued(count: queuedCount));
+    FrostToast.info(t.illust.toast.downloadAllQueued(count: queuedCount));
   } catch (error) {
-    AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
+    toastErrorWithCause(t.illust.toast.downloadFailed, error);
   }
 }
 
@@ -544,15 +543,15 @@ Future<void> _copyLoadedImage(IllustPageImage image, LoadedIllustImages loadedIm
   final label = _imageQualityLabel(image.quality);
   final loadedImageData = loadedImages.get(image.viewUrl);
   if (loadedImageData == null) {
-    AppToast.errorWithCause(t.illust.toast.copyFailed(label: label), StateError('Image has not finished loading.'));
+    toastErrorWithCause(t.illust.toast.copyFailed(label: label), StateError('Image has not finished loading.'));
     return;
   }
 
   try {
     await copyImageBytesToClipboard(loadedImageData.bytes, mimeType: loadedImageData.mimeType);
-    unawaited(AppToast.copied(t.illust.toast.copied(label: label)));
+    FrostToast.copied(t.illust.toast.copied(label: label));
   } catch (error) {
-    AppToast.errorWithCause(t.illust.toast.copyFailed(label: label), error);
+    toastErrorWithCause(t.illust.toast.copyFailed(label: label), error);
   }
 }
 
@@ -608,7 +607,7 @@ class _ImageLoadError extends StatelessWidget {
           child: Material(
             color: colorScheme.surface.withValues(alpha: 0.9),
             elevation: 2,
-            borderRadius: BorderRadius.circular(AppMetrics.controlRadius),
+            borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
             child: IconButton(tooltip: context.t.common.retry, icon: const Icon(Icons.refresh_outlined), onPressed: onRetry),
           ),
         ),
@@ -626,7 +625,7 @@ class _PageIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.58), borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.58), borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         child: Text(
@@ -718,7 +717,7 @@ class IllustPageActions {
     if (!canDownload) return;
     final index = pageIndex.clamp(0, imagePages.length - 1);
     if (await _isImageAlreadyDownloading(artwork.illustId, index)) {
-      AppToast.info(t.illust.toast.alreadyDownloading);
+      FrostToast.info(t.illust.toast.alreadyDownloading);
       return;
     }
     await _downloadImage(artwork, index, _page, loadedImages, origin: origin);
