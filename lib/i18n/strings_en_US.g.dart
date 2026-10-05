@@ -345,6 +345,9 @@ class Translations$search$en_US {
 	late final Translations$search$type$en_US type = Translations$search$type$en_US.internal(_root);
 	late final Translations$search$sort$en_US sort = Translations$search$sort$en_US.internal(_root);
 	late final Translations$search$target$en_US target = Translations$search$target$en_US.internal(_root);
+	late final Translations$search$contentType$en_US contentType = Translations$search$contentType$en_US.internal(_root);
+	late final Translations$search$ratio$en_US ratio = Translations$search$ratio$en_US.internal(_root);
+	late final Translations$search$size$en_US size = Translations$search$size$en_US.internal(_root);
 	late final Translations$search$date$en_US date = Translations$search$date$en_US.internal(_root);
 	late final Translations$search$bookmarks$en_US bookmarks = Translations$search$bookmarks$en_US.internal(_root);
 	late final Translations$search$direct$en_US direct = Translations$search$direct$en_US.internal(_root);
@@ -624,10 +627,6 @@ class Translations$settings$language$en_US {
 	// Translations
 	String get title => 'Language';
 	String get systemDefault => 'System default';
-	String get enUs => 'English (United States)';
-	String get zhCn => 'Simplified Chinese';
-	String get zhTw => 'Traditional Chinese';
-	String get jaJp => 'Japanese';
 }
 
 // Path: settings.images
@@ -808,7 +807,13 @@ class Translations$search$filters$en_US {
 	String get sort => 'Sort';
 	String get target => 'Target';
 	String get date => 'Date';
-	String get bookmarks => 'Bookmarks';
+	String get bookmarks => 'Bookmark tag';
+	String get contentType => 'Work type';
+	String get ratio => 'Shape';
+	String get size => 'Minimum size';
+	String get tool => 'Tool';
+	String get toolHint => 'e.g. Photoshop';
+	String get previewNote => 'Popular preview shows one batch of up to 30 of the most bookmarked works. Type, shape, size and tool filters do not apply.';
 }
 
 // Path: search.type
@@ -832,7 +837,7 @@ class Translations$search$sort$en_US {
 	// Translations
 	String get newest => 'Newest';
 	String get oldest => 'Oldest';
-	String get popular => 'Popular';
+	String get popularPreview => 'Popular preview';
 }
 
 // Path: search.target
@@ -845,6 +850,48 @@ class Translations$search$target$en_US {
 	String get tags => 'Tags';
 	String get exactTags => 'Exact tags';
 	String get titleAndCaption => 'Title & caption';
+	String get text => 'Body text';
+	String get keyword => 'Keywords';
+}
+
+// Path: search.contentType
+class Translations$search$contentType$en_US {
+	Translations$search$contentType$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get any => 'Any';
+	String get illust => 'Illustrations';
+	String get manga => 'Manga';
+	String get ugoira => 'Ugoira';
+	String get illustAndUgoira => 'Illust & ugoira';
+	String get all => 'Illust, manga & ugoira';
+}
+
+// Path: search.ratio
+class Translations$search$ratio$en_US {
+	Translations$search$ratio$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get any => 'Any';
+	String get landscape => 'Landscape';
+	String get portrait => 'Portrait';
+	String get square => 'Square';
+}
+
+// Path: search.size
+class Translations$search$size$en_US {
+	Translations$search$size$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get any => 'Any';
+	String minWidth({required Object px}) => 'Width ≥ ${px} px';
+	String minHeight({required Object px}) => 'Height ≥ ${px} px';
 }
 
 // Path: search.date
@@ -861,6 +908,8 @@ class Translations$search$date$en_US {
 	String get months6 => '6 months';
 	String get year1 => '1 year';
 	String get custom => 'Custom';
+	String get limitHint => 'A search covers at most one year; a longer range is cut to its last year.';
+	String get pickerHelp => 'Select a range (up to 1 year)';
 }
 
 // Path: search.bookmarks
@@ -870,8 +919,8 @@ class Translations$search$bookmarks$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
-	String get any => 'Any bookmarks';
-	String atLeast({required Object count}) => '${count}+ bookmarks';
+	String get any => 'Any';
+	String tagged({required Object count}) => '${count} users tag';
 }
 
 // Path: search.direct
@@ -1409,10 +1458,6 @@ extension on Translations {
 			'settings.theme.reduceTransparencyHint' => 'Use solid surfaces instead of blur',
 			'settings.language.title' => 'Language',
 			'settings.language.systemDefault' => 'System default',
-			'settings.language.enUs' => 'English (United States)',
-			'settings.language.zhCn' => 'Simplified Chinese',
-			'settings.language.zhTw' => 'Traditional Chinese',
-			'settings.language.jaJp' => 'Japanese',
 			'settings.images.title' => 'Images',
 			'settings.images.previewQuality' => 'Preview quality',
 			'settings.images.viewerQuality' => 'Viewer quality',
@@ -1580,16 +1625,37 @@ extension on Translations {
 			'search.filters.sort' => 'Sort',
 			'search.filters.target' => 'Target',
 			'search.filters.date' => 'Date',
-			'search.filters.bookmarks' => 'Bookmarks',
+			'search.filters.bookmarks' => 'Bookmark tag',
+			'search.filters.contentType' => 'Work type',
+			'search.filters.ratio' => 'Shape',
+			'search.filters.size' => 'Minimum size',
+			'search.filters.tool' => 'Tool',
+			'search.filters.toolHint' => 'e.g. Photoshop',
+			'search.filters.previewNote' => 'Popular preview shows one batch of up to 30 of the most bookmarked works. Type, shape, size and tool filters do not apply.',
 			'search.type.illustManga' => 'Illust & Manga',
 			'search.type.novel' => 'Novel',
 			'search.type.user' => 'User',
 			'search.sort.newest' => 'Newest',
 			'search.sort.oldest' => 'Oldest',
-			'search.sort.popular' => 'Popular',
+			'search.sort.popularPreview' => 'Popular preview',
 			'search.target.tags' => 'Tags',
 			'search.target.exactTags' => 'Exact tags',
 			'search.target.titleAndCaption' => 'Title & caption',
+			'search.target.text' => 'Body text',
+			'search.target.keyword' => 'Keywords',
+			'search.contentType.any' => 'Any',
+			'search.contentType.illust' => 'Illustrations',
+			'search.contentType.manga' => 'Manga',
+			'search.contentType.ugoira' => 'Ugoira',
+			'search.contentType.illustAndUgoira' => 'Illust & ugoira',
+			'search.contentType.all' => 'Illust, manga & ugoira',
+			'search.ratio.any' => 'Any',
+			'search.ratio.landscape' => 'Landscape',
+			'search.ratio.portrait' => 'Portrait',
+			'search.ratio.square' => 'Square',
+			'search.size.any' => 'Any',
+			'search.size.minWidth' => ({required Object px}) => 'Width ≥ ${px} px',
+			'search.size.minHeight' => ({required Object px}) => 'Height ≥ ${px} px',
 			'search.date.any' => 'Any date',
 			'search.date.today' => 'Today',
 			'search.date.days7' => '7 days',
@@ -1597,8 +1663,10 @@ extension on Translations {
 			'search.date.months6' => '6 months',
 			'search.date.year1' => '1 year',
 			'search.date.custom' => 'Custom',
-			'search.bookmarks.any' => 'Any bookmarks',
-			'search.bookmarks.atLeast' => ({required Object count}) => '${count}+ bookmarks',
+			'search.date.limitHint' => 'A search covers at most one year; a longer range is cut to its last year.',
+			'search.date.pickerHelp' => 'Select a range (up to 1 year)',
+			'search.bookmarks.any' => 'Any',
+			'search.bookmarks.tagged' => ({required Object count}) => '${count} users tag',
 			'search.direct.illust' => ({required Object id}) => 'Illust: ${id}',
 			'search.direct.user' => ({required Object id}) => 'User: ${id}',
 			'search.direct.novel' => ({required Object id}) => 'Novel: ${id}',
@@ -1774,6 +1842,8 @@ extension on Translations {
 			'follow.followed' => 'Following',
 			'follow.follow' => 'Follow',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter: ${username}',
+			_ => null,
+		} ?? switch (path) {
 			'richText.illustId' => ({required Object id}) => 'Illust ID: ${id}',
 			'richText.userId' => ({required Object id}) => 'User ID: ${id}',
 			'fanbox.accountConnected' => 'Connected',
@@ -1793,8 +1863,6 @@ extension on Translations {
 			'fanbox.bookmarks' => 'Saved posts',
 			'fanbox.login' => 'Sign in to FANBOX',
 			'fanbox.cookieHint' => 'Paste FANBOXSESSID or FANBOXSESSID=value',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.importSession' => 'Import session file',
 			'fanbox.openWebsite' => 'Open FANBOX website',
 			'fanbox.loginHelp' => 'Log in in your browser, then copy FANBOXSESSID from Developer Tools → Application → Cookies. Your Pixiv login is separate.',

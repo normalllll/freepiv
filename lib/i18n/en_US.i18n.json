@@ -128,11 +128,7 @@
     },
     "language": {
       "title": "Language",
-      "systemDefault": "System default",
-      "enUs": "English (United States)",
-      "zhCn": "Simplified Chinese",
-      "zhTw": "Traditional Chinese",
-      "jaJp": "Japanese"
+      "systemDefault": "System default"
     },
     "images": {
       "title": "Images",
@@ -324,7 +320,13 @@
       "sort": "Sort",
       "target": "Target",
       "date": "Date",
-      "bookmarks": "Bookmarks"
+      "bookmarks": "Bookmark tag",
+      "contentType": "Work type",
+      "ratio": "Shape",
+      "size": "Minimum size",
+      "tool": "Tool",
+      "toolHint": "e.g. Photoshop",
+      "previewNote": "Popular preview shows one batch of up to 30 of the most bookmarked works. Type, shape, size and tool filters do not apply."
     },
     "type": {
       "illustManga": "Illust & Manga",
@@ -334,12 +336,33 @@
     "sort": {
       "newest": "Newest",
       "oldest": "Oldest",
-      "popular": "Popular"
+      "popularPreview": "Popular preview"
     },
     "target": {
       "tags": "Tags",
       "exactTags": "Exact tags",
-      "titleAndCaption": "Title & caption"
+      "titleAndCaption": "Title & caption",
+      "text": "Body text",
+      "keyword": "Keywords"
+    },
+    "contentType": {
+      "any": "Any",
+      "illust": "Illustrations",
+      "manga": "Manga",
+      "ugoira": "Ugoira",
+      "illustAndUgoira": "Illust & ugoira",
+      "all": "Illust, manga & ugoira"
+    },
+    "ratio": {
+      "any": "Any",
+      "landscape": "Landscape",
+      "portrait": "Portrait",
+      "square": "Square"
+    },
+    "size": {
+      "any": "Any",
+      "minWidth": "Width ≥ $px px",
+      "minHeight": "Height ≥ $px px"
     },
     "date": {
       "any": "Any date",
@@ -348,11 +371,13 @@
       "month1": "1 month",
       "months6": "6 months",
       "year1": "1 year",
-      "custom": "Custom"
+      "custom": "Custom",
+      "limitHint": "A search covers at most one year; a longer range is cut to its last year.",
+      "pickerHelp": "Select a range (up to 1 year)"
     },
     "bookmarks": {
-      "any": "Any bookmarks",
-      "atLeast": "$count+ bookmarks"
+      "any": "Any",
+      "tagged": "$count users tag"
     },
     "direct": {
       "illust": "Illust: $id",

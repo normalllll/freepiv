@@ -343,6 +343,9 @@ class Translations$search$zh_Hant_TW extends Translations$search$en_US {
 	@override late final Translations$search$type$zh_Hant_TW type = Translations$search$type$zh_Hant_TW.internal(_root);
 	@override late final Translations$search$sort$zh_Hant_TW sort = Translations$search$sort$zh_Hant_TW.internal(_root);
 	@override late final Translations$search$target$zh_Hant_TW target = Translations$search$target$zh_Hant_TW.internal(_root);
+	@override late final Translations$search$contentType$zh_Hant_TW contentType = Translations$search$contentType$zh_Hant_TW.internal(_root);
+	@override late final Translations$search$ratio$zh_Hant_TW ratio = Translations$search$ratio$zh_Hant_TW.internal(_root);
+	@override late final Translations$search$size$zh_Hant_TW size = Translations$search$size$zh_Hant_TW.internal(_root);
 	@override late final Translations$search$date$zh_Hant_TW date = Translations$search$date$zh_Hant_TW.internal(_root);
 	@override late final Translations$search$bookmarks$zh_Hant_TW bookmarks = Translations$search$bookmarks$zh_Hant_TW.internal(_root);
 	@override late final Translations$search$direct$zh_Hant_TW direct = Translations$search$direct$zh_Hant_TW.internal(_root);
@@ -622,10 +625,6 @@ class Translations$settings$language$zh_Hant_TW extends Translations$settings$la
 	// Translations
 	@override String get title => '語言';
 	@override String get systemDefault => '跟隨系統';
-	@override String get enUs => 'English (United States)';
-	@override String get zhCn => '简体中文';
-	@override String get zhTw => '繁體中文';
-	@override String get jaJp => '日本語';
 }
 
 // Path: settings.images
@@ -806,7 +805,13 @@ class Translations$search$filters$zh_Hant_TW extends Translations$search$filters
 	@override String get sort => '排序';
 	@override String get target => '目標';
 	@override String get date => '日期';
-	@override String get bookmarks => '收藏數';
+	@override String get bookmarks => '收藏標籤';
+	@override String get contentType => '作品類型';
+	@override String get ratio => '構圖';
+	@override String get size => '最小尺寸';
+	@override String get tool => '工具';
+	@override String get toolHint => '例如 Photoshop';
+	@override String get previewNote => '熱門預覽只顯示一批最多 30 件收藏最多的作品，作品類型、構圖、尺寸和工具篩選不生效。';
 }
 
 // Path: search.type
@@ -830,7 +835,7 @@ class Translations$search$sort$zh_Hant_TW extends Translations$search$sort$en_US
 	// Translations
 	@override String get newest => '最新';
 	@override String get oldest => '最舊';
-	@override String get popular => '熱門';
+	@override String get popularPreview => '熱門預覽';
 }
 
 // Path: search.target
@@ -843,6 +848,48 @@ class Translations$search$target$zh_Hant_TW extends Translations$search$target$e
 	@override String get tags => '標籤';
 	@override String get exactTags => '精確標籤';
 	@override String get titleAndCaption => '標題與說明';
+	@override String get text => '內文';
+	@override String get keyword => '關鍵字';
+}
+
+// Path: search.contentType
+class Translations$search$contentType$zh_Hant_TW extends Translations$search$contentType$en_US {
+	Translations$search$contentType$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get any => '不限';
+	@override String get illust => '插畫';
+	@override String get manga => '漫畫';
+	@override String get ugoira => '動圖';
+	@override String get illustAndUgoira => '插畫與動圖';
+	@override String get all => '插畫、漫畫與動圖';
+}
+
+// Path: search.ratio
+class Translations$search$ratio$zh_Hant_TW extends Translations$search$ratio$en_US {
+	Translations$search$ratio$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get any => '不限';
+	@override String get landscape => '橫圖';
+	@override String get portrait => '直圖';
+	@override String get square => '正方形';
+}
+
+// Path: search.size
+class Translations$search$size$zh_Hant_TW extends Translations$search$size$en_US {
+	Translations$search$size$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get any => '不限';
+	@override String minWidth({required Object px}) => '寬度 ≥ ${px} px';
+	@override String minHeight({required Object px}) => '高度 ≥ ${px} px';
 }
 
 // Path: search.date
@@ -859,6 +906,8 @@ class Translations$search$date$zh_Hant_TW extends Translations$search$date$en_US
 	@override String get months6 => '6 個月';
 	@override String get year1 => '1 年';
 	@override String get custom => '自訂';
+	@override String get limitHint => '一次搜尋最多涵蓋一年，更長的範圍會被截為最後一年。';
+	@override String get pickerHelp => '選擇日期範圍（最多一年）';
 }
 
 // Path: search.bookmarks
@@ -868,8 +917,8 @@ class Translations$search$bookmarks$zh_Hant_TW extends Translations$search$bookm
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
-	@override String get any => '任意收藏數';
-	@override String atLeast({required Object count}) => '${count}+ 收藏';
+	@override String get any => '不限';
+	@override String tagged({required Object count}) => '${count} 收藏標籤';
 }
 
 // Path: search.direct
@@ -1407,10 +1456,6 @@ extension on TranslationsZhHantTw {
 			'settings.theme.reduceTransparencyHint' => '使用實色表面，不顯示模糊效果',
 			'settings.language.title' => '語言',
 			'settings.language.systemDefault' => '跟隨系統',
-			'settings.language.enUs' => 'English (United States)',
-			'settings.language.zhCn' => '简体中文',
-			'settings.language.zhTw' => '繁體中文',
-			'settings.language.jaJp' => '日本語',
 			'settings.images.title' => '圖片',
 			'settings.images.previewQuality' => '預覽品質',
 			'settings.images.viewerQuality' => '檢視品質',
@@ -1578,16 +1623,37 @@ extension on TranslationsZhHantTw {
 			'search.filters.sort' => '排序',
 			'search.filters.target' => '目標',
 			'search.filters.date' => '日期',
-			'search.filters.bookmarks' => '收藏數',
+			'search.filters.bookmarks' => '收藏標籤',
+			'search.filters.contentType' => '作品類型',
+			'search.filters.ratio' => '構圖',
+			'search.filters.size' => '最小尺寸',
+			'search.filters.tool' => '工具',
+			'search.filters.toolHint' => '例如 Photoshop',
+			'search.filters.previewNote' => '熱門預覽只顯示一批最多 30 件收藏最多的作品，作品類型、構圖、尺寸和工具篩選不生效。',
 			'search.type.illustManga' => '插畫&漫畫',
 			'search.type.novel' => '小說',
 			'search.type.user' => '使用者',
 			'search.sort.newest' => '最新',
 			'search.sort.oldest' => '最舊',
-			'search.sort.popular' => '熱門',
+			'search.sort.popularPreview' => '熱門預覽',
 			'search.target.tags' => '標籤',
 			'search.target.exactTags' => '精確標籤',
 			'search.target.titleAndCaption' => '標題與說明',
+			'search.target.text' => '內文',
+			'search.target.keyword' => '關鍵字',
+			'search.contentType.any' => '不限',
+			'search.contentType.illust' => '插畫',
+			'search.contentType.manga' => '漫畫',
+			'search.contentType.ugoira' => '動圖',
+			'search.contentType.illustAndUgoira' => '插畫與動圖',
+			'search.contentType.all' => '插畫、漫畫與動圖',
+			'search.ratio.any' => '不限',
+			'search.ratio.landscape' => '橫圖',
+			'search.ratio.portrait' => '直圖',
+			'search.ratio.square' => '正方形',
+			'search.size.any' => '不限',
+			'search.size.minWidth' => ({required Object px}) => '寬度 ≥ ${px} px',
+			'search.size.minHeight' => ({required Object px}) => '高度 ≥ ${px} px',
 			'search.date.any' => '任意日期',
 			'search.date.today' => '今天',
 			'search.date.days7' => '7 天',
@@ -1595,8 +1661,10 @@ extension on TranslationsZhHantTw {
 			'search.date.months6' => '6 個月',
 			'search.date.year1' => '1 年',
 			'search.date.custom' => '自訂',
-			'search.bookmarks.any' => '任意收藏數',
-			'search.bookmarks.atLeast' => ({required Object count}) => '${count}+ 收藏',
+			'search.date.limitHint' => '一次搜尋最多涵蓋一年，更長的範圍會被截為最後一年。',
+			'search.date.pickerHelp' => '選擇日期範圍（最多一年）',
+			'search.bookmarks.any' => '不限',
+			'search.bookmarks.tagged' => ({required Object count}) => '${count} 收藏標籤',
 			'search.direct.illust' => ({required Object id}) => '插畫：${id}',
 			'search.direct.user' => ({required Object id}) => '使用者：${id}',
 			'search.direct.novel' => ({required Object id}) => '小說：${id}',
@@ -1772,6 +1840,8 @@ extension on TranslationsZhHantTw {
 			'follow.followed' => '已關注',
 			'follow.follow' => '關注',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
+			_ => null,
+		} ?? switch (path) {
 			'richText.illustId' => ({required Object id}) => '插畫 ID：${id}',
 			'richText.userId' => ({required Object id}) => '使用者 ID：${id}',
 			'fanbox.accountConnected' => '已登入',
@@ -1791,8 +1861,6 @@ extension on TranslationsZhHantTw {
 			'fanbox.bookmarks' => '本機收藏',
 			'fanbox.login' => '登入 FANBOX',
 			'fanbox.cookieHint' => '貼上 FANBOXSESSID 的值或 FANBOXSESSID=值',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.importSession' => '匯入登入檔案',
 			'fanbox.openWebsite' => '開啟 FANBOX 網站',
 			'fanbox.loginHelp' => '在瀏覽器登入後，從開發人員工具 → 應用程式 → Cookies 複製 FANBOXSESSID。FANBOX 與 Pixiv 分別登入。',

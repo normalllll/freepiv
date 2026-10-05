@@ -343,6 +343,9 @@ class Translations$search$zh_CN extends Translations$search$en_US {
 	@override late final Translations$search$type$zh_CN type = Translations$search$type$zh_CN.internal(_root);
 	@override late final Translations$search$sort$zh_CN sort = Translations$search$sort$zh_CN.internal(_root);
 	@override late final Translations$search$target$zh_CN target = Translations$search$target$zh_CN.internal(_root);
+	@override late final Translations$search$contentType$zh_CN contentType = Translations$search$contentType$zh_CN.internal(_root);
+	@override late final Translations$search$ratio$zh_CN ratio = Translations$search$ratio$zh_CN.internal(_root);
+	@override late final Translations$search$size$zh_CN size = Translations$search$size$zh_CN.internal(_root);
 	@override late final Translations$search$date$zh_CN date = Translations$search$date$zh_CN.internal(_root);
 	@override late final Translations$search$bookmarks$zh_CN bookmarks = Translations$search$bookmarks$zh_CN.internal(_root);
 	@override late final Translations$search$direct$zh_CN direct = Translations$search$direct$zh_CN.internal(_root);
@@ -622,10 +625,6 @@ class Translations$settings$language$zh_CN extends Translations$settings$languag
 	// Translations
 	@override String get title => '语言';
 	@override String get systemDefault => '跟随系统';
-	@override String get enUs => 'English (United States)';
-	@override String get zhCn => '简体中文';
-	@override String get zhTw => '繁體中文';
-	@override String get jaJp => '日本語';
 }
 
 // Path: settings.images
@@ -806,7 +805,13 @@ class Translations$search$filters$zh_CN extends Translations$search$filters$en_U
 	@override String get sort => '排序';
 	@override String get target => '目标';
 	@override String get date => '日期';
-	@override String get bookmarks => '收藏数';
+	@override String get bookmarks => '收藏标签';
+	@override String get contentType => '作品类型';
+	@override String get ratio => '构图';
+	@override String get size => '最小尺寸';
+	@override String get tool => '工具';
+	@override String get toolHint => '例如 Photoshop';
+	@override String get previewNote => '热门预览只显示一批最多 30 件收藏最多的作品，作品类型、构图、尺寸和工具筛选不生效。';
 }
 
 // Path: search.type
@@ -830,7 +835,7 @@ class Translations$search$sort$zh_CN extends Translations$search$sort$en_US {
 	// Translations
 	@override String get newest => '最新';
 	@override String get oldest => '最旧';
-	@override String get popular => '热门';
+	@override String get popularPreview => '热门预览';
 }
 
 // Path: search.target
@@ -843,6 +848,48 @@ class Translations$search$target$zh_CN extends Translations$search$target$en_US 
 	@override String get tags => '标签';
 	@override String get exactTags => '精确标签';
 	@override String get titleAndCaption => '标题与说明';
+	@override String get text => '正文';
+	@override String get keyword => '关键词';
+}
+
+// Path: search.contentType
+class Translations$search$contentType$zh_CN extends Translations$search$contentType$en_US {
+	Translations$search$contentType$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get any => '不限';
+	@override String get illust => '插画';
+	@override String get manga => '漫画';
+	@override String get ugoira => '动图';
+	@override String get illustAndUgoira => '插画与动图';
+	@override String get all => '插画、漫画与动图';
+}
+
+// Path: search.ratio
+class Translations$search$ratio$zh_CN extends Translations$search$ratio$en_US {
+	Translations$search$ratio$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get any => '不限';
+	@override String get landscape => '横图';
+	@override String get portrait => '竖图';
+	@override String get square => '正方形';
+}
+
+// Path: search.size
+class Translations$search$size$zh_CN extends Translations$search$size$en_US {
+	Translations$search$size$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get any => '不限';
+	@override String minWidth({required Object px}) => '宽度 ≥ ${px} px';
+	@override String minHeight({required Object px}) => '高度 ≥ ${px} px';
 }
 
 // Path: search.date
@@ -859,6 +906,8 @@ class Translations$search$date$zh_CN extends Translations$search$date$en_US {
 	@override String get months6 => '6 个月';
 	@override String get year1 => '1 年';
 	@override String get custom => '自定义';
+	@override String get limitHint => '一次搜索最多覆盖一年，更长的范围会被截为最后一年。';
+	@override String get pickerHelp => '选择日期范围（最多一年）';
 }
 
 // Path: search.bookmarks
@@ -868,8 +917,8 @@ class Translations$search$bookmarks$zh_CN extends Translations$search$bookmarks$
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
-	@override String get any => '任意收藏数';
-	@override String atLeast({required Object count}) => '${count}+ 收藏';
+	@override String get any => '不限';
+	@override String tagged({required Object count}) => '${count} 收藏标签';
 }
 
 // Path: search.direct
@@ -1407,10 +1456,6 @@ extension on TranslationsZhCn {
 			'settings.theme.reduceTransparencyHint' => '使用实色表面，不显示模糊效果',
 			'settings.language.title' => '语言',
 			'settings.language.systemDefault' => '跟随系统',
-			'settings.language.enUs' => 'English (United States)',
-			'settings.language.zhCn' => '简体中文',
-			'settings.language.zhTw' => '繁體中文',
-			'settings.language.jaJp' => '日本語',
 			'settings.images.title' => '图片',
 			'settings.images.previewQuality' => '预览质量',
 			'settings.images.viewerQuality' => '查看质量',
@@ -1578,16 +1623,37 @@ extension on TranslationsZhCn {
 			'search.filters.sort' => '排序',
 			'search.filters.target' => '目标',
 			'search.filters.date' => '日期',
-			'search.filters.bookmarks' => '收藏数',
+			'search.filters.bookmarks' => '收藏标签',
+			'search.filters.contentType' => '作品类型',
+			'search.filters.ratio' => '构图',
+			'search.filters.size' => '最小尺寸',
+			'search.filters.tool' => '工具',
+			'search.filters.toolHint' => '例如 Photoshop',
+			'search.filters.previewNote' => '热门预览只显示一批最多 30 件收藏最多的作品，作品类型、构图、尺寸和工具筛选不生效。',
 			'search.type.illustManga' => '插画&漫画',
 			'search.type.novel' => '小说',
 			'search.type.user' => '用户',
 			'search.sort.newest' => '最新',
 			'search.sort.oldest' => '最旧',
-			'search.sort.popular' => '热门',
+			'search.sort.popularPreview' => '热门预览',
 			'search.target.tags' => '标签',
 			'search.target.exactTags' => '精确标签',
 			'search.target.titleAndCaption' => '标题与说明',
+			'search.target.text' => '正文',
+			'search.target.keyword' => '关键词',
+			'search.contentType.any' => '不限',
+			'search.contentType.illust' => '插画',
+			'search.contentType.manga' => '漫画',
+			'search.contentType.ugoira' => '动图',
+			'search.contentType.illustAndUgoira' => '插画与动图',
+			'search.contentType.all' => '插画、漫画与动图',
+			'search.ratio.any' => '不限',
+			'search.ratio.landscape' => '横图',
+			'search.ratio.portrait' => '竖图',
+			'search.ratio.square' => '正方形',
+			'search.size.any' => '不限',
+			'search.size.minWidth' => ({required Object px}) => '宽度 ≥ ${px} px',
+			'search.size.minHeight' => ({required Object px}) => '高度 ≥ ${px} px',
 			'search.date.any' => '任意日期',
 			'search.date.today' => '今天',
 			'search.date.days7' => '7 天',
@@ -1595,8 +1661,10 @@ extension on TranslationsZhCn {
 			'search.date.months6' => '6 个月',
 			'search.date.year1' => '1 年',
 			'search.date.custom' => '自定义',
-			'search.bookmarks.any' => '任意收藏数',
-			'search.bookmarks.atLeast' => ({required Object count}) => '${count}+ 收藏',
+			'search.date.limitHint' => '一次搜索最多覆盖一年，更长的范围会被截为最后一年。',
+			'search.date.pickerHelp' => '选择日期范围（最多一年）',
+			'search.bookmarks.any' => '不限',
+			'search.bookmarks.tagged' => ({required Object count}) => '${count} 收藏标签',
 			'search.direct.illust' => ({required Object id}) => '插画：${id}',
 			'search.direct.user' => ({required Object id}) => '用户：${id}',
 			'search.direct.novel' => ({required Object id}) => '小说：${id}',
@@ -1772,6 +1840,8 @@ extension on TranslationsZhCn {
 			'follow.followed' => '已关注',
 			'follow.follow' => '关注',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
+			_ => null,
+		} ?? switch (path) {
 			'richText.illustId' => ({required Object id}) => '插画 ID：${id}',
 			'richText.userId' => ({required Object id}) => '用户 ID：${id}',
 			'fanbox.accountConnected' => '已登录',
@@ -1791,8 +1861,6 @@ extension on TranslationsZhCn {
 			'fanbox.bookmarks' => '本地收藏',
 			'fanbox.login' => '登录 FANBOX',
 			'fanbox.cookieHint' => '粘贴 FANBOXSESSID 的值或 FANBOXSESSID=值',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.importSession' => '导入登录文件',
 			'fanbox.openWebsite' => '打开 FANBOX 网站',
 			'fanbox.loginHelp' => '在浏览器登录后，从开发者工具 → 应用程序 → Cookies 复制 FANBOXSESSID。FANBOX 与 Pixiv 分别登录。',

@@ -128,11 +128,7 @@
     },
     "language": {
       "title": "语言",
-      "systemDefault": "跟随系统",
-      "enUs": "English (United States)",
-      "zhCn": "简体中文",
-      "zhTw": "繁體中文",
-      "jaJp": "日本語"
+      "systemDefault": "跟随系统"
     },
     "images": {
       "title": "图片",
@@ -324,7 +320,13 @@
       "sort": "排序",
       "target": "目标",
       "date": "日期",
-      "bookmarks": "收藏数"
+      "bookmarks": "收藏标签",
+      "contentType": "作品类型",
+      "ratio": "构图",
+      "size": "最小尺寸",
+      "tool": "工具",
+      "toolHint": "例如 Photoshop",
+      "previewNote": "热门预览只显示一批最多 30 件收藏最多的作品，作品类型、构图、尺寸和工具筛选不生效。"
     },
     "type": {
       "illustManga": "插画&漫画",
@@ -334,12 +336,33 @@
     "sort": {
       "newest": "最新",
       "oldest": "最旧",
-      "popular": "热门"
+      "popularPreview": "热门预览"
     },
     "target": {
       "tags": "标签",
       "exactTags": "精确标签",
-      "titleAndCaption": "标题与说明"
+      "titleAndCaption": "标题与说明",
+      "text": "正文",
+      "keyword": "关键词"
+    },
+    "contentType": {
+      "any": "不限",
+      "illust": "插画",
+      "manga": "漫画",
+      "ugoira": "动图",
+      "illustAndUgoira": "插画与动图",
+      "all": "插画、漫画与动图"
+    },
+    "ratio": {
+      "any": "不限",
+      "landscape": "横图",
+      "portrait": "竖图",
+      "square": "正方形"
+    },
+    "size": {
+      "any": "不限",
+      "minWidth": "宽度 ≥ $px px",
+      "minHeight": "高度 ≥ $px px"
     },
     "date": {
       "any": "任意日期",
@@ -348,11 +371,13 @@
       "month1": "1 个月",
       "months6": "6 个月",
       "year1": "1 年",
-      "custom": "自定义"
+      "custom": "自定义",
+      "limitHint": "一次搜索最多覆盖一年，更长的范围会被截为最后一年。",
+      "pickerHelp": "选择日期范围（最多一年）"
     },
     "bookmarks": {
-      "any": "任意收藏数",
-      "atLeast": "$count+ 收藏"
+      "any": "不限",
+      "tagged": "$count 收藏标签"
     },
     "direct": {
       "illust": "插画：$id",
