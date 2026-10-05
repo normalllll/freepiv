@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/shared/data/data_list_source.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
-import 'package:freepiv/shared/widgets/load_state_switcher.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 Widget _scrollBody(String label) => CustomScrollView(
   key: ValueKey(label),
@@ -14,7 +11,7 @@ void main() {
   testWidgets('first phase shows immediately and a change cross-fades without sharing the scroll controller', (tester) async {
     final controller = ScrollController();
     addTearDown(controller.dispose);
-    var phase = LoadPhase.loading;
+    var phase = FrostLoadPhase.loading;
     late StateSetter setPhase;
     await tester.pumpWidget(
       MaterialApp(
@@ -24,7 +21,7 @@ void main() {
           child: StatefulBuilder(
             builder: (context, setState) {
               setPhase = setState;
-              return LoadStateSwitcher(phase: phase, child: _scrollBody(phase.name));
+              return FrostLoadStateSwitcher(phase: phase, child: _scrollBody(phase.name));
             },
           ),
         ),
@@ -33,12 +30,12 @@ void main() {
     // Cached content on a revisit must not fade in.
     expect(tester.widget<FadeTransition>(find.ancestor(of: find.text('loading 0'), matching: find.byType(FadeTransition)).first).opacity.value, 1);
 
-    setPhase(() => phase = LoadPhase.content);
+    setPhase(() => phase = FrostLoadPhase.content);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 60));
-    // Both phases are on screen mid-fade, and only the incoming one owns the
-    // inherited controller.
-    expect(find.text('loading 0'), findsOneWidget);
+    // Mid-fade the outgoing phase is only a painted frame: one live tree owns
+    // the inherited controller.
+    expect(find.text('loading 0'), findsNothing);
     expect(find.text('content 0'), findsOneWidget);
     expect(controller.positions, hasLength(1));
     expect(tester.takeException(), isNull);
@@ -61,21 +58,21 @@ void main() {
           textDirection: TextDirection.ltr,
           child: Align(
             alignment: Alignment.topLeft,
-            child: ContentColumn(child: box),
+            child: FrostContentColumn(child: box),
           ),
         ),
       );
       final rect = tester.getRect(find.byKey(const ValueKey('box')));
-      final padding = AppMetrics.columnPadding(width);
+      final padding = FrostMetrics.columnPadding(width);
       expect(rect.left, padding.left, reason: '$width');
-      expect(rect.width, lessThanOrEqualTo(AppMetrics.contentMaxWidth - AppMetrics.browseInset(width) * 2 + .01), reason: '$width');
+      expect(rect.width, lessThanOrEqualTo(FrostMetrics.contentMaxWidth - FrostMetrics.browseInset(width) * 2 + .01), reason: '$width');
       // A bleeding row reaches past the column by exactly its own inset.
       await tester.pumpWidget(
         const Directionality(
           textDirection: TextDirection.ltr,
           child: Align(
             alignment: Alignment.topLeft,
-            child: ContentColumn(bleed: 12, child: box),
+            child: FrostContentColumn(bleed: 12, child: box),
           ),
         ),
       );

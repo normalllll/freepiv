@@ -1,13 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -26,7 +23,10 @@ class SearchTrendingTagsSliver extends ConsumerWidget {
     if (error != null && trendTags.isEmpty) {
       return SliverFillRemaining(
         hasScrollBody: false,
-        child: ErrorContent.fromError(error: error, onRetry: () => unawaited(ref.read(searchTrendingTagsProvider.notifier).reload(keepPreviousData: false))),
+        child: FrostErrorContent.fromError(
+          error: error,
+          onRetry: () => unawaited(ref.read(searchTrendingTagsProvider.notifier).reload(keepPreviousData: false)),
+        ),
       );
     }
 
@@ -37,14 +37,18 @@ class SearchTrendingTagsSliver extends ConsumerWidget {
     if (trendTags.isEmpty) {
       return SliverFillRemaining(
         hasScrollBody: false,
-        child: EmptyContent(icon: Icons.tag_outlined, title: context.t.search.emptyTrendingTitle, message: context.t.search.emptyTrendingMessage),
+        child: FrostEmptyContent(
+          icon: FrostIconData.glyph(Icons.tag_outlined),
+          title: context.t.search.emptyTrendingTitle,
+          message: context.t.search.emptyTrendingMessage,
+        ),
       );
     }
 
     return SliverLayoutBuilder(
       builder: (context, outerConstraints) {
         return SliverPadding(
-          padding: AppMetrics.columnPadding(outerConstraints.crossAxisExtent).copyWith(bottom: 24),
+          padding: FrostMetrics.columnPadding(outerConstraints.crossAxisExtent).copyWith(bottom: 24),
           sliver: SliverLayoutBuilder(
             builder: (context, constraints) {
               return SliverGrid.builder(
@@ -78,7 +82,7 @@ class _TrendingTagCard extends StatelessWidget {
     final translatedName = trendTag.translatedName;
     final accent = _trendAccent(context);
 
-    return EnergeticCard(
+    return FrostCard(
       accentColor: accent,
       onTap: onTap,
       child: Stack(
@@ -138,7 +142,7 @@ class _TrendingTagGridSkeleton extends StatelessWidget {
     return SliverLayoutBuilder(
       builder: (context, outerConstraints) {
         return SliverPadding(
-          padding: AppMetrics.columnPadding(outerConstraints.crossAxisExtent).copyWith(bottom: 24),
+          padding: FrostMetrics.columnPadding(outerConstraints.crossAxisExtent).copyWith(bottom: 24),
           sliver: SliverLayoutBuilder(
             builder: (context, constraints) {
               return SliverGrid.builder(
@@ -199,6 +203,6 @@ double _gridMaxExtent(double width) {
 }
 
 Color _trendAccent(BuildContext context) {
-  final tokens = FreepivThemeTokens.of(context);
-  return tokens.brand;
+  final tokens = FrostThemeTokens.of(context);
+  return tokens.accent;
 }

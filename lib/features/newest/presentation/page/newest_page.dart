@@ -3,16 +3,16 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/shared/widgets/mouse_drag_scroll.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_audience_tab.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_feed.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_labels.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_toolbar.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_filters.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
-import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
 
 class NewestPage extends ConsumerStatefulWidget {
   const NewestPage({super.key});
@@ -24,7 +24,7 @@ class NewestPage extends ConsumerStatefulWidget {
 class _NewestPageState extends ConsumerState<NewestPage> with SingleTickerProviderStateMixin {
   late final TabController _audienceTabController;
   final _feedScrollables = <NewestFeedKey, ScrollableState>{};
-  ValueListenable<({AppRoute route, int sequence})>? _primaryReselection;
+  ValueListenable<({int index, int sequence})>? _primaryReselection;
 
   @override
   void initState() {
@@ -53,7 +53,7 @@ class _NewestPageState extends ConsumerState<NewestPage> with SingleTickerProvid
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final next = ShellNavigationScope.maybeOf(context)?.primaryReselection;
+    final next = FrostShellNavigationScope.maybeOf(context)?.primaryReselection;
     if (identical(next, _primaryReselection)) return;
     _primaryReselection?.removeListener(_handlePrimaryReselection);
     _primaryReselection = next;
@@ -62,13 +62,13 @@ class _NewestPageState extends ConsumerState<NewestPage> with SingleTickerProvid
 
   void _handlePrimaryReselection() {
     final signal = _primaryReselection?.value;
-    if (signal == null || signal.route != AppRoute.newest || signal.sequence == 0) return;
+    if (signal == null || appRouteDestinations[signal.index].route != AppRoute.newest || signal.sequence == 0) return;
     final audience = newestAudienceForIndex(_audienceTabController.index);
     final key = ref.read(newestProvider).keyForAudience(audience);
     final scrollable = _feedScrollables[key];
     if (scrollable == null || !scrollable.mounted) return;
     final position = scrollable.position;
-    final duration = AppMotion.duration(context, AppMotion.navigation);
+    final duration = FrostMotion.duration(context, FrostMotion.navigation);
     if (duration == Duration.zero) {
       position.jumpTo(0);
     } else {
@@ -107,7 +107,7 @@ class _NewestPageState extends ConsumerState<NewestPage> with SingleTickerProvid
 
     final notifier = ref.read(newestProvider.notifier);
     return Scaffold(
-      body: FpPinnedChrome(
+      body: FrostPinnedChrome(
         extent: MediaQuery.paddingOf(context).top + NewestToolbar.height,
         chrome: NewestToolbar(
           tabController: _audienceTabController,
@@ -126,11 +126,14 @@ class _NewestPageState extends ConsumerState<NewestPage> with SingleTickerProvid
               onNotification: (notification) => _captureFeedScrollable(notification.context, notification.metrics.axis),
               child: NotificationListener<ScrollNotification>(
                 onNotification: (notification) => _captureFeedScrollable(notification.context, notification.metrics.axis),
-                child: TabBarView(
-                  controller: _audienceTabController,
-                  children: [
-                    for (final audience in NewestAudience.values) NewestAudienceTab(key: PageStorageKey('newest-$audience'), audience: audience, state: state),
-                  ],
+                child: MouseDragScroll(
+                  child: TabBarView(
+                    controller: _audienceTabController,
+                    children: [
+                      for (final audience in NewestAudience.values)
+                        NewestAudienceTab(key: PageStorageKey('newest-$audience'), audience: audience, state: state),
+                    ],
+                  ),
                 ),
               ),
             );

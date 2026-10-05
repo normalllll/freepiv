@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/features/downloads/logic.dart';
@@ -15,7 +16,7 @@ import 'package:freepiv/features/downloads/presentation/downloads_page.dart';
 import 'package:freepiv/features/downloads/presentation/mobile_download_floating_window.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
 const _work = ArtworkSource(illustId: 101, title: 'Summer sketches', subtitle: 'Mika');
@@ -225,9 +226,10 @@ void main() {
             key: boundary,
             child: MaterialApp(
               debugShowCheckedModeBanner: false,
+              builder: (context, child) => FrostScope(config: freepivFrostConfig, child: child!),
               home: MediaQuery(
                 data: const MediaQueryData(size: Size(390, 844)),
-                child: AppLayoutScope(
+                child: FrostLayoutScope(
                   child: MobileDownloadFloatingWindow(
                     taskStream: Stream.value(_history()),
                     child: const Scaffold(body: SizedBox.expand()),
@@ -261,7 +263,8 @@ void main() {
             key: boundary,
             child: MaterialApp(
               debugShowCheckedModeBanner: false,
-              home: AppLayoutScope(
+              builder: (context, child) => FrostScope(config: freepivFrostConfig, child: child!),
+              home: FrostLayoutScope(
                 child: DownloadsPage(focusItem: _creator.key, taskStream: Stream.value(_history())),
               ),
             ),

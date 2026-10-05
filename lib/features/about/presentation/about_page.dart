@@ -1,15 +1,8 @@
-import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/services/updater_service.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
-import 'package:freepiv/shared/ui/fp_icon.dart';
-import 'package:freepiv/shared/ui/fp_grouped_rows.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -28,10 +21,12 @@ class _AboutPageState extends State<AboutPage> {
   Widget build(BuildContext context) {
     final translations = context.t;
 
-    return AutoScaffold(
+    return FrostAutoScaffold(
       builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
-          appBar: windowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout) ? null : FpPageHeader(title: Text(translations.about.title)),
+          appBar: frostWindowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout)
+              ? null
+              : FrostPageHeader(title: Text(translations.about.title)),
           body: SafeArea(
             top: useHorizontalLayout,
             child: FutureBuilder<PackageInfo>(
@@ -41,7 +36,7 @@ class _AboutPageState extends State<AboutPage> {
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.only(top: 12, bottom: 24),
-                  child: ContentColumn(
+                  child: FrostContentColumn(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -57,7 +52,7 @@ class _AboutPageState extends State<AboutPage> {
                           title: translations.about.versionInfo,
                           children: [
                             _AboutValueRow(
-                              icon: FpIconName.info,
+                              icon: PivIcons.info,
                               title: translations.about.appVersion,
                               value: packageInfo == null
                                   ? snapshot.hasError
@@ -69,7 +64,7 @@ class _AboutPageState extends State<AboutPage> {
                               valueListenable: UpdaterService.latestRelease,
                               builder: (context, latestRelease, child) {
                                 return _AboutValueRow(
-                                  icon: FpIconName.newspaper,
+                                  icon: PivIcons.newspaper,
                                   title: translations.about.latestVersion,
                                   value: latestRelease == null ? translations.about.noCachedUpdate : '${latestRelease.version}+${latestRelease.buildNumber}',
                                 );
@@ -82,13 +77,13 @@ class _AboutPageState extends State<AboutPage> {
                           title: translations.about.project,
                           children: [
                             _AboutActionRow(
-                              icon: FpIconName.code,
+                              icon: PivIcons.code,
                               title: translations.about.projectPage,
                               subtitle: UpdaterService.projectUrl,
                               onTap: () => _openUrl(UpdaterService.projectUrl),
                             ),
                             _AboutActionRow(
-                              icon: FpIconName.newspaper,
+                              icon: PivIcons.newspaper,
                               title: translations.about.releasePage,
                               subtitle: UpdaterService.latestReleaseUrl,
                               onTap: _openDownloadPage,
@@ -100,13 +95,13 @@ class _AboutPageState extends State<AboutPage> {
                           title: translations.about.community,
                           children: [
                             _AboutActionRow(
-                              icon: FpIconName.send,
+                              icon: PivIcons.send,
                               title: translations.about.telegram,
                               subtitle: 'https://t.me/+ONtNV3HTQ0NhMzVh',
                               onTap: () => _openUrl('https://t.me/+ONtNV3HTQ0NhMzVh'),
                             ),
                             _AboutActionRow(
-                              icon: FpIconName.messageCircle,
+                              icon: PivIcons.messageCircle,
                               title: translations.about.discord,
                               subtitle: 'https://discord.gg/jQatz6965H',
                               onTap: () => _openUrl('https://discord.gg/jQatz6965H'),
@@ -142,18 +137,18 @@ class _AboutPageState extends State<AboutPage> {
       }
 
       if (update == null) {
-        AppToast.info(translations.noUpdate);
+        FrostToast.info(translations.noUpdate);
         return;
       }
 
-      AppToast.success(translations.updateAvailable(version: update.version, buildNumber: update.buildNumber));
+      FrostToast.success(translations.updateAvailable(version: update.version, buildNumber: update.buildNumber));
       final downloadUrl = await UpdaterService.selectDownloadUrl(update.assets);
       if (!mounted) {
         return;
       }
 
       if (downloadUrl == null) {
-        AppToast.warning(translations.downloadAssetUnavailable);
+        FrostToast.warning(translations.downloadAssetUnavailable);
         await _openUrl(update.releaseUrl, failureMessage: translations.openDownloadFailed);
         return;
       }
@@ -161,7 +156,7 @@ class _AboutPageState extends State<AboutPage> {
       await _openUrl(downloadUrl, failureMessage: translations.openDownloadFailed);
     } catch (error) {
       if (mounted) {
-        AppToast.errorWithCause(translations.checkUpdateFailed, error);
+        toastErrorWithCause(translations.checkUpdateFailed, error);
       }
     } finally {
       if (mounted) {
@@ -180,10 +175,10 @@ class _AboutPageState extends State<AboutPage> {
     try {
       final opened = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
       if (!opened && mounted) {
-        AppToast.error(failureMessage ?? context.t.about.openLinkFailed);
+        FrostToast.error(failureMessage ?? context.t.about.openLinkFailed);
       }
     } catch (_) {
-      if (mounted) AppToast.error(failureMessage ?? context.t.about.openLinkFailed);
+      if (mounted) FrostToast.error(failureMessage ?? context.t.about.openLinkFailed);
     }
   }
 }
@@ -206,12 +201,12 @@ class _AboutHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final translations = context.t.about;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final textTheme = Theme.of(context).textTheme;
     final currentPackageInfo = packageInfo;
 
-    return FpSurface(
-      role: FpSurfaceRole.glassPanel,
+    return FrostSurface(
+      role: FrostSurfaceRole.glassPanel,
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
@@ -260,12 +255,12 @@ class _AboutHero extends StatelessWidget {
               children: [
                 FilledButton.icon(
                   onPressed: checkingUpdate ? null : onCheckUpdate,
-                  icon: checkingUpdate ? const SizedBox.square(dimension: 16, child: LoadingSkeletonBlock()) : const FpIcon(FpIconName.refreshCw, size: 18),
+                  icon: checkingUpdate ? const SizedBox.square(dimension: 16, child: FrostSkeletonBlock()) : const FrostIcon(PivIcons.refreshCw, size: 18),
                   label: Text(translations.checkUpdate),
                 ),
                 OutlinedButton.icon(
                   onPressed: onOpenDownloadPage,
-                  icon: const FpIcon(FpIconName.externalLink, size: 18),
+                  icon: const FrostIcon(PivIcons.externalLink, size: 18),
                   label: Text(translations.downloadPage),
                 ),
               ],
@@ -295,7 +290,7 @@ class _AboutSection extends StatelessWidget {
             style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
           ),
         ),
-        FpGroupedRows(children: children),
+        FrostGroupedRows(children: children),
       ],
     );
   }
@@ -304,7 +299,7 @@ class _AboutSection extends StatelessWidget {
 class _AboutActionRow extends StatelessWidget {
   const _AboutActionRow({required this.icon, required this.title, required this.subtitle, required this.onTap});
 
-  final FpIconName icon;
+  final FrostIconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
@@ -313,10 +308,10 @@ class _AboutActionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: onTap,
-      leading: FpIcon(icon, size: 24),
+      leading: FrostIcon(icon, size: 24),
       title: Text(title),
       subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-      trailing: const FpIcon(FpIconName.externalLink, size: 18),
+      trailing: const FrostIcon(PivIcons.externalLink, size: 18),
     );
   }
 }
@@ -324,17 +319,17 @@ class _AboutActionRow extends StatelessWidget {
 class _AboutValueRow extends StatelessWidget {
   const _AboutValueRow({required this.icon, required this.title, required this.value});
 
-  final FpIconName icon;
+  final FrostIconData icon;
   final String title;
   final String value;
 
   @override
   Widget build(BuildContext context) {
     if (MediaQuery.sizeOf(context).width < 600 || MediaQuery.textScalerOf(context).scale(16) >= 24) {
-      return ListTile(leading: FpIcon(icon, size: 24), title: Text(title), subtitle: Text(value));
+      return ListTile(leading: FrostIcon(icon, size: 24), title: Text(title), subtitle: Text(value));
     }
     return ListTile(
-      leading: FpIcon(icon, size: 24),
+      leading: FrostIcon(icon, size: 24),
       title: Text(title),
       trailing: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 260),

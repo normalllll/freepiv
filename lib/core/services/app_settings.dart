@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
-import 'package:freepiv/core/services/appearance_settings.dart';
-import 'package:freepiv/app/theme/accent_validation.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/material.dart';
 
 enum PreviewImageQuality { medium, large }
@@ -154,16 +154,20 @@ class AppSettings {
     _write(_themeModeKey, value);
   }
 
-  static AppearanceSettings get appearance => AppearanceSettings.fromRecord(_values[_appearanceKey], legacyThemeMode: themeMode);
+  static FrostAppearance get appearance {
+    final legacy = themeMode;
+    final fallbackMode = legacy != null && legacy >= 0 && legacy < ThemeMode.values.length ? ThemeMode.values[legacy] : ThemeMode.system;
+    return FrostAppearance.fromRecord(_values[_appearanceKey], freepivFrostConfig.palettes, fallbackMode: fallbackMode);
+  }
 
   /// Appearance uses a single awaited record, unlike older fire-and-forget settings.
-  static Future<void> saveAppearance(AppearanceSettings value) async {
+  static Future<void> saveAppearance(FrostAppearance value) async {
     for (final brightness in Brightness.values) {
-      if (!validateAccent(value.accentFor(brightness), brightness).canApply) {
+      if (!validateAccent(value.accentFor(brightness), brightness, freepivFrostConfig.palettes).canApply) {
         throw ArgumentError.value(value.accentFor(brightness), 'accent', 'Unsafe appearance accent');
       }
       final recentCustom = value.customAccentFor(brightness);
-      if (recentCustom != null && !validateAccent(recentCustom, brightness).canApply) {
+      if (recentCustom != null && !validateAccent(recentCustom, brightness, freepivFrostConfig.palettes).canApply) {
         throw ArgumentError.value(recentCustom, 'customAccent', 'Unsafe appearance accent');
       }
     }

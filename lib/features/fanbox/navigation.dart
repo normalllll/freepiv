@@ -1,15 +1,12 @@
-import 'package:freepiv/shared/widgets/app_tab_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
-import 'package:freepiv/shared/widgets/floating_filter_sliver.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'logic.dart';
 
 double fanboxNavigationHeight(BuildContext context) {
   final labelSize = Theme.of(context).textTheme.labelLarge?.fontSize ?? 14;
   final textGrowth = (MediaQuery.textScalerOf(context).scale(labelSize) / labelSize - 1).clamp(0.0, double.infinity);
-  return compactFilterHeight(context) + AppMetrics.compactGap * textGrowth;
+  return frostCompactFilterHeight(context) + FrostMetrics.compactGap * textGrowth;
 }
 
 // Kept for existing layout checks; FANBOX now uses one navigation row at every width.
@@ -90,12 +87,12 @@ class _FanboxSectionNavigationState extends State<FanboxSectionNavigation> with 
       builder: (context, constraints) => Row(
         children: [
           Expanded(
-            child: AppTabBar(
+            child: FrostTabBar(
               controller: _controller,
               isScrollable: true,
               tabAlignment: TabAlignment.start,
               dividerColor: Colors.transparent,
-              labelPadding: EdgeInsets.symmetric(horizontal: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
+              labelPadding: EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
               tabs: [
                 // Group names differ from their sections, so the tab and the
                 // collection value beside it never repeat the same label.
@@ -116,10 +113,10 @@ class _FanboxSectionNavigationState extends State<FanboxSectionNavigation> with 
           // row limit make the label wrap instead of pushing the row over.
           ConstrainedBox(
             constraints: BoxConstraints(maxWidth: constraints.maxWidth / 2),
-            child: AppValueMenuButton<FanboxSection>(
+            child: FrostValueMenuButton<FanboxSection>(
               value: widget.section,
               items: [
-                for (final section in {...group.sections, widget.section}) AppSelectItem(value: section, label: fanboxSectionLabel(context, section)),
+                for (final section in {...group.sections, widget.section}) FrostSelectItem(value: section, label: fanboxSectionLabel(context, section)),
               ],
               onSelected: widget.onSelected,
             ),

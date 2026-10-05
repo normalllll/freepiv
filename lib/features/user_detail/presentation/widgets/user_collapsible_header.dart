@@ -1,17 +1,11 @@
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/app_dialog.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
 import 'package:flutter/services.dart';
 import 'package:freepiv/core/utils/utils.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class UserCollapsibleHeaderSliver extends StatelessWidget {
@@ -224,7 +218,7 @@ class UserCollapsibleHeaderLayout {
       availableWidth: availableWidth,
       compact: compact,
       // Name, stats and tabs share the pages' content column.
-      horizontalPadding: AppMetrics.columnPadding(availableWidth).left,
+      horizontalPadding: FrostMetrics.columnPadding(availableWidth).left,
       backgroundHeight: compact ? 148.0 : 172.0,
       avatarSize: avatarSize,
       bodyTopPadding: compact ? 10.0 : 12.0,
@@ -305,7 +299,7 @@ class _UserHeaderDelegate extends SliverPersistentHeaderDelegate {
         children: [
           // The tab bar pinned below continues this glass as one outline.
           Positioned.fill(
-            child: PinnedChromeGlass(opacity: math.max(progress, this.overlapsContent ? 1.0 : 0.0), animate: false, corners: PinnedChromeCorners.top),
+            child: FrostPinnedChromeGlass(opacity: math.max(progress, this.overlapsContent ? 1.0 : 0.0), animate: false, corners: FrostPinnedChromeCorners.top),
           ),
           Positioned.fill(
             top: topPadding,
@@ -344,10 +338,10 @@ class _UserHeaderDelegate extends SliverPersistentHeaderDelegate {
             PositionedDirectional(
               top: topPadding + 8,
               start: 8,
-              child: SurfaceIconButton(
-                icon: Icons.arrow_back,
+              child: FrostSurfaceIconButton(
+                icon: FrostIconData.glyph(Icons.arrow_back),
                 tooltip: t.common.back,
-                onPressed: ShellNavigationScope.maybeOf(context)?.goBack ?? () => Navigator.of(context).maybePop(),
+                onPressed: FrostShellNavigationScope.maybeOf(context)?.goBack ?? () => Navigator.of(context).maybePop(),
               ),
             ),
         ],
@@ -383,7 +377,7 @@ class _HeaderBackground extends StatelessWidget {
     return RepaintBoundary(
       child: ClipRect(
         child: Opacity(
-          opacity: FreepivThemeTokens.of(context).isDark ? .40 : .50,
+          opacity: FrostThemeTokens.of(context).isDark ? .40 : .50,
           child: ImageFiltered(
             imageFilter: ui.ImageFilter.blur(sigmaX: 40, sigmaY: 40, tileMode: TileMode.clamp),
             child: PixivImage(url: avatarUrl, fit: BoxFit.cover),
@@ -489,8 +483,8 @@ class _UserCommentPreview extends StatelessWidget {
 
     return Material(
       type: MaterialType.transparency,
-      child: AppClickSurface(
-        borderRadius: BorderRadius.circular(AppMetrics.controlRadius),
+      child: FrostClickSurface(
+        borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
         onTap: () => _showUserCommentDialog(context, comment),
         child: preview,
       ),
@@ -645,7 +639,7 @@ TextSpan _truncateTextSpan(TextSpan text, int maxCodeUnits) {
 }
 
 void _showUserCommentDialog(BuildContext context, String comment) {
-  showAppDialog<void>(
+  showFrostDialog<void>(
     context: context,
     builder: (context) {
       final colorScheme = Theme.of(context).colorScheme;

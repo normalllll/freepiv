@@ -48,3 +48,6 @@ pubspec.lock
 # Local API sessions and captured responses
 /.local/
 **/Cargo.lock
+
+# Local development overrides (frost_ui checkout); never committed.
+pubspec_overrides.yaml

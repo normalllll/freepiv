@@ -1,6 +1,5 @@
-import 'package:freepiv/app/theme/accent_color_math.dart';
-import 'package:freepiv/app/theme/app_input_feedback.dart';
-import 'package:freepiv/app/theme/app_feedback.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/gestures.dart';
@@ -9,11 +8,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
 import 'package:freepiv/core/downloads/models/download_task_snapshot.dart';
 import 'package:freepiv/core/downloads/models/download_enums.dart';
 import 'package:freepiv/core/downloads/models/download_origin.dart';
@@ -23,7 +17,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 
 void main() {
   test('light interaction surfaces remain distinct from their surrounding surfaces', () {
-    final tokens = FreepivThemeTokens.light;
+    final tokens = FrostPalettes.pink.lightNeutral;
     double contrast(Color a, Color b) {
       final x = a.computeLuminance();
       final y = b.computeLuminance();
@@ -41,8 +35,8 @@ void main() {
   });
   testWidgets('hover transition frames never flash a dark surface', (tester) async {
     for (final control in <Widget>[
-      AppClickSurface(onTap: () {}, child: const SizedBox.expand()),
-      AppIconButton(onPressed: () {}, icon: const SizedBox.shrink()),
+      FrostClickSurface(onTap: () {}, child: const SizedBox.expand()),
+      FrostIconButton(onPressed: () {}, icon: const SizedBox.shrink()),
       TextButton(onPressed: () {}, child: const SizedBox.shrink()),
     ]) {
       final key = GlobalKey();
@@ -75,7 +69,7 @@ void main() {
             final data = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
             final offset = (30 * image.width + 50) * 4;
             samples.add(data[offset]);
-            final hover = FreepivThemeTokens.light.hoverSurface;
+            final hover = FrostPalettes.pink.lightNeutral.hoverSurface;
             final minimum = [hover.r, hover.g, hover.b].map((channel) => (channel * 255).round() - 1).toList();
             expect(
               List.generate(3, (channel) => data[offset + channel] >= minimum[channel]).every((valid) => valid),
@@ -102,7 +96,7 @@ void main() {
       final key = GlobalKey();
       var taps = 0;
       await tester.pumpWidget(
-        AppInputFeedback(
+        FrostInputFeedback(
           key: ValueKey(dark),
           child: MaterialApp(
             theme: dark
@@ -121,8 +115,8 @@ void main() {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            AppButton(label: 'Follow creator', onPressed: () => taps++),
-                            AppIconButton(icon: const Icon(Icons.arrow_back), onPressed: () {}),
+                            FrostButton(label: 'Follow creator', onPressed: () => taps++),
+                            FrostIconButton(icon: const Icon(Icons.arrow_back), onPressed: () {}),
                           ],
                         ),
                       ),
@@ -198,17 +192,17 @@ void main() {
     var taps = 0;
     var holds = 0;
     await tester.pumpWidget(
-      AppInputFeedback(
+      FrostInputFeedback(
         child: MaterialApp(
           theme: AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en')),
           home: Scaffold(
             body: ListView(
               children: [
-                AppClickSurface(
+                FrostClickSurface(
                   onTap: () => taps++,
                   child: const SizedBox(height: 80, child: Text('Tap')),
                 ),
-                AppClickSurface(
+                FrostClickSurface(
                   onTap: () => taps++,
                   onLongPress: () => holds++,
                   child: const SizedBox(height: 80, child: Text('Context')),
@@ -224,7 +218,7 @@ void main() {
         (tester
                     .widget<AnimatedContainer>(
                       find.descendant(
-                        of: find.ancestor(of: find.text(label), matching: find.byType(AppClickSurface)),
+                        of: find.ancestor(of: find.text(label), matching: find.byType(FrostClickSurface)),
                         matching: find.byType(AnimatedContainer),
                       ),
                     )
@@ -279,7 +273,7 @@ void main() {
       ProviderScope(
         child: TranslationProvider(
           child: MaterialApp(
-            builder: (context, child) => AppInputFeedback(child: child!),
+            builder: (context, child) => FrostInputFeedback(child: child!),
             theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
             home: Scaffold(body: DownloadFileRow(task: task)),
           ),
@@ -287,7 +281,7 @@ void main() {
       ),
     );
     expect(tester.takeException(), isNull);
-    expect(tester.getSize(find.ancestor(of: find.byIcon(Icons.refresh_outlined), matching: find.byType(AppClickSurface)).first).height, 44);
+    expect(tester.getSize(find.ancestor(of: find.byIcon(Icons.refresh_outlined), matching: find.byType(FrostClickSurface)).first).height, 44);
     await tester.tap(find.byIcon(Icons.more_horiz));
     await tester.pumpAndSettle();
     expect(find.text(t.common.viewLog), findsOneWidget);
@@ -303,7 +297,7 @@ void main() {
       var taps = 0;
       await tester.pumpWidget(
         MaterialApp(
-          builder: (context, child) => AppInputFeedback(child: child!),
+          builder: (context, child) => FrostInputFeedback(child: child!),
           theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
           home: Scaffold(
             body: Center(
@@ -311,19 +305,23 @@ void main() {
                 key: key,
                 child: Material(
                   color: Colors.white,
-                  child: AppClickSurface(customBorder: circle ? const CircleBorder() : null, onTap: () => taps++, child: const SizedBox(width: 80, height: 80)),
+                  child: FrostClickSurface(
+                    customBorder: circle ? const CircleBorder() : null,
+                    onTap: () => taps++,
+                    child: const SizedBox(width: 80, height: 80),
+                  ),
                 ),
               ),
             ),
           ),
         ),
       );
-      final target = find.byType(AppClickSurface);
+      final target = find.byType(FrostClickSurface);
       final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await mouse.addPointer();
       await mouse.moveTo(tester.getCenter(target));
       await tester.pump();
-      expect(appClickCursor.resolve({}), SystemMouseCursors.click);
+      expect(frostClickCursor.resolve({}), SystemMouseCursors.click);
       await mouse.down(tester.getCenter(target));
       await tester.pumpAndSettle();
       expect(FocusManager.instance.highlightMode, FocusHighlightMode.touch);
@@ -331,7 +329,7 @@ void main() {
         final image = await (key.currentContext!.findRenderObject()! as RenderRepaintBoundary).toImage();
         final bytes = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
         List<int> pixel(int x, int y) => bytes.sublist((y * image.width + x) * 4, (y * image.width + x) * 4 + 4);
-        final pressed = FreepivThemeTokens.light.pressedSurface;
+        final pressed = FrostPalettes.pink.lightNeutral.pressedSurface;
         expect(pixel(40, 40), [
           (pressed.r * 255).round(),
           (pressed.g * 255).round(),
@@ -364,10 +362,10 @@ void main() {
     var child = 0;
     await tester.pumpWidget(
       MaterialApp(
-        builder: (context, child) => AppInputFeedback(child: child!),
+        builder: (context, child) => FrostInputFeedback(child: child!),
         home: Scaffold(
           body: Material(
-            child: AppClickSurface(
+            child: FrostClickSurface(
               onTap: () => parent++,
               child: Center(
                 child: TextButton(onPressed: () => child++, child: const Text('Save')),
@@ -382,13 +380,13 @@ void main() {
     expect(parent, 0);
     await tester.pumpWidget(
       MaterialApp(
-        builder: (context, child) => AppInputFeedback(child: child!),
+        builder: (context, child) => FrostInputFeedback(child: child!),
         home: Scaffold(
-          body: Material(child: AppClickSurface(child: SizedBox(width: 80, height: 80))),
+          body: Material(child: FrostClickSurface(child: SizedBox(width: 80, height: 80))),
         ),
       ),
     );
-    await tester.tap(find.byType(AppClickSurface));
+    await tester.tap(find.byType(FrostClickSurface));
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     expect(parent, 0);
@@ -399,17 +397,17 @@ void main() {
     int selected = 1;
     await tester.pumpWidget(
       MaterialApp(
-        builder: (context, child) => AppInputFeedback(child: child!),
+        builder: (context, child) => FrostInputFeedback(child: child!),
         theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
         home: Scaffold(
           body: Center(
             child: SizedBox(
               width: 240,
-              child: AppSelect<int>(
+              child: FrostSelect<int>(
                 value: selected,
                 items: const [
-                  AppSelectItem(value: 1, label: 'Original'),
-                  AppSelectItem(value: 2, label: 'Standard'),
+                  FrostSelectItem(value: 1, label: 'Original'),
+                  FrostSelectItem(value: 2, label: 'Standard'),
                 ],
                 onChanged: (value) => selected = value,
               ),
@@ -430,7 +428,7 @@ void main() {
 
   test('button states never introduce color washes; only persistent selection uses the accent wash', () {
     final theme = AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en'));
-    final tokens = theme.extension<FreepivThemeTokens>()!;
+    final tokens = theme.extension<FrostThemeTokens>()!;
     // Persistent selection is a low-alpha accent wash over the raised surface,
     // with an accent ink that stays readable on it.
     expect(tokens.selectionSurface, Color.alphaBlend(tokens.selectionFill, tokens.surfaceRaised));

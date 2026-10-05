@@ -1,20 +1,8 @@
-import 'package:freepiv/shared/widgets/app_tab_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
-import 'package:freepiv/shared/widgets/compact_message.dart';
-import 'package:freepiv/shared/data/data_list_source.dart';
-import 'package:freepiv/shared/widgets/load_state_switcher.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/search_input.dart';
-import 'package:freepiv/shared/widgets/data_refresh_view.dart';
-import 'package:freepiv/shared/widgets/refresh_indicator.dart';
-import 'package:freepiv/shared/widgets/floating_filter_sliver.dart';
-import 'package:freepiv/shared/widgets/sliver_paged_data_list.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'logic.dart';
@@ -110,20 +98,20 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
 
     final query = Uri.parse(url).queryParameters['q'] ?? '';
     // Tabs carry their label padding, so the row bleeds by it.
-    final chrome = ContentColumn(
-      bleed: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
+    final chrome = FrostContentColumn(
+      bleed: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
       child: Padding(
         padding: const EdgeInsets.only(top: 12),
         child: LayoutBuilder(
           builder: (context, constraints) => Row(
             children: [
               Expanded(
-                child: AppTabBar(
+                child: FrostTabBar(
                   controller: _tabController,
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
                   dividerColor: Colors.transparent,
-                  labelPadding: EdgeInsets.symmetric(horizontal: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
+                  labelPadding: EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
                   tabs: [
                     Tab(text: t.latest),
                     Tab(text: t.ranking),
@@ -138,11 +126,11 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
               // row, like the FANBOX collection picker beside its tabs.
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: constraints.maxWidth / 2),
-                child: AppValueMenuButton<String>(
+                child: FrostValueMenuButton<String>(
                   value: url,
                   items: [
-                    AppSelectItem(value: home, label: t.allCategories),
-                    for (final item in categories) AppSelectItem(value: item.url, label: item.title),
+                    FrostSelectItem(value: home, label: t.allCategories),
+                    for (final item in categories) FrostSelectItem(value: item.url, label: item.title),
                   ],
                   onSelected: selectUrl,
                 ),
@@ -152,13 +140,13 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
         ),
       ),
     );
-    const filterSliver = FpChromeSpacer();
+    const filterSliver = FrostChromeSpacer();
     Widget sectionPage(PixivisionSection section) => section == PixivisionSection.tags
         ? PageStorage(
             bucket: _pixivisionBrowseStorage,
             child: _TagDirectory(language: language, filterSliver: filterSliver),
           )
-        : DataRefreshView(
+        : FrostRefreshView(
             onRefresh: () async {
               final target = section == PixivisionSection.articles ? url : home;
               ref.invalidate(pixivisionBrowseProvider(target));
@@ -176,13 +164,13 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
                 };
                 return PageStorage(
                   bucket: _pixivisionBrowseStorage,
-                  child: LoadStateSwitcher(
+                  child: FrostLoadStateSwitcher(
                     phase: switch (items) {
-                      null when active.hasError => LoadPhase.error,
-                      null => LoadPhase.loading,
-                      _ => LoadPhase.content,
+                      null when active.hasError => FrostLoadPhase.error,
+                      null => FrostLoadPhase.loading,
+                      _ => FrostLoadPhase.content,
                     },
-                    child: DataLoadingCustomScrollView(
+                    child: FrostLoadingScrollView(
                       key: PageStorageKey((url, section)),
                       physics: physics,
                       slivers: [
@@ -201,7 +189,7 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
                             ),
                           )
                         else
-                          SliverPagedDataList<ArticleSummary>(
+                          FrostSliverPagedList<ArticleSummary>(
                             key: ValueKey((url, section)),
                             items: items,
                             hasMore: section == PixivisionSection.articles && listing?.page.nextUrl != null,
@@ -222,7 +210,7 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
                                 if (items.isEmpty) Padding(padding: const EdgeInsets.all(24), child: Text(t.empty)),
                                 if (listing?.loadingMore ?? false) const PixivisionCardSkeleton(),
                                 if (listing?.error case final error?)
-                                  CompactMessage.error(
+                                  FrostCompactMessage.error(
                                     error: error,
                                     actionLabel: t.loadMore,
                                     onAction: () => ref.read(pixivisionBrowseProvider(url).notifier).loadMore(),
@@ -243,7 +231,7 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
           LayoutBuilder(
             builder: (context, constraints) {
               final compact = constraints.maxWidth < 600;
-              final search = SearchInput(
+              final search = FrostSearchInput(
                 controller: _search,
                 focusNode: _focus,
                 hintText: t.searchHint,
@@ -259,7 +247,7 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
                   if (query.isNotEmpty) selectUrl(home);
                 },
               );
-              return ContentColumn(
+              return FrostContentColumn(
                 bleed: 12,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
@@ -321,8 +309,8 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
           ),
           Expanded(
             // The tabs stay put while the sections slide beneath them.
-            child: FpPinnedChrome(
-              extent: compactFilterHeight(context),
+            child: FrostPinnedChrome(
+              extent: frostCompactFilterHeight(context),
               chrome: chrome,
               body: TabBarView(controller: _tabController, children: [for (final section in PixivisionSection.values) sectionPage(section)]),
             ),
@@ -340,14 +328,14 @@ class _TagDirectory extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(pixivisionTagsProvider(language));
-    return DataRefreshView(
+    return FrostRefreshView(
       onRefresh: () async {
         ref.invalidate(pixivisionTagsProvider(language));
         await ref.read(pixivisionTagsProvider(language).future);
         return true;
       },
       builder: (context, physics, locators) => LayoutBuilder(
-        builder: (context, constraints) => DataLoadingCustomScrollView(
+        builder: (context, constraints) => FrostLoadingScrollView(
           key: PageStorageKey(('pixivision-tags', language)),
           physics: physics,
           slivers: [

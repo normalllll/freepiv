@@ -4,9 +4,9 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:path/path.dart' as p;
-import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
@@ -101,8 +101,8 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
               top: 16,
               start: 16,
               child: Builder(
-                builder: (buttonContext) => SurfaceIconButton(
-                  icon: Icons.more_horiz,
+                builder: (buttonContext) => FrostSurfaceIconButton(
+                  icon: FrostIconData.glyph(Icons.more_horiz),
                   tooltip: MaterialLocalizations.of(context).showMenuTooltip,
                   onPressed: () {
                     final box = buttonContext.findRenderObject()! as RenderBox;
@@ -172,7 +172,7 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
       });
     } catch (error) {
       _setFailed(error);
-      AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
+      toastErrorWithCause(t.illust.toast.downloadFailed, error);
     }
   }
 
@@ -243,25 +243,25 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
         thumbnailUrl: widget.previewUrl,
       );
       _setReadyAfterExport();
-      AppToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
+      FrostToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
     } catch (error) {
       _setFailed(error);
-      AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
+      toastErrorWithCause(t.illust.toast.downloadFailed, error);
     }
   }
 
   Future<void> _copyGif() async {
     const label = 'GIF';
-    AppToast.info(t.illust.toast.copying(label: label));
+    FrostToast.info(t.illust.toast.copying(label: label));
     try {
       await _ensurePlaybackStartedForExport();
       final gifBytes = await _ensureGifBytes();
       await copyImageBytesToClipboard(gifBytes, mimeType: 'image/gif');
       _setReadyAfterExport();
-      unawaited(AppToast.copied(t.illust.toast.copied(label: label)));
+      FrostToast.copied(t.illust.toast.copied(label: label));
     } catch (error) {
       _setFailed(error);
-      AppToast.errorWithCause(t.illust.toast.copyFailed(label: label), error);
+      toastErrorWithCause(t.illust.toast.copyFailed(label: label), error);
     }
   }
 

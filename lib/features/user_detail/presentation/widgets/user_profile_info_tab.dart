@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,15 +23,15 @@ class UserProfileInfoBody extends StatelessWidget {
         if (entries.isEmpty)
           SliverFillRemaining(
             hasScrollBody: false,
-            child: EmptyContent(icon: Icons.info_outline, title: context.t.user.empty.profile),
+            child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.info_outline), title: context.t.user.empty.profile),
           )
         else
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: ContentColumn(
-                child: FpSurface(
-                  role: FpSurfaceRole.glassPanel,
+              child: FrostContentColumn(
+                child: FrostSurface(
+                  role: FrostSurfaceRole.glassPanel,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [

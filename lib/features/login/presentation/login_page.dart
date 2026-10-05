@@ -2,17 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/widgets/error.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/app_links/app_links.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -158,19 +154,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final proxySettings = ref.watch(proxySettingsProvider);
 
     return Scaffold(
-      appBar: AutoScaffold.usesHorizontalLayoutOf(context) ? null : FpPageHeader(title: Text(translations.login.title)),
+      appBar: FrostAutoScaffold.usesHorizontalLayoutOf(context) ? null : FrostPageHeader(title: Text(translations.login.title)),
       body: SingleChildScrollView(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: FpSurface(
-                role: FpSurfaceRole.glassPanel,
+              child: FrostSurface(
+                role: FrostSurfaceRole.glassPanel,
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: AnimatedSize(
-                    duration: AppMotion.duration(context, const Duration(milliseconds: 180)),
+                    duration: FrostMotion.duration(context, const Duration(milliseconds: 180)),
                     alignment: Alignment.topCenter,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -196,7 +192,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 : translations.login.signInAgain,
                           ),
                         ),
-                        if (_isCompletingLogin) ...[const SizedBox(height: 12), const LoadingSkeletonBlock(width: double.infinity, height: 4)],
+                        if (_isCompletingLogin) ...[const SizedBox(height: 12), const FrostSkeletonBlock(width: double.infinity, height: 4)],
                         if (_status != null) ...[const SizedBox(height: 16), Text(_status!, textAlign: TextAlign.center)],
                         if (_error != null) ...[
                           const SizedBox(height: 16),
@@ -205,7 +201,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             style: TextStyle(color: Theme.of(context).colorScheme.error),
                             textAlign: TextAlign.center,
                           ),
-                          if (_errorDetails case final details?) ...[const SizedBox(height: 8), ErrorDetails(details: details)],
+                          if (_errorDetails case final details?) ...[const SizedBox(height: 8), FrostErrorDetails(details: details)],
                         ],
                       ],
                     ),
@@ -230,7 +226,7 @@ class _LoginProxyNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = context.t;
     final proxyTranslations = translations.settings.proxy;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final active = settings.active;
 

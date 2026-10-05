@@ -1,15 +1,11 @@
 import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/shared/ui/spring_builder.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
-import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'article_images.dart';
 
 class PixivisionImage extends ConsumerStatefulWidget {
@@ -104,7 +100,7 @@ class _PixivisionImageState extends ConsumerState<PixivisionImage> {
               url: widget.url,
               fit: widget.fit,
               headers: pixivisionImageHeaders,
-              placeholder: (_) => const ImageLoadingSkeleton(),
+              placeholder: (_) => const FrostImageSkeleton(),
               // A failed image keeps its slot filled, like the skeleton it
               // replaced, with a clear way to try again over the whole area.
               errorBuilder: (context) =>
@@ -120,16 +116,16 @@ class _PixivisionImageState extends ConsumerState<PixivisionImage> {
                     },
                   ),
             )
-          : const ImageLoadingSkeleton(),
+          : const FrostImageSkeleton(),
     );
     // Every article image shares one corner radius, loaded or not.
-    final clipped = ClipRRect(borderRadius: BorderRadius.circular(AppMetrics.controlRadius), child: content);
+    final clipped = ClipRRect(borderRadius: BorderRadius.circular(FrostMetrics.controlRadius), child: content);
     // Unknown sizes reserve the skeleton's slot, then ease once to the real
     // ratio when the image arrives.
     if ((widget.aspectRatio ?? _resolvedRatio ?? (widget.resolveAspectRatio ? widget.placeholderRatio : null)) case final ratio?) {
       return AnimatedSize(
-        duration: AppMotion.duration(context, const Duration(milliseconds: 350)),
-        curve: SpringCurve(AppMotion.standard, const Duration(milliseconds: 350)),
+        duration: FrostMotion.duration(context, const Duration(milliseconds: 350)),
+        curve: FrostSpringCurve(FrostMotion.standard, const Duration(milliseconds: 350)),
         alignment: Alignment.topCenter,
         child: AspectRatio(aspectRatio: ratio, child: clipped),
       );
@@ -145,7 +141,7 @@ class _ImageLoadFailed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final label = Theme.of(context).textTheme.labelMedium?.copyWith(color: tokens.textSecondary);
     return ColoredBox(
       color: tokens.surfaceInset,
@@ -153,8 +149,8 @@ class _ImageLoadFailed extends StatelessWidget {
         type: MaterialType.transparency,
         child: Tooltip(
           message: context.t.common.retry,
-          child: AppClickSurface(
-            feedback: AppClickFeedback.quiet,
+          child: FrostClickSurface(
+            feedback: FrostClickFeedback.quiet,
             borderRadius: BorderRadius.zero,
             onTap: onRetry,
             child: Center(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_autocomplete_session.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_suggestion.dart';
@@ -29,9 +28,9 @@ class SuggestionSurface extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        return FpSurface(
-          role: FpSurfaceRole.overlay,
-          borderRadius: BorderRadius.circular(AppMetrics.groupRadius),
+        return FrostSurface(
+          role: FrostSurfaceRole.overlay,
+          borderRadius: BorderRadius.circular(FrostMetrics.groupRadius),
           child: ConstrainedBox(
             constraints: BoxConstraints(maxHeight: maxHeight),
             child: SuggestionPanelBody(session: session, selectedIndex: selectedIndex, onSelected: onSelected),
@@ -65,8 +64,8 @@ class SuggestionPanelBody extends StatelessWidget {
                 if (error != null)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(10, 10, 10, 2),
-                    child: CompactMessage(
-                      icon: Icons.error_outline,
+                    child: FrostCompactMessage(
+                      icon: FrostIconData.glyph(Icons.error_outline),
                       message: formatPixivError(error),
                       details: pixivErrorDetails(error),
                       actionLabel: context.t.common.retry,
@@ -96,7 +95,7 @@ class SuggestionPanelBody extends StatelessWidget {
               ],
             ),
             // Overlay loading feedback so the first row still reaches the edge.
-            if (session.loading) const Positioned(top: 0, left: 0, right: 0, child: LoadingSkeletonBlock(width: double.infinity, height: 2)),
+            if (session.loading) const Positioned(top: 0, left: 0, right: 0, child: FrostSkeletonBlock(width: double.infinity, height: 2)),
           ],
         );
       },

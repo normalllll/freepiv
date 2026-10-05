@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/app_dialog.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/search/logic/search_history_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -17,7 +16,7 @@ class DiscoverySearchHistory extends ConsumerWidget {
       duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 240),
       alignment: Alignment.topCenter,
       child: history.isEmpty
-          ? ContentColumn(
+          ? FrostContentColumn(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 12, 0, 20),
                 // Guidance, not a history row: it names what will appear
@@ -36,7 +35,7 @@ class DiscoverySearchHistory extends ConsumerWidget {
                 ),
               ),
             )
-          : ContentColumn(
+          : FrostContentColumn(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
                 child: Column(
@@ -75,7 +74,7 @@ class DiscoverySearchHistory extends ConsumerWidget {
     );
   }
 
-  void _showAll(BuildContext context) => showAppDialog<void>(
+  void _showAll(BuildContext context) => showFrostDialog<void>(
     context: context,
     builder: (context) => Consumer(
       builder: (context, ref, _) {

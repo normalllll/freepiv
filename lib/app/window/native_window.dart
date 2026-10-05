@@ -1,5 +1,3 @@
-import 'package:freepiv/app/theme/app_feedback.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -8,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 const desktopTitleBarHeight = 44.0;
 
@@ -320,7 +319,8 @@ class _NativeWindowFrameState extends State<NativeWindowFrame> with WidgetsBindi
                   ),
                 ),
               ),
-              Expanded(child: widget.child),
+              // The caption shows the page title, so pages skip their own.
+              Expanded(child: FrostWindowCaptionScope(showsTitle: true, child: widget.child)),
             ],
           ),
         );
@@ -366,17 +366,17 @@ class _CaptionButton extends StatelessWidget {
         shape: const WidgetStatePropertyAll(RoundedRectangleBorder()),
         overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         foregroundColor: WidgetStateProperty.resolveWith(
-          (states) => danger && (states.contains(WidgetState.hovered) || states.contains(WidgetState.pressed)) ? WindowCaptionColors.onClose : foreground,
+          (states) => danger && (states.contains(WidgetState.hovered) || states.contains(WidgetState.pressed)) ? FrostCaptionColors.onClose : foreground,
         ),
-        mouseCursor: appClickCursor,
-        side: appFeedbackStyle(FreepivThemeTokens.of(context)).side,
+        mouseCursor: frostClickCursor,
+        side: frostFeedbackStyle(FrostThemeTokens.of(context)).side,
         backgroundColor: WidgetStateProperty.resolveWith((states) {
           final hover = nativeHovered || states.contains(WidgetState.hovered);
           final press = (nativePressed && nativeHovered) || states.contains(WidgetState.pressed);
-          final tokens = FreepivThemeTokens.of(context);
-          if (!hover && !press) return (danger ? WindowCaptionColors.closeHover : tokens.hoverSurface).withValues(alpha: 0);
-          if (danger) return press ? WindowCaptionColors.closePressed : WindowCaptionColors.closeHover;
-          return appFeedbackSurface(tokens, {if (hover) WidgetState.hovered, if (press) WidgetState.pressed});
+          final tokens = FrostThemeTokens.of(context);
+          if (!hover && !press) return (danger ? FrostCaptionColors.closeHover : tokens.hoverSurface).withValues(alpha: 0);
+          if (danger) return press ? FrostCaptionColors.closePressed : FrostCaptionColors.closeHover;
+          return frostFeedbackSurface(tokens, {if (hover) WidgetState.hovered, if (press) WidgetState.pressed});
         }),
       ),
     ),

@@ -117,8 +117,8 @@ class _NovelImagePager extends StatelessWidget {
                   top: 0,
                   bottom: 0,
                   child: Center(
-                    child: SurfaceIconButton(
-                      icon: Icons.chevron_left,
+                    child: FrostSurfaceIconButton(
+                      icon: FrostIconData.glyph(Icons.chevron_left),
                       tooltip: context.t.illust.tooltip.previousImage,
                       onPressed: pageIndex == 0 ? null : () => _animateToPage(pageIndex - 1),
                     ),
@@ -129,8 +129,8 @@ class _NovelImagePager extends StatelessWidget {
                   top: 0,
                   bottom: 0,
                   child: Center(
-                    child: SurfaceIconButton(
-                      icon: Icons.chevron_right,
+                    child: FrostSurfaceIconButton(
+                      icon: FrostIconData.glyph(Icons.chevron_right),
                       tooltip: context.t.illust.tooltip.nextImage,
                       onPressed: pageIndex >= pageCount - 1 ? null : () => _animateToPage(pageIndex + 1),
                     ),

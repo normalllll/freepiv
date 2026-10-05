@@ -1,27 +1,19 @@
 import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:flutter/gestures.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'dart:async';
 import 'package:flutter/scheduler.dart';
 import 'package:freepiv/core/platform/reader_volume_keys.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
-import 'package:freepiv/app/router/reader_route_observer.dart';
 import 'package:freepiv/features/novel/presentation/reader/reader_scroll_clock.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/app_dialog.dart';
-import 'package:freepiv/app/theme/content_script.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/features/novel/domain/novel_text_parser.dart';
 import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
@@ -30,7 +22,6 @@ import 'package:freepiv/features/novel/presentation/detail/widgets/novel_reader_
 import 'package:freepiv/features/novel/presentation/reader/novel_reading_session.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -59,7 +50,7 @@ class NovelReaderPage extends ConsumerWidget {
           return const NovelNotFoundPage();
         }
 
-        return ErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
+        return FrostErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
     );
   }
@@ -112,7 +103,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
       !_settingsOpen &&
       !_selectionActive &&
       ModalRoute.of(context)?.isCurrent == true &&
-      readerRootRouteObserver.topRoute is! PopupRoute;
+      frostRootRouteObserver.topRoute is! PopupRoute;
 
   Novel get _novel => widget.detail.novel;
 
@@ -137,8 +128,8 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
         _handleRouteActivity();
       },
     );
-    readerRootRouteObserver.changes.addListener(_handleRouteActivity);
-    readerContentRouteObserver.changes.addListener(_handleRouteActivity);
+    frostRootRouteObserver.changes.addListener(_handleRouteActivity);
+    frostContentRouteObserver.changes.addListener(_handleRouteActivity);
     pixivAccountNotifier.addListener(_handleAccountChange);
     _rebuildReaderModel();
     _restoreSession();
@@ -174,8 +165,8 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
     _saveSession();
     _autoTicker.dispose();
     _volumeLease.release();
-    readerRootRouteObserver.changes.removeListener(_handleRouteActivity);
-    readerContentRouteObserver.changes.removeListener(_handleRouteActivity);
+    frostRootRouteObserver.changes.removeListener(_handleRouteActivity);
+    frostContentRouteObserver.changes.removeListener(_handleRouteActivity);
     pixivAccountNotifier.removeListener(_handleAccountChange);
     WidgetsBinding.instance.removeObserver(this);
     _disposeSegmentScrollControllers();
@@ -193,7 +184,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _handleRouteActivity();
     });
-    return AutoScaffold(
+    return FrostAutoScaffold(
       builder: (context, layout, orientation, useHorizontalLayout) => Focus(
         focusNode: _shortcutFocusNode,
         autofocus: true,
@@ -588,7 +579,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
     }
 
     if (event.logicalKey == LogicalKeyboardKey.escape) {
-      if (ModalRoute.of(context)?.isCurrent != true || _settingsOpen || readerRootRouteObserver.topRoute is PopupRoute) return KeyEventResult.ignored;
+      if (ModalRoute.of(context)?.isCurrent != true || _settingsOpen || frostRootRouteObserver.topRoute is PopupRoute) return KeyEventResult.ignored;
       if (_selectionActive) {
         final selection = _blockKeys[_currentPageIndex]?.firstOrNull?.currentContext?.findAncestorStateOfType<SelectionAreaState>()?.selectableRegion;
         selection?.hideToolbar();
@@ -695,8 +686,8 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
       );
     }
 
-    if (AutoScaffold.usesHorizontalLayoutOf(context)) {
-      await showAppDialog<void>(
+    if (FrostAutoScaffold.usesHorizontalLayoutOf(context)) {
+      await showFrostDialog<void>(
         context: context,
         builder: (context) => Dialog(
           backgroundColor: _ReaderPalette.resolve(context).surface,
@@ -706,7 +697,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
     } else {
       await showModalBottomSheet<void>(
         context: context,
-        sheetAnimationStyle: appSheetAnimationStyle(context),
+        sheetAnimationStyle: frostSheetAnimationStyle(context),
         useSafeArea: true,
         isScrollControlled: true,
         backgroundColor: _ReaderPalette.resolve(context).surface,
@@ -882,7 +873,7 @@ class _ReaderStage extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 420),
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: CompactMessage(icon: Icons.menu_book_outlined, message: t.novel.reader.emptyBody),
+              child: FrostCompactMessage(icon: FrostIconData.glyph(Icons.menu_book_outlined), message: t.novel.reader.emptyBody),
             ),
           ),
         ),
@@ -1022,12 +1013,12 @@ class _ReaderSegmentView extends StatelessWidget {
     // One script decision per segment from its opening paragraphs, so the
     // whole page uses one regional glyph set without scanning every block.
     final sample = segment.blocks.whereType<NovelTextParagraph>().take(12).map((block) => block.text).join();
-    final paragraphStyle = contentTextStyle(
+    final paragraphStyle = frostContentTextStyle(
       context,
       sample,
       Theme.of(context).textTheme.bodyLarge?.copyWith(color: palette.onBackground, fontSize: fontSize, height: lineHeight, letterSpacing: 0),
     );
-    final chapterStyle = contentTextStyle(
+    final chapterStyle = frostContentTextStyle(
       context,
       sample,
       Theme.of(
@@ -1042,8 +1033,8 @@ class _ReaderSegmentView extends StatelessWidget {
         child: SingleChildScrollView(
           controller: scrollController,
           padding: EdgeInsets.fromLTRB(0, 80 * MediaQuery.textScalerOf(context).scale(14) / 14, 0, 100 * MediaQuery.textScalerOf(context).scale(14) / 14),
-          child: ContentColumn(
-            maxWidth: AppMetrics.readingMaxWidth,
+          child: FrostContentColumn(
+            maxWidth: FrostMetrics.readingMaxWidth,
             child: SelectionArea(
               onSelectionChanged: onSelectionChanged,
               child: Column(
@@ -1092,7 +1083,7 @@ class _ReaderTopChrome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final leading = FpPageHeader.leadingFor(context, onBack: onBack);
+    final leading = FrostPageHeader.leadingFor(context, onBack: onBack);
     final content = DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surface,
@@ -1104,7 +1095,7 @@ class _ReaderTopChrome extends StatelessWidget {
         padding: EdgeInsets.fromLTRB(compact ? 8 : 10, compact ? 6 : 8, compact ? 8 : 10, compact ? 6 : 8),
         child: Row(
           children: [
-            if (leading != null) ...[leading, const SizedBox(width: FpPageHeader.titleSpacingAfterBack)],
+            if (leading != null) ...[leading, const SizedBox(width: FrostPageHeader.titleSpacingAfterBack)],
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1133,7 +1124,7 @@ class _ReaderTopChrome extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: ContentColumn(maxWidth: AppMetrics.readingMaxWidth, child: content),
+      child: FrostContentColumn(maxWidth: FrostMetrics.readingMaxWidth, child: content),
     );
   }
 }
@@ -1153,7 +1144,7 @@ class _ReaderChromeVisibility extends StatelessWidget {
         excluding: !visible,
         child: ExcludeSemantics(
           excluding: !visible,
-          child: AnimatedOpacity(duration: AppMotion.duration(context, AppMotion.expand), opacity: visible ? 1 : 0, child: child),
+          child: AnimatedOpacity(duration: FrostMotion.duration(context, FrostMotion.expand), opacity: visible ? 1 : 0, child: child),
         ),
       ),
     );
@@ -1239,7 +1230,7 @@ class _ReaderBottomChrome extends StatelessWidget {
                   return width;
                 }
 
-                final neededWidth = AppMetrics.controlHeight * 2 + 68 + textWidth(t.novel.reader.autoScroll) + textWidth(progressLabel) + 16;
+                final neededWidth = FrostMetrics.controlHeight * 2 + 68 + textWidth(t.novel.reader.autoScroll) + textWidth(progressLabel) + 16;
                 if (neededWidth > constraints.maxWidth) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -1264,7 +1255,7 @@ class _ReaderBottomChrome extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: ContentColumn(maxWidth: AppMetrics.readingMaxWidth, child: content),
+      child: FrostContentColumn(maxWidth: FrostMetrics.readingMaxWidth, child: content),
     );
   }
 }
@@ -1280,8 +1271,8 @@ class _ReaderAutoScrollSwitch extends StatelessWidget {
   Widget build(BuildContext context) => Tooltip(
     message: running ? t.novel.reader.pauseAutoScroll : t.novel.reader.startAutoScroll,
     child: MergeSemantics(
-      child: AppClickSurface(
-        feedback: AppClickFeedback.quiet,
+      child: FrostClickSurface(
+        feedback: FrostClickFeedback.quiet,
         borderRadius: BorderRadius.circular(8),
         onTap: enabled ? onChanged : null,
         child: Row(
@@ -1294,7 +1285,7 @@ class _ReaderAutoScrollSwitch extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            AppSwitch(value: running, onChanged: enabled ? (_) => onChanged() : null, semanticLabel: t.novel.reader.autoScroll),
+            FrostSwitch(value: running, onChanged: enabled ? (_) => onChanged() : null, semanticLabel: t.novel.reader.autoScroll),
           ],
         ),
       ),
@@ -1325,8 +1316,8 @@ class _ReaderQuietIconButton extends StatelessWidget {
         style: IconButton.styleFrom(
           overlayColor: Colors.transparent,
           backgroundColor: Colors.transparent,
-          fixedSize: const Size.square(AppMetrics.controlHeight),
-          minimumSize: const Size.square(AppMetrics.controlHeight),
+          fixedSize: const Size.square(FrostMetrics.controlHeight),
+          minimumSize: const Size.square(FrostMetrics.controlHeight),
           padding: EdgeInsets.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1444,7 +1435,7 @@ class _ReaderSettingsPanel extends StatelessWidget {
           onIncrease: () => onSpeedChanged((scrollSpeed + 12).clamp(12, 96)),
         ),
         if (volumeSupported)
-          AppSwitchListTile(
+          FrostSwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(t.novel.reader.volumeKeys),
             subtitle: Text(t.novel.reader.volumeKeysHelp),
@@ -1602,16 +1593,16 @@ class _ReaderLoadingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AutoScaffold(
+    return FrostAutoScaffold(
       builder: (context, layout, orientation, useHorizontalLayout) {
         final desktop = useHorizontalLayout;
         return Scaffold(
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(desktop ? 36 : 22, AppMetrics.pageInset, desktop ? 36 : 22, AppMetrics.pageInset),
+              padding: EdgeInsets.fromLTRB(desktop ? 36 : 22, FrostMetrics.pageInset, desktop ? 36 : 22, FrostMetrics.pageInset),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: AppMetrics.readingMaxWidth),
+                  constraints: const BoxConstraints(maxWidth: FrostMetrics.readingMaxWidth),
                   child: Skeletonizer.zone(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1655,7 +1646,7 @@ class _ReaderPalette {
   final Color accent;
 
   static _ReaderPalette resolve(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return _ReaderPalette(

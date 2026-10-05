@@ -68,7 +68,7 @@ class RankingState {
   }
 }
 
-class RankingIllustListSource extends NextUrlListSource<Illust, IllustPageResult> {
+class RankingIllustListSource extends FrostCursorListSource<Illust, IllustPageResult> {
   RankingIllustListSource({required this.mode});
 
   final IllustRankingMode mode;
@@ -94,7 +94,7 @@ class RankingIllustListSource extends NextUrlListSource<Illust, IllustPageResult
   }
 }
 
-class RankingMangaListSource extends NextUrlListSource<Illust, IllustPageResult> {
+class RankingMangaListSource extends FrostCursorListSource<Illust, IllustPageResult> {
   RankingMangaListSource({required this.mode});
 
   final MangaRankingMode mode;
@@ -120,7 +120,7 @@ class RankingMangaListSource extends NextUrlListSource<Illust, IllustPageResult>
   }
 }
 
-class RankingNovelListSource extends NextUrlListSource<Novel, NovelPageResult> {
+class RankingNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> {
   RankingNovelListSource({required this.mode});
 
   final NovelRankingMode mode;

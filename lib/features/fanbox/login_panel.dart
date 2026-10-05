@@ -2,13 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/app_dialog.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
-import 'package:freepiv/shared/widgets/refresh_dots.dart';
 import 'package:freepiv/src/rust/api/fanbox_login.dart';
 import 'logic.dart';
 import 'login_logic.dart';
@@ -33,7 +31,7 @@ class _FanboxLoginPanelState extends ConsumerState<FanboxLoginPanel> {
   }
 
   Future<void> _manual() async {
-    final success = await showAppDialog<bool>(context: context, builder: (_) => const _FanboxCookieDialog());
+    final success = await showFrostDialog<bool>(context: context, builder: (_) => const _FanboxCookieDialog());
     if (success == true && mounted) widget.onSignedIn?.call();
   }
 
@@ -43,7 +41,7 @@ class _FanboxLoginPanelState extends ConsumerState<FanboxLoginPanel> {
     try {
       if (Platform.isWindows && !await fanboxBrowserAvailable()) {
         if (!mounted) return;
-        final choice = await showAppDialog<_RuntimeChoice>(context: context, builder: (_) => const _FanboxRuntimeDialog());
+        final choice = await showFrostDialog<_RuntimeChoice>(context: context, builder: (_) => const _FanboxRuntimeDialog());
         if (!mounted) return;
         if (choice != _RuntimeChoice.ready) {
           _login.cancel();
@@ -83,7 +81,7 @@ class _FanboxLoginPanelState extends ConsumerState<FanboxLoginPanel> {
             const SizedBox(height: 12),
             Text(t.browserHelp),
             const SizedBox(height: 24),
-            if (supportsFanboxWebLogin) AppButton(label: t.browserLogin, kind: AppButtonKind.primary, loading: busy, onPressed: _browser),
+            if (supportsFanboxWebLogin) FrostButton(label: t.browserLogin, kind: FrostButtonKind.primary, loading: busy, onPressed: _browser),
             const SizedBox(height: 12),
             OutlinedButton(onPressed: busy ? null : _manual, child: Text(t.manualLogin)),
             SizedBox(
@@ -140,7 +138,7 @@ class _FanboxRuntimeDialogState extends State<_FanboxRuntimeDialog> {
             SizedBox(
               height: 48,
               child: _checking
-                  ? const Center(child: RefreshDots())
+                  ? const Center(child: FrostRefreshDots())
                   : _failed
                   ? Text(t.runtimeMissing)
                   : null,
@@ -237,7 +235,7 @@ class _FanboxCookieDialogState extends ConsumerState<_FanboxCookieDialog> {
                 onSubmitted: operation.isLoading ? null : _submit,
               ),
               const SizedBox(height: 16),
-              AppButton(label: t.login, loading: operation.isLoading, kind: AppButtonKind.primary, onPressed: () => _submit(_cookie.text)),
+              FrostButton(label: t.login, loading: operation.isLoading, kind: FrostButtonKind.primary, onPressed: () => _submit(_cookie.text)),
               const SizedBox(height: 12),
               OutlinedButton(onPressed: operation.isLoading ? null : _import, child: Text(t.importSession)),
               SizedBox(

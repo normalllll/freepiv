@@ -1,14 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 typedef CommentSubmitCallback = Future<bool> Function({required String text, int? stampId});
@@ -63,7 +58,7 @@ class _CommentInputBarState extends State<CommentInputBar> {
   @override
   Widget build(BuildContext context) {
     final translations = context.t.illust.comments;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final replyingTo = widget.replyingTo;
     final hasText = _controller.text.trim().isNotEmpty;
     final panelHeight = math.min(MediaQuery.sizeOf(context).height * 0.36, 280.0);
@@ -74,12 +69,12 @@ class _CommentInputBarState extends State<CommentInputBar> {
     final fieldBorder = OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none);
     return SafeArea(
       top: false,
-      child: ContentColumn(
+      child: FrostContentColumn(
         child: Padding(
           padding: const EdgeInsets.only(top: 6, bottom: 8),
-          child: FpSurface(
-            role: FpSurfaceRole.chrome,
-            borderRadius: BorderRadius.circular(AppMetrics.groupRadius + 4),
+          child: FrostSurface(
+            role: FrostSurfaceRole.chrome,
+            borderRadius: BorderRadius.circular(FrostMetrics.groupRadius + 4),
             child: AnimatedSize(
               duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 240),
               alignment: Alignment.topCenter,
@@ -148,10 +143,10 @@ class _CommentInputBarState extends State<CommentInputBar> {
                                     : const Icon(Icons.arrow_upward, size: 20),
                               )
                             else
-                              AppButton(
+                              FrostButton(
                                 label: context.t.common.send,
                                 loading: _submitting,
-                                kind: AppButtonKind.primary,
+                                kind: FrostButtonKind.primary,
                                 onPressed: hasText ? _submitText : null,
                               ),
                           ],
@@ -271,7 +266,7 @@ class _ReplyHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
 
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 8, 6),
@@ -310,7 +305,7 @@ class _EmojiGrid extends StatelessWidget {
         final asset = assets[index];
         return Tooltip(
           message: asset.name,
-          child: AppClickSurface(
+          child: FrostClickSurface(
             onTap: () => onSelected(asset),
             child: Center(child: Image.asset(asset.path, width: 30, height: 30, filterQuality: FilterQuality.medium)),
           ),
@@ -336,7 +331,7 @@ class _StampGrid extends StatelessWidget {
         final asset = assets[index];
         return Tooltip(
           message: asset.name,
-          child: AppClickSurface(
+          child: FrostClickSurface(
             borderRadius: BorderRadius.circular(8),
             onTap: () => onSelected(asset),
             child: Padding(

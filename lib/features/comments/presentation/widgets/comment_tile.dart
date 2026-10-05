@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
-import 'package:freepiv/app/theme/content_script.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/comments/presentation/widgets/comment_timeline_lines.dart';
 import 'package:freepiv/core/core.dart';
@@ -9,7 +7,6 @@ import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/comments/presentation/widgets/pixiv_comment_text.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
 
@@ -73,8 +70,8 @@ class PixivCommentTile extends StatelessWidget {
         children: [
           SizedBox.square(
             dimension: 48,
-            child: AppClickSurface(
-              feedback: AppClickFeedback.artwork,
+            child: FrostClickSurface(
+              feedback: FrostClickFeedback.media,
               customBorder: const CircleBorder(),
               onTap: () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${comment.user.id}'}),
               child: Center(
@@ -134,7 +131,7 @@ class PixivCommentTile extends StatelessWidget {
                   PixivCommentText(
                     comment.comment,
                     assets: assets,
-                    style: contentTextStyle(context, comment.comment, textTheme.bodyMedium?.copyWith(height: 1.4)),
+                    style: frostContentTextStyle(context, comment.comment, textTheme.bodyMedium?.copyWith(height: 1.4)),
                     maxLines: preview ? 3 : null,
                     overflow: preview ? TextOverflow.ellipsis : TextOverflow.clip,
                     sizeMultiplier: compact || preview ? 1.15 : 1.25,
@@ -187,9 +184,9 @@ class _CommentActions extends StatelessWidget {
       children: [
         if (onReply != null) CommentReplyButton(onPressed: () => onReply!(comment)),
         if (onDelete != null)
-          AppMenuAnchor(
+          FrostMenuAnchor(
             menuChildren: [
-              AppMenuItem(
+              FrostMenuItem(
                 onPressed: onDelete,
                 leadingIcon: Icon(Icons.delete_outline, size: 18, color: colorScheme.error),
                 child: Text(context.t.illust.comments.delete),
@@ -201,7 +198,7 @@ class _CommentActions extends StatelessWidget {
               onPressed: isDeleting ? null : toggle,
               iconSize: 18,
               icon: isDeleting
-                  ? const SizedBox.square(dimension: 16, child: LoadingSkeletonBlock())
+                  ? const SizedBox.square(dimension: 16, child: FrostSkeletonBlock())
                   : Icon(Icons.more_horiz, color: colorScheme.onSurfaceVariant),
             ),
           ),
@@ -283,16 +280,16 @@ class _CommentRepliesSectionState extends State<CommentRepliesSection> {
         final source = widget.source;
         final lastError = source.lastError;
 
-        if (source.phase == LoadPhase.loading) {
+        if (source.phase == FrostLoadPhase.loading) {
           return const _RepliesStatus(
-            icon: SizedBox.square(dimension: 16, child: LoadingSkeletonBlock()),
+            icon: SizedBox.square(dimension: 16, child: FrostSkeletonBlock()),
             label: '',
           );
         }
 
         if (!source.initialized && lastError != null) {
-          return CompactMessage(
-            icon: Icons.error_outline,
+          return FrostCompactMessage(
+            icon: FrostIconData.glyph(Icons.error_outline),
             message: context.t.common.errorWithCause(message: context.t.illust.comments.repliesFailed, cause: formatPixivError(lastError)),
             details: pixivErrorDetails(lastError),
             actionLabel: context.t.common.retry,
@@ -326,15 +323,15 @@ class _CommentRepliesSectionState extends State<CommentRepliesSection> {
                 const Padding(
                   padding: EdgeInsets.only(top: 8),
                   child: _RepliesStatus(
-                    icon: SizedBox.square(dimension: 16, child: LoadingSkeletonBlock()),
+                    icon: SizedBox.square(dimension: 16, child: FrostSkeletonBlock()),
                     label: '',
                   ),
                 )
               else if (source.initialized && lastError != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: CompactMessage(
-                    icon: Icons.error_outline,
+                  child: FrostCompactMessage(
+                    icon: FrostIconData.glyph(Icons.error_outline),
                     message: context.t.common.errorWithCause(message: context.t.illust.comments.repliesFailed, cause: formatPixivError(lastError)),
                     details: pixivErrorDetails(lastError),
                     actionLabel: context.t.common.retry,

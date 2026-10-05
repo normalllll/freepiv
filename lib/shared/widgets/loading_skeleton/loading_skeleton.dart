@@ -1,24 +1,8 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:freepiv/i18n/strings.g.dart';
-
-/// Small action placeholders also keep the original control's occupied space.
-class LoadingSkeletonBlock extends StatelessWidget {
-  const LoadingSkeletonBlock({this.width = 16, this.height = 16, this.radius = AppMetrics.badgeRadius, super.key});
-  final double width;
-  final double height;
-  final double radius;
-  @override
-  Widget build(BuildContext context) => Semantics(
-    label: context.t.refresh.loading,
-    child: Skeletonizer.zone(
-      child: Bone(width: width, height: height, borderRadius: BorderRadius.circular(radius)),
-    ),
-  );
-}
 
 class FullScreenLoadingSkeleton extends StatelessWidget {
   const FullScreenLoadingSkeleton({this.padding = const EdgeInsets.all(12), this.itemPadding = const EdgeInsets.all(8), super.key});
@@ -38,25 +22,13 @@ class FullScreenLoadingSkeleton extends StatelessWidget {
     final itemCount = useGrid ? ((height / 257).ceil() + 1) * columns : (height / 156).ceil() + 1;
 
     return Skeletonizer.zone(
+      effect: frostSkeletonEffect(context),
       child: Padding(
         padding: padding,
         child: useGrid
             ? _SkeletonGrid(itemCount: itemCount, maxWidth: width - padding.horizontal, itemPadding: itemPadding)
             : _SkeletonList(itemCount: itemCount, itemPadding: itemPadding),
       ),
-    );
-  }
-}
-
-class ImageLoadingSkeleton extends StatelessWidget {
-  const ImageLoadingSkeleton({this.borderRadius, super.key});
-
-  final BorderRadius? borderRadius;
-
-  @override
-  Widget build(BuildContext context) {
-    return Skeletonizer.zone(
-      child: Bone(width: double.infinity, height: double.infinity, borderRadius: borderRadius ?? BorderRadius.circular(AppMetrics.controlRadius)),
     );
   }
 }
@@ -121,14 +93,14 @@ class _WorkCardSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
       child: Padding(
         padding: itemPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+              child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
             ),
             const SizedBox(height: 10),
             const Bone.text(width: double.infinity),

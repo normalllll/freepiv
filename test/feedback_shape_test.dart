@@ -6,13 +6,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/illust_bookmark_button.dart';
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
-import 'package:freepiv/shared/widgets/surface_icon_button.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
@@ -43,15 +41,15 @@ void main() {
     addTearDown(() => pixivAccountNotifier.value = null);
     final controls = <String, Widget>{
       'back': IconButton(onPressed: () {}, icon: const Icon(Icons.arrow_back)),
-      'more': AppIconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz)),
-      'image-action': SurfaceIconButton(onPressed: () {}, tooltip: 'Image', icon: Icons.open_in_full),
+      'more': FrostIconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz)),
+      'image-action': FrostSurfaceIconButton(onPressed: () {}, tooltip: 'Image', icon: FrostIconData.glyph(Icons.open_in_full)),
       'bookmark': const IllustBookmarkButton(illustId: 9101, initialIsBookmarked: false),
       'floating-bookmark': const IllustBookmarkButton(illustId: 9102, initialIsBookmarked: false, floating: true),
       'novel-bookmark': const IllustBookmarkButton(illustId: 9103, initialIsBookmarked: false, isNovel: true),
       'text': TextButton(onPressed: () {}, child: const Text('Open')),
     };
     for (final dark in [false, true]) {
-      final tokens = dark ? FreepivThemeTokens.dark : FreepivThemeTokens.light;
+      final tokens = dark ? FrostPalettes.pink.darkNeutral : FrostPalettes.pink.lightNeutral;
       for (final entry in controls.entries) {
         final key = GlobalKey();
         final textButton = entry.key == 'text';

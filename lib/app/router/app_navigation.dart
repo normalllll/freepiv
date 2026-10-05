@@ -1,19 +1,20 @@
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/ui/fp_icon.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 class AppRouteDestination {
   const AppRouteDestination({required this.route, required this.icon});
 
   final AppRoute route;
-  final FpIconName icon;
+  final FrostIconData icon;
 }
 
 const appRouteDestinations = <AppRouteDestination>[
-  AppRouteDestination(route: AppRoute.home, icon: FpIconName.home),
-  AppRouteDestination(route: AppRoute.newest, icon: FpIconName.activity),
-  AppRouteDestination(route: AppRoute.search, icon: FpIconName.compass),
-  AppRouteDestination(route: AppRoute.me, icon: FpIconName.user),
+  AppRouteDestination(route: AppRoute.home, icon: PivIcons.home),
+  AppRouteDestination(route: AppRoute.newest, icon: PivIcons.activity),
+  AppRouteDestination(route: AppRoute.search, icon: PivIcons.compass),
+  AppRouteDestination(route: AppRoute.me, icon: PivIcons.user),
 ];
 
 bool isMobileNavigationPath(String path) => appRouteDestinations.any((item) => item.route.path == path);

@@ -1,11 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_related_section.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class IllustDetailSkeletonPage extends StatelessWidget {
@@ -13,8 +10,8 @@ class IllustDetailSkeletonPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AutoScaffold(
-      builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+    return FrostAutoScaffold(
+      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
         if (useHorizontalLayout && layout.width >= 960) {
           return const _DesktopIllustDetailSkeleton();
         }
@@ -42,9 +39,9 @@ class _DesktopIllustDetailSkeleton extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(4, 0, 8, 8),
             child: SizedBox(
               width: panelWidth,
-              child: FpSurface(
-                role: FpSurfaceRole.panel,
-                borderRadius: BorderRadius.circular(AppMetrics.groupRadius + 4),
+              child: FrostSurface(
+                role: FrostSurfaceRole.panel,
+                borderRadius: BorderRadius.circular(FrostMetrics.groupRadius + 4),
                 child: const _DetailPanelSkeleton(scrollable: true),
               ),
             ),
@@ -63,7 +60,7 @@ class _MobileIllustDetailSkeleton extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     final imageHeight = math.min(size.height * 0.68, math.max(360.0, size.width * 1.15));
 
-    final leading = FpPageHeader.leadingFor(context);
+    final leading = FrostPageHeader.leadingFor(context);
     return Stack(
       children: [
         CustomScrollView(
@@ -88,8 +85,8 @@ class _MobileIllustDetailSkeleton extends StatelessWidget {
             // Same spot as the loaded bar's disc: 8 in, centred in a toolbar.
             child: Padding(
               padding: const EdgeInsets.fromLTRB(8, (kToolbarHeight - 44) / 2, 0, 0),
-              child: FpSurface(
-                role: FpSurfaceRole.chrome,
+              child: FrostSurface(
+                role: FrostSurfaceRole.chrome,
                 borderRadius: BorderRadius.circular(22),
                 child: SizedBox.square(dimension: 44, child: Center(child: leading)),
               ),

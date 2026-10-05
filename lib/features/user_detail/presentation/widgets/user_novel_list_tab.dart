@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
@@ -78,25 +76,25 @@ class UserNovelListBody extends StatelessWidget {
     super.key,
   });
 
-  final DataListSource<Novel> source;
+  final FrostListSource<Novel> source;
   final ScrollPhysics? physics;
   final Widget? sliverHeader;
   final List<Widget> leadingSlivers;
   final String emptyTitle;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return DataLoadingCustomScrollView(
+    if (source.phase == FrostLoadPhase.loading) {
+      return FrostLoadingScrollView(
         physics: physics,
         slivers: [
           ...leadingSlivers,
           ?sliverHeader,
-          const SliverContentColumn(
+          const FrostSliverContentColumn(
             sliver: SliverPadding(padding: EdgeInsets.symmetric(vertical: 12), sliver: SliverListSkeleton(itemExtent: 140, itemCount: 8)),
           ),
         ],
@@ -108,7 +106,7 @@ class UserNovelListBody extends StatelessWidget {
         physics: physics,
         sliverHeader: sliverHeader,
         leadingSlivers: leadingSlivers,
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
@@ -117,20 +115,21 @@ class UserNovelListBody extends StatelessWidget {
         physics: physics,
         sliverHeader: sliverHeader,
         leadingSlivers: leadingSlivers,
-        child: EmptyContent(icon: Icons.menu_book_outlined, title: emptyTitle),
+        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.menu_book_outlined), title: emptyTitle),
       );
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
         ...leadingSlivers,
         ?sliverHeader,
-        SliverDataList<Novel>(
+        FrostSliverDataList<Novel>(
+          firstLoadSkeleton: const FullScreenLoadingSkeleton(),
           source: source,
           padding: const EdgeInsets.symmetric(vertical: 12),
           itemBuilder: (context, novel, index) {
-            return ContentColumn(
+            return FrostContentColumn(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: UserNovelCard(novel: novel),
@@ -190,6 +189,6 @@ class _SliverStateBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataSliverFillBody(physics: physics, sliverHeader: sliverHeader, leadingSlivers: leadingSlivers, child: child);
+    return FrostSliverFillBody(physics: physics, sliverHeader: sliverHeader, leadingSlivers: leadingSlivers, child: child);
   }
 }

@@ -1,17 +1,11 @@
-import 'package:freepiv/shared/widgets/constrained_segmented_button.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/app_dialog.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 class SearchFilterButton extends ConsumerWidget {
   const SearchFilterButton({required this.type, this.allowTypeSelection = true, this.compact = false, super.key});
@@ -22,9 +16,9 @@ class SearchFilterButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dimension = AppMetrics.controlHeight;
+    final dimension = FrostMetrics.controlHeight;
     final iconSize = compact ? 18.0 : 20.0;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final enabled = type != SearchType.user;
 
@@ -63,7 +57,7 @@ class SearchFilterButton extends ConsumerWidget {
   }
 
   Future<void> _showFilterPanel(BuildContext context) {
-    final mobile = !AutoScaffold.usesHorizontalLayoutOf(context);
+    final mobile = !FrostAutoScaffold.usesHorizontalLayoutOf(context);
     final panel = UncontrolledProviderScope(
       container: ProviderScope.containerOf(context, listen: false),
       child: SearchFilterPanel(type: type, allowTypeSelection: allowTypeSelection),
@@ -72,7 +66,7 @@ class SearchFilterButton extends ConsumerWidget {
     if (mobile) {
       return showModalBottomSheet<void>(
         context: context,
-        sheetAnimationStyle: appSheetAnimationStyle(context),
+        sheetAnimationStyle: frostSheetAnimationStyle(context),
         useSafeArea: true,
         showDragHandle: true,
         isScrollControlled: true,
@@ -91,7 +85,8 @@ class SearchFilterButton extends ConsumerWidget {
       );
     }
 
-    final navigatorOverlay = Navigator.of(context).overlay;
+    // The dialog opens on the root navigator; measure against its overlay.
+    final navigatorOverlay = Navigator.of(context, rootNavigator: true).overlay;
     final buttonBox = context.findRenderObject();
     if (navigatorOverlay == null || buttonBox is! RenderBox) return Future.value();
     final overlayBox = navigatorOverlay.context.findRenderObject() as RenderBox;
@@ -104,34 +99,38 @@ class SearchFilterButton extends ConsumerWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      transitionDuration: AppMotion.duration(context, const Duration(milliseconds: 240)),
-      pageBuilder: (dialogContext, animation, secondaryAnimation) {
-        final size = MediaQuery.sizeOf(dialogContext);
-        final width = math.min(460.0, size.width - 16);
-        final maxHeight = math.max(120.0, size.height - 16);
-        final left = buttonRect.left.clamp(8.0, math.max(8.0, size.width - width - 8)).toDouble();
-        final below = buttonRect.bottom + 4;
-        final top = (size.height - below >= math.min(480, maxHeight) ? below : buttonRect.top - math.min(480, maxHeight))
-            .clamp(8.0, math.max(8.0, size.height - math.min(480, maxHeight) - 8))
-            .toDouble();
-        return Stack(
-          children: [
-            Positioned(
-              left: left,
-              top: top,
-              width: width,
-              child: FpSurface(
-                role: FpSurfaceRole.overlay,
-                borderRadius: BorderRadius.circular(AppMetrics.modalRadius),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: size.height - top - 8),
-                  child: Padding(padding: const EdgeInsets.all(16), child: panel),
+      transitionDuration: FrostMotion.duration(context, const Duration(milliseconds: 240)),
+      // The route's own bounds, not the window size: a desktop caption bar
+      // above the navigator takes part of the window.
+      pageBuilder: (dialogContext, animation, secondaryAnimation) => LayoutBuilder(
+        builder: (dialogContext, constraints) {
+          final size = constraints.biggest;
+          final width = math.min(460.0, size.width - 16);
+          final maxHeight = math.max(120.0, size.height - 16);
+          final left = buttonRect.left.clamp(8.0, math.max(8.0, size.width - width - 8)).toDouble();
+          final below = buttonRect.bottom + 4;
+          final top = (size.height - below >= math.min(480, maxHeight) ? below : buttonRect.top - math.min(480, maxHeight))
+              .clamp(8.0, math.max(8.0, size.height - math.min(480, maxHeight) - 8))
+              .toDouble();
+          return Stack(
+            children: [
+              Positioned(
+                left: left,
+                top: top,
+                width: width,
+                child: FrostSurface(
+                  role: FrostSurfaceRole.overlay,
+                  borderRadius: BorderRadius.circular(FrostMetrics.modalRadius),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: size.height - top - 8),
+                    child: Padding(padding: const EdgeInsets.all(16), child: panel),
+                  ),
                 ),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
       transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
         return FadeTransition(
           opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
@@ -206,7 +205,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
     return SafeArea(
       top: false,
       child: AnimatedSize(
-        duration: AppMotion.duration(context, const Duration(milliseconds: 180)),
+        duration: FrostMotion.duration(context, const Duration(milliseconds: 180)),
         alignment: Alignment.topCenter,
         // The options scroll; the actions stay pinned below them, so Apply
         // is visible without scrolling however many groups the panel has.
@@ -231,10 +230,10 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (allowTypeSelection) ...[
-                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      const SizedBox(height: FrostMetrics.compactSectionGap),
                       _SectionTitle(icon: Icons.category_outlined, label: context.t.common.type),
                       const SizedBox(height: 8),
-                      AppSegmentedButton<SearchType>(
+                      FrostSegmentedButton<SearchType>(
                         showSelectedIcon: false,
                         segments: [
                           ButtonSegment(value: SearchType.illust, icon: const Icon(Icons.image_outlined), label: Text(context.t.search.type.illustManga)),
@@ -246,7 +245,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                       ),
                     ],
                     if (activeType != SearchType.user) ...[
-                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      const SizedBox(height: FrostMetrics.compactSectionGap),
                       _SectionTitle(icon: Icons.sort_outlined, label: context.t.search.filters.sort),
                       const SizedBox(height: 8),
                       _ChoiceWrap<SearchOrder>(
@@ -265,7 +264,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ),
-                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      const SizedBox(height: FrostMetrics.compactSectionGap),
                       _SectionTitle(icon: Icons.track_changes_outlined, label: context.t.search.filters.target),
                       const SizedBox(height: 8),
                       if (activeType == SearchType.novel)
@@ -286,12 +285,12 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                             setFilter(activeFilter.copyWith(target: value));
                           },
                         ),
-                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      const SizedBox(height: FrostMetrics.compactSectionGap),
                       _SectionTitle(icon: Icons.date_range_outlined, label: context.t.search.filters.date),
                       const SizedBox(height: 8),
-                      AppSelect<SearchDatePreset>(
+                      FrostSelect<SearchDatePreset>(
                         value: activeFilter.datePreset,
-                        items: [for (final value in SearchDatePreset.values) AppSelectItem(value: value, label: _datePresetLabel(context, value))],
+                        items: [for (final value in SearchDatePreset.values) FrostSelectItem(value: value, label: _datePresetLabel(context, value))],
                         onChanged: (value) {
                           if (value == SearchDatePreset.custom) {
                             _pickDateRange(context, activeFilter, setFilter);
@@ -309,14 +308,14 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ),
-                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      const SizedBox(height: FrostMetrics.compactSectionGap),
                       _SectionTitle(icon: Icons.bookmark_outline, label: context.t.search.filters.bookmarks),
                       const SizedBox(height: 8),
-                      AppSelect<int>(
+                      FrostSelect<int>(
                         value: activeFilter.bookmarkTotal ?? 0,
                         items: [
                           for (final value in searchBookmarkTotalOptions)
-                            AppSelectItem(value: value, label: _bookmarkLabel(context, value == 0 ? null : value)),
+                            FrostSelectItem(value: value, label: _bookmarkLabel(context, value == 0 ? null : value)),
                         ],
                         onChanged: (value) {
                           setFilter(activeFilter.copyWith(bookmarkTotal: value == 0 ? null : value));
@@ -326,7 +325,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                     // Only a full illustration search takes these; the popular
                     // preview and novel search ignore them.
                     if (activeType == SearchType.illust && !activeFilter.isPopularPreview) ...[
-                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      const SizedBox(height: FrostMetrics.compactSectionGap),
                       _SectionTitle(icon: Icons.photo_library_outlined, label: context.t.search.filters.contentType),
                       const SizedBox(height: 8),
                       _ChoiceWrap<SearchContentType?>(
@@ -335,7 +334,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                         labelBuilder: (value) => _contentTypeLabel(context, value),
                         onSelected: (value) => setFilter(activeFilter.copyWith(contentType: value)),
                       ),
-                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      const SizedBox(height: FrostMetrics.compactSectionGap),
                       _SectionTitle(icon: Icons.crop_outlined, label: context.t.search.filters.ratio),
                       const SizedBox(height: 8),
                       _ChoiceWrap<SearchRatio?>(
@@ -344,7 +343,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                         labelBuilder: (value) => _ratioLabel(context, value),
                         onSelected: (value) => setFilter(activeFilter.copyWith(ratio: value)),
                       ),
-                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      const SizedBox(height: FrostMetrics.compactSectionGap),
                       _SectionTitle(icon: Icons.aspect_ratio_outlined, label: context.t.search.filters.size),
                       const SizedBox(height: 8),
                       _ChoiceWrap<int?>(
@@ -360,10 +359,10 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                         labelBuilder: (value) => value == null ? context.t.search.size.any : context.t.search.size.minHeight(px: value),
                         onSelected: (value) => setFilter(activeFilter.copyWith(minHeight: value)),
                       ),
-                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      const SizedBox(height: FrostMetrics.compactSectionGap),
                       _SectionTitle(icon: Icons.brush_outlined, label: context.t.search.filters.tool),
                       const SizedBox(height: 8),
-                      AppTextField(
+                      FrostTextField(
                         controller: _tool,
                         hintText: context.t.search.filters.toolHint,
                         onChanged: (value) {
@@ -376,7 +375,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                 ),
               ),
             ),
-            const SizedBox(height: AppMetrics.compactSectionGap),
+            const SizedBox(height: FrostMetrics.compactSectionGap),
             Row(
               children: [
                 TextButton(

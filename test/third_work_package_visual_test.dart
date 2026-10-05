@@ -6,8 +6,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/about/presentation/about_page.dart';
 import 'package:freepiv/features/discover/page.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
@@ -19,8 +19,6 @@ import 'package:freepiv/features/search/logic/search_history_logic.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_header.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/widgets/search_input.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -134,7 +132,7 @@ void main() {
                       : AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en', 'US')),
                   home: MediaQuery(
                     data: MediaQueryData(size: size),
-                    child: AppLayoutScope(
+                    child: FrostLayoutScope(
                       child: RepaintBoundary(key: boundary, child: entry.value),
                     ),
                   ),
@@ -166,7 +164,7 @@ void main() {
             final groups = tester.widget<TabBar>(find.byType(TabBar));
             expect(groups.isScrollable, isTrue);
             expect(groups.indicator, isNull);
-            expect(groups.labelPadding, EdgeInsets.symmetric(horizontal: AppMetrics.tabLabelPadding(size.width)));
+            expect(groups.labelPadding, EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(size.width)));
             final layout = fanboxNavigationLayout(tester.element(find.byType(TabBar)), size.width);
             final tabRect = tester.getRect(find.byType(TabBar));
             final collectionRect = tester.getRect(find.descendant(of: find.byType(FanboxSectionNavigation), matching: find.byType(TextButton)));
@@ -199,7 +197,7 @@ void main() {
             expect(find.byType(SearchTypeSelector), findsNothing);
             expect(find.byType(SearchTypeMenuButton), findsNothing);
             expect(find.byType(SearchTypeTabs), findsNothing);
-            expect(find.byType(SearchInput), findsOneWidget);
+            expect(find.byType(FrostSearchInput), findsOneWidget);
           }
         }
       }

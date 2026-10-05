@@ -1,22 +1,14 @@
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/core/downloads/download_manager.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/core/utils/text_format.dart';
-import 'package:freepiv/shared/widgets/constrained_segmented_button.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
-import 'package:freepiv/shared/widgets/refresh_dots.dart';
-import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
 import 'skeletons.dart';
-import 'package:freepiv/shared/widgets/energetic_card.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/shared/widgets/user_follow_button.dart';
-import 'package:freepiv/shared/ui/app_dialog.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
-import 'package:freepiv/app/theme/app_feedback.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/features/comments/presentation/widgets/comment_timeline_lines.dart';
 import 'package:freepiv/features/comments/presentation/widgets/comments_skeleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,7 +37,7 @@ Future<void> downloadFanboxPost(WidgetRef ref, FanboxPost post, {Rect? origin}) 
 /// Collects and queues every post of [creator] the session can read.
 Future<void> downloadFanboxCreator(WidgetRef ref, FanboxCreator creator, {Rect? origin}) async {
   final source = fanboxCreatorDownloadSource(creator);
-  AppToast.info(t.fanbox.downloadPreparing);
+  FrostToast.info(t.fanbox.downloadPreparing);
   await _downloadFanboxBatch(origin: origin, artworkUrl: source.thumbnailUrl, queue: () => ref.read(fanboxDownloadsProvider.notifier).downloadCreator(source));
 }
 
@@ -55,12 +47,12 @@ Future<void> _downloadFanboxBatch({required Rect? origin, required String? artwo
     DownloadFlight.launch(origin: origin, artwork: artworkUrl == null ? null : FanboxImageView(artworkUrl));
     final queued = await queue();
     if (queued > 0) {
-      AppToast.info(t.fanbox.downloadQueued(count: queued));
+      FrostToast.info(t.fanbox.downloadQueued(count: queued));
     } else {
-      AppToast.info(t.fanbox.downloadNothingNew);
+      FrostToast.info(t.fanbox.downloadNothingNew);
     }
   } catch (error) {
-    AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
+    toastErrorWithCause(t.illust.toast.downloadFailed, error);
   }
 }
 
@@ -137,17 +129,17 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
                                       }
                                     },
                             ),
-                            AppMenuAnchor(
+                            FrostMenuAnchor(
                               menuChildren: [
                                 Builder(
-                                  builder: (itemContext) => AppMenuItem(
+                                  builder: (itemContext) => FrostMenuItem(
                                     onPressed: collecting || creatorState.value == null
                                         ? null
                                         : () => downloadFanboxCreator(ref, creator, origin: DownloadFlight.originOf(itemContext)),
                                     child: Text(t.downloadCreator),
                                   ),
                                 ),
-                                AppMenuItem(
+                                FrostMenuItem(
                                   onPressed: () => openFanboxLink(context, 'https://www.fanbox.cc/@${Uri.encodeComponent(widget.creatorId)}'),
                                   child: Text(t.openOriginal),
                                 ),
@@ -190,8 +182,8 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
                             separatorBuilder: (_, _) => const SizedBox(width: 8),
                             itemBuilder: (_, index) => SizedBox(
                               width: 160,
-                              child: AppClickSurface(
-                                feedback: AppClickFeedback.artwork,
+                              child: FrostClickSurface(
+                                feedback: FrostClickFeedback.media,
                                 onTap: () => showFanboxImage(context, creator.profileImages[index]),
                                 child: FanboxImageMenu(url: creator.profileImages[index], child: FanboxImageView(creator.profileImages[index])),
                               ),
@@ -202,7 +194,7 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
                       const SizedBox(height: 8),
                       if (creator.isSupported)
                         TextButton.icon(
-                          onPressed: () => showAppDialog<void>(
+                          onPressed: () => showFrostDialog<void>(
                             context: context,
                             builder: (_) => FanboxFanCardDialog(creatorId: creator.creatorId, source: fanboxCreatorDownloadSource(creator)),
                           ),
@@ -234,7 +226,7 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: AppSegmentedButton<bool>(
+                        child: FrostSegmentedButton<bool>(
                           segments: [
                             ButtonSegment(value: false, label: Text(t.posts), icon: const Icon(Icons.article_outlined)),
                             ButtonSegment(value: true, label: Text(t.creatorPlans), icon: const Icon(Icons.card_membership)),
@@ -270,7 +262,7 @@ class FanboxFanCardDialog extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const AspectRatio(aspectRatio: 1.6, child: ImageLoadingSkeleton()),
+                  const AspectRatio(aspectRatio: 1.6, child: FrostImageSkeleton()),
                   TextButton(onPressed: null, child: Text(context.t.fanbox.download)),
                 ],
               ),
@@ -321,7 +313,7 @@ class FanboxPostDetailPage extends ConsumerWidget {
         error: (error, _) => FanboxErrorView(error, retry: () => ref.invalidate(fanboxPostProvider(postId))),
         data: (post) => DownloadSourceScope(
           source: fanboxPostDownloadSource(post),
-          child: DotsRefreshIndicator(
+          child: FrostDotsRefreshIndicator(
             onRefresh: () async {
               ref.invalidate(fanboxPostProvider(postId));
               await ref.read(fanboxPostProvider(postId).future);
@@ -388,7 +380,7 @@ class FanboxPostDetailPage extends ConsumerWidget {
                     const SizedBox(height: 24),
                   ],
                   if (post.isRestricted) ...[
-                    EnergeticCard(
+                    FrostCard(
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -410,7 +402,7 @@ class FanboxPostDetailPage extends ConsumerWidget {
                   ] else ...[
                     for (final block in post.blocks) Padding(padding: const EdgeInsets.only(bottom: 16), child: FanboxBlockView(block)),
                     if (post.unknownBodyJson != null)
-                      EnergeticCard(
+                      FrostCard(
                         child: Padding(padding: const EdgeInsets.all(16), child: Text(t.unknown)),
                       ),
                     const SizedBox(height: 12),
@@ -419,7 +411,7 @@ class FanboxPostDetailPage extends ConsumerWidget {
                       runSpacing: 12,
                       children: [
                         FilledButton.tonalIcon(
-                          style: appSecondaryButtonStyle(FreepivThemeTokens.of(context)),
+                          style: frostSecondaryButtonStyle(FrostThemeTokens.of(context)),
                           onPressed: post.isLiked || operation.isLoading
                               ? null
                               : () async {
@@ -444,7 +436,7 @@ class FanboxPostDetailPage extends ConsumerWidget {
                         TextButton(
                           onPressed: () => showModalBottomSheet<void>(
                             context: context,
-                            sheetAnimationStyle: appSheetAnimationStyle(context),
+                            sheetAnimationStyle: frostSheetAnimationStyle(context),
                             isScrollControlled: true,
                             builder: (_) => SafeArea(
                               child: DraggableScrollableSheet(
@@ -513,7 +505,7 @@ class FanboxPlansPanel extends ConsumerWidget {
 /// source, as the image it was opened from does.
 void showFanboxImage(BuildContext context, String url) {
   final source = DownloadSourceScope.of(context);
-  showAppDialog<void>(
+  showFrostDialog<void>(
     context: context,
     builder: (context) => DownloadSourceScope(
       source: source,
@@ -562,8 +554,8 @@ class FanboxBlockView extends ConsumerWidget {
     FanboxBlock_Heading(:final text) => SelectableText(text, style: Theme.of(context).textTheme.headlineSmall),
     FanboxBlock_Image(:final image) => AspectRatio(
       aspectRatio: image.width > 0 && image.height > 0 ? image.width / image.height : 16 / 9,
-      child: AppClickSurface(
-        feedback: AppClickFeedback.artwork,
+      child: FrostClickSurface(
+        feedback: FrostClickFeedback.media,
         onTap: () => showFanboxImage(context, image.originalUrl),
         child: FanboxImageMenu(
           url: image.originalUrl,
@@ -572,7 +564,7 @@ class FanboxBlockView extends ConsumerWidget {
         ),
       ),
     ),
-    FanboxBlock_File(:final file) => EnergeticCard(
+    FanboxBlock_File(:final file) => FrostCard(
       child: ListTile(
         leading: const Icon(Icons.attach_file),
         title: Text('${file.name}.${file.extension_}'),
@@ -588,7 +580,7 @@ class FanboxBlockView extends ConsumerWidget {
       ),
     ),
     FanboxBlock_Embed(:final url, :final html) => _FanboxEmbed(url: url, content: html),
-    FanboxBlock_PostLink(:final postId, :final title) => EnergeticCard(
+    FanboxBlock_PostLink(:final postId, :final title) => FrostCard(
       child: ListTile(
         leading: const Icon(Icons.article_outlined),
         title: Text(title),
@@ -614,7 +606,7 @@ class _FanboxEmbed extends StatelessWidget {
   Widget build(BuildContext context) {
     final document = html.parseFragment(content ?? '');
     final links = <String>{?url, ...document.querySelectorAll('a[href]').map((e) => e.attributes['href']!)};
-    return EnergeticCard(
+    return FrostCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -700,7 +692,7 @@ class _FanboxParagraphState extends State<FanboxParagraph> {
           style: TextStyle(
             fontWeight: active.any((e) => e.bold) ? FontWeight.bold : null,
             fontStyle: active.any((e) => e.italic) ? FontStyle.italic : null,
-            color: url == null ? null : FreepivThemeTokens.of(context).textPrimary,
+            color: url == null ? null : FrostThemeTokens.of(context).textPrimary,
             decoration: url == null ? null : TextDecoration.underline,
           ),
         ),
@@ -844,7 +836,7 @@ class _FanboxCommentsPanelState extends ConsumerState<FanboxCommentsPanel> {
                 onPressed: busy
                     ? null
                     : () async {
-                        final accepted = await showAppDialog<bool>(
+                        final accepted = await showFrostDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
                             title: Text(context.t.fanbox.deleteConfirm),

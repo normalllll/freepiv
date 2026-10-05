@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
@@ -7,7 +7,6 @@ import 'package:freepiv/features/user_detail/presentation/widgets/user_illust_gr
 import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_list_tab.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/lazy_indexed_stack.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 class UserBookmarksTabBody extends ConsumerStatefulWidget {
@@ -43,7 +42,7 @@ class _UserBookmarksTabBodyState extends ConsumerState<UserBookmarksTabBody> imp
     final illustSource = ref.watch(userIllustBookmarksProvider(userId: widget.detail.user.id));
     final novelSource = ref.watch(userNovelBookmarksProvider(userId: widget.detail.user.id));
 
-    return LazyIndexedStack(
+    return FrostLazyIndexedStack(
       index: _bookmarkKind.index,
       sizing: StackFit.expand,
       children: [
@@ -113,13 +112,13 @@ class _UserBookmarksTabBodyState extends ConsumerState<UserBookmarksTabBody> imp
     }
   }
 
-  void _ensureSourceLoaded(DataListSource<dynamic> source) {
+  void _ensureSourceLoaded(FrostListSource<dynamic> source) {
     if (!source.initialized && !source.refreshing) {
       source.refresh(true);
     }
   }
 
-  DataListSource<dynamic> _readCurrentSource() {
+  FrostListSource<dynamic> _readCurrentSource() {
     return switch (_bookmarkKind) {
       UserBookmarkKind.illustManga => ref.read(userIllustBookmarksProvider(userId: widget.detail.user.id)),
       UserBookmarkKind.novel => ref.read(userNovelBookmarksProvider(userId: widget.detail.user.id)),
@@ -137,7 +136,7 @@ class _BookmarkKindSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    final inset = AppMetrics.browseInset(MediaQuery.sizeOf(context).width);
+    final inset = FrostMetrics.browseInset(MediaQuery.sizeOf(context).width);
     return Material(
       type: MaterialType.transparency,
       child: DecoratedBox(
@@ -146,7 +145,7 @@ class _BookmarkKindSelector extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(inset, 10, inset, 6),
           child: Align(
             alignment: AlignmentDirectional.centerStart,
-            child: ConstrainedSegmentedButton<UserBookmarkKind>(
+            child: FrostConstrainedSegmentedButton<UserBookmarkKind>(
               maxWidth: 420,
               segments: [
                 ButtonSegment(

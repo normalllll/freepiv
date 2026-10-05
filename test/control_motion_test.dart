@@ -4,18 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router_shell.dart';
-import 'package:freepiv/app/theme/app_input_feedback.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/ui/spring_builder.dart';
-import 'package:freepiv/shared/widgets/app_tab_bar.dart';
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
 import 'package:go_router/go_router.dart';
 
-Widget _host(Widget child, {bool reduced = false, TextDirection direction = TextDirection.ltr}) => AppInputFeedback(
+Widget _host(Widget child, {bool reduced = false, TextDirection direction = TextDirection.ltr}) => FrostInputFeedback(
   child: MaterialApp(
     theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
     home: MediaQuery(
@@ -48,13 +44,13 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: TranslationProvider(
-            child: AppInputFeedback(
+            child: FrostInputFeedback(
               child: MaterialApp.router(
                 theme: AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en')),
                 routerConfig: router,
                 builder: (context, child) => MediaQuery(
                   data: MediaQuery.of(context).copyWith(disableAnimations: reduced, textScaler: const TextScaler.linear(2)),
-                  child: AppLayoutScope(child: child!),
+                  child: FrostLayoutScope(child: child!),
                 ),
               ),
             ),
@@ -63,7 +59,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       Finder column(String label) => find.ancestor(of: find.text(label), matching: find.byType(Column)).first;
-      Finder capsule(String label) => find.descendant(of: column(label), matching: find.byType(SpringBuilder));
+      Finder capsule(String label) => find.descendant(of: column(label), matching: find.byType(FrostSpringBuilder));
       double width(String label) => tester.getSize(find.descendant(of: capsule(label), matching: find.byType(SizedBox)).first).width;
       final homeBounds = tester.getRect(column('Home'));
       final activityBounds = tester.getRect(column('Activity'));
@@ -100,7 +96,7 @@ void main() {
       _host(
         Column(
           children: [
-            AppTabBar(
+            FrostTabBar(
               controller: source,
               onTap: (_) => taps++,
               tabs: const [
@@ -144,7 +140,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 40));
     await tester.pumpWidget(
       _host(
-        AppTabBar(
+        FrostTabBar(
           controller: source,
           tabs: [for (var index = 0; index < source.length; index++) Tab(text: 'Tab $index')],
         ),
@@ -165,7 +161,7 @@ void main() {
       _host(
         Column(
           children: [
-            AppTabBar(
+            FrostTabBar(
               controller: source,
               tabs: const [
                 Tab(text: 'One'),
@@ -199,7 +195,7 @@ void main() {
     addTearDown(source.dispose);
     await tester.pumpWidget(
       _host(
-        AppTabBar(
+        FrostTabBar(
           controller: source,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
@@ -234,7 +230,7 @@ void main() {
         StatefulBuilder(
           builder: (context, setState) {
             update = setState;
-            return AppSwitchListTile(
+            return FrostSwitchListTile(
               title: const Text('Setting'),
               value: value,
               onChanged: enabled
@@ -253,7 +249,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(value, true);
     expect(changes, 1);
-    await tester.tap(find.byType(AppSwitch));
+    await tester.tap(find.byType(FrostSwitch));
     await tester.pumpAndSettle();
     expect(value, false);
     expect(changes, 2);
@@ -263,10 +259,10 @@ void main() {
     expect(changes, 3);
     update(() => enabled = false);
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(AppSwitch));
+    await tester.tap(find.byType(FrostSwitch));
     await tester.pump();
     expect(changes, 3);
-    final data = tester.getSemantics(find.byType(AppSwitch)).getSemanticsData();
+    final data = tester.getSemantics(find.byType(FrostSwitch)).getSemanticsData();
     expect(data.flagsCollection.isToggled, Tristate.isTrue);
     expect(data.flagsCollection.isEnabled, Tristate.isFalse);
     expect(tester.takeException(), isNull);
@@ -281,7 +277,7 @@ void main() {
         _host(
           StatefulBuilder(
             builder: (context, setState) => Center(
-              child: AppSwitch(
+              child: FrostSwitch(
                 value: value,
                 onChanged: (next) => setState(() {
                   value = next;
@@ -294,7 +290,7 @@ void main() {
           direction: TextDirection.rtl,
         ),
       );
-      final start = tester.getCenter(find.byType(AppSwitch));
+      final start = tester.getCenter(find.byType(FrostSwitch));
       final gesture = await tester.startGesture(start);
       await gesture.moveBy(const Offset(-40, 0));
       await tester.pump();
@@ -302,12 +298,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(value, false);
       expect(changes, 0);
-      await tester.drag(find.byType(AppSwitch), const Offset(-40, 0));
+      await tester.drag(find.byType(FrostSwitch), const Offset(-40, 0));
       await tester.pumpAndSettle();
       expect(value, true);
       expect(changes, 1);
       for (var index = 0; index < 4; index++) {
-        await tester.tap(find.byType(AppSwitch));
+        await tester.tap(find.byType(FrostSwitch));
         await tester.pump(const Duration(milliseconds: 16));
       }
       await tester.pumpAndSettle();

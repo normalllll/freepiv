@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/media/logic.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
-import 'package:freepiv/shared/widgets/waterfall_grid.dart';
 
 void main() {
   test('artwork columns land tiles nearest the preferred width', () {
     int columns(double width, {double textScale = 1}) =>
-        waterfallColumnCount(width: width, preferredTileWidth: AppMetrics.gridExtent, gap: AppMetrics.gridGap, textScale: textScale);
-    double tile(double width, int count) => (width + AppMetrics.gridGap) / count - AppMetrics.gridGap;
+        frostWaterfallColumnCount(width: width, preferredTileWidth: FrostMetrics.gridExtent, gap: FrostMetrics.gridGap, textScale: textScale);
+    double tile(double width, int count) => (width + FrostMetrics.gridGap) / count - FrostMetrics.gridGap;
 
     expect(columns(319), 1);
     expect(columns(320), 2);
@@ -25,14 +23,14 @@ void main() {
     // 4 → 5 at the same midpoint rule.
     expect(columns(1005.3), 4);
     expect(columns(1005.4), 5);
-    expect(columns(684 - AppMetrics.gridGap, textScale: 2), 2);
+    expect(columns(684 - FrostMetrics.gridGap, textScale: 2), 2);
 
     // Every width picks the count whose tile is nearest the preferred width.
     for (var width = 320.0; width <= 2400; width += 7) {
       final count = columns(width);
       final nearest = [
         for (var n = 2; n <= 12; n++) n,
-      ].reduce((a, b) => (tile(width, a) - AppMetrics.gridExtent).abs() <= (tile(width, b) - AppMetrics.gridExtent).abs() + 1e-9 ? a : b);
+      ].reduce((a, b) => (tile(width, a) - FrostMetrics.gridExtent).abs() <= (tile(width, b) - FrostMetrics.gridExtent).abs() + 1e-9 ? a : b);
       expect(count, nearest, reason: '$width');
     }
   });
@@ -48,11 +46,11 @@ void main() {
               alignment: Alignment.topLeft,
               child: SizedBox(
                 width: width,
-                child: ContentColumnBudget(
+                child: FrostContentColumnBudget(
                   reservedWidth: reserve,
                   child: CustomScrollView(
                     slivers: [
-                      SliverWaterfallGrid<int>(
+                      FrostSliverWaterfallGrid<int>(
                         items: List.generate(8, (index) => index),
                         itemBuilder: (context, item, index) => SizedBox(
                           key: ValueKey('art-$index'),

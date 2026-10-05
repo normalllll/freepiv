@@ -1,13 +1,9 @@
-import 'package:freepiv/shared/widgets/form_controls.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/app_dialog.dart';
 import 'package:flutter/services.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
@@ -37,7 +33,7 @@ class DownloadSummaryView extends StatelessWidget {
         if (showHeading) ...[
           Row(
             children: [
-              Icon(Icons.download_for_offline_outlined, color: FreepivThemeTokens.of(context).textPrimary),
+              Icon(Icons.download_for_offline_outlined, color: FrostThemeTokens.of(context).textPrimary),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -197,32 +193,36 @@ class DownloadTaskActions extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         AnimatedSize(
-          duration: AppMotion.duration(context, AppMotion.expand),
+          duration: FrostMotion.duration(context, FrostMotion.expand),
           curve: Curves.easeInOutCubic,
           child: AnimatedSwitcher(
-            duration: AppMotion.duration(context, AppMotion.hover),
+            duration: FrostMotion.duration(context, FrostMotion.hover),
             child: primaryAction == null
                 ? const SizedBox.shrink()
-                : SizedBox.square(key: primaryAction.key, dimension: AppMetrics.compactTargetHeight, child: primaryAction),
+                : SizedBox.square(key: primaryAction.key, dimension: FrostMetrics.compactTargetHeight, child: primaryAction),
           ),
         ),
-        AppMenuAnchor(
+        FrostMenuAnchor(
           menuChildren: [
-            AppMenuItem(
+            FrostMenuItem(
               autofocus: true,
               onPressed: () => unawaited(_runAction(() => downloadManager.deleteTask(task.id))),
               leadingIcon: const Icon(Icons.delete_outline),
               child: Text(t.settings.downloads.deleteTask),
             ),
             if (task.log != null && task.log!.isNotEmpty)
-              AppMenuItem(onPressed: () => showDownloadTaskLog(context, task), leadingIcon: const Icon(Icons.article_outlined), child: Text(t.common.viewLog)),
+              FrostMenuItem(
+                onPressed: () => showDownloadTaskLog(context, task),
+                leadingIcon: const Icon(Icons.article_outlined),
+                child: Text(t.common.viewLog),
+              ),
           ],
           builder: (context, focusNode, toggle) => IconButton(
             focusNode: focusNode,
             tooltip: MaterialLocalizations.of(context).showMenuTooltip,
             onPressed: toggle,
             icon: const Icon(Icons.more_horiz),
-            constraints: const BoxConstraints.tightFor(width: AppMetrics.compactTargetHeight, height: AppMetrics.compactTargetHeight),
+            constraints: const BoxConstraints.tightFor(width: FrostMetrics.compactTargetHeight, height: FrostMetrics.compactTargetHeight),
             padding: EdgeInsets.zero,
           ),
         ),
@@ -265,7 +265,7 @@ class DownloadTaskActions extends StatelessWidget {
     try {
       await action();
     } catch (error) {
-      AppToast.errorWithCause(t.settings.downloads.actionFailed, error);
+      toastErrorWithCause(t.settings.downloads.actionFailed, error);
     }
   }
 }
@@ -276,7 +276,7 @@ void showDownloadTaskLog(BuildContext context, DownloadTaskSnapshot task) {
     return;
   }
 
-  showAppDialog<void>(
+  showFrostDialog<void>(
     context: context,
     builder: (context) {
       final colorScheme = Theme.of(context).colorScheme;
@@ -334,7 +334,7 @@ class DownloadTaskAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final child = AppClickSurface(
+    final child = FrostClickSurface(
       onTap: onPressed,
 
       child: IconTheme.merge(
@@ -344,7 +344,7 @@ class DownloadTaskAction extends StatelessWidget {
     );
 
     final tooltip = this.tooltip;
-    final target = SizedBox.square(dimension: AppMetrics.compactTargetHeight, child: child);
+    final target = SizedBox.square(dimension: FrostMetrics.compactTargetHeight, child: child);
     return tooltip == null ? target : Tooltip(message: tooltip, child: target);
   }
 }
@@ -366,7 +366,7 @@ class DownloadProgressIndicator extends StatelessWidget {
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
         child: value == null
-            ? LoadingSkeletonBlock(key: const ValueKey<String>('indeterminate'), width: double.infinity, height: minHeight)
+            ? FrostSkeletonBlock(key: const ValueKey<String>('indeterminate'), width: double.infinity, height: minHeight)
             : TweenAnimationBuilder<double>(
                 key: const ValueKey<String>('determinate'),
                 tween: Tween<double>(end: value!.clamp(0, 1).toDouble()),
@@ -542,7 +542,7 @@ Color downloadTaskStatusColor(BuildContext context, DownloadTaskSnapshot task) {
     return colorScheme.error;
   }
   if (task.status == DownloadStatus.running || task.saveState == SaveState.saving || task.saveState == SaveState.saved) {
-    return FreepivThemeTokens.of(context).textPrimary;
+    return FrostThemeTokens.of(context).textPrimary;
   }
   return colorScheme.onSurfaceVariant;
 }

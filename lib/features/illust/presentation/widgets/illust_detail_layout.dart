@@ -4,10 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_image_viewer.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_panel.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_related_section.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
@@ -66,14 +62,20 @@ class DesktopIllustDetailLayout extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(4, 0, 8, 8),
             child: SizedBox(
               width: panelWidth,
-              child: FpSurface(
-                role: FpSurfaceRole.panel,
-                borderRadius: BorderRadius.circular(AppMetrics.groupRadius + 4),
+              child: FrostSurface(
+                role: FrostSurfaceRole.panel,
+                borderRadius: BorderRadius.circular(FrostMetrics.groupRadius + 4),
                 child: IllustDetailPanel(
                   illust: illust,
                   onIllustTap: onIllustTap,
                   onShowRelatedWorks: onShowRelatedWorks,
-                  actions: IllustPageActions(artwork: artworkDownloadSource(illust), pageIndex: pageIndex, imagePages: imagePages, loadedImages: loadedImages, isUgoira: isUgoira),
+                  actions: IllustPageActions(
+                    artwork: artworkDownloadSource(illust),
+                    pageIndex: pageIndex,
+                    imagePages: imagePages,
+                    loadedImages: loadedImages,
+                    isUgoira: isUgoira,
+                  ),
                 ),
               ),
             ),
@@ -128,7 +130,7 @@ class _MobileIllustDetailLayoutState extends State<MobileIllustDetailLayout> {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final topInset = MediaQuery.paddingOf(context).top;
-    final leading = FpPageHeader.leadingFor(context);
+    final leading = FrostPageHeader.leadingFor(context);
     final actions = IllustPageActions(
       artwork: artworkDownloadSource(widget.illust),
       pageIndex: widget.pageIndex,
@@ -149,7 +151,7 @@ class _MobileIllustDetailLayoutState extends State<MobileIllustDetailLayout> {
 
         return Stack(
           children: [
-            DataLoadingCustomScrollView(
+            FrostLoadingScrollView(
               key: PageStorageKey<String>('illust-detail-scroll-${widget.illust.id}'),
               controller: _scrollController,
               slivers: [
@@ -188,7 +190,7 @@ class _MobileIllustDetailLayoutState extends State<MobileIllustDetailLayout> {
                 ),
                 // Phones keep room for the floating download button; beside the
                 // sidebar the dock lives in the sidebar column instead.
-                SliverToBoxAdapter(child: SizedBox(height: AutoScaffold.usesHorizontalLayoutOf(context) ? MediaQuery.paddingOf(context).bottom : 88)),
+                SliverToBoxAdapter(child: SizedBox(height: FrostAutoScaffold.usesHorizontalLayoutOf(context) ? MediaQuery.paddingOf(context).bottom : 88)),
               ],
             ),
             Positioned(
@@ -228,7 +230,7 @@ class _CompactTitleBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final leading = this.leading;
-    return PinnedChromeGlass(
+    return FrostPinnedChromeGlass(
       opacity: coverage,
       animate: false,
       child: SafeArea(
@@ -238,7 +240,7 @@ class _CompactTitleBar extends StatelessWidget {
         // the action does not crowd the rounded end. Without a back control
         // the title then starts on the body's 16 edge.
         child: Padding(
-          padding: PinnedChromeGlass.insetsOf(context),
+          padding: FrostPinnedChromeGlass.insetsOf(context),
           child: Row(
             children: [
               const SizedBox(width: 4),
@@ -254,7 +256,7 @@ class _CompactTitleBar extends StatelessWidget {
                           child: IgnorePointer(
                             child: Opacity(
                               opacity: 1 - coverage,
-                              child: FpSurface(role: FpSurfaceRole.chrome, borderRadius: BorderRadius.circular(22), child: const SizedBox.expand()),
+                              child: FrostSurface(role: FrostSurfaceRole.chrome, borderRadius: BorderRadius.circular(22), child: const SizedBox.expand()),
                             ),
                           ),
                         ),

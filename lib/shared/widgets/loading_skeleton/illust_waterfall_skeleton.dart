@@ -1,7 +1,6 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/widgets/energetic_card.dart';
-import 'package:freepiv/shared/widgets/waterfall_grid.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 const _ratios = <double>[1.32, 0.78, 1.08, 1.58, 0.92, 1.22, 1.44, 0.86, 1.16, 0.88, 1.42, 1.02, 1.26, 0.96, 1.52, 1.12, 0.82, 1.36, 1.06, 1.46];
@@ -16,8 +15,8 @@ class IllustWaterfallSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     return IgnorePointer(
-      child: WaterfallGrid<double>(
-        items: _skeletonRatios(size.width, size.height, AppMetrics.gridExtent),
+      child: FrostWaterfallGrid<double>(
+        items: _skeletonRatios(size.width, size.height, FrostMetrics.gridExtent),
         physics: physics,
         sliverHeader: sliverHeader,
         itemBuilder: (context, ratio, index) {
@@ -31,9 +30,9 @@ class IllustWaterfallSkeleton extends StatelessWidget {
 class SliverIllustWaterfallSkeleton extends StatelessWidget {
   const SliverIllustWaterfallSkeleton({
     this.padding,
-    this.preferredTileWidth = AppMetrics.gridExtent,
-    this.crossAxisSpacing = AppMetrics.gridGap,
-    this.mainAxisSpacing = AppMetrics.gridGap,
+    this.preferredTileWidth = FrostMetrics.gridExtent,
+    this.crossAxisSpacing = FrostMetrics.gridGap,
+    this.mainAxisSpacing = FrostMetrics.gridGap,
     super.key,
   });
 
@@ -45,7 +44,7 @@ class SliverIllustWaterfallSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverLayoutBuilder(
-      builder: (context, constraints) => SliverWaterfallGrid<double>(
+      builder: (context, constraints) => FrostSliverWaterfallGrid<double>(
         items: _skeletonRatios(constraints.crossAxisExtent, constraints.viewportMainAxisExtent, preferredTileWidth),
         padding: padding,
         preferredTileWidth: preferredTileWidth,
@@ -78,7 +77,7 @@ class IllustPreviewerSkeleton extends StatelessWidget {
   final double aspectRatio;
   @override
   Widget build(BuildContext context) => Skeletonizer.zone(
-    child: EnergeticCard(
+    child: FrostCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -87,18 +86,18 @@ class IllustPreviewerSkeleton extends StatelessWidget {
             child: const Bone(
               width: double.infinity,
               height: double.infinity,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(AppMetrics.controlRadius)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(FrostMetrics.controlRadius)),
             ),
           ),
           const Padding(
-            padding: AppMetrics.artworkFooterPadding,
+            padding: PivMetrics.artworkFooterPadding,
             child: Row(
               children: [
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Bone.text(), SizedBox(height: 4), Bone.text(width: 96)]),
                 ),
                 SizedBox(width: 8),
-                Bone.circle(size: AppMetrics.controlHeight),
+                Bone.circle(size: FrostMetrics.controlHeight),
               ],
             ),
           ),

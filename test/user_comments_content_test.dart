@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/comments/presentation/widgets/comment_input_bar.dart';
 import 'package:freepiv/features/comments/presentation/widgets/comment_tile.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_collapsible_header.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:freepiv/shared/widgets/user_previewer.dart';
-import 'package:freepiv/shared/widgets/waterfall_grid.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
@@ -103,7 +100,7 @@ void main() {
     );
     await tester.pump();
     final nested = tester.state<NestedScrollViewState>(find.byType(NestedScrollView));
-    List<double> glass() => tester.widgetList<PinnedChromeGlass>(find.byType(PinnedChromeGlass)).map((bar) => bar.opacity).toList();
+    List<double> glass() => tester.widgetList<FrostPinnedChromeGlass>(find.byType(FrostPinnedChromeGlass)).map((bar) => bar.opacity).toList();
     expect(glass(), [0, 0]);
     nested.outerController.jumpTo(collapseExtent / 2);
     await tester.pump();
@@ -161,7 +158,7 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('Reply'));
     expect(replies, 1);
-    final avatarTarget = tester.getSize(find.byType(AppClickSurface).first);
+    final avatarTarget = tester.getSize(find.byType(FrostClickSurface).first);
     expect(avatarTarget.width, greaterThanOrEqualTo(48));
   });
 
@@ -224,12 +221,12 @@ void main() {
 
   test('user card grid never forces two columns on narrow widths', () {
     // 340 is the user card's minimum width.
-    int columns(double width) => fittedColumnCount(width: width, minTileWidth: 340, gap: 8, textScale: 1);
+    int columns(double width) => frostFittedColumnCount(width: width, minTileWidth: 340, gap: 8, textScale: 1);
     expect(columns(366), 1, reason: 'phone');
     expect(columns(520), 1, reason: 'narrow desktop window');
     expect(columns(700), 2);
     expect(columns(1040), 3);
-    expect(fittedColumnCount(width: 700, minTileWidth: 340, gap: 8, textScale: 2), 1, reason: 'large text');
+    expect(frostFittedColumnCount(width: 700, minTileWidth: 340, gap: 8, textScale: 2), 1, reason: 'large text');
   });
 
   testWidgets('user without works keeps the card shape with a no-works note', (tester) async {
@@ -261,7 +258,7 @@ void main() {
 
   test('800-wide author grid uses the shared artwork tile width', () {
     const contentWidth = 800.0 - 80 - 24;
-    final columns = waterfallColumnCount(width: contentWidth, preferredTileWidth: AppMetrics.gridExtent, gap: AppMetrics.gridGap, textScale: 1);
+    final columns = frostWaterfallColumnCount(width: contentWidth, preferredTileWidth: FrostMetrics.gridExtent, gap: FrostMetrics.gridGap, textScale: 1);
     expect(columns, 3);
   });
 }

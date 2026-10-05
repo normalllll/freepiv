@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
-import 'package:freepiv/shared/widgets/refresh_dots.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/src/rust/api/fanbox_login.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'login_logic.dart';
@@ -170,9 +169,9 @@ class _FanboxWebLoginPageState extends ConsumerState<FanboxWebLoginPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(t.login),
-          leading: CompactBackButton(onPressed: _back),
-          leadingWidth: FpPageHeader.leadingWidth,
-          titleSpacing: FpPageHeader.titleSpacingAfterBack,
+          leading: FrostCompactBackButton(onPressed: _back),
+          leadingWidth: FrostPageHeader.leadingWidth,
+          titleSpacing: FrostPageHeader.titleSpacingAfterBack,
           actions: [IconButton(tooltip: t.cancel, icon: const Icon(Icons.close), onPressed: () => _close(false))],
         ),
         body: SafeArea(
@@ -185,7 +184,7 @@ class _FanboxWebLoginPageState extends ConsumerState<FanboxWebLoginPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
-                      SizedBox(width: 32, child: _loading || checking ? const RefreshDots() : null),
+                      SizedBox(width: 32, child: _loading || checking ? const FrostRefreshDots() : null),
                       Expanded(child: Text(error == null ? t.browserHelp : fanboxLoginError(context.t, error), maxLines: 2, overflow: TextOverflow.ellipsis)),
                       const SizedBox(width: 8),
                       SizedBox(

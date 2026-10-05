@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/theme/transparency_logic.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
+import 'package:frost_ui/frost_ui.dart';
 
-Widget _surface({required bool reduceTransparency, bool highContrast = false, FpSurfaceEdge edge = FpSurfaceEdge.material}) {
+Widget _surface({required bool reduceTransparency, bool highContrast = false, FrostSurfaceEdge edge = FrostSurfaceEdge.material}) {
   return ProviderScope(
     key: ValueKey((reduceTransparency, highContrast, edge)),
     overrides: [reduceTransparencyProvider.overrideWithValue(reduceTransparency)],
     child: MaterialApp(
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(highContrast: highContrast),
-        child: child!,
+        child: _TransparencyScope(child: child!),
       ),
       home: Scaffold(
         body: Center(
-          child: FpSurface(role: FpSurfaceRole.glassPanel, edge: edge, child: const SizedBox(width: 300, height: 180)),
+          child: FrostSurface(role: FrostSurfaceRole.glassPanel, edge: edge, child: const SizedBox(width: 300, height: 180)),
         ),
       ),
     ),
@@ -25,7 +25,7 @@ Widget _surface({required bool reduceTransparency, bool highContrast = false, Fp
 void main() {
   testWidgets('large card uses bounded backdrop blur and respects solid surface modes', (tester) async {
     await tester.pumpWidget(_surface(reduceTransparency: false));
-    final panel = find.byType(FpSurface);
+    final panel = find.byType(FrostSurface);
     expect(find.descendant(of: panel, matching: find.byType(BackdropFilter)), findsOneWidget);
     expect(_edgeCount(tester, panel), 1);
 
@@ -39,19 +39,19 @@ void main() {
   });
 
   testWidgets('edge-free glass keeps blur and clip, with one separating or high-contrast boundary', (tester) async {
-    await tester.pumpWidget(_surface(reduceTransparency: false, edge: FpSurfaceEdge.none));
-    final panel = find.byType(FpSurface);
+    await tester.pumpWidget(_surface(reduceTransparency: false, edge: FrostSurfaceEdge.none));
+    final panel = find.byType(FrostSurface);
     expect(find.descendant(of: panel, matching: find.byType(BackdropFilter)), findsOneWidget);
     expect(find.descendant(of: panel, matching: find.byType(ClipRRect)), findsOneWidget);
     // Light glass keeps one functional neutral line against the pale canvas,
     // never a decorative highlight on top of it.
     expect(_edgeCount(tester, panel), 1);
 
-    await tester.pumpWidget(_surface(reduceTransparency: true, edge: FpSurfaceEdge.none));
+    await tester.pumpWidget(_surface(reduceTransparency: true, edge: FrostSurfaceEdge.none));
     expect(tester.widget<BackdropFilter>(find.descendant(of: panel, matching: find.byType(BackdropFilter))).enabled, isFalse);
     expect(_edgeCount(tester, panel), 0);
 
-    await tester.pumpWidget(_surface(reduceTransparency: false, highContrast: true, edge: FpSurfaceEdge.none));
+    await tester.pumpWidget(_surface(reduceTransparency: false, highContrast: true, edge: FrostSurfaceEdge.none));
     expect(tester.widget<BackdropFilter>(find.descendant(of: panel, matching: find.byType(BackdropFilter))).enabled, isFalse);
     expect(_edgeCount(tester, panel), 1);
   });
@@ -63,11 +63,12 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
+          builder: (context, child) => _TransparencyScope(child: child!),
           home: Scaffold(
             body: Consumer(
-              builder: (context, ref, _) => FpSurface(
-                role: FpSurfaceRole.glassPanel,
-                edge: FpSurfaceEdge.none,
+              builder: (context, ref, _) => FrostSurface(
+                role: FrostSurfaceRole.glassPanel,
+                edge: FrostSurfaceEdge.none,
                 child: SwitchListTile.adaptive(
                   title: const Text('Reduce transparency'),
                   value: ref.watch(reduceTransparencyProvider),
@@ -90,6 +91,16 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.widget<BackdropFilter>(find.byType(BackdropFilter)).enabled, isFalse);
   });
+}
+
+// Mirrors the app root, which hands the setting to Frost surfaces.
+class _TransparencyScope extends ConsumerWidget {
+  const _TransparencyScope({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => FrostScope(reduceTransparency: ref.watch(reduceTransparencyProvider), child: child);
 }
 
 class _TestReduceTransparency extends ReduceTransparency {

@@ -1,9 +1,7 @@
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
-import 'package:freepiv/shared/widgets/settings_sections.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
 import 'package:freepiv/features/fanbox/account_settings.dart';
 import 'package:freepiv/features/settings/presentation/appearance_settings_section.dart';
 
@@ -11,15 +9,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/theme/appearance_logic.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/app/theme/transparency_logic.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -41,14 +35,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final reduceTransparency = ref.watch(reduceTransparencyProvider);
     final translations = t;
 
-    return AutoScaffold(
+    return FrostAutoScaffold(
       builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
-          appBar: useHorizontalLayout ? null : FpPageHeader(title: Text(translations.navigation.settings)),
+          appBar: useHorizontalLayout ? null : FrostPageHeader(title: Text(translations.navigation.settings)),
           body: _withSidebarHeading(
             context,
             useHorizontalLayout: useHorizontalLayout,
-            child: SettingsSections(
+            child: FrostSettingsSections(
               labels: [
                 translations.settings.theme.title,
                 translations.settings.language.title,
@@ -69,7 +63,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           modeSelector: ThemeModeSelector(value: themeMode, onChanged: (mode) => ref.read(appearanceProvider.notifier).setMode(mode)),
                         ),
                         const SizedBox(height: 16),
-                        AppSwitchListTile(
+                        FrostSwitchListTile(
                           contentPadding: EdgeInsets.zero,
                           title: Text(translations.settings.theme.reduceTransparency),
                           subtitle: Text(translations.settings.theme.reduceTransparencyHint),
@@ -170,12 +164,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   /// In the sidebar layout the page title is a large heading above the
   /// sections, like the downloads page; Windows shows it in the caption bar.
   Widget _withSidebarHeading(BuildContext context, {required bool useHorizontalLayout, required Widget child}) {
-    if (!useHorizontalLayout || windowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout)) return child;
+    if (!useHorizontalLayout || frostWindowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout)) return child;
     return SafeArea(
       bottom: false,
       child: Column(
         children: [
-          FpInlinePageHeading(title: t.navigation.settings, maxWidth: AppMetrics.settingsMaxWidth),
+          FrostInlinePageHeading(title: t.navigation.settings, maxWidth: FrostMetrics.settingsMaxWidth),
           Expanded(child: child),
         ],
       ),
@@ -212,12 +206,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       }
 
       ref.read(downloadSavePathSettingsProvider.notifier).useCustomDirectory(downloadPath);
-      AppToast.success(t.settings.downloads.directorySet(path: downloadPath));
+      FrostToast.success(t.settings.downloads.directorySet(path: downloadPath));
     } catch (error) {
       if (!mounted) {
         return;
       }
-      AppToast.errorWithCause(t.settings.downloads.directoryUnavailable, error);
+      toastErrorWithCause(t.settings.downloads.directoryUnavailable, error);
     }
   }
 }
@@ -231,7 +225,7 @@ class ThemeModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final translations = t;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final options = [
       (mode: ThemeMode.system, icon: Icons.brightness_auto_outlined, label: translations.settings.theme.system),
       (mode: ThemeMode.light, icon: Icons.light_mode_outlined, label: translations.settings.theme.light),
@@ -261,7 +255,7 @@ class ThemeModeSelector extends StatelessWidget {
         ];
         return DecoratedBox(
           key: const ValueKey('theme-mode-track'),
-          decoration: BoxDecoration(color: tokens.surfaceInset, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+          decoration: BoxDecoration(color: tokens.surfaceInset, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
           child: Padding(
             padding: const EdgeInsets.all(4),
             child: vertical
@@ -284,14 +278,14 @@ class _ThemeModeOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.all(4),
       child: Semantics(
         selected: selected,
         inMutuallyExclusiveGroup: true,
         child: AnimatedContainer(
-          duration: AppMotion.duration(context, AppMotion.hover),
+          duration: FrostMotion.duration(context, FrostMotion.hover),
           decoration: BoxDecoration(
             color: selected ? tokens.surfaceRaised : tokens.surfaceInset,
             borderRadius: BorderRadius.circular(8),
@@ -307,12 +301,12 @@ class _ThemeModeOption extends StatelessWidget {
           ),
           child: Material(
             color: Colors.transparent,
-            child: AppClickSurface(
-              feedback: AppClickFeedback.quiet,
+            child: FrostClickSurface(
+              feedback: FrostClickFeedback.quiet,
               borderRadius: BorderRadius.circular(8),
               onTap: onTap,
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: AppMetrics.fieldHeight(context)),
+                constraints: BoxConstraints(minHeight: FrostMetrics.fieldHeight(context)),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: Column(
@@ -322,9 +316,9 @@ class _ThemeModeOption extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Same selection language as AppSegmentedButton:
+                          // Same selection language as FrostSegmentedButton:
                           // raised pill, accent ink and weight, no underline.
-                          Icon(icon, size: AppMetrics.iconSize, color: selected ? tokens.selectionInk : tokens.textSecondary),
+                          Icon(icon, size: FrostMetrics.iconSize, color: selected ? tokens.selectionInk : tokens.textSecondary),
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
@@ -363,12 +357,12 @@ class _LanguageSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return AppSelect<AppLocale?>(
+    return FrostSelect<AppLocale?>(
       value: value,
       items: [
-        AppSelectItem(value: null, label: translations.settings.language.systemDefault),
+        FrostSelectItem(value: null, label: translations.settings.language.systemDefault),
         // Each language is named in itself, so a wrong pick can always be undone.
-        for (final entry in languageOptionNames.entries) AppSelectItem(value: entry.key, label: entry.value),
+        for (final entry in languageOptionNames.entries) FrostSelectItem(value: entry.key, label: entry.value),
       ],
       onChanged: onChanged,
     );
@@ -419,7 +413,7 @@ class _PreviewQualitySelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return ConstrainedSegmentedButton<PreviewImageQuality>(
+    return FrostConstrainedSegmentedButton<PreviewImageQuality>(
       maxWidth: null,
       segments: [
         ButtonSegment(value: PreviewImageQuality.medium, icon: const Icon(Icons.image_outlined), label: Text(translations.settings.images.medium)),
@@ -441,7 +435,7 @@ class _ViewerQualitySelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return ConstrainedSegmentedButton<ViewerImageQuality>(
+    return FrostConstrainedSegmentedButton<ViewerImageQuality>(
       maxWidth: null,
       segments: [
         ButtonSegment(
@@ -487,14 +481,14 @@ class _ProxySettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final translations = t.settings.proxy;
     final active = settings.active;
 
     return Material(
       color: tokens.surfaceRaised,
       borderRadius: BorderRadius.circular(8),
-      child: AppClickSurface(
+      child: FrostClickSurface(
         borderRadius: BorderRadius.circular(8),
         onTap: onTap,
         child: Padding(
@@ -545,7 +539,7 @@ class _DownloadSettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final tokens = FreepivThemeTokens.of(context);
+    final tokens = FrostThemeTokens.of(context);
     final translations = t;
 
     return Column(
@@ -615,7 +609,7 @@ class _DownloadPathModeSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return ConstrainedSegmentedButton<DownloadSavePathMode>(
+    return FrostConstrainedSegmentedButton<DownloadSavePathMode>(
       maxWidth: null,
       segments: [
         ButtonSegment(

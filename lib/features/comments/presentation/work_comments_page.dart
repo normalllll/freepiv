@@ -1,13 +1,9 @@
 import 'dart:async';
 
-import 'package:freepiv/shared/layout/fp_collapsing_header.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/app_dialog.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/core.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
 import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/comments/presentation/widgets/comment_input_bar.dart';
@@ -18,7 +14,6 @@ import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class WorkCommentsPage extends ConsumerStatefulWidget {
@@ -66,8 +61,8 @@ class _WorkCommentsPageState extends ConsumerState<WorkCommentsPage> {
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop && _hasDraft) _confirmDiscard();
       },
-      child: AutoScaffold(
-        builder: (BuildContext context, AutoScaffoldLayout layout, Orientation orientation, bool useHorizontalLayout) {
+      child: FrostAutoScaffold(
+        builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
           final canPost = widget.workType.supportsPosting;
           final currentUserId = int.tryParse(pixivAccountNotifier.value?.user.id ?? '');
           final title = _title(context);
@@ -105,8 +100,8 @@ class _WorkCommentsPageState extends ConsumerState<WorkCommentsPage> {
               }
 
               return Scaffold(
-                body: FpCollapsingHeader(
-                  header: FpPageHeader(title: Text(title)),
+                body: FrostCollapsingHeader(
+                  header: FrostPageHeader(title: Text(title)),
                   child: commentsView,
                 ),
                 bottomNavigationBar: inputBar,
@@ -121,7 +116,7 @@ class _WorkCommentsPageState extends ConsumerState<WorkCommentsPage> {
   Future<void> _confirmDiscard() async {
     if (_confirmingDiscard) return;
     _confirmingDiscard = true;
-    final discard = await showAppDialog<bool>(
+    final discard = await showFrostDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
@@ -194,7 +189,7 @@ class _WorkCommentsPageState extends ConsumerState<WorkCommentsPage> {
 
       return true;
     } catch (error) {
-      AppToast.errorWithCause(t.illust.comments.sendFailed, error);
+      toastErrorWithCause(t.illust.comments.sendFailed, error);
       return false;
     }
   }
@@ -208,7 +203,7 @@ class _WorkCommentsPageState extends ConsumerState<WorkCommentsPage> {
       return;
     }
 
-    final confirmed = await showAppDialog<bool>(
+    final confirmed = await showFrostDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
@@ -236,7 +231,7 @@ class _WorkCommentsPageState extends ConsumerState<WorkCommentsPage> {
         setState(() => _replyingTo = null);
       }
     } catch (error) {
-      AppToast.errorWithCause(t.illust.comments.deleteFailed, error);
+      toastErrorWithCause(t.illust.comments.deleteFailed, error);
     } finally {
       if (mounted) {
         setState(() => _deletingCommentIds.remove(comment.id));
@@ -259,7 +254,7 @@ class _DesktopCommentsScaffold extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ContentColumn(child: _DesktopCommentsHeader(title: title)),
+            FrostContentColumn(child: _DesktopCommentsHeader(title: title)),
             Expanded(child: child),
             ?inputBar,
           ],
@@ -306,7 +301,7 @@ class _CommentsRefreshView extends StatelessWidget {
   final PixivCommentAssets assets;
   final CommentWorkType workType;
   final CommentRepliesSourceBuilder repliesSourceBuilder;
-  final DataRefreshAction onRefresh;
+  final FrostRefreshAction onRefresh;
   final ValueChanged<Comment>? onReply;
   final CommentDeleteCallback onDelete;
   final int? currentUserId;
@@ -315,7 +310,7 @@ class _CommentsRefreshView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataRefreshView(
+    return FrostRefreshView(
       onRefresh: onRefresh,
       builder: (context, physics, locators) {
         return AnimatedBuilder(
@@ -360,7 +355,7 @@ class _CommentsBody extends StatelessWidget {
   final PixivCommentAssets assets;
   final CommentWorkType workType;
   final ScrollPhysics? physics;
-  final DataRefreshLocators locators;
+  final FrostRefreshLocators locators;
   final CommentRepliesSourceBuilder repliesSourceBuilder;
   final ValueChanged<Comment>? onReply;
   final CommentDeleteCallback onDelete;
@@ -369,50 +364,51 @@ class _CommentsBody extends StatelessWidget {
   final bool Function(Comment comment) hasLocalReply;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return DataLoadingCustomScrollView(
+    if (source.phase == FrostLoadPhase.loading) {
+      return FrostLoadingScrollView(
         physics: physics,
         slivers: [
           ?locators.sliverHeader,
           SliverPadding(
             // Same insets as the loaded list below.
             padding: const EdgeInsets.only(top: 12, bottom: 24),
-            sliver: SliverToBoxAdapter(child: ContentColumn(child: CommentsLoadingSkeleton(itemCount: 6, showActions: true))),
+            sliver: SliverToBoxAdapter(child: FrostContentColumn(child: CommentsLoadingSkeleton(itemCount: 6, showActions: true))),
           ),
         ],
       );
     }
 
     if (!source.initialized && lastError != null) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
     if (source.initialized && source.isEmpty) {
-      return DataSliverFillBody(
+      return FrostSliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: EmptyContent(icon: Icons.chat_bubble_outline, title: context.t.illust.comments.empty),
+        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.chat_bubble_outline), title: context.t.illust.comments.empty),
       );
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
         ?locators.sliverHeader,
-        SliverDataList<Comment>(
+        FrostSliverDataList<Comment>(
+          firstLoadSkeleton: const FullScreenLoadingSkeleton(),
           source: source,
           padding: const EdgeInsets.only(top: 12, bottom: 24),
           itemBuilder: (context, comment, index) {
-            return ContentColumn(
+            return FrostContentColumn(
               child: Column(
                 children: [
                   PixivCommentTile(

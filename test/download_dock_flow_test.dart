@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/spring_builder.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +14,6 @@ import 'package:freepiv/features/downloads/presentation/download_floating_panel.
 import 'package:freepiv/features/downloads/presentation/mobile_download_floating_window.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
 import 'package:go_router/go_router.dart';
 
 class _NoFanboxDownloads extends FanboxDownloads {
@@ -160,7 +159,7 @@ void main() {
           child: MaterialApp(
             home: MediaQuery(
               data: const MediaQueryData(size: Size(390, 844)),
-              child: AppLayoutScope(
+              child: FrostLayoutScope(
                 child: MobileDownloadFloatingWindow(
                   taskStream: Stream.value([_failedTask()]),
                   child: const Scaffold(body: Text('Browsing')),
@@ -236,7 +235,7 @@ double _panelOpacity(WidgetTester tester, Finder panel) => tester
     .widget<Opacity>(
       find
           .descendant(
-            of: find.descendant(of: panel, matching: find.byType(SpringReveal)),
+            of: find.descendant(of: panel, matching: find.byType(FrostSpringReveal)),
             matching: find.byType(Opacity),
           )
           .first,

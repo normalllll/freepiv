@@ -110,7 +110,7 @@ class UserFollowingUsers extends _$UserFollowingUsers {
   }
 }
 
-class UserIllustListSource extends NextUrlListSource<Illust, IllustPageResult> {
+class UserIllustListSource extends FrostCursorListSource<Illust, IllustPageResult> {
   UserIllustListSource({required this.userId, required this.illustType});
 
   final int userId;
@@ -137,7 +137,7 @@ class UserIllustListSource extends NextUrlListSource<Illust, IllustPageResult> {
   }
 }
 
-class UserNovelListSource extends NextUrlListSource<Novel, NovelPageResult> {
+class UserNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> {
   UserNovelListSource({required this.userId});
 
   final int userId;
@@ -163,7 +163,7 @@ class UserNovelListSource extends NextUrlListSource<Novel, NovelPageResult> {
   }
 }
 
-class UserIllustBookmarkListSource extends NextUrlListSource<Illust, IllustPageResult> {
+class UserIllustBookmarkListSource extends FrostCursorListSource<Illust, IllustPageResult> {
   UserIllustBookmarkListSource({required this.userId});
 
   final int userId;
@@ -189,7 +189,7 @@ class UserIllustBookmarkListSource extends NextUrlListSource<Illust, IllustPageR
   }
 }
 
-class UserNovelBookmarkListSource extends NextUrlListSource<Novel, NovelPageResult> {
+class UserNovelBookmarkListSource extends FrostCursorListSource<Novel, NovelPageResult> {
   UserNovelBookmarkListSource({required this.userId});
 
   final int userId;
@@ -215,7 +215,7 @@ class UserNovelBookmarkListSource extends NextUrlListSource<Novel, NovelPageResu
   }
 }
 
-class UserFollowingListSource extends NextUrlListSource<UserPreview, UserPageResult> {
+class UserFollowingListSource extends FrostCursorListSource<UserPreview, UserPageResult> {
   UserFollowingListSource({required this.userId});
 
   final int userId;

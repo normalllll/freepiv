@@ -6,10 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/shared/ui/spring_builder.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 void main() {
   testWidgets('primary button stays branded through mouse states and exposes independent keyboard focus', (tester) async {
@@ -37,7 +35,7 @@ void main() {
                   width: 200,
                   height: 80,
                   child: Center(
-                    child: AppButton(label: 'Continue', kind: AppButtonKind.primary, onPressed: () => presses++),
+                    child: FrostButton(label: 'Continue', kind: FrostButtonKind.primary, onPressed: () => presses++),
                   ),
                 ),
               ),
@@ -76,7 +74,7 @@ void main() {
       final idleOutline = await sampleColor('idle-outline', point: focusPoint);
       // The solid fill is the accent toned for its white label: still pink,
       // never a neutral or near-black wash.
-      final fill = FreepivThemeTokens.of(tester.element(button)).actionFill;
+      final fill = FrostThemeTokens.of(tester.element(button)).actionFill;
       expect(idle.r, closeTo(fill.r, .02));
       expect(idle.g, closeTo(fill.g, .02));
       expect(idle.b, closeTo(fill.b, .02));
@@ -101,7 +99,7 @@ void main() {
           .widget<Transform>(
             find
                 .descendant(
-                  of: find.ancestor(of: button, matching: find.byType(SpringBuilder)).first,
+                  of: find.ancestor(of: button, matching: find.byType(FrostSpringBuilder)).first,
                   matching: find.byType(Transform),
                 )
                 .first,
@@ -133,7 +131,7 @@ void main() {
               : AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
           home: Scaffold(
             body: Center(
-              child: AppButton(label: 'Continue', kind: AppButtonKind.primary, loading: true, onPressed: () => presses++),
+              child: FrostButton(label: 'Continue', kind: FrostButtonKind.primary, loading: true, onPressed: () => presses++),
             ),
           ),
         ),

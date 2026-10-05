@@ -72,13 +72,13 @@ class UserFollowingBody extends StatelessWidget {
   final Widget? sliverHeader;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
-      return DataLoadingCustomScrollView(physics: physics, slivers: [?sliverHeader, const SliverUserPreviewerSkeletonGrid()]);
+    if (source.phase == FrostLoadPhase.loading) {
+      return FrostLoadingScrollView(physics: physics, slivers: [?sliverHeader, const SliverUserPreviewerSkeletonGrid()]);
     }
 
     if (!source.initialized && lastError != null) {
@@ -89,7 +89,7 @@ class UserFollowingBody extends StatelessWidget {
       return UserEmptyBody(icon: Icons.people_outline, title: context.t.user.empty.following, physics: physics, sliverHeader: sliverHeader);
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
         ?sliverHeader,

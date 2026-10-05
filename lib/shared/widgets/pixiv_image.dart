@@ -1,5 +1,3 @@
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
@@ -8,7 +6,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/loading_skeleton/loading_skeleton.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 /// Pixiv's image hosts serve only requests coming from pixiv.net.
 const pixivImageHeaders = {'Referer': 'https://www.pixiv.net/'};
@@ -59,7 +57,7 @@ class PixivImage extends ConsumerWidget {
                 : TweenAnimationBuilder<double>(
                     key: ValueKey(url),
                     tween: Tween(begin: 0, end: 1),
-                    duration: AppMotion.duration(context, const Duration(milliseconds: 160)),
+                    duration: FrostMotion.duration(context, const Duration(milliseconds: 160)),
                     curve: Curves.easeOutCubic,
                     builder: (context, opacity, child) => Opacity(opacity: opacity, child: child),
                     child: state.completedWidget,
@@ -81,7 +79,7 @@ class _PixivImagePlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ImageLoadingSkeleton();
+    return const FrostImageSkeleton();
   }
 }
 
@@ -102,7 +100,7 @@ class _PixivImageError extends StatelessWidget {
       child: Tooltip(
         // The full cause is always one hover away; large tiles also show it.
         message: cause == null ? context.t.common.retry : '${context.t.common.retry} · $cause',
-        child: AppClickSurface(
+        child: FrostClickSurface(
           onTap: onRetry,
           child: LayoutBuilder(
             builder: (context, constraints) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/ui/rolling_text.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/core/downloads/models/download_summary.dart';
 import 'package:freepiv/features/downloads/presentation/download_dock_button.dart';
@@ -46,8 +46,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      final badge = tester.getRect(find.byType(RollingText));
-      expect(tester.widget<RollingText>(find.byType(RollingText)).text, '999+');
+      final badge = tester.getRect(find.byType(FrostRollingText));
+      expect(tester.widget<FrostRollingText>(find.byType(FrostRollingText)).text, '999+');
       final icon = tester.getRect(find.byIcon(Icons.downloading_outlined));
       expect(badge.right, greaterThan(icon.right));
       expect(find.bySemanticsLabel(RegExp('1000')), findsOneWidget);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 
@@ -25,7 +25,7 @@ class _DownloadBulkActionsState extends ConsumerState<DownloadBulkActions> {
     try {
       await action();
     } catch (error) {
-      AppToast.errorWithCause(t.settings.downloads.actionFailed, error);
+      toastErrorWithCause(t.settings.downloads.actionFailed, error);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

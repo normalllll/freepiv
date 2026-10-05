@@ -1,4 +1,3 @@
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -43,11 +42,11 @@ class IllustUserPreviewSection extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 4),
-          LoadStateSwitcher(
+          FrostLoadStateSwitcher(
             animateSize: true,
             child: userWorks.when(
               loading: () => const RelatedPreviewGridSkeleton(itemCount: _recentWorksCount),
-              error: (error, stackTrace) => CompactMessage.error(
+              error: (error, stackTrace) => FrostCompactMessage.error(
                 error: error,
                 onAction: () {
                   ref.read(illustUserWorksProvider(illust.user.id).notifier).reload();
@@ -73,7 +72,7 @@ class _UserHeader extends StatelessWidget {
 
     final identity = Material(
       color: Colors.transparent,
-      child: AppClickSurface(
+      child: FrostClickSurface(
         onTap: () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${user.id}'}),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
@@ -143,7 +142,7 @@ class _UserWorksGrid extends StatelessWidget {
     final works = result.illusts.where((illust) => illust.id != currentIllustId).take(_recentWorksCount).toList(growable: false);
 
     if (works.isEmpty) {
-      return CompactMessage(icon: Icons.image_not_supported_outlined, message: t.illust.works.empty);
+      return FrostCompactMessage(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), message: t.illust.works.empty);
     }
 
     return VerticalIllustPreviewGrid(illusts: works, onIllustTap: onIllustTap);

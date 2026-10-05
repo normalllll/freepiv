@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 void main() {
   testWidgets('select menu fades and moves four pixels over 240 and 180 milliseconds', (tester) async {
@@ -35,7 +35,7 @@ void main() {
     await tester.pumpWidget(_host(onChanged: (value) => selected = value));
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     final trigger = tester
-        .widgetList<Focus>(find.descendant(of: find.byType(AppSelect<int>), matching: find.byType(Focus)))
+        .widgetList<Focus>(find.descendant(of: find.byType(FrostSelect<int>), matching: find.byType(Focus)))
         .singleWhere((focus) => focus.focusNode != null);
     expect(trigger.focusNode!.hasFocus, isTrue);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
@@ -73,7 +73,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    Widget host(List<AppSelectItem<int>> items, ValueChanged<int> onChanged, {double textScale = 1}) => MaterialApp(
+    Widget host(List<FrostSelectItem<int>> items, ValueChanged<int> onChanged, {double textScale = 1}) => MaterialApp(
       theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
       home: Builder(
         builder: (context) => MediaQuery(
@@ -85,7 +85,7 @@ void main() {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: SizedBox(
                   width: 250,
-                  child: AppSelect<int>(value: 1, items: items, onChanged: onChanged),
+                  child: FrostSelect<int>(value: 1, items: items, onChanged: onChanged),
                 ),
               ),
             ),
@@ -94,7 +94,7 @@ void main() {
       ),
     );
 
-    await tester.pumpWidget(host(const [AppSelectItem(value: 1, label: 'Only')], (_) {}));
+    await tester.pumpWidget(host(const [FrostSelectItem(value: 1, label: 'Only')], (_) {}));
     await tester.tap(find.text('Only'));
     await tester.pumpAndSettle();
     final singleItem = find.byType(MenuItemButton);
@@ -107,7 +107,7 @@ void main() {
     var selected = 1;
     await tester.pumpWidget(
       host(
-        [for (var index = 1; index <= 10; index++) AppSelectItem(value: index, label: '选项 $index / Option $index')],
+        [for (var index = 1; index <= 10; index++) FrostSelectItem(value: index, label: '选项 $index / Option $index')],
         (value) => selected = value,
         textScale: 2,
       ),
@@ -136,11 +136,11 @@ Widget _host({ValueChanged<int>? onChanged, bool disableAnimations = false}) => 
         body: Center(
           child: SizedBox(
             width: 240,
-            child: AppSelect<int>(
+            child: FrostSelect<int>(
               value: 1,
               items: const [
-                AppSelectItem(value: 1, label: 'One'),
-                AppSelectItem(value: 2, label: 'Two'),
+                FrostSelectItem(value: 1, label: 'One'),
+                FrostSelectItem(value: 2, label: 'Two'),
               ],
               onChanged: onChanged ?? (_) {},
             ),

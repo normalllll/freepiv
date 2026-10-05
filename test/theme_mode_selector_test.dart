@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 
@@ -21,7 +21,7 @@ void main() {
           final theme = dark
               ? AppTheme.dark(platform: TargetPlatform.windows, locale: const Locale('en'))
               : AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en'));
-          final tokens = theme.extension<FreepivThemeTokens>()!;
+          final tokens = theme.extension<FrostThemeTokens>()!;
 
           await tester.pumpWidget(
             MaterialApp(

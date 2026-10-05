@@ -7,21 +7,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/app/theme/app_feedback.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/novel/presentation/widgets/novel_detail_skeleton.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/app/window/native_window.dart';
 import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
-import 'package:freepiv/shared/widgets/interaction_controls.dart';
-import 'package:freepiv/shared/widgets/settings_sections.dart';
-import 'package:freepiv/shared/widgets/search_input.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 
 ThemeData theme(Brightness brightness) => brightness == Brightness.light
@@ -40,7 +32,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('light surfaces use the specified neutral palette throughout ThemeData', () {
-    const tokens = FreepivThemeTokens.light;
+    final tokens = FrostPalettes.pink.lightNeutral;
     final colors = theme(Brightness.light).colorScheme;
     expect(tokens.canvas, const Color(0xFFF6F6F6));
     expect(tokens.surfaceInset, const Color(0xFFECECEC));
@@ -50,16 +42,16 @@ void main() {
     expect(tokens.textPrimary, const Color(0xFF242424));
     expect(tokens.textSecondary, const Color(0xFF606060));
     expect(tokens.line, const Color(0xFFD6D6D6));
-    expect(tokens.commentSeparator, const Color(0xFFD0D0D0));
-    expect(tokens.commentThreadLine, const Color(0xFFBABABA));
+    expect(tokens.separator, const Color(0xFFD0D0D0));
+    expect(tokens.threadLine, const Color(0xFFBABABA));
     expect(colors.surfaceContainerLowest, tokens.canvas);
     expect(colors.surfaceContainer, tokens.surfaceInset);
     expect(colors.surfaceContainerHighest, tokens.surfaceMuted);
     expect(colors.surfaceTint, tokens.surfaceTint);
     expect(colors.onSurfaceVariant, tokens.textSecondary);
     expect(colors.outline, tokens.line);
-    expect(appFeedbackSurface(tokens, {WidgetState.hovered}), tokens.hoverSurface);
-    expect(appFeedbackSurface(tokens, {WidgetState.pressed}), tokens.pressedSurface);
+    expect(frostFeedbackSurface(tokens, {WidgetState.hovered}), tokens.hoverSurface);
+    expect(frostFeedbackSurface(tokens, {WidgetState.pressed}), tokens.pressedSurface);
   });
 
   testWidgets('selected theme option keeps its raised surface while hovered', (tester) async {
@@ -76,8 +68,8 @@ void main() {
       ),
     );
     final selected = find.byKey(const ValueKey('theme-mode-light'));
-    final click = find.descendant(of: selected, matching: find.byType(AppClickSurface));
-    expect(tester.widget<AppClickSurface>(click).feedback, AppClickFeedback.quiet);
+    final click = find.descendant(of: selected, matching: find.byType(FrostClickSurface));
+    expect(tester.widget<FrostClickSurface>(click).feedback, FrostClickFeedback.quiet);
     final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
     await mouse.addPointer();
     await mouse.moveTo(tester.getCenter(selected));
@@ -108,8 +100,8 @@ void main() {
   test('switch uses a light thumb on the brand track in both themes', () {
     for (final brightness in Brightness.values) {
       final data = theme(brightness);
-      final tokens = brightness == Brightness.light ? FreepivThemeTokens.light : FreepivThemeTokens.dark;
-      expect(data.switchTheme.trackColor!.resolve({WidgetState.selected}), tokens.brand);
+      final tokens = brightness == Brightness.light ? FrostPalettes.pink.lightNeutral : FrostPalettes.pink.darkNeutral;
+      expect(data.switchTheme.trackColor!.resolve({WidgetState.selected}), tokens.accent);
       expect(data.switchTheme.thumbColor!.resolve({WidgetState.selected}), tokens.isDark ? tokens.textPrimary : tokens.surfaceRaised);
       expect(data.switchTheme.trackOutlineColor!.resolve({}), Colors.transparent);
       expect(data.switchTheme.overlayColor!.resolve({WidgetState.selected, WidgetState.hovered})!.a, lessThan(.1));
@@ -131,12 +123,12 @@ void main() {
       MaterialApp(
         home: MediaQuery(
           data: const MediaQueryData(size: Size(1024, 768)),
-          child: AppLayoutScope(
+          child: FrostLayoutScope(
             child: MediaQuery(
               data: const MediaQueryData(size: Size(300, 700), viewInsets: EdgeInsets.only(bottom: 350)),
               child: Builder(
                 builder: (context) {
-                  horizontal = AutoScaffold.usesHorizontalLayoutOf(context);
+                  horizontal = FrostAutoScaffold.usesHorizontalLayoutOf(context);
                   return const SizedBox();
                 },
               ),
@@ -198,7 +190,7 @@ void main() {
     await tester.pumpWidget(
       host(
         Center(
-          child: AppButton(label: 'Send', onPressed: () => calls++),
+          child: FrostButton(label: 'Send', onPressed: () => calls++),
         ),
       ),
     );
@@ -210,7 +202,7 @@ void main() {
     await tester.pumpWidget(
       host(
         Center(
-          child: AppButton(label: 'Send', loading: true, onPressed: () => calls++),
+          child: FrostButton(label: 'Send', loading: true, onPressed: () => calls++),
         ),
       ),
     );
@@ -221,13 +213,13 @@ void main() {
   });
 
   testWidgets('custom text field inherits distinct focus and error borders', (tester) async {
-    await tester.pumpWidget(host(const AppTextField(label: 'Proxy', errorText: 'Invalid address')));
+    await tester.pumpWidget(host(const FrostTextField(label: 'Proxy', errorText: 'Invalid address')));
     final field = tester.widget<TextField>(find.byType(TextField));
     final decoration = field.decoration!.applyDefaults(theme(Brightness.light).inputDecorationTheme);
     // Typing focus is the accent outline, not the dark keyboard focus ring.
-    final tokens = theme(Brightness.light).extension<FreepivThemeTokens>()!;
+    final tokens = theme(Brightness.light).extension<FrostThemeTokens>()!;
     expect(decoration.focusedBorder!.borderSide.color, tokens.fieldFocus);
-    expect(decoration.focusedBorder!.borderSide.width, AppMetrics.fieldFocusWidth);
+    expect(decoration.focusedBorder!.borderSide.width, FrostMetrics.fieldFocusWidth);
     expect(decoration.focusedBorder!.borderSide.color, isNot(decoration.enabledBorder!.borderSide.color));
     expect(decoration.errorBorder!.borderSide.color, theme(Brightness.light).colorScheme.error);
     expect(decoration.enabledBorder!.borderSide.color, isNot(decoration.errorBorder!.borderSide.color));
@@ -258,7 +250,7 @@ void main() {
     var submitted = '';
     await tester.pumpWidget(
       host(
-        SearchInput(
+        FrostSearchInput(
           controller: controller,
           focusNode: focus,
           hintText: 'Search illustrations, novels and artists',
@@ -274,7 +266,7 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.search);
     expect(submitted, controller.text);
     final inputBounds = tester.getRect(find.byType(TextField));
-    await tester.tap(find.byIcon(Icons.close));
+    await tester.tap(find.byIcon(Icons.close_rounded));
     await tester.pumpAndSettle();
     expect(controller.text, isEmpty);
     expect(tester.getRect(find.byType(TextField)), inputBounds);
@@ -293,10 +285,10 @@ void main() {
             theme: theme(Brightness.light),
             home: MediaQuery(
               data: MediaQueryData(size: size, disableAnimations: true, textScaler: const TextScaler.linear(2)),
-              child: AppLayoutScope(
+              child: FrostLayoutScope(
                 child: Builder(
                   builder: (context) {
-                    expect(AppMotion.duration(context, AppMotion.page), Duration.zero);
+                    expect(FrostMotion.duration(context, FrostMotion.page), Duration.zero);
                     return const NovelDetailSkeletonPage();
                   },
                 ),
@@ -332,12 +324,12 @@ void main() {
               theme: theme(brightness),
               home: MediaQuery(
                 data: MediaQueryData(size: size, textScaler: const TextScaler.linear(1.3)),
-                child: AppLayoutScope(
+                child: FrostLayoutScope(
                   child: RepaintBoundary(
                     key: boundary,
                     child: Scaffold(
                       appBar: AppBar(title: const Text('Settings')),
-                      body: SettingsSections(
+                      body: FrostSettingsSections(
                         labels: const ['Appearance', 'Connection', 'Downloads'],
                         groups: [
                           [
@@ -348,16 +340,16 @@ void main() {
                                 children: [
                                   const Text('Appearance'),
                                   const SizedBox(height: 12),
-                                  AppSelect<int>(
+                                  FrostSelect<int>(
                                     value: 0,
                                     items: const [
-                                      AppSelectItem(value: 0, label: 'Follow system appearance'),
-                                      AppSelectItem(value: 1, label: 'Light'),
+                                      FrostSelectItem(value: 0, label: 'Follow system appearance'),
+                                      FrostSelectItem(value: 1, label: 'Light'),
                                     ],
                                     onChanged: (_) {},
                                   ),
                                   const SizedBox(height: 16),
-                                  AppButton(label: 'Save preferences', kind: AppButtonKind.primary, onPressed: () {}),
+                                  FrostButton(label: 'Save preferences', kind: FrostButtonKind.primary, onPressed: () {}),
                                 ],
                               ),
                             ),
@@ -365,7 +357,7 @@ void main() {
                           [
                             const Padding(
                               padding: EdgeInsets.all(16),
-                              child: AppTextField(label: 'Connection', errorText: 'Please enter a valid address'),
+                              child: FrostTextField(label: 'Connection', errorText: 'Please enter a valid address'),
                             ),
                           ],
                           [ListTile(title: const Text('Download location'), subtitle: const Text('Use the default folder'), onTap: () {})],

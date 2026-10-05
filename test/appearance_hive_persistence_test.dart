@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/core/services/app_settings.dart';
-import 'package:freepiv/core/services/appearance_settings.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
 void main() {
@@ -17,7 +17,7 @@ void main() {
     });
 
     await AppSettings.initialize(store: HiveAppSettingsStore(box));
-    await AppSettings.saveAppearance(const AppearanceSettings(mode: ThemeMode.light, lightAccent: Color(0xFF4C8DFF)));
+    await AppSettings.saveAppearance(FrostAppearance.initial(FrostPalettes.pink).copyWith(mode: ThemeMode.light, lightAccent: Color(0xFF4C8DFF)));
     await box.close();
 
     final reopened = await Hive.openBox<dynamic>('appearance_test');

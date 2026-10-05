@@ -4,17 +4,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/router_shell.dart';
-import 'package:freepiv/app/theme/app_input_feedback.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/shared/widgets/constrained_segmented_button.dart';
-import 'package:freepiv/shared/widgets/form_controls.dart';
-import 'package:freepiv/shared/ui/fp_icon.dart';
-import 'package:freepiv/shared/ui/spring_builder.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 Widget host(Widget child) => ProviderScope(
-  child: AppInputFeedback(
+  child: FrostInputFeedback(
     child: MaterialApp(
       theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
       home: Scaffold(body: Center(child: child)),
@@ -33,12 +27,7 @@ void main() {
             child: Column(
               children: [
                 for (var index = 0; index < 2; index++)
-                  DesktopNavItem(
-                    label: 'Destination $index',
-                    fpIcon: FpIconName.home,
-                    selected: selected == index,
-                    onTap: () => setState(() => selected = index),
-                  ),
+                  FrostNavItem(label: 'Destination $index', icon: PivIcons.home, selected: selected == index, onTap: () => setState(() => selected = index)),
               ],
             ),
           ),
@@ -54,15 +43,15 @@ void main() {
       for (var frame = 0; frame < 12; frame++) {
         await tester.pump(const Duration(milliseconds: 16));
         final pills = tester
-            .widgetList<AnimatedContainer>(find.descendant(of: find.byType(DesktopNavItem), matching: find.byType(AnimatedContainer)))
+            .widgetList<AnimatedContainer>(find.descendant(of: find.byType(FrostNavItem), matching: find.byType(AnimatedContainer)))
             .where(
               (pill) => switch (pill.decoration) {
-                BoxDecoration(:final color) => color == FreepivThemeTokens.light.selectionFill,
+                BoxDecoration(:final color) => color == FrostPalettes.pink.lightNeutral.selectionFill,
                 _ => false,
               },
             );
         expect(pills.length, 1);
-        expect(tester.widgetList<DesktopNavItem>(find.byType(DesktopNavItem)).singleWhere((item) => item.selected).label, 'Destination $index');
+        expect(tester.widgetList<FrostNavItem>(find.byType(FrostNavItem)).singleWhere((item) => item.selected).label, 'Destination $index');
       }
     }
     await mouse.removePointer();
@@ -73,18 +62,18 @@ void main() {
     var value = 1;
     await tester.pumpWidget(
       host(
-        AppMenuButton<int>(
+        FrostMenuButton<int>(
           value: value,
           onSelected: (next) => value = next,
           items: const [
-            AppSelectItem(value: 1, label: 'Public'),
-            AppSelectItem(value: 2, label: 'Private'),
+            FrostSelectItem(value: 1, label: 'Public'),
+            FrostSelectItem(value: 2, label: 'Private'),
           ],
           child: const Padding(padding: EdgeInsets.all(12), child: Text('Scope')),
         ),
       ),
     );
-    final ink = tester.widget<InkWell>(find.descendant(of: find.byType(AppMenuButton<int>), matching: find.byType(InkWell)));
+    final ink = tester.widget<InkWell>(find.descendant(of: find.byType(FrostMenuButton<int>), matching: find.byType(InkWell)));
     expect(ink.splashFactory, NoSplash.splashFactory);
     expect(ink.overlayColor!.resolve({WidgetState.hovered}), Colors.transparent);
     expect(ink.customBorder, isA<RoundedRectangleBorder>());
@@ -103,7 +92,7 @@ void main() {
     await tester.pumpWidget(
       host(
         StatefulBuilder(
-          builder: (context, setState) => AppSegmentedButton<int>(
+          builder: (context, setState) => FrostSegmentedButton<int>(
             showSelectedIcon: false,
             segments: const [
               ButtonSegment(value: 1, label: Text('Artwork')),
@@ -117,8 +106,8 @@ void main() {
     );
     Color? ink(String label) => tester.renderObject<RenderParagraph>(find.text(label)).text.style?.color;
     // The sliding pill sits under whichever segment its alignment points to.
-    double pillCenter() => tester.getCenter(find.descendant(of: find.byType(SpringBuilder), matching: find.byType(DecoratedBox))).dx;
-    final tokens = FreepivThemeTokens.light;
+    double pillCenter() => tester.getCenter(find.descendant(of: find.byType(FrostSpringBuilder), matching: find.byType(DecoratedBox))).dx;
+    final tokens = FrostPalettes.pink.lightNeutral;
     final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
     await mouse.addPointer();
     await mouse.moveTo(tester.getCenter(find.text('Novels')));

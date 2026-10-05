@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
-import 'package:freepiv/shared/ui/fp_ambient_backdrop.dart';
-import 'package:freepiv/shared/widgets/floating_filter_sliver.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 Future<void> _pumpBar(WidgetTester tester, double width) async {
   tester.view.physicalSize = Size(width, 400);
@@ -17,13 +13,13 @@ Future<void> _pumpBar(WidgetTester tester, double width) async {
     ProviderScope(
       child: MaterialApp(
         theme: AppTheme.dark(platform: TargetPlatform.windows, locale: const Locale('en')),
-        home: AppLayoutScope(
+        home: FrostLayoutScope(
           child: Scaffold(
             body: Align(
               alignment: Alignment.topCenter,
               child: SizedBox(
                 height: 48,
-                child: PinnedChromeGlass(
+                child: FrostPinnedChromeGlass(
                   opacity: 1,
                   child: InkWell(key: const ValueKey('bar-content'), onTap: () {}, child: const SizedBox.expand()),
                 ),
@@ -44,12 +40,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
-          home: AppLayoutScope(
+          home: FrostLayoutScope(
             child: Scaffold(
               body: CustomScrollView(
                 controller: controller,
                 slivers: const [
-                  FloatingFilterSliver(height: 62, child: SizedBox.expand()),
+                  FrostFloatingFilterSliver(height: 62, child: SizedBox.expand()),
                   SliverToBoxAdapter(child: SizedBox(height: 2000)),
                 ],
               ),
@@ -58,7 +54,7 @@ void main() {
         ),
       ),
     );
-    double glass() => tester.widget<PinnedChromeGlass>(find.byType(PinnedChromeGlass, skipOffstage: false)).opacity;
+    double glass() => tester.widget<FrostPinnedChromeGlass>(find.byType(FrostPinnedChromeGlass, skipOffstage: false)).opacity;
     expect(glass(), 0);
     controller.jumpTo(200);
     await tester.pump();
@@ -91,19 +87,19 @@ void main() {
     expect(path.contains(const Offset(5, 1)), isFalse, reason: 'rounded corner');
     // Page tab bars start exactly at the glass edge, so the first tab's hover
     // highlight meets it with no unlit strip; its label stays on the inset.
-    final tabStart = AppMetrics.pageTabInset(1280);
+    final tabStart = FrostMetrics.pageTabInset(1280);
     expect(path.contains(Offset(tabStart + .5, 24)), isTrue);
     expect(path.contains(Offset(tabStart - .5, 24)), isFalse);
-    expect(tabStart + AppMetrics.tabLabelPadding(1280), AppMetrics.browseInset(1280));
+    expect(tabStart + FrostMetrics.tabLabelPadding(1280), FrostMetrics.browseInset(1280));
     // The margins show the window background instead of content beneath.
-    expect(find.byType(FpAmbientBackdrop), findsOneWidget);
+    expect(find.byType(FrostAmbientBackdrop), findsOneWidget);
   });
 
   testWidgets('compact bar stays edge to edge without a mask', (tester) async {
     await _pumpBar(tester, 390);
     final content = find.byKey(const ValueKey('bar-content'));
     expect(find.ancestor(of: content, matching: find.byType(ClipPath)), findsNothing);
-    expect(find.byType(FpAmbientBackdrop), findsNothing);
+    expect(find.byType(FrostAmbientBackdrop), findsNothing);
   });
 
   testWidgets('the pinned glass follows the first 24 px of scrolling', (tester) async {
@@ -114,14 +110,14 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           theme: AppTheme.dark(platform: TargetPlatform.android, locale: const Locale('en')),
-          home: AppLayoutScope(
+          home: FrostLayoutScope(
             child: Scaffold(
-              body: FpPinnedChrome(
+              body: FrostPinnedChrome(
                 extent: 48,
                 chrome: const SizedBox.shrink(),
                 body: CustomScrollView(
                   slivers: [
-                    const FpChromeSpacer(),
+                    const FrostChromeSpacer(),
                     SliverList.builder(itemCount: 40, itemBuilder: (context, index) => const SizedBox(height: 60)),
                   ],
                 ),
@@ -132,7 +128,7 @@ void main() {
       ),
     );
     await tester.pump();
-    double glass() => tester.widget<Opacity>(find.descendant(of: find.byType(PinnedChromeGlass), matching: find.byType(Opacity)).first).opacity;
+    double glass() => tester.widget<Opacity>(find.descendant(of: find.byType(FrostPinnedChromeGlass), matching: find.byType(Opacity)).first).opacity;
     final scroll = tester.state<ScrollableState>(find.byType(Scrollable)).position;
     expect(glass(), 0);
     scroll.jumpTo(12);

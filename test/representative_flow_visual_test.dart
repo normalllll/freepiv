@@ -8,13 +8,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/shared/layout/fp_page_header.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/app_route_pages.dart' as pages;
-import 'package:freepiv/app/router/navigator_stack_observer.dart';
 import 'package:freepiv/app/router_shell.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
 import 'package:freepiv/app/window/native_window.dart';
 import 'package:freepiv/app/window/window_title.dart';
 import 'package:freepiv/core/media/logic.dart';
@@ -29,9 +27,6 @@ import 'package:freepiv/features/illust/presentation/widgets/illust_related_sect
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_image_viewer.dart';
 import 'package:freepiv/features/illust/presentation/widgets/illust_detail_layout.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/ui/fp_icon.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:freepiv/src/rust/api/media.dart' as rust;
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -231,7 +226,7 @@ void main() {
         child: TranslationProvider(
           child: MaterialApp(
             theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-            home: AppLayoutScope(child: IllustDetailContent(illust: work)),
+            home: FrostLayoutScope(child: IllustDetailContent(illust: work)),
           ),
         ),
       ),
@@ -242,11 +237,11 @@ void main() {
         .descendant(of: narrow, matching: find.byWidgetPredicate((widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down))
         .first;
     ScrollPosition position() => tester.state<ScrollableState>(scroll).position;
-    double glass() => tester.widget<PinnedChromeGlass>(find.descendant(of: narrow, matching: find.byType(PinnedChromeGlass))).opacity;
+    double glass() => tester.widget<FrostPinnedChromeGlass>(find.descendant(of: narrow, matching: find.byType(FrostPinnedChromeGlass))).opacity;
     expect(glass(), 0, reason: 'no empty strip over the artwork');
     final bodyTitle = find.byWidgetPredicate((widget) => widget is SelectableText && widget.data == work.title);
     final titleTop = tester.getTopLeft(bodyTitle).dy;
-    final barBottom = tester.getBottomLeft(find.descendant(of: narrow, matching: find.byType(PinnedChromeGlass))).dy;
+    final barBottom = tester.getBottomLeft(find.descendant(of: narrow, matching: find.byType(FrostPinnedChromeGlass))).dy;
     final threshold = titleTop - barBottom + 8;
     position().jumpTo(threshold + 12);
     await tester.pump();
@@ -341,8 +336,8 @@ void main() {
         if (!Platform.isAndroid) tester.view.physicalSize = size;
         final shellKey = GlobalKey<NavigatorState>();
         final canPop = ValueNotifier<bool>(false);
-        late final NavigatorStackObserver observer;
-        observer = NavigatorStackObserver(() => canPop.value = observer.canPopPageRoute);
+        late final FrostNavigatorStackObserver observer;
+        observer = FrostNavigatorStackObserver(() => canPop.value = observer.canPopPageRoute);
         final router = GoRouter(
           initialLocation: AppRoute.home.path,
           routes: [
@@ -365,8 +360,9 @@ void main() {
           ],
         );
         final boundary = GlobalKey();
-        final titleRegistry = WindowTitleRegistry();
-        titleRegistry.attachRouter(router);
+        final titleRegistry = FrostWindowTitleRegistry();
+        final titleBridge = WindowTitleRouterBridge(titleRegistry, router);
+        addTearDown(titleBridge.dispose);
         final homeSource = _LocalHomeSource(works);
         final mediaTransport = _LocalMediaTransport(images);
         final label = '${size.width.toInt()}-${brightness.name}';
@@ -388,16 +384,16 @@ void main() {
                     : AppTheme.dark(platform: platform, locale: const Locale('en')),
                 routerConfig: router,
                 builder: (context, child) {
-                  final page = AppLayoutScope(child: child!);
+                  final page = FrostLayoutScope(child: child!);
                   if (Platform.isAndroid || size.width < 600) return RepaintBoundary(key: boundary, child: page);
                   return RepaintBoundary(
                     key: boundary,
-                    child: WindowTitleScope(
+                    child: FrostWindowTitleScope(
                       registry: titleRegistry,
                       child: AnimatedBuilder(
                         animation: titleRegistry,
                         builder: (context, _) => NativeWindowFrame(
-                          title: resolveWindowTitle(titleRegistry.uri, context.t, titleRegistry),
+                          title: resolveWindowTitle(titleRegistry.location, context.t, titleRegistry),
                           leading: const Icon(Icons.image),
                           background: Theme.of(context).colorScheme.surface,
                           foreground: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -420,14 +416,14 @@ void main() {
         await tester.runAsync(() => _capture(boundary, 'home-$label'));
         if (size.width >= 1200) {
           final back = find.byTooltip('Back');
-          final homeLabel = find.descendant(of: find.byType(DesktopNavItem).first, matching: find.text(t.navigation.home)).first;
+          final homeLabel = find.descendant(of: find.byType(FrostNavItem).first, matching: find.text(t.navigation.home)).first;
           final typeLabel = find.text(t.home.illustrations).first;
           final narrowLabelX = tester.getTopLeft(homeLabel).dx;
           final narrowTypeX = tester.getTopLeft(typeLabel).dx;
           // The back control shares the floating sidebar's icon column.
           expect(
             tester.getCenter(back).dx,
-            closeTo(tester.getCenter(find.descendant(of: find.byType(DesktopNavItem).first, matching: find.byType(FpIcon))).dx, 1),
+            closeTo(tester.getCenter(find.descendant(of: find.byType(FrostNavItem).first, matching: find.byType(FrostIcon))).dx, 1),
           );
           await tester.tap(find.byTooltip(t.navigation.expand));
           await tester.pump();
@@ -442,7 +438,7 @@ void main() {
           final wideTypeX = tester.getTopLeft(typeLabel).dx;
           expect(openingLabelX, lessThan(wideLabelX));
           expect(openingTypeX, lessThan(wideTypeX));
-          final navigationIcon = find.descendant(of: find.byType(DesktopNavItem).first, matching: find.byType(FpIcon)).first;
+          final navigationIcon = find.descendant(of: find.byType(FrostNavItem).first, matching: find.byType(FrostIcon)).first;
           expect(tester.getCenter(back).dx, closeTo(tester.getCenter(navigationIcon).dx, 1));
           await tester.runAsync(() => _capture(boundary, 'home-expanded-$label'));
           await tester.tap(find.byTooltip(t.navigation.collapse));
@@ -459,7 +455,7 @@ void main() {
           // The back control shares the floating sidebar's icon column.
           expect(
             tester.getCenter(back).dx,
-            closeTo(tester.getCenter(find.descendant(of: find.byType(DesktopNavItem).first, matching: find.byType(FpIcon))).dx, 1),
+            closeTo(tester.getCenter(find.descendant(of: find.byType(FrostNavItem).first, matching: find.byType(FrostIcon))).dx, 1),
           );
           if (size.width == 1280) {
             await tester.tap(find.byTooltip(t.navigation.expand));
@@ -544,16 +540,16 @@ void main() {
 
         if (size.width >= 600) {
           expect(find.byTooltip('Back'), findsOneWidget);
-          expect(find.byType(CompactBackButton), findsNothing);
+          expect(find.byType(FrostCompactBackButton), findsNothing);
         } else {
-          expect(find.byType(CompactBackButton), findsOneWidget);
+          expect(find.byType(FrostCompactBackButton), findsOneWidget);
         }
 
         for (final expected in ['/illust/101/related', '/illust/101', '/']) {
           if (size.width >= 600) {
             await tester.tap(find.byTooltip('Back'));
           } else {
-            await tester.tap(find.byType(CompactBackButton).first);
+            await tester.tap(find.byType(FrostCompactBackButton).first);
           }
           await _pumpRoute(tester);
           final activePage = expected.endsWith('/related')
@@ -595,7 +591,7 @@ void main() {
         final loadCountBeforeReselect = homeSource.loadCount;
         await tester.tap(
           size.width >= 600
-              ? find.byType(DesktopNavItem).first
+              ? find.byType(FrostNavItem).first
               // Mobile destinations expose their visible label as semantics, not a tooltip.
               : find
                     .byWidgetPredicate((widget) => widget is Semantics && widget.properties.label == t.navigation.home && widget.properties.button == true)
@@ -610,11 +606,11 @@ void main() {
         final mediaLoadsBeforeDownloads = mediaTransport.streamCount;
         for (var visit = 0; visit < 2; visit++) {
           if (size.width >= 600) {
-            await tester.tap(find.byWidgetPredicate((widget) => widget is DesktopNavItem && widget.label == t.navigation.more));
+            await tester.tap(find.byWidgetPredicate((widget) => widget is FrostNavItem && widget.label == t.navigation.more));
             await _pumpRoute(tester);
             await tester.tap(
               find.descendant(
-                of: find.byWidgetPredicate((widget) => widget is FpSurface && widget.role == FpSurfaceRole.overlay),
+                of: find.byWidgetPredicate((widget) => widget is FrostSurface && widget.role == FrostSurfaceRole.overlay),
                 matching: find.text(t.navigation.downloads),
               ),
             );
@@ -627,7 +623,7 @@ void main() {
           if (size.width >= 600) {
             await tester.tap(find.byTooltip('Back'));
           } else {
-            await tester.tap(find.byType(CompactBackButton).first);
+            await tester.tap(find.byType(FrostCompactBackButton).first);
           }
           await _pumpRoute(tester);
           expect(identical(tester.state(find.byType(HomePage)), homeState), isTrue, reason: label);
@@ -641,7 +637,7 @@ void main() {
         if (size.width >= 600) {
           await tester.tap(find.byTooltip('Back'));
         } else {
-          await tester.tap(find.byType(CompactBackButton).first);
+          await tester.tap(find.byType(FrostCompactBackButton).first);
         }
         await _pumpRoute(tester);
         expect(find.byType(IllustDetailPage), findsOneWidget);

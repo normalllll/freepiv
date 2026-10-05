@@ -1,11 +1,8 @@
 import 'dart:async';
 
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
-import 'package:freepiv/app/window/window_title.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
@@ -17,12 +14,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/services.dart';
-import 'package:freepiv/app/toast/app_toast.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
-import 'package:freepiv/shared/ui/fp_icon.dart';
 
 class OriginalImageViewerArgs {
   const OriginalImageViewerArgs({required this.title, required this.source, required this.pages, required this.initialIndex});
@@ -88,13 +82,19 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
     final canCopy = currentLoaded && !_copying;
 
     final appTheme = Theme.of(context);
-    final appTokens = FreepivThemeTokens.of(context);
+    final appTokens = FrostThemeTokens.of(context);
     // The viewer is always a dark neutral stage with dark chrome, whatever
     // the app theme, so artwork is judged against the same surround.
-    final viewerTheme = AppTheme.dark(platform: appTheme.platform, locale: Localizations.localeOf(context), accent: appTokens.accent);
-    return WindowTitleContribution(
+    final viewerTheme = FrostTheme.build(
+      config: freepivFrostConfig,
+      brightness: Brightness.dark,
+      platform: appTheme.platform,
+      locale: Localizations.localeOf(context),
+      accent: appTokens.accent,
+    );
+    return FrostWindowTitleContribution(
       path: AppRoute.originalImageViewer.path,
-      work: WorkWindowTitle(
+      page: FrostPageTitle(
         id: widget.args,
         kind: 'viewer',
         title: t.nativeWindow.viewerTitle(title: widget.args.title, page: '${_pageIndex + 1}', total: '$pageCount'),
@@ -104,7 +104,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
   }
 
   Widget _buildViewer(int pageCount, bool canDownload, bool canCopy) {
-    return AutoScaffold(
+    return FrostAutoScaffold(
       builder: (context, layout, orientation, useHorizontalLayout) {
         final colorScheme = Theme.of(context).colorScheme;
         const backgroundColor = Color(0xFF111214);
@@ -119,7 +119,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
                   foregroundColor: colorScheme.onSurface,
                   title: Text('${_pageIndex + 1}/$pageCount'),
                   actions: [
-                    IconButton(tooltip: t.illust.contextMenu.copyImage, onPressed: canCopy ? _copyCurrentImage : null, icon: const FpIcon(FpIconName.copy)),
+                    IconButton(tooltip: t.illust.contextMenu.copyImage, onPressed: canCopy ? _copyCurrentImage : null, icon: const FrostIcon(PivIcons.copy)),
                     Padding(
                       padding: const EdgeInsetsDirectional.only(end: 8),
                       child: Builder(
@@ -170,8 +170,8 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
                       PositionedDirectional(
                         top: 12,
                         end: 12,
-                        child: FpSurface(
-                          role: FpSurfaceRole.chrome,
+                        child: FrostSurface(
+                          role: FrostSurfaceRole.chrome,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                             child: Row(
@@ -182,7 +182,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
                                 IconButton(
                                   tooltip: t.illust.contextMenu.copyImage,
                                   onPressed: canCopy ? _copyCurrentImage : null,
-                                  icon: const FpIcon(FpIconName.copy),
+                                  icon: const FrostIcon(PivIcons.copy),
                                 ),
                                 Builder(
                                   builder: (buttonContext) => IconButton(
@@ -194,7 +194,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
                                 IconButton(
                                   tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
                                   onPressed: () => Navigator.of(context).maybePop(),
-                                  icon: const FpIcon(FpIconName.close),
+                                  icon: const FrostIcon(PivIcons.close),
                                 ),
                               ],
                             ),
@@ -207,8 +207,8 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
                         top: 0,
                         bottom: 0,
                         child: Center(
-                          child: SurfaceIconButton(
-                            icon: Icons.chevron_left,
+                          child: FrostSurfaceIconButton(
+                            icon: FrostIconData.glyph(Icons.chevron_left),
                             tooltip: context.t.illust.tooltip.previousImage,
                             iconSize: 30,
                             onPressed: _pageIndex == 0 ? null : () => _animateToPage(_pageIndex - 1),
@@ -220,8 +220,8 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
                         top: 0,
                         bottom: 0,
                         child: Center(
-                          child: SurfaceIconButton(
-                            icon: Icons.chevron_right,
+                          child: FrostSurfaceIconButton(
+                            icon: FrostIconData.glyph(Icons.chevron_right),
                             tooltip: context.t.illust.tooltip.nextImage,
                             iconSize: 30,
                             onPressed: _pageIndex >= pageCount - 1 ? null : () => _animateToPage(_pageIndex + 1),
@@ -244,7 +244,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
       _pageController.jumpToPage(index);
       return;
     }
-    _pageController.animateToPage(index, duration: AppMotion.exit, curve: Curves.easeOutCubic);
+    _pageController.animateToPage(index, duration: FrostMotion.exit, curve: Curves.easeOutCubic);
   }
 
   KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
@@ -310,9 +310,9 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
     setState(() => _copying = true);
     try {
       await copyImageBytesToClipboard(image.bytes, mimeType: image.mimeType);
-      unawaited(AppToast.copied(t.illust.toast.copied(label: t.illust.imageLabels.original)));
+      FrostToast.copied(t.illust.toast.copied(label: t.illust.imageLabels.original));
     } catch (error) {
-      AppToast.errorWithCause(t.illust.toast.copyFailed(label: t.illust.imageLabels.original), error);
+      toastErrorWithCause(t.illust.toast.copyFailed(label: t.illust.imageLabels.original), error);
     } finally {
       if (mounted) setState(() => _copying = false);
     }
@@ -341,9 +341,9 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
         title: widget.args.title,
         thumbnailUrl: page.previewUrl,
       );
-      AppToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
+      FrostToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
     } catch (error) {
-      AppToast.errorWithCause(t.illust.toast.downloadFailed, error);
+      toastErrorWithCause(t.illust.toast.downloadFailed, error);
     } finally {
       if (mounted) {
         setState(() => _downloading = false);
@@ -431,7 +431,7 @@ class _OriginalImageZoomPageState extends ConsumerState<_OriginalImageZoomPage> 
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = FreepivThemeTokens.of(context).surfaceInset;
+    final backgroundColor = FrostThemeTokens.of(context).surfaceInset;
 
     // Raw pointer events rather than gesture recognizers: once zoomed, the
     // viewer's pan wins the gesture arena at the first bit of drift, so a
@@ -519,7 +519,7 @@ class _OriginalImageLoadingPlaceholder extends StatelessWidget {
         if (page.previewUrl != page.url)
           PixivImage(url: page.previewUrl, fit: BoxFit.contain)
         else
-          ColoredBox(color: FreepivThemeTokens.of(context).surfaceInset),
+          ColoredBox(color: FrostThemeTokens.of(context).surfaceInset),
         LayoutBuilder(
           builder: (context, constraints) {
             final imageRect = _containedImageRect(constraints: constraints, aspectRatio: page.aspectRatio);
@@ -533,7 +533,7 @@ class _OriginalImageLoadingPlaceholder extends StatelessWidget {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: colorScheme.surface.withValues(alpha: 0.84),
-                    borderRadius: BorderRadius.circular(AppMetrics.controlRadius),
+                    borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
                     boxShadow: [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.12), blurRadius: 12, offset: const Offset(0, 4))],
                   ),
                   child: Padding(
@@ -541,7 +541,7 @@ class _OriginalImageLoadingPlaceholder extends StatelessWidget {
                     child: SizedBox(
                       width: progressWidth,
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(AppMetrics.controlRadius),
+                        borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
                         child: LinearProgressIndicator(value: progress, minHeight: 4),
                       ),
                     ),
@@ -572,11 +572,11 @@ class _OriginalImageLoadError extends StatelessWidget {
         if (page.previewUrl != page.url)
           PixivImage(url: page.previewUrl, fit: BoxFit.contain)
         else
-          ColoredBox(color: FreepivThemeTokens.of(context).surfaceInset),
+          ColoredBox(color: FrostThemeTokens.of(context).surfaceInset),
         Center(
           child: Material(
             color: colorScheme.surface.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(AppMetrics.controlRadius),
+            borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
             child: IconButton(tooltip: context.t.common.retry, color: colorScheme.onSurface, icon: const Icon(Icons.refresh_outlined), onPressed: onRetry),
           ),
         ),

@@ -7,14 +7,12 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/theme/app_theme.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/about/presentation/about_page.dart';
 import 'package:freepiv/features/login/presentation/login_page.dart';
 import 'package:freepiv/features/me/presentation/me_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/layout/auto_scaffold.dart';
-import 'package:freepiv/shared/ui/fp_grouped_rows.dart';
-import 'package:freepiv/shared/ui/fp_surface.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 void main() {
@@ -47,7 +45,7 @@ void main() {
                       : AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
                   home: MediaQuery(
                     data: MediaQueryData(size: size, textScaler: TextScaler.linear(size.width == 390 ? 2 : 1)),
-                    child: AppLayoutScope(
+                    child: FrostLayoutScope(
                       child: RepaintBoundary(key: boundary, child: page.value),
                     ),
                   ),
@@ -58,9 +56,9 @@ void main() {
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull, reason: '${page.key} $size ${dark ? 'dark' : 'light'}');
           if (page.key == 'about' || page.key == 'me') {
-            expect(find.descendant(of: find.byType(FpGroupedRows), matching: find.byType(Divider)), findsNothing);
+            expect(find.descendant(of: find.byType(FrostGroupedRows), matching: find.byType(Divider)), findsNothing);
             final key = '${size.width}-${dark ? 'dark' : 'light'}';
-            final bounds = tester.getRect(find.byType(FpSurface).first);
+            final bounds = tester.getRect(find.byType(FrostSurface).first);
             if (page.key == 'about') {
               overviewBounds[key] = bounds;
             } else {

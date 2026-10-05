@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_list_tab.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/shared/widgets/error.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +16,7 @@ class NewestFeedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataRefreshView(
+    return FrostRefreshView(
       onRefresh: () => source.refresh(source.isEmpty),
       builder: (context, physics, locators) {
         return NewestBody(source: source, physics: physics, locators: locators, filterSliver: filterSliver);
@@ -32,21 +30,21 @@ class NewestBody extends StatelessWidget {
 
   final NewestListSource source;
   final ScrollPhysics? physics;
-  final DataRefreshLocators locators;
+  final FrostRefreshLocators locators;
   final Widget filterSliver;
 
   @override
-  Widget build(BuildContext context) => LoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
+  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
 
   Widget _buildPhase(BuildContext context) {
     final lastError = source.lastError;
 
-    if (source.phase == LoadPhase.loading) {
+    if (source.phase == FrostLoadPhase.loading) {
       if (source.key.isNovel) {
         return NovelListSkeleton(physics: physics, sliverHeader: locators.sliverHeader, leadingSlivers: [filterSliver]);
       }
 
-      return DataLoadingCustomScrollView(physics: physics, slivers: [filterSliver, ?locators.sliverHeader, const SliverIllustWaterfallSkeleton()]);
+      return FrostLoadingScrollView(physics: physics, slivers: [filterSliver, ?locators.sliverHeader, const SliverIllustWaterfallSkeleton()]);
     }
 
     if (!source.initialized && lastError != null) {
@@ -54,7 +52,7 @@ class NewestBody extends StatelessWidget {
         physics: physics,
         sliverHeader: locators.sliverHeader,
         leadingSlivers: [filterSliver],
-        child: ErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
+        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
       );
     }
 
@@ -63,7 +61,7 @@ class NewestBody extends StatelessWidget {
         physics: physics,
         sliverHeader: locators.sliverHeader,
         leadingSlivers: [filterSliver],
-        child: EmptyContent(icon: Icons.inbox_outlined, title: context.t.newest.emptyTitle),
+        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.inbox_outlined), title: context.t.newest.emptyTitle),
       );
     }
 
@@ -71,12 +69,13 @@ class NewestBody extends StatelessWidget {
       return NovelList(source: source, physics: physics, sliverHeader: locators.sliverHeader, leadingSlivers: [filterSliver]);
     }
 
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
         filterSliver,
         ?locators.sliverHeader,
-        SliverDataWaterfallGrid<NewestItem>(
+        FrostSliverDataWaterfallGrid<NewestItem>(
+          firstLoadSkeleton: const FullScreenLoadingSkeleton(),
           source: source,
           itemBuilder: (context, item, index) {
             return switch (item) {
@@ -99,12 +98,12 @@ class NovelListSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
         ...leadingSlivers,
         ?sliverHeader,
-        const SliverContentColumn(
+        const FrostSliverContentColumn(
           sliver: SliverPadding(padding: EdgeInsets.symmetric(vertical: 12), sliver: SliverListSkeleton(itemExtent: 140, itemCount: 8)),
         ),
       ],
@@ -122,16 +121,17 @@ class NovelList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataLoadingCustomScrollView(
+    return FrostLoadingScrollView(
       physics: physics,
       slivers: [
         ...leadingSlivers,
         ?sliverHeader,
-        SliverDataList<NewestItem>(
+        FrostSliverDataList<NewestItem>(
+          firstLoadSkeleton: const FullScreenLoadingSkeleton(),
           source: source,
           padding: const EdgeInsets.symmetric(vertical: 12),
           itemBuilder: (context, item, index) {
-            return ContentColumn(
+            return FrostContentColumn(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: switch (item) {
@@ -173,6 +173,6 @@ class SliverFillBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataSliverFillBody(physics: physics, sliverHeader: sliverHeader, leadingSlivers: leadingSlivers, child: child);
+    return FrostSliverFillBody(physics: physics, sliverHeader: sliverHeader, leadingSlivers: leadingSlivers, child: child);
   }
 }

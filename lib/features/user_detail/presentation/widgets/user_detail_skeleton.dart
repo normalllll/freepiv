@@ -1,13 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:freepiv/shared/layout/fp_pinned_chrome.dart';
-import 'package:freepiv/shared/layout/shell_navigation_scope.dart';
-import 'package:freepiv/shared/layout/content_viewport.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_collapsible_header.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
-import 'package:freepiv/shared/widgets/surface_icon_button.dart';
 import 'package:freepiv/shared/widgets/user_follow_button.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -18,7 +15,7 @@ class UserDetailLoadingSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ContentViewport(child: Builder(builder: _buildContent));
+    return FrostContentViewport(child: Builder(builder: _buildContent));
   }
 
   Widget _buildContent(BuildContext context) {
@@ -42,7 +39,7 @@ class UserDetailLoadingSkeleton extends StatelessWidget {
                   expandedHeight: expandedHeaderHeight,
                   collapsedHeight: collapsedHeaderHeight,
                   layout: layout,
-                  showBackButton: !useHorizontalLayout && !(ShellNavigationScope.maybeOf(context)?.ownsBackControl ?? false),
+                  showBackButton: !useHorizontalLayout && !(FrostShellNavigationScope.maybeOf(context)?.ownsBackControl ?? false),
                 ),
               ),
               const SliverPersistentHeader(pinned: true, delegate: _SkeletonTabBarDelegate()),
@@ -108,7 +105,7 @@ class _SkeletonHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
           ),
           Positioned.fill(
-            child: PinnedChromeGlass(opacity: math.max(progress, overlapsContent ? 1.0 : 0.0), animate: false, corners: PinnedChromeCorners.top),
+            child: FrostPinnedChromeGlass(opacity: math.max(progress, overlapsContent ? 1.0 : 0.0), animate: false, corners: FrostPinnedChromeCorners.top),
           ),
           PositionedDirectional(
             top: topPadding,
@@ -126,7 +123,11 @@ class _SkeletonHeaderDelegate extends SliverPersistentHeaderDelegate {
             PositionedDirectional(
               top: topPadding + 8,
               start: 8,
-              child: SurfaceIconButton(icon: Icons.arrow_back, tooltip: MaterialLocalizations.of(context).backButtonTooltip, onPressed: null),
+              child: FrostSurfaceIconButton(
+                icon: FrostIconData.glyph(Icons.arrow_back),
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                onPressed: null,
+              ),
             ),
         ],
       ),

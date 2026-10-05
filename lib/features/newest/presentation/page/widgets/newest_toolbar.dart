@@ -1,9 +1,9 @@
-import 'package:freepiv/shared/widgets/app_tab_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_labels.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/shared/widgets/mouse_drag_scroll.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 /// Single toolbar row: audience tabs, with the feed filter summary at the end.
 class NewestToolbar extends StatelessWidget {
@@ -23,26 +23,28 @@ class NewestToolbar extends StatelessWidget {
       bottom: false,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final inset = AppMetrics.browseInset(constraints.maxWidth);
+          final inset = FrostMetrics.browseInset(constraints.maxWidth);
           return Padding(
-            padding: EdgeInsetsDirectional.only(start: AppMetrics.pageTabInset(constraints.maxWidth), end: inset - 8),
+            padding: EdgeInsetsDirectional.only(start: FrostMetrics.pageTabInset(constraints.maxWidth), end: inset - 8),
             child: SizedBox(
               height: height,
               child: Row(
                 children: [
                   Expanded(
-                    child: AppTabBar(
-                      controller: tabController,
-                      isScrollable: true,
-                      tabAlignment: TabAlignment.start,
-                      dividerColor: Colors.transparent,
-                      labelPadding: EdgeInsets.symmetric(horizontal: AppMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
-                      onTap: (index) => onAudienceChanged(newestAudienceForIndex(index)),
-                      tabs: [
-                        Tab(text: translations.newest.audience.following),
-                        Tab(text: translations.newest.audience.mypixiv),
-                        Tab(text: translations.newest.audience.everyone),
-                      ],
+                    child: MouseDragScroll(
+                      child: FrostTabBar(
+                        controller: tabController,
+                        isScrollable: true,
+                        tabAlignment: TabAlignment.start,
+                        dividerColor: Colors.transparent,
+                        labelPadding: EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
+                        onTap: (index) => onAudienceChanged(newestAudienceForIndex(index)),
+                        tabs: [
+                          Tab(text: translations.newest.audience.following),
+                          Tab(text: translations.newest.audience.mypixiv),
+                          Tab(text: translations.newest.audience.everyone),
+                        ],
+                      ),
                     ),
                   ),
                   ConstrainedBox(

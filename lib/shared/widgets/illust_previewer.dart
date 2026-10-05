@@ -1,13 +1,9 @@
-import 'package:freepiv/app/theme/app_metrics.dart';
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:freepiv/app/theme/content_script.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/theme/app_theme_tokens.dart';
 import 'package:freepiv/core/core.dart';
-import 'package:freepiv/shared/ui/spring_builder.dart';
 import 'package:freepiv/shared/widgets/artwork_hero.dart';
-import 'package:freepiv/shared/widgets/energetic_card.dart';
 import 'package:freepiv/shared/widgets/illust_bookmark_button.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -38,14 +34,14 @@ class IllustPreviewer extends ConsumerWidget {
     return ArtworkHeroSource(
       illust: illust,
       imageUrl: previewUrl,
-      sourceRadius: square ? BorderRadius.circular(AppMetrics.controlRadius) : const BorderRadius.vertical(top: Radius.circular(AppMetrics.controlRadius)),
+      sourceRadius: square ? BorderRadius.circular(FrostMetrics.controlRadius) : const BorderRadius.vertical(top: Radius.circular(FrostMetrics.controlRadius)),
       builder: (context, heroTag) {
         final image = ArtworkHero(
           tag: heroTag,
           child: _IllustPreviewImage(illust: illust, imageUrl: previewUrl, fit: fit, square: square, showBadges: !square, leadingBadge: leadingBadge),
         );
-        return EnergeticCard(
-          feedback: square ? AppClickFeedback.artwork : AppClickFeedback.surface,
+        return FrostCard(
+          feedback: square ? FrostClickFeedback.media : FrostClickFeedback.surface,
           accentColor: accent,
           onTap: () => onOpen(heroTag),
           child: square
@@ -93,9 +89,9 @@ class _IllustPreviewImage extends StatelessWidget {
           // cropped by its own frame; the badges stay put.
           Positioned.fill(
             child: ClipRect(
-              child: SpringBuilder(
-                value: AppClickSurface.hoveredOf(context) ? AppMetrics.artworkHoverZoom : 1,
-                spring: AppMotion.standard,
+              child: FrostSpringBuilder(
+                value: FrostClickSurface.hoveredOf(context) ? FrostMetrics.mediaHoverZoom : 1,
+                spring: FrostMotion.standard,
                 builder: (context, zoom, child) => Transform.scale(scale: zoom, child: child),
                 child: PixivImage(url: imageUrl, fit: fit),
               ),
@@ -144,7 +140,7 @@ class _IllustPreviewFooter extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: AppMetrics.artworkFooterPadding,
+      padding: PivMetrics.artworkFooterPadding,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -156,7 +152,7 @@ class _IllustPreviewFooter extends StatelessWidget {
                   rank == null ? illust.title : '#$rank  ${illust.title}',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: contentTextStyle(context, illust.title, Theme.of(context).textTheme.titleSmall),
+                  style: frostContentTextStyle(context, illust.title, Theme.of(context).textTheme.titleSmall),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -183,8 +179,8 @@ class _IllustPreviewFooter extends StatelessWidget {
 }
 
 Color _illustAccent(BuildContext context) {
-  final tokens = FreepivThemeTokens.of(context);
-  return tokens.brand;
+  final tokens = FrostThemeTokens.of(context);
+  return tokens.accent;
 }
 
 class _LabelBadge extends StatelessWidget {

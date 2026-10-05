@@ -1,5 +1,3 @@
-import 'package:freepiv/shared/widgets/app_click_surface.dart';
-import 'package:freepiv/app/theme/app_metrics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -43,8 +41,8 @@ class NovelCreatorSection extends ConsumerWidget {
             const SizedBox(height: 8),
             userWorks.when(
               loading: () => const HorizontalNovelStripSkeleton(),
-              error: (error, stackTrace) => CompactMessage(
-                icon: Icons.error_outline,
+              error: (error, stackTrace) => FrostCompactMessage(
+                icon: FrostIconData.glyph(Icons.error_outline),
                 message: t.illust.works.failed,
                 actionLabel: t.common.retry,
                 onAction: () {
@@ -71,7 +69,7 @@ class NovelCreatorHeader extends StatelessWidget {
 
     final identity = Material(
       color: Colors.transparent,
-      child: AppClickSurface(
+      child: FrostClickSurface(
         onTap: () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${user.id}'}),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
@@ -139,7 +137,7 @@ class UserNovelStrip extends StatelessWidget {
     final works = result.novels.where((novel) => novel.id != currentNovelId).take(12).toList(growable: false);
 
     if (works.isEmpty) {
-      return CompactMessage(icon: Icons.menu_book_outlined, message: t.user.empty.novels);
+      return FrostCompactMessage(icon: FrostIconData.glyph(Icons.menu_book_outlined), message: t.user.empty.novels);
     }
 
     return LayoutBuilder(
@@ -175,7 +173,7 @@ class NovelCoverTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(AppMetrics.controlRadius);
+    final borderRadius = BorderRadius.circular(FrostMetrics.controlRadius);
 
     return Tooltip(
       message: novel.title,
@@ -186,7 +184,7 @@ class NovelCoverTile extends StatelessWidget {
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: borderRadius,
           clipBehavior: Clip.antiAlias,
-          child: AppClickSurface(
+          child: FrostClickSurface(
             onTap: onTap,
             child: Stack(
               fit: StackFit.expand,
@@ -236,7 +234,7 @@ class HorizontalNovelStripSkeleton extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(width: _novelStripSpacing),
             itemBuilder: (context, index) {
               return Skeletonizer.zone(
-                child: Bone(width: tileWidth, height: tileHeight, borderRadius: BorderRadius.circular(AppMetrics.controlRadius)),
+                child: Bone(width: tileWidth, height: tileHeight, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
               );
             },
           ),
