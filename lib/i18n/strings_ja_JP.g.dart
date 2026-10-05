@@ -343,6 +343,9 @@ class _Translations$search$ja_JP extends Translations$search$en_US {
 	@override late final _Translations$search$type$ja_JP type = _Translations$search$type$ja_JP._(_root);
 	@override late final _Translations$search$sort$ja_JP sort = _Translations$search$sort$ja_JP._(_root);
 	@override late final _Translations$search$target$ja_JP target = _Translations$search$target$ja_JP._(_root);
+	@override late final _Translations$search$contentType$ja_JP contentType = _Translations$search$contentType$ja_JP._(_root);
+	@override late final _Translations$search$ratio$ja_JP ratio = _Translations$search$ratio$ja_JP._(_root);
+	@override late final _Translations$search$size$ja_JP size = _Translations$search$size$ja_JP._(_root);
 	@override late final _Translations$search$date$ja_JP date = _Translations$search$date$ja_JP._(_root);
 	@override late final _Translations$search$bookmarks$ja_JP bookmarks = _Translations$search$bookmarks$ja_JP._(_root);
 	@override late final _Translations$search$direct$ja_JP direct = _Translations$search$direct$ja_JP._(_root);
@@ -622,10 +625,6 @@ class _Translations$settings$language$ja_JP extends Translations$settings$langua
 	// Translations
 	@override String get title => '言語';
 	@override String get systemDefault => 'システム設定';
-	@override String get enUs => 'English (United States)';
-	@override String get zhCn => '简体中文';
-	@override String get zhTw => '繁體中文';
-	@override String get jaJp => '日本語';
 }
 
 // Path: settings.images
@@ -806,7 +805,13 @@ class _Translations$search$filters$ja_JP extends Translations$search$filters$en_
 	@override String get sort => '並び替え';
 	@override String get target => '対象';
 	@override String get date => '日付';
-	@override String get bookmarks => 'ブックマーク数';
+	@override String get bookmarks => 'users入りタグ';
+	@override String get contentType => '作品の種類';
+	@override String get ratio => '構図';
+	@override String get size => '最小サイズ';
+	@override String get tool => 'ツール';
+	@override String get toolHint => '例: Photoshop';
+	@override String get previewNote => '人気プレビューはブックマークの多い作品を最大 30 件まで一度だけ表示します。種類・構図・サイズ・ツールの絞り込みは使えません。';
 }
 
 // Path: search.type
@@ -830,7 +835,7 @@ class _Translations$search$sort$ja_JP extends Translations$search$sort$en_US {
 	// Translations
 	@override String get newest => '新しい順';
 	@override String get oldest => '古い順';
-	@override String get popular => '人気順';
+	@override String get popularPreview => '人気プレビュー';
 }
 
 // Path: search.target
@@ -843,6 +848,48 @@ class _Translations$search$target$ja_JP extends Translations$search$target$en_US
 	@override String get tags => 'タグ';
 	@override String get exactTags => '完全一致タグ';
 	@override String get titleAndCaption => 'タイトル・説明文';
+	@override String get text => '本文';
+	@override String get keyword => 'キーワード';
+}
+
+// Path: search.contentType
+class _Translations$search$contentType$ja_JP extends Translations$search$contentType$en_US {
+	_Translations$search$contentType$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get any => '指定なし';
+	@override String get illust => 'イラスト';
+	@override String get manga => 'マンガ';
+	@override String get ugoira => 'うごイラ';
+	@override String get illustAndUgoira => 'イラスト・うごイラ';
+	@override String get all => 'イラスト・マンガ・うごイラ';
+}
+
+// Path: search.ratio
+class _Translations$search$ratio$ja_JP extends Translations$search$ratio$en_US {
+	_Translations$search$ratio$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get any => '指定なし';
+	@override String get landscape => '横長';
+	@override String get portrait => '縦長';
+	@override String get square => '正方形';
+}
+
+// Path: search.size
+class _Translations$search$size$ja_JP extends Translations$search$size$en_US {
+	_Translations$search$size$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get any => '指定なし';
+	@override String minWidth({required Object px}) => '幅 ≥ ${px} px';
+	@override String minHeight({required Object px}) => '高さ ≥ ${px} px';
 }
 
 // Path: search.date
@@ -859,6 +906,8 @@ class _Translations$search$date$ja_JP extends Translations$search$date$en_US {
 	@override String get months6 => '6か月';
 	@override String get year1 => '1年';
 	@override String get custom => 'カスタム';
+	@override String get limitHint => '一度の検索は最大 1 年分です。長い期間は直近 1 年に切り詰められます。';
+	@override String get pickerHelp => '期間を選択（最大 1 年）';
 }
 
 // Path: search.bookmarks
@@ -869,7 +918,7 @@ class _Translations$search$bookmarks$ja_JP extends Translations$search$bookmarks
 
 	// Translations
 	@override String get any => '指定なし';
-	@override String atLeast({required Object count}) => '${count}+ ブックマーク';
+	@override String tagged({required Object count}) => '${count} users入り';
 }
 
 // Path: search.direct
@@ -1407,10 +1456,6 @@ extension on TranslationsJaJp {
 			'settings.theme.reduceTransparencyHint' => 'ぼかしを使わず単色で表示します',
 			'settings.language.title' => '言語',
 			'settings.language.systemDefault' => 'システム設定',
-			'settings.language.enUs' => 'English (United States)',
-			'settings.language.zhCn' => '简体中文',
-			'settings.language.zhTw' => '繁體中文',
-			'settings.language.jaJp' => '日本語',
 			'settings.images.title' => '画像',
 			'settings.images.previewQuality' => 'プレビュー品質',
 			'settings.images.viewerQuality' => '表示品質',
@@ -1578,16 +1623,37 @@ extension on TranslationsJaJp {
 			'search.filters.sort' => '並び替え',
 			'search.filters.target' => '対象',
 			'search.filters.date' => '日付',
-			'search.filters.bookmarks' => 'ブックマーク数',
+			'search.filters.bookmarks' => 'users入りタグ',
+			'search.filters.contentType' => '作品の種類',
+			'search.filters.ratio' => '構図',
+			'search.filters.size' => '最小サイズ',
+			'search.filters.tool' => 'ツール',
+			'search.filters.toolHint' => '例: Photoshop',
+			'search.filters.previewNote' => '人気プレビューはブックマークの多い作品を最大 30 件まで一度だけ表示します。種類・構図・サイズ・ツールの絞り込みは使えません。',
 			'search.type.illustManga' => 'イラスト・マンガ',
 			'search.type.novel' => '小説',
 			'search.type.user' => 'ユーザー',
 			'search.sort.newest' => '新しい順',
 			'search.sort.oldest' => '古い順',
-			'search.sort.popular' => '人気順',
+			'search.sort.popularPreview' => '人気プレビュー',
 			'search.target.tags' => 'タグ',
 			'search.target.exactTags' => '完全一致タグ',
 			'search.target.titleAndCaption' => 'タイトル・説明文',
+			'search.target.text' => '本文',
+			'search.target.keyword' => 'キーワード',
+			'search.contentType.any' => '指定なし',
+			'search.contentType.illust' => 'イラスト',
+			'search.contentType.manga' => 'マンガ',
+			'search.contentType.ugoira' => 'うごイラ',
+			'search.contentType.illustAndUgoira' => 'イラスト・うごイラ',
+			'search.contentType.all' => 'イラスト・マンガ・うごイラ',
+			'search.ratio.any' => '指定なし',
+			'search.ratio.landscape' => '横長',
+			'search.ratio.portrait' => '縦長',
+			'search.ratio.square' => '正方形',
+			'search.size.any' => '指定なし',
+			'search.size.minWidth' => ({required Object px}) => '幅 ≥ ${px} px',
+			'search.size.minHeight' => ({required Object px}) => '高さ ≥ ${px} px',
 			'search.date.any' => '指定なし',
 			'search.date.today' => '今日',
 			'search.date.days7' => '7日',
@@ -1595,8 +1661,10 @@ extension on TranslationsJaJp {
 			'search.date.months6' => '6か月',
 			'search.date.year1' => '1年',
 			'search.date.custom' => 'カスタム',
+			'search.date.limitHint' => '一度の検索は最大 1 年分です。長い期間は直近 1 年に切り詰められます。',
+			'search.date.pickerHelp' => '期間を選択（最大 1 年）',
 			'search.bookmarks.any' => '指定なし',
-			'search.bookmarks.atLeast' => ({required Object count}) => '${count}+ ブックマーク',
+			'search.bookmarks.tagged' => ({required Object count}) => '${count} users入り',
 			'search.direct.illust' => ({required Object id}) => 'イラスト：${id}',
 			'search.direct.user' => ({required Object id}) => 'ユーザー：${id}',
 			'search.direct.novel' => ({required Object id}) => '小説：${id}',
@@ -1772,6 +1840,8 @@ extension on TranslationsJaJp {
 			'follow.followed' => 'フォロー中',
 			'follow.follow' => 'フォロー',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
+			_ => null,
+		} ?? switch (path) {
 			'richText.illustId' => ({required Object id}) => 'イラスト ID：${id}',
 			'richText.userId' => ({required Object id}) => 'ユーザー ID：${id}',
 			'fanbox.accountConnected' => 'ログイン済み',
@@ -1791,8 +1861,6 @@ extension on TranslationsJaJp {
 			'fanbox.bookmarks' => '保存した投稿',
 			'fanbox.login' => 'FANBOX にログイン',
 			'fanbox.cookieHint' => 'FANBOXSESSID の値または FANBOXSESSID=値を貼り付け',
-			_ => null,
-		} ?? switch (path) {
 			'fanbox.importSession' => 'ログインファイルを読み込む',
 			'fanbox.openWebsite' => 'FANBOX を開く',
 			'fanbox.loginHelp' => 'ブラウザでログインし、開発者ツール → Application → Cookies から FANBOXSESSID をコピーしてください。Pixiv とは別のログインです。',

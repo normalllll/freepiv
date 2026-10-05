@@ -153,7 +153,24 @@ abstract class PixivApi implements RustOpaqueInterface {
   Future<SearchNovelPageResult> getSearchNovelPage({
     required String word,
     required SearchSort sort,
+    required SearchNovelTarget target,
+    required SearchOptions options,
+  });
+
+  /// One batch (at most 30) of the most bookmarked illustration-category
+  /// works for a word, in the server's order. It has no next page, and only
+  /// the word, target, date range and bookmark tag shape it; the other
+  /// [`SearchOptions`] belong to [`Self::get_search_illust_page`].
+  Future<SearchIllustPageResult> getSearchPopularPreviewIllust({
+    required String word,
     required SearchTarget target,
+    required SearchOptions options,
+  });
+
+  /// The novel counterpart of [`Self::get_search_popular_preview_illust`].
+  Future<SearchNovelPageResult> getSearchPopularPreviewNovel({
+    required String word,
+    required SearchNovelTarget target,
     required SearchOptions options,
   });
 
@@ -409,14 +426,44 @@ class SearchOptions {
   final String? endDate;
   final int? bookmarkTotal;
 
-  const SearchOptions({this.startDate, this.endDate, this.bookmarkTotal});
+  /// Illustration search only, like the four size bounds, `ratio` and
+  /// `tool` below.
+  final SearchContentType? contentType;
+  final SearchRatio? ratio;
+  final int? widthMin;
+  final int? widthMax;
+  final int? heightMin;
+  final int? heightMax;
+  final String? tool;
+
+  const SearchOptions({
+    this.startDate,
+    this.endDate,
+    this.bookmarkTotal,
+    this.contentType,
+    this.ratio,
+    this.widthMin,
+    this.widthMax,
+    this.heightMin,
+    this.heightMax,
+    this.tool,
+  });
 
   static Future<SearchOptions> default_() =>
       RustLib.instance.api.pixivRsPixivApiSearchOptionsDefault();
 
   @override
   int get hashCode =>
-      startDate.hashCode ^ endDate.hashCode ^ bookmarkTotal.hashCode;
+      startDate.hashCode ^
+      endDate.hashCode ^
+      bookmarkTotal.hashCode ^
+      contentType.hashCode ^
+      ratio.hashCode ^
+      widthMin.hashCode ^
+      widthMax.hashCode ^
+      heightMin.hashCode ^
+      heightMax.hashCode ^
+      tool.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -425,5 +472,12 @@ class SearchOptions {
           runtimeType == other.runtimeType &&
           startDate == other.startDate &&
           endDate == other.endDate &&
-          bookmarkTotal == other.bookmarkTotal;
+          bookmarkTotal == other.bookmarkTotal &&
+          contentType == other.contentType &&
+          ratio == other.ratio &&
+          widthMin == other.widthMin &&
+          widthMax == other.widthMax &&
+          heightMin == other.heightMin &&
+          heightMax == other.heightMax &&
+          tool == other.tool;
 }

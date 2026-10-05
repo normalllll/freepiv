@@ -558,7 +558,7 @@ $SearchFilterStateCopyWith<$Res> get novel {
 /// @nodoc
 mixin _$SearchFilterState {
 
- SearchSort get sort; SearchTarget get target; SearchDatePreset get datePreset; DateTime? get customStart; DateTime? get customEnd; int? get bookmarkTotal;
+ SearchOrder get order; SearchTarget get target; SearchNovelTarget get novelTarget; SearchDatePreset get datePreset; DateTime? get customStart; DateTime? get customEnd; int? get bookmarkTotal; SearchContentType? get contentType; SearchRatio? get ratio; int? get minWidth; int? get minHeight; String? get tool;
 /// Create a copy of SearchFilterState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -569,16 +569,16 @@ $SearchFilterStateCopyWith<SearchFilterState> get copyWith => _$SearchFilterStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchFilterState&&(identical(other.sort, sort) || other.sort == sort)&&(identical(other.target, target) || other.target == target)&&(identical(other.datePreset, datePreset) || other.datePreset == datePreset)&&(identical(other.customStart, customStart) || other.customStart == customStart)&&(identical(other.customEnd, customEnd) || other.customEnd == customEnd)&&(identical(other.bookmarkTotal, bookmarkTotal) || other.bookmarkTotal == bookmarkTotal));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchFilterState&&(identical(other.order, order) || other.order == order)&&(identical(other.target, target) || other.target == target)&&(identical(other.novelTarget, novelTarget) || other.novelTarget == novelTarget)&&(identical(other.datePreset, datePreset) || other.datePreset == datePreset)&&(identical(other.customStart, customStart) || other.customStart == customStart)&&(identical(other.customEnd, customEnd) || other.customEnd == customEnd)&&(identical(other.bookmarkTotal, bookmarkTotal) || other.bookmarkTotal == bookmarkTotal)&&(identical(other.contentType, contentType) || other.contentType == contentType)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.minWidth, minWidth) || other.minWidth == minWidth)&&(identical(other.minHeight, minHeight) || other.minHeight == minHeight)&&(identical(other.tool, tool) || other.tool == tool));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,sort,target,datePreset,customStart,customEnd,bookmarkTotal);
+int get hashCode => Object.hash(runtimeType,order,target,novelTarget,datePreset,customStart,customEnd,bookmarkTotal,contentType,ratio,minWidth,minHeight,tool);
 
 @override
 String toString() {
-  return 'SearchFilterState(sort: $sort, target: $target, datePreset: $datePreset, customStart: $customStart, customEnd: $customEnd, bookmarkTotal: $bookmarkTotal)';
+  return 'SearchFilterState(order: $order, target: $target, novelTarget: $novelTarget, datePreset: $datePreset, customStart: $customStart, customEnd: $customEnd, bookmarkTotal: $bookmarkTotal, contentType: $contentType, ratio: $ratio, minWidth: $minWidth, minHeight: $minHeight, tool: $tool)';
 }
 
 
@@ -589,7 +589,7 @@ abstract mixin class $SearchFilterStateCopyWith<$Res>  {
   factory $SearchFilterStateCopyWith(SearchFilterState value, $Res Function(SearchFilterState) _then) = _$SearchFilterStateCopyWithImpl;
 @useResult
 $Res call({
- SearchSort sort, SearchTarget target, SearchDatePreset datePreset, DateTime? customStart, DateTime? customEnd, int? bookmarkTotal
+ SearchOrder order, SearchTarget target, SearchNovelTarget novelTarget, SearchDatePreset datePreset, DateTime? customStart, DateTime? customEnd, int? bookmarkTotal, SearchContentType? contentType, SearchRatio? ratio, int? minWidth, int? minHeight, String? tool
 });
 
 
@@ -606,15 +606,21 @@ class _$SearchFilterStateCopyWithImpl<$Res>
 
 /// Create a copy of SearchFilterState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sort = null,Object? target = null,Object? datePreset = null,Object? customStart = freezed,Object? customEnd = freezed,Object? bookmarkTotal = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? order = null,Object? target = null,Object? novelTarget = null,Object? datePreset = null,Object? customStart = freezed,Object? customEnd = freezed,Object? bookmarkTotal = freezed,Object? contentType = freezed,Object? ratio = freezed,Object? minWidth = freezed,Object? minHeight = freezed,Object? tool = freezed,}) {
   return _then(_self.copyWith(
-sort: null == sort ? _self.sort : sort // ignore: cast_nullable_to_non_nullable
-as SearchSort,target: null == target ? _self.target : target // ignore: cast_nullable_to_non_nullable
-as SearchTarget,datePreset: null == datePreset ? _self.datePreset : datePreset // ignore: cast_nullable_to_non_nullable
+order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
+as SearchOrder,target: null == target ? _self.target : target // ignore: cast_nullable_to_non_nullable
+as SearchTarget,novelTarget: null == novelTarget ? _self.novelTarget : novelTarget // ignore: cast_nullable_to_non_nullable
+as SearchNovelTarget,datePreset: null == datePreset ? _self.datePreset : datePreset // ignore: cast_nullable_to_non_nullable
 as SearchDatePreset,customStart: freezed == customStart ? _self.customStart : customStart // ignore: cast_nullable_to_non_nullable
 as DateTime?,customEnd: freezed == customEnd ? _self.customEnd : customEnd // ignore: cast_nullable_to_non_nullable
 as DateTime?,bookmarkTotal: freezed == bookmarkTotal ? _self.bookmarkTotal : bookmarkTotal // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,contentType: freezed == contentType ? _self.contentType : contentType // ignore: cast_nullable_to_non_nullable
+as SearchContentType?,ratio: freezed == ratio ? _self.ratio : ratio // ignore: cast_nullable_to_non_nullable
+as SearchRatio?,minWidth: freezed == minWidth ? _self.minWidth : minWidth // ignore: cast_nullable_to_non_nullable
+as int?,minHeight: freezed == minHeight ? _self.minHeight : minHeight // ignore: cast_nullable_to_non_nullable
+as int?,tool: freezed == tool ? _self.tool : tool // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -696,10 +702,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( SearchSort sort,  SearchTarget target,  SearchDatePreset datePreset,  DateTime? customStart,  DateTime? customEnd,  int? bookmarkTotal)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( SearchOrder order,  SearchTarget target,  SearchNovelTarget novelTarget,  SearchDatePreset datePreset,  DateTime? customStart,  DateTime? customEnd,  int? bookmarkTotal,  SearchContentType? contentType,  SearchRatio? ratio,  int? minWidth,  int? minHeight,  String? tool)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SearchFilterState() when $default != null:
-return $default(_that.sort,_that.target,_that.datePreset,_that.customStart,_that.customEnd,_that.bookmarkTotal);case _:
+return $default(_that.order,_that.target,_that.novelTarget,_that.datePreset,_that.customStart,_that.customEnd,_that.bookmarkTotal,_that.contentType,_that.ratio,_that.minWidth,_that.minHeight,_that.tool);case _:
   return orElse();
 
 }
@@ -717,10 +723,10 @@ return $default(_that.sort,_that.target,_that.datePreset,_that.customStart,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( SearchSort sort,  SearchTarget target,  SearchDatePreset datePreset,  DateTime? customStart,  DateTime? customEnd,  int? bookmarkTotal)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( SearchOrder order,  SearchTarget target,  SearchNovelTarget novelTarget,  SearchDatePreset datePreset,  DateTime? customStart,  DateTime? customEnd,  int? bookmarkTotal,  SearchContentType? contentType,  SearchRatio? ratio,  int? minWidth,  int? minHeight,  String? tool)  $default,) {final _that = this;
 switch (_that) {
 case _SearchFilterState():
-return $default(_that.sort,_that.target,_that.datePreset,_that.customStart,_that.customEnd,_that.bookmarkTotal);}
+return $default(_that.order,_that.target,_that.novelTarget,_that.datePreset,_that.customStart,_that.customEnd,_that.bookmarkTotal,_that.contentType,_that.ratio,_that.minWidth,_that.minHeight,_that.tool);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -734,10 +740,10 @@ return $default(_that.sort,_that.target,_that.datePreset,_that.customStart,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( SearchSort sort,  SearchTarget target,  SearchDatePreset datePreset,  DateTime? customStart,  DateTime? customEnd,  int? bookmarkTotal)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( SearchOrder order,  SearchTarget target,  SearchNovelTarget novelTarget,  SearchDatePreset datePreset,  DateTime? customStart,  DateTime? customEnd,  int? bookmarkTotal,  SearchContentType? contentType,  SearchRatio? ratio,  int? minWidth,  int? minHeight,  String? tool)?  $default,) {final _that = this;
 switch (_that) {
 case _SearchFilterState() when $default != null:
-return $default(_that.sort,_that.target,_that.datePreset,_that.customStart,_that.customEnd,_that.bookmarkTotal);case _:
+return $default(_that.order,_that.target,_that.novelTarget,_that.datePreset,_that.customStart,_that.customEnd,_that.bookmarkTotal,_that.contentType,_that.ratio,_that.minWidth,_that.minHeight,_that.tool);case _:
   return null;
 
 }
@@ -749,15 +755,21 @@ return $default(_that.sort,_that.target,_that.datePreset,_that.customStart,_that
 
 
 class _SearchFilterState extends SearchFilterState {
-  const _SearchFilterState({this.sort = SearchSort.dateDesc, this.target = SearchTarget.partialMatchForTags, this.datePreset = SearchDatePreset.any, this.customStart, this.customEnd, this.bookmarkTotal}): super._();
+  const _SearchFilterState({this.order = SearchOrder.newest, this.target = SearchTarget.partialMatchForTags, this.novelTarget = SearchNovelTarget.partialMatchForTags, this.datePreset = SearchDatePreset.any, this.customStart, this.customEnd, this.bookmarkTotal, this.contentType, this.ratio, this.minWidth, this.minHeight, this.tool}): super._();
   
 
-@override@JsonKey() final  SearchSort sort;
+@override@JsonKey() final  SearchOrder order;
 @override@JsonKey() final  SearchTarget target;
+@override@JsonKey() final  SearchNovelTarget novelTarget;
 @override@JsonKey() final  SearchDatePreset datePreset;
 @override final  DateTime? customStart;
 @override final  DateTime? customEnd;
 @override final  int? bookmarkTotal;
+@override final  SearchContentType? contentType;
+@override final  SearchRatio? ratio;
+@override final  int? minWidth;
+@override final  int? minHeight;
+@override final  String? tool;
 
 /// Create a copy of SearchFilterState
 /// with the given fields replaced by the non-null parameter values.
@@ -769,16 +781,16 @@ _$SearchFilterStateCopyWith<_SearchFilterState> get copyWith => __$SearchFilterS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchFilterState&&(identical(other.sort, sort) || other.sort == sort)&&(identical(other.target, target) || other.target == target)&&(identical(other.datePreset, datePreset) || other.datePreset == datePreset)&&(identical(other.customStart, customStart) || other.customStart == customStart)&&(identical(other.customEnd, customEnd) || other.customEnd == customEnd)&&(identical(other.bookmarkTotal, bookmarkTotal) || other.bookmarkTotal == bookmarkTotal));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchFilterState&&(identical(other.order, order) || other.order == order)&&(identical(other.target, target) || other.target == target)&&(identical(other.novelTarget, novelTarget) || other.novelTarget == novelTarget)&&(identical(other.datePreset, datePreset) || other.datePreset == datePreset)&&(identical(other.customStart, customStart) || other.customStart == customStart)&&(identical(other.customEnd, customEnd) || other.customEnd == customEnd)&&(identical(other.bookmarkTotal, bookmarkTotal) || other.bookmarkTotal == bookmarkTotal)&&(identical(other.contentType, contentType) || other.contentType == contentType)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.minWidth, minWidth) || other.minWidth == minWidth)&&(identical(other.minHeight, minHeight) || other.minHeight == minHeight)&&(identical(other.tool, tool) || other.tool == tool));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,sort,target,datePreset,customStart,customEnd,bookmarkTotal);
+int get hashCode => Object.hash(runtimeType,order,target,novelTarget,datePreset,customStart,customEnd,bookmarkTotal,contentType,ratio,minWidth,minHeight,tool);
 
 @override
 String toString() {
-  return 'SearchFilterState(sort: $sort, target: $target, datePreset: $datePreset, customStart: $customStart, customEnd: $customEnd, bookmarkTotal: $bookmarkTotal)';
+  return 'SearchFilterState(order: $order, target: $target, novelTarget: $novelTarget, datePreset: $datePreset, customStart: $customStart, customEnd: $customEnd, bookmarkTotal: $bookmarkTotal, contentType: $contentType, ratio: $ratio, minWidth: $minWidth, minHeight: $minHeight, tool: $tool)';
 }
 
 
@@ -789,7 +801,7 @@ abstract mixin class _$SearchFilterStateCopyWith<$Res> implements $SearchFilterS
   factory _$SearchFilterStateCopyWith(_SearchFilterState value, $Res Function(_SearchFilterState) _then) = __$SearchFilterStateCopyWithImpl;
 @override @useResult
 $Res call({
- SearchSort sort, SearchTarget target, SearchDatePreset datePreset, DateTime? customStart, DateTime? customEnd, int? bookmarkTotal
+ SearchOrder order, SearchTarget target, SearchNovelTarget novelTarget, SearchDatePreset datePreset, DateTime? customStart, DateTime? customEnd, int? bookmarkTotal, SearchContentType? contentType, SearchRatio? ratio, int? minWidth, int? minHeight, String? tool
 });
 
 
@@ -806,15 +818,21 @@ class __$SearchFilterStateCopyWithImpl<$Res>
 
 /// Create a copy of SearchFilterState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sort = null,Object? target = null,Object? datePreset = null,Object? customStart = freezed,Object? customEnd = freezed,Object? bookmarkTotal = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? order = null,Object? target = null,Object? novelTarget = null,Object? datePreset = null,Object? customStart = freezed,Object? customEnd = freezed,Object? bookmarkTotal = freezed,Object? contentType = freezed,Object? ratio = freezed,Object? minWidth = freezed,Object? minHeight = freezed,Object? tool = freezed,}) {
   return _then(_SearchFilterState(
-sort: null == sort ? _self.sort : sort // ignore: cast_nullable_to_non_nullable
-as SearchSort,target: null == target ? _self.target : target // ignore: cast_nullable_to_non_nullable
-as SearchTarget,datePreset: null == datePreset ? _self.datePreset : datePreset // ignore: cast_nullable_to_non_nullable
+order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
+as SearchOrder,target: null == target ? _self.target : target // ignore: cast_nullable_to_non_nullable
+as SearchTarget,novelTarget: null == novelTarget ? _self.novelTarget : novelTarget // ignore: cast_nullable_to_non_nullable
+as SearchNovelTarget,datePreset: null == datePreset ? _self.datePreset : datePreset // ignore: cast_nullable_to_non_nullable
 as SearchDatePreset,customStart: freezed == customStart ? _self.customStart : customStart // ignore: cast_nullable_to_non_nullable
 as DateTime?,customEnd: freezed == customEnd ? _self.customEnd : customEnd // ignore: cast_nullable_to_non_nullable
 as DateTime?,bookmarkTotal: freezed == bookmarkTotal ? _self.bookmarkTotal : bookmarkTotal // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,contentType: freezed == contentType ? _self.contentType : contentType // ignore: cast_nullable_to_non_nullable
+as SearchContentType?,ratio: freezed == ratio ? _self.ratio : ratio // ignore: cast_nullable_to_non_nullable
+as SearchRatio?,minWidth: freezed == minWidth ? _self.minWidth : minWidth // ignore: cast_nullable_to_non_nullable
+as int?,minHeight: freezed == minHeight ? _self.minHeight : minHeight // ignore: cast_nullable_to_non_nullable
+as int?,tool: freezed == tool ? _self.tool : tool // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

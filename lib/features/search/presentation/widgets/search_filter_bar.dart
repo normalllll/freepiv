@@ -158,12 +158,20 @@ class SearchFilterPanel extends ConsumerStatefulWidget {
 class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
   late SearchFiltersState _filters;
   late SearchDraftState _draft;
+  late final TextEditingController _tool;
 
   @override
   void initState() {
     super.initState();
     _filters = ref.read(searchFiltersProvider);
     _draft = ref.read(searchDraftProvider);
+    _tool = TextEditingController(text: _filters.illust.tool);
+  }
+
+  @override
+  void dispose() {
+    _tool.dispose();
+    super.dispose();
   }
 
   @override
@@ -200,109 +208,198 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
       child: AnimatedSize(
         duration: AppMotion.duration(context, const Duration(milliseconds: 180)),
         alignment: Alignment.topCenter,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Expanded(child: Text(context.t.search.filters.title, style: Theme.of(context).textTheme.titleLarge)),
-                  IconButton(
-                    tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              if (allowTypeSelection) ...[
-                const SizedBox(height: AppMetrics.compactSectionGap),
-                _SectionTitle(icon: Icons.category_outlined, label: context.t.common.type),
-                const SizedBox(height: 8),
-                AppSegmentedButton<SearchType>(
-                  showSelectedIcon: false,
-                  segments: [
-                    ButtonSegment(value: SearchType.illust, icon: const Icon(Icons.image_outlined), label: Text(context.t.search.type.illustManga)),
-                    ButtonSegment(value: SearchType.novel, icon: const Icon(Icons.menu_book_outlined), label: Text(context.t.search.type.novel)),
-                    ButtonSegment(value: SearchType.user, icon: const Icon(Icons.person_outline), label: Text(context.t.search.type.user)),
-                  ],
-                  selected: {activeType},
-                  onSelectionChanged: (selection) => setType(selection.single),
+        // The options scroll; the actions stay pinned below them, so Apply
+        // is visible without scrolling however many groups the panel has.
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(child: Text(context.t.search.filters.title, style: Theme.of(context).textTheme.titleLarge)),
+                IconButton(
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close),
                 ),
               ],
-              if (activeType != SearchType.user) ...[
-                const SizedBox(height: AppMetrics.compactSectionGap),
-                _SectionTitle(icon: Icons.sort_outlined, label: context.t.search.filters.sort),
-                const SizedBox(height: 8),
-                _ChoiceWrap<SearchSort>(
-                  value: activeFilter.sort,
-                  values: SearchSort.values,
-                  labelBuilder: (value) => _sortLabel(context, value),
-                  onSelected: (value) {
-                    setFilter(activeFilter.copyWith(sort: value));
-                  },
-                ),
-                const SizedBox(height: AppMetrics.compactSectionGap),
-                _SectionTitle(icon: Icons.track_changes_outlined, label: context.t.search.filters.target),
-                const SizedBox(height: 8),
-                _ChoiceWrap<SearchTarget>(
-                  value: activeFilter.target,
-                  values: SearchTarget.values,
-                  labelBuilder: (value) => _targetLabel(context, value),
-                  onSelected: (value) {
-                    setFilter(activeFilter.copyWith(target: value));
-                  },
-                ),
-                const SizedBox(height: AppMetrics.compactSectionGap),
-                _SectionTitle(icon: Icons.date_range_outlined, label: context.t.search.filters.date),
-                const SizedBox(height: 8),
-                AppSelect<SearchDatePreset>(
-                  value: activeFilter.datePreset,
-                  items: [for (final value in SearchDatePreset.values) AppSelectItem(value: value, label: _datePresetLabel(context, value))],
-                  onChanged: (value) {
-                    if (value == SearchDatePreset.custom) {
-                      _pickDateRange(context, activeFilter, setFilter);
-                      return;
-                    }
-                    setFilter(activeFilter.copyWith(datePreset: value, customStart: null, customEnd: null));
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(_dateLabel(context, activeFilter), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-                ),
-                const SizedBox(height: AppMetrics.compactSectionGap),
-                _SectionTitle(icon: Icons.bookmark_outline, label: context.t.search.filters.bookmarks),
-                const SizedBox(height: 8),
-                AppSelect<int>(
-                  value: activeFilter.bookmarkTotal ?? 0,
-                  items: [
-                    for (final value in searchBookmarkTotalOptions) AppSelectItem(value: value, label: _bookmarkLabel(context, value == 0 ? null : value)),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (allowTypeSelection) ...[
+                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      _SectionTitle(icon: Icons.category_outlined, label: context.t.common.type),
+                      const SizedBox(height: 8),
+                      AppSegmentedButton<SearchType>(
+                        showSelectedIcon: false,
+                        segments: [
+                          ButtonSegment(value: SearchType.illust, icon: const Icon(Icons.image_outlined), label: Text(context.t.search.type.illustManga)),
+                          ButtonSegment(value: SearchType.novel, icon: const Icon(Icons.menu_book_outlined), label: Text(context.t.search.type.novel)),
+                          ButtonSegment(value: SearchType.user, icon: const Icon(Icons.person_outline), label: Text(context.t.search.type.user)),
+                        ],
+                        selected: {activeType},
+                        onSelectionChanged: (selection) => setType(selection.single),
+                      ),
+                    ],
+                    if (activeType != SearchType.user) ...[
+                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      _SectionTitle(icon: Icons.sort_outlined, label: context.t.search.filters.sort),
+                      const SizedBox(height: 8),
+                      _ChoiceWrap<SearchOrder>(
+                        value: activeFilter.order,
+                        values: SearchOrder.values,
+                        labelBuilder: (value) => _orderLabel(context, value),
+                        onSelected: (value) {
+                          setFilter(activeFilter.copyWith(order: value));
+                        },
+                      ),
+                      if (activeFilter.isPopularPreview)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            context.t.search.filters.previewNote,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          ),
+                        ),
+                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      _SectionTitle(icon: Icons.track_changes_outlined, label: context.t.search.filters.target),
+                      const SizedBox(height: 8),
+                      if (activeType == SearchType.novel)
+                        _ChoiceWrap<SearchNovelTarget>(
+                          value: activeFilter.novelTarget,
+                          values: SearchNovelTarget.values,
+                          labelBuilder: (value) => _novelTargetLabel(context, value),
+                          onSelected: (value) {
+                            setFilter(activeFilter.copyWith(novelTarget: value));
+                          },
+                        )
+                      else
+                        _ChoiceWrap<SearchTarget>(
+                          value: activeFilter.target,
+                          values: SearchTarget.values,
+                          labelBuilder: (value) => _targetLabel(context, value),
+                          onSelected: (value) {
+                            setFilter(activeFilter.copyWith(target: value));
+                          },
+                        ),
+                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      _SectionTitle(icon: Icons.date_range_outlined, label: context.t.search.filters.date),
+                      const SizedBox(height: 8),
+                      AppSelect<SearchDatePreset>(
+                        value: activeFilter.datePreset,
+                        items: [for (final value in SearchDatePreset.values) AppSelectItem(value: value, label: _datePresetLabel(context, value))],
+                        onChanged: (value) {
+                          if (value == SearchDatePreset.custom) {
+                            _pickDateRange(context, activeFilter, setFilter);
+                            return;
+                          }
+                          setFilter(activeFilter.copyWith(datePreset: value, customStart: null, customEnd: null));
+                        },
+                      ),
+                      // Only a custom range has more to say than the select itself.
+                      if (activeFilter.datePreset == SearchDatePreset.custom)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            '${_dateLabel(context, activeFilter)} · ${context.t.search.date.limitHint}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          ),
+                        ),
+                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      _SectionTitle(icon: Icons.bookmark_outline, label: context.t.search.filters.bookmarks),
+                      const SizedBox(height: 8),
+                      AppSelect<int>(
+                        value: activeFilter.bookmarkTotal ?? 0,
+                        items: [
+                          for (final value in searchBookmarkTotalOptions)
+                            AppSelectItem(value: value, label: _bookmarkLabel(context, value == 0 ? null : value)),
+                        ],
+                        onChanged: (value) {
+                          setFilter(activeFilter.copyWith(bookmarkTotal: value == 0 ? null : value));
+                        },
+                      ),
+                    ],
+                    // Only a full illustration search takes these; the popular
+                    // preview and novel search ignore them.
+                    if (activeType == SearchType.illust && !activeFilter.isPopularPreview) ...[
+                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      _SectionTitle(icon: Icons.photo_library_outlined, label: context.t.search.filters.contentType),
+                      const SizedBox(height: 8),
+                      _ChoiceWrap<SearchContentType?>(
+                        value: activeFilter.contentType,
+                        values: const [null, ...SearchContentType.values],
+                        labelBuilder: (value) => _contentTypeLabel(context, value),
+                        onSelected: (value) => setFilter(activeFilter.copyWith(contentType: value)),
+                      ),
+                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      _SectionTitle(icon: Icons.crop_outlined, label: context.t.search.filters.ratio),
+                      const SizedBox(height: 8),
+                      _ChoiceWrap<SearchRatio?>(
+                        value: activeFilter.ratio,
+                        values: const [null, ...SearchRatio.values],
+                        labelBuilder: (value) => _ratioLabel(context, value),
+                        onSelected: (value) => setFilter(activeFilter.copyWith(ratio: value)),
+                      ),
+                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      _SectionTitle(icon: Icons.aspect_ratio_outlined, label: context.t.search.filters.size),
+                      const SizedBox(height: 8),
+                      _ChoiceWrap<int?>(
+                        value: activeFilter.minWidth,
+                        values: const [null, ...searchMinSizeOptions],
+                        labelBuilder: (value) => value == null ? context.t.search.size.any : context.t.search.size.minWidth(px: value),
+                        onSelected: (value) => setFilter(activeFilter.copyWith(minWidth: value)),
+                      ),
+                      const SizedBox(height: 8),
+                      _ChoiceWrap<int?>(
+                        value: activeFilter.minHeight,
+                        values: const [null, ...searchMinSizeOptions],
+                        labelBuilder: (value) => value == null ? context.t.search.size.any : context.t.search.size.minHeight(px: value),
+                        onSelected: (value) => setFilter(activeFilter.copyWith(minHeight: value)),
+                      ),
+                      const SizedBox(height: AppMetrics.compactSectionGap),
+                      _SectionTitle(icon: Icons.brush_outlined, label: context.t.search.filters.tool),
+                      const SizedBox(height: 8),
+                      AppTextField(
+                        controller: _tool,
+                        hintText: context.t.search.filters.toolHint,
+                        onChanged: (value) {
+                          final tool = value.trim();
+                          setFilter(activeFilter.copyWith(tool: tool.isEmpty ? null : tool));
+                        },
+                      ),
+                    ],
                   ],
-                  onChanged: (value) {
-                    setFilter(activeFilter.copyWith(bookmarkTotal: value == 0 ? null : value));
+                ),
+              ),
+            ),
+            const SizedBox(height: AppMetrics.compactSectionGap),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () {
+                    _tool.clear();
+                    setFilter(const SearchFilterState());
                   },
+                  child: Text(context.t.common.reset),
+                ),
+                const Spacer(),
+                TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(context.t.common.cancel)),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: () {
+                    ref.read(searchFiltersProvider.notifier).apply(_filters);
+                    if (allowTypeSelection) ref.read(searchDraftProvider.notifier).setDraft(_draft);
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(context.t.common.apply),
                 ),
               ],
-              const SizedBox(height: AppMetrics.compactSectionGap),
-              Row(
-                children: [
-                  TextButton(onPressed: () => setFilter(const SearchFilterState()), child: Text(context.t.common.reset)),
-                  const Spacer(),
-                  TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(context.t.common.cancel)),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: () {
-                      ref.read(searchFiltersProvider.notifier).apply(_filters);
-                      if (allowTypeSelection) ref.read(searchDraftProvider.notifier).setDraft(_draft);
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(context.t.common.apply),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -316,11 +413,20 @@ class SearchFilterSummary extends ConsumerWidget {
     final type = ref.watch(searchDraftProvider.select((draft) => draft.type));
     final filters = ref.watch(searchFiltersProvider);
     final filter = type == SearchType.novel ? filters.novel : filters.illust;
+    final novel = type == SearchType.novel;
     final labels = [
-      _sortLabel(context, filter.sort),
-      if (filter.target != SearchTarget.partialMatchForTags) _targetLabel(context, filter.target),
+      _orderLabel(context, filter.order),
+      if (novel && filter.novelTarget != SearchNovelTarget.partialMatchForTags) _novelTargetLabel(context, filter.novelTarget),
+      if (!novel && filter.target != SearchTarget.partialMatchForTags) _targetLabel(context, filter.target),
       if (filter.datePreset != SearchDatePreset.any) _dateLabel(context, filter),
       if (filter.bookmarkTotal != null) _bookmarkLabel(context, filter.bookmarkTotal),
+      if (!novel && !filter.isPopularPreview) ...[
+        if (filter.contentType != null) _contentTypeLabel(context, filter.contentType),
+        if (filter.ratio != null) _ratioLabel(context, filter.ratio),
+        if (filter.minWidth != null) context.t.search.size.minWidth(px: filter.minWidth!),
+        if (filter.minHeight != null) context.t.search.size.minHeight(px: filter.minHeight!),
+        if (filter.tool != null) filter.tool!,
+      ],
     ];
     final summary = type == SearchType.user ? '' : labels.join(' · ');
     return SizedBox(
@@ -388,25 +494,61 @@ Future<void> _pickDateRange(BuildContext context, SearchFilterState filter, Valu
   final today = DateTime.now();
   final end = filter.customEnd ?? DateTime(today.year, today.month, today.day);
   final start = filter.customStart ?? end.subtract(const Duration(days: 30));
+  final (initialStart, initialEnd) = clampSearchRange(start, end);
   final picked = await showDateRangePicker(
     context: context,
     firstDate: DateTime(2007),
     lastDate: end.isAfter(today) ? end : today,
-    initialDateRange: DateTimeRange(start: start, end: end),
+    initialDateRange: DateTimeRange(start: initialStart, end: initialEnd),
+    helpText: context.t.search.date.pickerHelp,
   );
 
   if (picked == null) {
     return;
   }
 
-  onChanged(filter.copyWith(datePreset: SearchDatePreset.custom, customStart: picked.start, customEnd: picked.end));
+  // A longer pick is cut to its last year here, so the range shown is the
+  // range searched.
+  final (pickedStart, pickedEnd) = clampSearchRange(picked.start, picked.end);
+  onChanged(filter.copyWith(datePreset: SearchDatePreset.custom, customStart: pickedStart, customEnd: pickedEnd));
 }
 
-String _sortLabel(BuildContext context, SearchSort value) {
+String _orderLabel(BuildContext context, SearchOrder value) {
   return switch (value) {
-    SearchSort.dateDesc => context.t.search.sort.newest,
-    SearchSort.dateAsc => context.t.search.sort.oldest,
-    SearchSort.popularDesc => context.t.search.sort.popular,
+    SearchOrder.newest => context.t.search.sort.newest,
+    SearchOrder.oldest => context.t.search.sort.oldest,
+    SearchOrder.popularPreview => context.t.search.sort.popularPreview,
+  };
+}
+
+String _novelTargetLabel(BuildContext context, SearchNovelTarget value) {
+  return switch (value) {
+    SearchNovelTarget.partialMatchForTags => context.t.search.target.tags,
+    SearchNovelTarget.exactMatchForTags => context.t.search.target.exactTags,
+    SearchNovelTarget.text => context.t.search.target.text,
+    SearchNovelTarget.keyword => context.t.search.target.keyword,
+  };
+}
+
+String _contentTypeLabel(BuildContext context, SearchContentType? value) {
+  final labels = context.t.search.contentType;
+  return switch (value) {
+    null => labels.any,
+    SearchContentType.illust => labels.illust,
+    SearchContentType.manga => labels.manga,
+    SearchContentType.ugoira => labels.ugoira,
+    SearchContentType.illustAndUgoira => labels.illustAndUgoira,
+    SearchContentType.illustAndMangaAndUgoira => labels.all,
+  };
+}
+
+String _ratioLabel(BuildContext context, SearchRatio? value) {
+  final labels = context.t.search.ratio;
+  return switch (value) {
+    null => labels.any,
+    SearchRatio.landscape => labels.landscape,
+    SearchRatio.portrait => labels.portrait,
+    SearchRatio.square => labels.square,
   };
 }
 
@@ -444,5 +586,5 @@ String _bookmarkLabel(BuildContext context, int? value) {
   if (value == null) {
     return context.t.search.bookmarks.any;
   }
-  return context.t.search.bookmarks.atLeast(count: value);
+  return context.t.search.bookmarks.tagged(count: value);
 }

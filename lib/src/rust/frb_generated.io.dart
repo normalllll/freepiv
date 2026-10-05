@@ -333,7 +333,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SearchAiMode dco_decode_box_autoadd_search_ai_mode(dynamic raw);
 
   @protected
+  SearchContentType dco_decode_box_autoadd_search_content_type(dynamic raw);
+
+  @protected
   SearchOptions dco_decode_box_autoadd_search_options(dynamic raw);
+
+  @protected
+  SearchRatio dco_decode_box_autoadd_search_ratio(dynamic raw);
 
   @protected
   Series dco_decode_box_autoadd_series(dynamic raw);
@@ -675,6 +681,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SearchAiMode? dco_decode_opt_box_autoadd_search_ai_mode(dynamic raw);
 
   @protected
+  SearchContentType? dco_decode_opt_box_autoadd_search_content_type(
+    dynamic raw,
+  );
+
+  @protected
+  SearchRatio? dco_decode_opt_box_autoadd_search_ratio(dynamic raw);
+
+  @protected
   Series? dco_decode_opt_box_autoadd_series(dynamic raw);
 
   @protected
@@ -731,13 +745,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SearchAutocompleteResult dco_decode_search_autocomplete_result(dynamic raw);
 
   @protected
+  SearchContentType dco_decode_search_content_type(dynamic raw);
+
+  @protected
   SearchIllustPageResult dco_decode_search_illust_page_result(dynamic raw);
 
   @protected
   SearchNovelPageResult dco_decode_search_novel_page_result(dynamic raw);
 
   @protected
+  SearchNovelTarget dco_decode_search_novel_target(dynamic raw);
+
+  @protected
   SearchOptions dco_decode_search_options(dynamic raw);
+
+  @protected
+  SearchRatio dco_decode_search_ratio(dynamic raw);
 
   @protected
   SearchSort dco_decode_search_sort(dynamic raw);
@@ -1164,9 +1187,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SearchContentType sse_decode_box_autoadd_search_content_type(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SearchOptions sse_decode_box_autoadd_search_options(
     SseDeserializer deserializer,
   );
+
+  @protected
+  SearchRatio sse_decode_box_autoadd_search_ratio(SseDeserializer deserializer);
 
   @protected
   Series sse_decode_box_autoadd_series(SseDeserializer deserializer);
@@ -1582,6 +1613,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SearchContentType? sse_decode_opt_box_autoadd_search_content_type(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SearchRatio? sse_decode_opt_box_autoadd_search_ratio(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   Series? sse_decode_opt_box_autoadd_series(SseDeserializer deserializer);
 
   @protected
@@ -1642,6 +1683,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SearchContentType sse_decode_search_content_type(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SearchIllustPageResult sse_decode_search_illust_page_result(
     SseDeserializer deserializer,
   );
@@ -1652,7 +1698,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  SearchNovelTarget sse_decode_search_novel_target(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SearchOptions sse_decode_search_options(SseDeserializer deserializer);
+
+  @protected
+  SearchRatio sse_decode_search_ratio(SseDeserializer deserializer);
 
   @protected
   SearchSort sse_decode_search_sort(SseDeserializer deserializer);
@@ -2160,8 +2214,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_search_content_type(
+    SearchContentType self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_search_options(
     SearchOptions self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_search_ratio(
+    SearchRatio self,
     SseSerializer serializer,
   );
 
@@ -2685,6 +2751,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_search_content_type(
+    SearchContentType? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_search_ratio(
+    SearchRatio? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_series(
     Series? self,
     SseSerializer serializer,
@@ -2766,6 +2844,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_search_content_type(
+    SearchContentType self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_search_illust_page_result(
     SearchIllustPageResult self,
     SseSerializer serializer,
@@ -2778,7 +2862,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_search_novel_target(
+    SearchNovelTarget self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_search_options(SearchOptions self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_search_ratio(SearchRatio self, SseSerializer serializer);
 
   @protected
   void sse_encode_search_sort(SearchSort self, SseSerializer serializer);

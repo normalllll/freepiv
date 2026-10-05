@@ -128,11 +128,7 @@
     },
     "language": {
       "title": "言語",
-      "systemDefault": "システム設定",
-      "enUs": "English (United States)",
-      "zhCn": "简体中文",
-      "zhTw": "繁體中文",
-      "jaJp": "日本語"
+      "systemDefault": "システム設定"
     },
     "images": {
       "title": "画像",
@@ -324,7 +320,13 @@
       "sort": "並び替え",
       "target": "対象",
       "date": "日付",
-      "bookmarks": "ブックマーク数"
+      "bookmarks": "users入りタグ",
+      "contentType": "作品の種類",
+      "ratio": "構図",
+      "size": "最小サイズ",
+      "tool": "ツール",
+      "toolHint": "例: Photoshop",
+      "previewNote": "人気プレビューはブックマークの多い作品を最大 30 件まで一度だけ表示します。種類・構図・サイズ・ツールの絞り込みは使えません。"
     },
     "type": {
       "illustManga": "イラスト・マンガ",
@@ -334,12 +336,33 @@
     "sort": {
       "newest": "新しい順",
       "oldest": "古い順",
-      "popular": "人気順"
+      "popularPreview": "人気プレビュー"
     },
     "target": {
       "tags": "タグ",
       "exactTags": "完全一致タグ",
-      "titleAndCaption": "タイトル・説明文"
+      "titleAndCaption": "タイトル・説明文",
+      "text": "本文",
+      "keyword": "キーワード"
+    },
+    "contentType": {
+      "any": "指定なし",
+      "illust": "イラスト",
+      "manga": "マンガ",
+      "ugoira": "うごイラ",
+      "illustAndUgoira": "イラスト・うごイラ",
+      "all": "イラスト・マンガ・うごイラ"
+    },
+    "ratio": {
+      "any": "指定なし",
+      "landscape": "横長",
+      "portrait": "縦長",
+      "square": "正方形"
+    },
+    "size": {
+      "any": "指定なし",
+      "minWidth": "幅 ≥ $px px",
+      "minHeight": "高さ ≥ $px px"
     },
     "date": {
       "any": "指定なし",
@@ -348,11 +371,13 @@
       "month1": "1か月",
       "months6": "6か月",
       "year1": "1年",
-      "custom": "カスタム"
+      "custom": "カスタム",
+      "limitHint": "一度の検索は最大 1 年分です。長い期間は直近 1 年に切り詰められます。",
+      "pickerHelp": "期間を選択（最大 1 年）"
     },
     "bookmarks": {
       "any": "指定なし",
-      "atLeast": "$count+ ブックマーク"
+      "tagged": "$count users入り"
     },
     "direct": {
       "illust": "イラスト：$id",
