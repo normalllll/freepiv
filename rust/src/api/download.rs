@@ -284,10 +284,15 @@ impl StreamingChecksum {
     }
 
     fn finish(self) -> Option<String> {
+        // Digest outputs no longer implement `LowerHex` (digest 0.11).
+        fn hex(bytes: &[u8]) -> String {
+            bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+        }
+
         match self {
             Self::None => None,
-            Self::Md5(hasher) => Some(format!("{:x}", hasher.finalize())),
-            Self::Sha256(hasher) => Some(format!("{:x}", hasher.finalize())),
+            Self::Md5(hasher) => Some(hex(&hasher.finalize())),
+            Self::Sha256(hasher) => Some(hex(&hasher.finalize())),
         }
     }
 }

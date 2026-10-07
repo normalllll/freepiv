@@ -12,7 +12,8 @@ part of 'search_history_logic.dart';
 @ProviderFor(SearchHistory)
 final searchHistoryProvider = SearchHistoryProvider._();
 
-final class SearchHistoryProvider extends $NotifierProvider<SearchHistory, List<String>> {
+final class SearchHistoryProvider
+    extends $NotifierProvider<SearchHistory, List<String>> {
   SearchHistoryProvider._()
     : super(
         from: null,
@@ -33,7 +34,10 @@ final class SearchHistoryProvider extends $NotifierProvider<SearchHistory, List<
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(List<String> value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<List<String>>(value));
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<String>>(value),
+    );
   }
 }
 
@@ -45,7 +49,14 @@ abstract class _$SearchHistory extends $Notifier<List<String>> {
   @override
   WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<String>, List<String>>;
-    final element = ref.element as $ClassProviderElement<AnyNotifier<List<String>, List<String>>, List<String>, Object?, Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<List<String>, List<String>>,
+              List<String>,
+              Object?,
+              Object?
+            >;
     return element.handleCreate(ref, build);
   }
 }

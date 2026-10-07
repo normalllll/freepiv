@@ -8,24 +8,24 @@ name = "core"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-flutter_rust_bridge = "=2.13.0"
+flutter_rust_bridge = "=2.14.0-beta.2"
 pixiv_rs = { git = "https://github.com/normalllll/pixiv_rs.git", branch = "main" }
-futures-util = "0.3.32"
-reqwest = { version = "0.13.4", default-features = false, features = ["rustls-no-provider", "stream", "http2", "socks", "system-proxy"] }
+futures-util = "0.3.34"
+reqwest = { version = "0.13.5", default-features = false, features = ["rustls-no-provider", "stream", "http2", "socks", "system-proxy"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 tokio = { version = "1", features = ["fs", "io-util"] }
-md-5 = "0.10.6"
-sha2 = "0.10.9"
+md-5 = "0.11.0"
+sha2 = "0.11.0"
 gif = { version = "0.14.2" }
 image = { version = "0.25.10", default-features = false, features = ["gif", "jpeg", "png", "webp"] }
-zip = { version = "9.0.0-pre2" }
-thiserror = "2.0.18"
+zip = { version = "9.0.0-pre3" }
+thiserror = "2.0.21"
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 wry = "=0.57.0"
-tao = "=0.37.0"
-muda = "=0.19.3"
+tao = "=0.37.1"
+muda = "=0.21.1"
 windows = { version = "=0.62.2", features = ["Win32_Foundation", "Win32_System_Com", "Win32_UI_WindowsAndMessaging"] }
 webview2-com = "=0.39.1"

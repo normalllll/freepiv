@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'download.dart';
@@ -9,6 +9,7 @@ part of 'download.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -20,7 +21,7 @@ mixin _$FrbDownloadBytesEvent {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadBytesEvent);
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadBytesEvent);
 }
 
 
@@ -29,7 +30,7 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'FrbDownloadBytesEvent()';
+    return 'FrbDownloadBytesEvent()';
 }
 
 
@@ -191,16 +192,18 @@ $FrbDownloadBytesEvent_ProgressCopyWith<FrbDownloadBytesEvent_Progress> get copy
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadBytesEvent_Progress&&(identical(other.received, received) || other.received == received)&&(identical(other.total, total) || other.total == total));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadBytesEvent_Progress&&(identical(other.received, received) || other.received == received)&&(identical(other.total, total) || other.total == total));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,received,total);
+int get hashCode {
+    return Object.hash(runtimeType,received,total);
+}
 
 @override
 String toString() {
-  return 'FrbDownloadBytesEvent.progress(received: $received, total: $total)';
+    return 'FrbDownloadBytesEvent.progress(received: $received, total: $total)';
 }
 
 
@@ -258,16 +261,18 @@ $FrbDownloadBytesEvent_DoneCopyWith<FrbDownloadBytesEvent_Done> get copyWith => 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadBytesEvent_Done&&const DeepCollectionEquality().equals(other.bytes, bytes));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadBytesEvent_Done&&const DeepCollectionEquality().equals(other.bytes, bytes));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(bytes));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(bytes));
+}
 
 @override
 String toString() {
-  return 'FrbDownloadBytesEvent.done(bytes: $bytes)';
+    return 'FrbDownloadBytesEvent.done(bytes: $bytes)';
 }
 
 
@@ -314,7 +319,7 @@ mixin _$FrbDownloadFileEvent {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadFileEvent);
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadFileEvent);
 }
 
 
@@ -323,7 +328,7 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'FrbDownloadFileEvent()';
+    return 'FrbDownloadFileEvent()';
 }
 
 
@@ -485,16 +490,18 @@ $FrbDownloadFileEvent_ProgressCopyWith<FrbDownloadFileEvent_Progress> get copyWi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadFileEvent_Progress&&(identical(other.received, received) || other.received == received)&&(identical(other.total, total) || other.total == total));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadFileEvent_Progress&&(identical(other.received, received) || other.received == received)&&(identical(other.total, total) || other.total == total));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,received,total);
+int get hashCode {
+    return Object.hash(runtimeType,received,total);
+}
 
 @override
 String toString() {
-  return 'FrbDownloadFileEvent.progress(received: $received, total: $total)';
+    return 'FrbDownloadFileEvent.progress(received: $received, total: $total)';
 }
 
 
@@ -552,16 +559,18 @@ $FrbDownloadFileEvent_DoneCopyWith<FrbDownloadFileEvent_Done> get copyWith => _$
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadFileEvent_Done&&(identical(other.path, path) || other.path == path));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is FrbDownloadFileEvent_Done&&(identical(other.path, path) || other.path == path));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,path);
+int get hashCode {
+    return Object.hash(runtimeType,path);
+}
 
 @override
 String toString() {
-  return 'FrbDownloadFileEvent.done(path: $path)';
+    return 'FrbDownloadFileEvent.done(path: $path)';
 }
 
 

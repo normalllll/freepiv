@@ -12,17 +12,33 @@ part of 'logic.dart';
 @ProviderFor(fanboxStore)
 final fanboxStoreProvider = FanboxStoreProvider._();
 
-final class FanboxStoreProvider extends $FunctionalProvider<AsyncValue<Box<String>>, Box<String>, FutureOr<Box<String>>>
+final class FanboxStoreProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Box<String>>,
+          Box<String>,
+          FutureOr<Box<String>>
+        >
     with $FutureModifier<Box<String>>, $FutureProvider<Box<String>> {
   FanboxStoreProvider._()
-    : super(from: null, argument: null, retry: null, name: r'fanboxStoreProvider', isAutoDispose: false, dependencies: null, $allTransitiveDependencies: null);
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'fanboxStoreProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$fanboxStoreHash();
 
   @$internal
   @override
-  $FutureProviderElement<Box<String>> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+  $FutureProviderElement<Box<String>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<Box<String>> create(Ref ref) {
@@ -35,9 +51,18 @@ String _$fanboxStoreHash() => r'a844f699d5d618cfa2e7a91cb5fc6b9e894e7c94';
 @ProviderFor(FanboxOperation)
 final fanboxOperationProvider = FanboxOperationFamily._();
 
-final class FanboxOperationProvider extends $AsyncNotifierProvider<FanboxOperation, void> {
-  FanboxOperationProvider._({required FanboxOperationFamily super.from, required String super.argument})
-    : super(retry: null, name: r'fanboxOperationProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+final class FanboxOperationProvider
+    extends $AsyncNotifierProvider<FanboxOperation, void> {
+  FanboxOperationProvider._({
+    required FanboxOperationFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'fanboxOperationProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$fanboxOperationHash();
@@ -66,10 +91,26 @@ final class FanboxOperationProvider extends $AsyncNotifierProvider<FanboxOperati
 
 String _$fanboxOperationHash() => r'679604249499d6f67b27ea720fb7864b23d0f5e8';
 
-final class FanboxOperationFamily extends $Family with $ClassFamilyOverride<FanboxOperation, AsyncValue<void>, void, FutureOr<void>, String> {
-  FanboxOperationFamily._() : super(retry: null, name: r'fanboxOperationProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+final class FanboxOperationFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          FanboxOperation,
+          AsyncValue<void>,
+          void,
+          FutureOr<void>,
+          String
+        > {
+  FanboxOperationFamily._()
+    : super(
+        retry: null,
+        name: r'fanboxOperationProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  FanboxOperationProvider call(String scope) => FanboxOperationProvider._(argument: scope, from: this);
+  FanboxOperationProvider call(String scope) =>
+      FanboxOperationProvider._(argument: scope, from: this);
 
   @override
   String toString() => r'fanboxOperationProvider';
@@ -84,7 +125,14 @@ abstract class _$FanboxOperation extends $AsyncNotifier<void> {
   @override
   WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<void>, void>;
-    final element = ref.element as $ClassProviderElement<AnyNotifier<AsyncValue<void>, void>, AsyncValue<void>, Object?, Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<void>, void>,
+              AsyncValue<void>,
+              Object?,
+              Object?
+            >;
     return element.handleCreate(ref, () => build(_$args));
   }
 }
@@ -92,7 +140,8 @@ abstract class _$FanboxOperation extends $AsyncNotifier<void> {
 @ProviderFor(FanboxSession)
 final fanboxSessionProvider = FanboxSessionProvider._();
 
-final class FanboxSessionProvider extends $AsyncNotifierProvider<FanboxSession, String?> {
+final class FanboxSessionProvider
+    extends $AsyncNotifierProvider<FanboxSession, String?> {
   FanboxSessionProvider._()
     : super(
         from: null,
@@ -120,7 +169,14 @@ abstract class _$FanboxSession extends $AsyncNotifier<String?> {
   @override
   WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<String?>, String?>;
-    final element = ref.element as $ClassProviderElement<AnyNotifier<AsyncValue<String?>, String?>, AsyncValue<String?>, Object?, Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<String?>, String?>,
+              AsyncValue<String?>,
+              Object?,
+              Object?
+            >;
     return element.handleCreate(ref, build);
   }
 }
@@ -128,17 +184,32 @@ abstract class _$FanboxSession extends $AsyncNotifier<String?> {
 @ProviderFor(fanboxApi)
 final fanboxApiProvider = FanboxApiProvider._();
 
-final class FanboxApiProvider extends $FunctionalProvider<AsyncValue<FanboxApi>, FanboxApi, FutureOr<FanboxApi>>
+final class FanboxApiProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<FanboxApi>,
+          FanboxApi,
+          FutureOr<FanboxApi>
+        >
     with $FutureModifier<FanboxApi>, $FutureProvider<FanboxApi> {
   FanboxApiProvider._()
-    : super(from: null, argument: null, retry: null, name: r'fanboxApiProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'fanboxApiProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$fanboxApiHash();
 
   @$internal
   @override
-  $FutureProviderElement<FanboxApi> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+  $FutureProviderElement<FanboxApi> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
   FutureOr<FanboxApi> create(Ref ref) {
@@ -151,7 +222,8 @@ String _$fanboxApiHash() => r'3d3a779204f1947750e5a7c2efefbb4a6de4205d';
 @ProviderFor(FanboxBrowseSelection)
 final fanboxBrowseSelectionProvider = FanboxBrowseSelectionProvider._();
 
-final class FanboxBrowseSelectionProvider extends $NotifierProvider<FanboxBrowseSelection, FanboxLocation> {
+final class FanboxBrowseSelectionProvider
+    extends $NotifierProvider<FanboxBrowseSelection, FanboxLocation> {
   FanboxBrowseSelectionProvider._()
     : super(
         from: null,
@@ -172,11 +244,15 @@ final class FanboxBrowseSelectionProvider extends $NotifierProvider<FanboxBrowse
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(FanboxLocation value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<FanboxLocation>(value));
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FanboxLocation>(value),
+    );
   }
 }
 
-String _$fanboxBrowseSelectionHash() => r'18194c2c8a978ca1495e55a3da3cb013efac98a2';
+String _$fanboxBrowseSelectionHash() =>
+    r'18194c2c8a978ca1495e55a3da3cb013efac98a2';
 
 abstract class _$FanboxBrowseSelection extends $Notifier<FanboxLocation> {
   FanboxLocation build();
@@ -184,7 +260,14 @@ abstract class _$FanboxBrowseSelection extends $Notifier<FanboxLocation> {
   @override
   WhenComplete runBuild() {
     final ref = this.ref as $Ref<FanboxLocation, FanboxLocation>;
-    final element = ref.element as $ClassProviderElement<AnyNotifier<FanboxLocation, FanboxLocation>, FanboxLocation, Object?, Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<FanboxLocation, FanboxLocation>,
+              FanboxLocation,
+              Object?,
+              Object?
+            >;
     return element.handleCreate(ref, build);
   }
 }
@@ -192,9 +275,18 @@ abstract class _$FanboxBrowseSelection extends $Notifier<FanboxLocation> {
 @ProviderFor(FanboxBrowse)
 final fanboxBrowseProvider = FanboxBrowseFamily._();
 
-final class FanboxBrowseProvider extends $AsyncNotifierProvider<FanboxBrowse, FanboxCollection> {
-  FanboxBrowseProvider._({required FanboxBrowseFamily super.from, required FanboxLocation super.argument})
-    : super(retry: null, name: r'fanboxBrowseProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+final class FanboxBrowseProvider
+    extends $AsyncNotifierProvider<FanboxBrowse, FanboxCollection> {
+  FanboxBrowseProvider._({
+    required FanboxBrowseFamily super.from,
+    required FanboxLocation super.argument,
+  }) : super(
+         retry: null,
+         name: r'fanboxBrowseProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$fanboxBrowseHash();
@@ -224,10 +316,25 @@ final class FanboxBrowseProvider extends $AsyncNotifierProvider<FanboxBrowse, Fa
 String _$fanboxBrowseHash() => r'195df43046f4e495777f35a74aabe649b4b1a936';
 
 final class FanboxBrowseFamily extends $Family
-    with $ClassFamilyOverride<FanboxBrowse, AsyncValue<FanboxCollection>, FanboxCollection, FutureOr<FanboxCollection>, FanboxLocation> {
-  FanboxBrowseFamily._() : super(retry: null, name: r'fanboxBrowseProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+    with
+        $ClassFamilyOverride<
+          FanboxBrowse,
+          AsyncValue<FanboxCollection>,
+          FanboxCollection,
+          FutureOr<FanboxCollection>,
+          FanboxLocation
+        > {
+  FanboxBrowseFamily._()
+    : super(
+        retry: null,
+        name: r'fanboxBrowseProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  FanboxBrowseProvider call(FanboxLocation location) => FanboxBrowseProvider._(argument: location, from: this);
+  FanboxBrowseProvider call(FanboxLocation location) =>
+      FanboxBrowseProvider._(argument: location, from: this);
 
   @override
   String toString() => r'fanboxBrowseProvider';
@@ -241,9 +348,16 @@ abstract class _$FanboxBrowse extends $AsyncNotifier<FanboxCollection> {
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<FanboxCollection>, FanboxCollection>;
+    final ref =
+        this.ref as $Ref<AsyncValue<FanboxCollection>, FanboxCollection>;
     final element =
-        ref.element as $ClassProviderElement<AnyNotifier<AsyncValue<FanboxCollection>, FanboxCollection>, AsyncValue<FanboxCollection>, Object?, Object?>;
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<FanboxCollection>, FanboxCollection>,
+              AsyncValue<FanboxCollection>,
+              Object?,
+              Object?
+            >;
     return element.handleCreate(ref, () => build(_$args));
   }
 }
@@ -251,10 +365,24 @@ abstract class _$FanboxBrowse extends $AsyncNotifier<FanboxCollection> {
 @ProviderFor(fanboxPost)
 final fanboxPostProvider = FanboxPostFamily._();
 
-final class FanboxPostProvider extends $FunctionalProvider<AsyncValue<FanboxPost>, FanboxPost, FutureOr<FanboxPost>>
+final class FanboxPostProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<FanboxPost>,
+          FanboxPost,
+          FutureOr<FanboxPost>
+        >
     with $FutureModifier<FanboxPost>, $FutureProvider<FanboxPost> {
-  FanboxPostProvider._({required FanboxPostFamily super.from, required String super.argument})
-    : super(retry: null, name: r'fanboxPostProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+  FanboxPostProvider._({
+    required FanboxPostFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'fanboxPostProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$fanboxPostHash();
@@ -268,7 +396,8 @@ final class FanboxPostProvider extends $FunctionalProvider<AsyncValue<FanboxPost
 
   @$internal
   @override
-  $FutureProviderElement<FanboxPost> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+  $FutureProviderElement<FanboxPost> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
   FutureOr<FanboxPost> create(Ref ref) {
@@ -289,10 +418,19 @@ final class FanboxPostProvider extends $FunctionalProvider<AsyncValue<FanboxPost
 
 String _$fanboxPostHash() => r'c9470c7f1893efa7ef0ccbfcca41090a02f791bf';
 
-final class FanboxPostFamily extends $Family with $FunctionalFamilyOverride<FutureOr<FanboxPost>, String> {
-  FanboxPostFamily._() : super(retry: null, name: r'fanboxPostProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+final class FanboxPostFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<FanboxPost>, String> {
+  FanboxPostFamily._()
+    : super(
+        retry: null,
+        name: r'fanboxPostProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  FanboxPostProvider call(String id) => FanboxPostProvider._(argument: id, from: this);
+  FanboxPostProvider call(String id) =>
+      FanboxPostProvider._(argument: id, from: this);
 
   @override
   String toString() => r'fanboxPostProvider';
@@ -301,10 +439,24 @@ final class FanboxPostFamily extends $Family with $FunctionalFamilyOverride<Futu
 @ProviderFor(fanboxCreator)
 final fanboxCreatorProvider = FanboxCreatorFamily._();
 
-final class FanboxCreatorProvider extends $FunctionalProvider<AsyncValue<FanboxCreator>, FanboxCreator, FutureOr<FanboxCreator>>
+final class FanboxCreatorProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<FanboxCreator>,
+          FanboxCreator,
+          FutureOr<FanboxCreator>
+        >
     with $FutureModifier<FanboxCreator>, $FutureProvider<FanboxCreator> {
-  FanboxCreatorProvider._({required FanboxCreatorFamily super.from, required String super.argument})
-    : super(retry: null, name: r'fanboxCreatorProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+  FanboxCreatorProvider._({
+    required FanboxCreatorFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'fanboxCreatorProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$fanboxCreatorHash();
@@ -318,7 +470,9 @@ final class FanboxCreatorProvider extends $FunctionalProvider<AsyncValue<FanboxC
 
   @$internal
   @override
-  $FutureProviderElement<FanboxCreator> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+  $FutureProviderElement<FanboxCreator> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<FanboxCreator> create(Ref ref) {
@@ -339,10 +493,19 @@ final class FanboxCreatorProvider extends $FunctionalProvider<AsyncValue<FanboxC
 
 String _$fanboxCreatorHash() => r'ad01f5c0ea5ac93a767e536584704a41277566a9';
 
-final class FanboxCreatorFamily extends $Family with $FunctionalFamilyOverride<FutureOr<FanboxCreator>, String> {
-  FanboxCreatorFamily._() : super(retry: null, name: r'fanboxCreatorProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+final class FanboxCreatorFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<FanboxCreator>, String> {
+  FanboxCreatorFamily._()
+    : super(
+        retry: null,
+        name: r'fanboxCreatorProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  FanboxCreatorProvider call(String id) => FanboxCreatorProvider._(argument: id, from: this);
+  FanboxCreatorProvider call(String id) =>
+      FanboxCreatorProvider._(argument: id, from: this);
 
   @override
   String toString() => r'fanboxCreatorProvider';
@@ -351,10 +514,24 @@ final class FanboxCreatorFamily extends $Family with $FunctionalFamilyOverride<F
 @ProviderFor(fanboxPlans)
 final fanboxPlansProvider = FanboxPlansFamily._();
 
-final class FanboxPlansProvider extends $FunctionalProvider<AsyncValue<List<FanboxPlan>>, List<FanboxPlan>, FutureOr<List<FanboxPlan>>>
+final class FanboxPlansProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<FanboxPlan>>,
+          List<FanboxPlan>,
+          FutureOr<List<FanboxPlan>>
+        >
     with $FutureModifier<List<FanboxPlan>>, $FutureProvider<List<FanboxPlan>> {
-  FanboxPlansProvider._({required FanboxPlansFamily super.from, required String super.argument})
-    : super(retry: null, name: r'fanboxPlansProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+  FanboxPlansProvider._({
+    required FanboxPlansFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'fanboxPlansProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$fanboxPlansHash();
@@ -368,7 +545,9 @@ final class FanboxPlansProvider extends $FunctionalProvider<AsyncValue<List<Fanb
 
   @$internal
   @override
-  $FutureProviderElement<List<FanboxPlan>> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+  $FutureProviderElement<List<FanboxPlan>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<List<FanboxPlan>> create(Ref ref) {
@@ -389,10 +568,19 @@ final class FanboxPlansProvider extends $FunctionalProvider<AsyncValue<List<Fanb
 
 String _$fanboxPlansHash() => r'7ecf8b3a34aa7ecd41ecac85b148f6c60178b796';
 
-final class FanboxPlansFamily extends $Family with $FunctionalFamilyOverride<FutureOr<List<FanboxPlan>>, String> {
-  FanboxPlansFamily._() : super(retry: null, name: r'fanboxPlansProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+final class FanboxPlansFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<FanboxPlan>>, String> {
+  FanboxPlansFamily._()
+    : super(
+        retry: null,
+        name: r'fanboxPlansProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  FanboxPlansProvider call(String creatorId) => FanboxPlansProvider._(argument: creatorId, from: this);
+  FanboxPlansProvider call(String creatorId) =>
+      FanboxPlansProvider._(argument: creatorId, from: this);
 
   @override
   String toString() => r'fanboxPlansProvider';
@@ -401,10 +589,24 @@ final class FanboxPlansFamily extends $Family with $FunctionalFamilyOverride<Fut
 @ProviderFor(fanboxTags)
 final fanboxTagsProvider = FanboxTagsFamily._();
 
-final class FanboxTagsProvider extends $FunctionalProvider<AsyncValue<List<FanboxTag>>, List<FanboxTag>, FutureOr<List<FanboxTag>>>
+final class FanboxTagsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<FanboxTag>>,
+          List<FanboxTag>,
+          FutureOr<List<FanboxTag>>
+        >
     with $FutureModifier<List<FanboxTag>>, $FutureProvider<List<FanboxTag>> {
-  FanboxTagsProvider._({required FanboxTagsFamily super.from, required String super.argument})
-    : super(retry: null, name: r'fanboxTagsProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+  FanboxTagsProvider._({
+    required FanboxTagsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'fanboxTagsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$fanboxTagsHash();
@@ -418,7 +620,9 @@ final class FanboxTagsProvider extends $FunctionalProvider<AsyncValue<List<Fanbo
 
   @$internal
   @override
-  $FutureProviderElement<List<FanboxTag>> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+  $FutureProviderElement<List<FanboxTag>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<List<FanboxTag>> create(Ref ref) {
@@ -439,10 +643,19 @@ final class FanboxTagsProvider extends $FunctionalProvider<AsyncValue<List<Fanbo
 
 String _$fanboxTagsHash() => r'ea701ef689797ee391d842ba58c6e04689111174';
 
-final class FanboxTagsFamily extends $Family with $FunctionalFamilyOverride<FutureOr<List<FanboxTag>>, String> {
-  FanboxTagsFamily._() : super(retry: null, name: r'fanboxTagsProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+final class FanboxTagsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<FanboxTag>>, String> {
+  FanboxTagsFamily._()
+    : super(
+        retry: null,
+        name: r'fanboxTagsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  FanboxTagsProvider call(String creatorId) => FanboxTagsProvider._(argument: creatorId, from: this);
+  FanboxTagsProvider call(String creatorId) =>
+      FanboxTagsProvider._(argument: creatorId, from: this);
 
   @override
   String toString() => r'fanboxTagsProvider';
@@ -451,10 +664,24 @@ final class FanboxTagsFamily extends $Family with $FunctionalFamilyOverride<Futu
 @ProviderFor(fanboxSupport)
 final fanboxSupportProvider = FanboxSupportFamily._();
 
-final class FanboxSupportProvider extends $FunctionalProvider<AsyncValue<FanboxSupport>, FanboxSupport, FutureOr<FanboxSupport>>
+final class FanboxSupportProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<FanboxSupport>,
+          FanboxSupport,
+          FutureOr<FanboxSupport>
+        >
     with $FutureModifier<FanboxSupport>, $FutureProvider<FanboxSupport> {
-  FanboxSupportProvider._({required FanboxSupportFamily super.from, required String super.argument})
-    : super(retry: null, name: r'fanboxSupportProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+  FanboxSupportProvider._({
+    required FanboxSupportFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'fanboxSupportProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$fanboxSupportHash();
@@ -468,7 +695,9 @@ final class FanboxSupportProvider extends $FunctionalProvider<AsyncValue<FanboxS
 
   @$internal
   @override
-  $FutureProviderElement<FanboxSupport> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+  $FutureProviderElement<FanboxSupport> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<FanboxSupport> create(Ref ref) {
@@ -489,10 +718,19 @@ final class FanboxSupportProvider extends $FunctionalProvider<AsyncValue<FanboxS
 
 String _$fanboxSupportHash() => r'ee5ebab2f04a350ee4f4d3fd1999f6dade3651d9';
 
-final class FanboxSupportFamily extends $Family with $FunctionalFamilyOverride<FutureOr<FanboxSupport>, String> {
-  FanboxSupportFamily._() : super(retry: null, name: r'fanboxSupportProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+final class FanboxSupportFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<FanboxSupport>, String> {
+  FanboxSupportFamily._()
+    : super(
+        retry: null,
+        name: r'fanboxSupportProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  FanboxSupportProvider call(String creatorId) => FanboxSupportProvider._(argument: creatorId, from: this);
+  FanboxSupportProvider call(String creatorId) =>
+      FanboxSupportProvider._(argument: creatorId, from: this);
 
   @override
   String toString() => r'fanboxSupportProvider';
@@ -501,10 +739,24 @@ final class FanboxSupportFamily extends $Family with $FunctionalFamilyOverride<F
 @ProviderFor(fanboxMedia)
 final fanboxMediaProvider = FanboxMediaFamily._();
 
-final class FanboxMediaProvider extends $FunctionalProvider<AsyncValue<Uint8List>, Uint8List, FutureOr<Uint8List>>
+final class FanboxMediaProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Uint8List>,
+          Uint8List,
+          FutureOr<Uint8List>
+        >
     with $FutureModifier<Uint8List>, $FutureProvider<Uint8List> {
-  FanboxMediaProvider._({required FanboxMediaFamily super.from, required String super.argument})
-    : super(retry: null, name: r'fanboxMediaProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+  FanboxMediaProvider._({
+    required FanboxMediaFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'fanboxMediaProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$fanboxMediaHash();
@@ -518,7 +770,8 @@ final class FanboxMediaProvider extends $FunctionalProvider<AsyncValue<Uint8List
 
   @$internal
   @override
-  $FutureProviderElement<Uint8List> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+  $FutureProviderElement<Uint8List> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
   FutureOr<Uint8List> create(Ref ref) {
@@ -539,10 +792,19 @@ final class FanboxMediaProvider extends $FunctionalProvider<AsyncValue<Uint8List
 
 String _$fanboxMediaHash() => r'4500560c95fadb3c7b00960d4e902aba0d8b003a';
 
-final class FanboxMediaFamily extends $Family with $FunctionalFamilyOverride<FutureOr<Uint8List>, String> {
-  FanboxMediaFamily._() : super(retry: null, name: r'fanboxMediaProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+final class FanboxMediaFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<Uint8List>, String> {
+  FanboxMediaFamily._()
+    : super(
+        retry: null,
+        name: r'fanboxMediaProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  FanboxMediaProvider call(String url) => FanboxMediaProvider._(argument: url, from: this);
+  FanboxMediaProvider call(String url) =>
+      FanboxMediaProvider._(argument: url, from: this);
 
   @override
   String toString() => r'fanboxMediaProvider';
@@ -551,9 +813,18 @@ final class FanboxMediaFamily extends $Family with $FunctionalFamilyOverride<Fut
 @ProviderFor(FanboxComments)
 final fanboxCommentsProvider = FanboxCommentsFamily._();
 
-final class FanboxCommentsProvider extends $AsyncNotifierProvider<FanboxComments, FanboxCommentPage> {
-  FanboxCommentsProvider._({required FanboxCommentsFamily super.from, required String super.argument})
-    : super(retry: null, name: r'fanboxCommentsProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+final class FanboxCommentsProvider
+    extends $AsyncNotifierProvider<FanboxComments, FanboxCommentPage> {
+  FanboxCommentsProvider._({
+    required FanboxCommentsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'fanboxCommentsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$fanboxCommentsHash();
@@ -583,10 +854,25 @@ final class FanboxCommentsProvider extends $AsyncNotifierProvider<FanboxComments
 String _$fanboxCommentsHash() => r'f7f0c19323095720a10364881c910857aa78c2a9';
 
 final class FanboxCommentsFamily extends $Family
-    with $ClassFamilyOverride<FanboxComments, AsyncValue<FanboxCommentPage>, FanboxCommentPage, FutureOr<FanboxCommentPage>, String> {
-  FanboxCommentsFamily._() : super(retry: null, name: r'fanboxCommentsProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+    with
+        $ClassFamilyOverride<
+          FanboxComments,
+          AsyncValue<FanboxCommentPage>,
+          FanboxCommentPage,
+          FutureOr<FanboxCommentPage>,
+          String
+        > {
+  FanboxCommentsFamily._()
+    : super(
+        retry: null,
+        name: r'fanboxCommentsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  FanboxCommentsProvider call(String postId) => FanboxCommentsProvider._(argument: postId, from: this);
+  FanboxCommentsProvider call(String postId) =>
+      FanboxCommentsProvider._(argument: postId, from: this);
 
   @override
   String toString() => r'fanboxCommentsProvider';
@@ -600,9 +886,16 @@ abstract class _$FanboxComments extends $AsyncNotifier<FanboxCommentPage> {
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<FanboxCommentPage>, FanboxCommentPage>;
+    final ref =
+        this.ref as $Ref<AsyncValue<FanboxCommentPage>, FanboxCommentPage>;
     final element =
-        ref.element as $ClassProviderElement<AnyNotifier<AsyncValue<FanboxCommentPage>, FanboxCommentPage>, AsyncValue<FanboxCommentPage>, Object?, Object?>;
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<FanboxCommentPage>, FanboxCommentPage>,
+              AsyncValue<FanboxCommentPage>,
+              Object?,
+              Object?
+            >;
     return element.handleCreate(ref, () => build(_$args));
   }
 }
@@ -610,7 +903,8 @@ abstract class _$FanboxComments extends $AsyncNotifier<FanboxCommentPage> {
 @ProviderFor(FanboxBookmarks)
 final fanboxBookmarksProvider = FanboxBookmarksProvider._();
 
-final class FanboxBookmarksProvider extends $AsyncNotifierProvider<FanboxBookmarks, List<String>> {
+final class FanboxBookmarksProvider
+    extends $AsyncNotifierProvider<FanboxBookmarks, List<String>> {
   FanboxBookmarksProvider._()
     : super(
         from: null,
@@ -638,7 +932,14 @@ abstract class _$FanboxBookmarks extends $AsyncNotifier<List<String>> {
   @override
   WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<List<String>>, List<String>>;
-    final element = ref.element as $ClassProviderElement<AnyNotifier<AsyncValue<List<String>>, List<String>>, AsyncValue<List<String>>, Object?, Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<String>>, List<String>>,
+              AsyncValue<List<String>>,
+              Object?,
+              Object?
+            >;
     return element.handleCreate(ref, build);
   }
 }
@@ -659,7 +960,8 @@ final fanboxDownloadsProvider = FanboxDownloadsProvider._();
 /// queueing each post's files as soon as the post is read. The state is the
 /// creators still being collected, by creator id, with how many posts were
 /// read so far.
-final class FanboxDownloadsProvider extends $NotifierProvider<FanboxDownloads, Map<String, FanboxCollecting>> {
+final class FanboxDownloadsProvider
+    extends $NotifierProvider<FanboxDownloads, Map<String, FanboxCollecting>> {
   /// FANBOX downloads, run by the download manager like every other download.
   ///
   /// Downloading a creator whole first collects their posts page by page,
@@ -686,7 +988,12 @@ final class FanboxDownloadsProvider extends $NotifierProvider<FanboxDownloads, M
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(Map<String, FanboxCollecting> value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<Map<String, FanboxCollecting>>(value));
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Map<String, FanboxCollecting>>(
+        value,
+      ),
+    );
   }
 }
 
@@ -699,16 +1006,25 @@ String _$fanboxDownloadsHash() => r'6fc0b8dfe277a56631c67caad383d735a6cf3582';
 /// creators still being collected, by creator id, with how many posts were
 /// read so far.
 
-abstract class _$FanboxDownloads extends $Notifier<Map<String, FanboxCollecting>> {
+abstract class _$FanboxDownloads
+    extends $Notifier<Map<String, FanboxCollecting>> {
   Map<String, FanboxCollecting> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<Map<String, FanboxCollecting>, Map<String, FanboxCollecting>>;
+    final ref =
+        this.ref
+            as $Ref<
+              Map<String, FanboxCollecting>,
+              Map<String, FanboxCollecting>
+            >;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<Map<String, FanboxCollecting>, Map<String, FanboxCollecting>>,
+              AnyNotifier<
+                Map<String, FanboxCollecting>,
+                Map<String, FanboxCollecting>
+              >,
               Map<String, FanboxCollecting>,
               Object?,
               Object?

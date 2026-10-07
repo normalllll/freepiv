@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'models.dart';
@@ -9,6 +9,7 @@ part of 'models.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $LocalUserCopyWith<LocalUser> get copyWith => _$LocalUserCopyWithImpl<LocalUser>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LocalUser&&(identical(other.profileImageUrls, profileImageUrls) || other.profileImageUrls == profileImageUrls)&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.account, account) || other.account == account)&&(identical(other.mailAddress, mailAddress) || other.mailAddress == mailAddress)&&(identical(other.isPremium, isPremium) || other.isPremium == isPremium)&&(identical(other.xRestrict, xRestrict) || other.xRestrict == xRestrict)&&(identical(other.isMailAuthorized, isMailAuthorized) || other.isMailAuthorized == isMailAuthorized)&&(identical(other.requirePolicyAgreement, requirePolicyAgreement) || other.requirePolicyAgreement == requirePolicyAgreement));
+  final _this = this as LocalUser;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LocalUser&&(identical(other.profileImageUrls, _this.profileImageUrls) || other.profileImageUrls == _this.profileImageUrls)&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.account, _this.account) || other.account == _this.account)&&(identical(other.mailAddress, _this.mailAddress) || other.mailAddress == _this.mailAddress)&&(identical(other.isPremium, _this.isPremium) || other.isPremium == _this.isPremium)&&(identical(other.xRestrict, _this.xRestrict) || other.xRestrict == _this.xRestrict)&&(identical(other.isMailAuthorized, _this.isMailAuthorized) || other.isMailAuthorized == _this.isMailAuthorized)&&(identical(other.requirePolicyAgreement, _this.requirePolicyAgreement) || other.requirePolicyAgreement == _this.requirePolicyAgreement));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,profileImageUrls,id,name,account,mailAddress,isPremium,xRestrict,isMailAuthorized,requirePolicyAgreement);
+int get hashCode {
+  final _this = this as LocalUser;
+  return Object.hash(runtimeType,_this.profileImageUrls,_this.id,_this.name,_this.account,_this.mailAddress,_this.isPremium,_this.xRestrict,_this.isMailAuthorized,_this.requirePolicyAgreement);
+}
 
 @override
 String toString() {
-  return 'LocalUser(profileImageUrls: $profileImageUrls, id: $id, name: $name, account: $account, mailAddress: $mailAddress, isPremium: $isPremium, xRestrict: $xRestrict, isMailAuthorized: $isMailAuthorized, requirePolicyAgreement: $requirePolicyAgreement)';
+  final _this = this as LocalUser;
+  return 'LocalUser(profileImageUrls: ${_this.profileImageUrls}, id: ${_this.id}, name: ${_this.name}, account: ${_this.account}, mailAddress: ${_this.mailAddress}, isPremium: ${_this.isPremium}, xRestrict: ${_this.xRestrict}, isMailAuthorized: ${_this.isMailAuthorized}, requirePolicyAgreement: ${_this.requirePolicyAgreement})';
 }
 
 
@@ -66,7 +72,7 @@ class _$LocalUserCopyWithImpl<$Res>
 /// Create a copy of LocalUser
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? profileImageUrls = null,Object? id = null,Object? name = null,Object? account = null,Object? mailAddress = null,Object? isPremium = null,Object? xRestrict = null,Object? isMailAuthorized = null,Object? requirePolicyAgreement = null,}) {
-  return _then(_self.copyWith(
+  return _then(LocalUser(
 profileImageUrls: null == profileImageUrls ? _self.profileImageUrls : profileImageUrls // ignore: cast_nullable_to_non_nullable
 as LocalUserProfileImageUrls,id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -246,16 +252,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LocalUser&&(identical(other.profileImageUrls, profileImageUrls) || other.profileImageUrls == profileImageUrls)&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.account, account) || other.account == account)&&(identical(other.mailAddress, mailAddress) || other.mailAddress == mailAddress)&&(identical(other.isPremium, isPremium) || other.isPremium == isPremium)&&(identical(other.xRestrict, xRestrict) || other.xRestrict == xRestrict)&&(identical(other.isMailAuthorized, isMailAuthorized) || other.isMailAuthorized == isMailAuthorized)&&(identical(other.requirePolicyAgreement, requirePolicyAgreement) || other.requirePolicyAgreement == requirePolicyAgreement));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LocalUser&&(identical(other.profileImageUrls, profileImageUrls) || other.profileImageUrls == profileImageUrls)&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.account, account) || other.account == account)&&(identical(other.mailAddress, mailAddress) || other.mailAddress == mailAddress)&&(identical(other.isPremium, isPremium) || other.isPremium == isPremium)&&(identical(other.xRestrict, xRestrict) || other.xRestrict == xRestrict)&&(identical(other.isMailAuthorized, isMailAuthorized) || other.isMailAuthorized == isMailAuthorized)&&(identical(other.requirePolicyAgreement, requirePolicyAgreement) || other.requirePolicyAgreement == requirePolicyAgreement));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,profileImageUrls,id,name,account,mailAddress,isPremium,xRestrict,isMailAuthorized,requirePolicyAgreement);
+int get hashCode {
+    return Object.hash(runtimeType,profileImageUrls,id,name,account,mailAddress,isPremium,xRestrict,isMailAuthorized,requirePolicyAgreement);
+}
 
 @override
 String toString() {
-  return 'LocalUser(profileImageUrls: $profileImageUrls, id: $id, name: $name, account: $account, mailAddress: $mailAddress, isPremium: $isPremium, xRestrict: $xRestrict, isMailAuthorized: $isMailAuthorized, requirePolicyAgreement: $requirePolicyAgreement)';
+    return 'LocalUser(profileImageUrls: $profileImageUrls, id: $id, name: $name, account: $account, mailAddress: $mailAddress, isPremium: $isPremium, xRestrict: $xRestrict, isMailAuthorized: $isMailAuthorized, requirePolicyAgreement: $requirePolicyAgreement)';
 }
 
 
@@ -327,16 +335,21 @@ $LocalUserProfileImageUrlsCopyWith<LocalUserProfileImageUrls> get copyWith => _$
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LocalUserProfileImageUrls&&(identical(other.px16X16, px16X16) || other.px16X16 == px16X16)&&(identical(other.px50X50, px50X50) || other.px50X50 == px50X50)&&(identical(other.px170X170, px170X170) || other.px170X170 == px170X170));
+  final _this = this as LocalUserProfileImageUrls;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LocalUserProfileImageUrls&&(identical(other.px16X16, _this.px16X16) || other.px16X16 == _this.px16X16)&&(identical(other.px50X50, _this.px50X50) || other.px50X50 == _this.px50X50)&&(identical(other.px170X170, _this.px170X170) || other.px170X170 == _this.px170X170));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,px16X16,px50X50,px170X170);
+int get hashCode {
+  final _this = this as LocalUserProfileImageUrls;
+  return Object.hash(runtimeType,_this.px16X16,_this.px50X50,_this.px170X170);
+}
 
 @override
 String toString() {
-  return 'LocalUserProfileImageUrls(px16X16: $px16X16, px50X50: $px50X50, px170X170: $px170X170)';
+  final _this = this as LocalUserProfileImageUrls;
+  return 'LocalUserProfileImageUrls(px16X16: ${_this.px16X16}, px50X50: ${_this.px50X50}, px170X170: ${_this.px170X170})';
 }
 
 
@@ -365,7 +378,7 @@ class _$LocalUserProfileImageUrlsCopyWithImpl<$Res>
 /// Create a copy of LocalUserProfileImageUrls
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? px16X16 = null,Object? px50X50 = null,Object? px170X170 = null,}) {
-  return _then(_self.copyWith(
+  return _then(LocalUserProfileImageUrls(
 px16X16: null == px16X16 ? _self.px16X16 : px16X16 // ignore: cast_nullable_to_non_nullable
 as String,px50X50: null == px50X50 ? _self.px50X50 : px50X50 // ignore: cast_nullable_to_non_nullable
 as String,px170X170: null == px170X170 ? _self.px170X170 : px170X170 // ignore: cast_nullable_to_non_nullable
@@ -524,16 +537,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LocalUserProfileImageUrls&&(identical(other.px16X16, px16X16) || other.px16X16 == px16X16)&&(identical(other.px50X50, px50X50) || other.px50X50 == px50X50)&&(identical(other.px170X170, px170X170) || other.px170X170 == px170X170));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LocalUserProfileImageUrls&&(identical(other.px16X16, px16X16) || other.px16X16 == px16X16)&&(identical(other.px50X50, px50X50) || other.px50X50 == px50X50)&&(identical(other.px170X170, px170X170) || other.px170X170 == px170X170));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,px16X16,px50X50,px170X170);
+int get hashCode {
+    return Object.hash(runtimeType,px16X16,px50X50,px170X170);
+}
 
 @override
 String toString() {
-  return 'LocalUserProfileImageUrls(px16X16: $px16X16, px50X50: $px50X50, px170X170: $px170X170)';
+    return 'LocalUserProfileImageUrls(px16X16: $px16X16, px50X50: $px50X50, px170X170: $px170X170)';
 }
 
 
