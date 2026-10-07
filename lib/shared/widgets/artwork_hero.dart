@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frost_ui/frost_ui.dart' show FrostMetrics;
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -84,6 +85,144 @@ class ArtworkHeroScope extends InheritedWidget {
   bool updateShouldNotify(ArtworkHeroScope oldWidget) => tag != oldWidget.tag;
 }
 
+/// Where the detail stage's picture is while a back swipe moves the page, for
+/// the flight that carries it back to its card.
+///
+/// The stage registers one per tag (see [ArtworkStageHero]); the card's hero,
+/// whose tween the flight uses on a pop, finds it by the shared tag.
+final class _StagePose {
+  _StagePose(this.key);
+
+  final GlobalKey key;
+
+  /// Marks the picture's place in the page, so the flying picture can follow
+  /// the page's own transform while the finger drags: the follower is placed
+  /// when the layers are composited, after the page has moved, where a rect
+  /// read while building would be a frame behind.
+  final link = LayerLink();
+  ModalRoute<Object?>? route;
+
+  /// Where the picture was when the swipe was committed: the flight carries it
+  /// on from there.
+  Rect? held;
+
+  bool get userGesture => route?.navigator?.userGestureInProgress ?? false;
+
+  /// Committing restarts the route's animation from fully shown and runs it to
+  /// dismissed, so it is reversing; while the finger drags it is not.
+  bool get committing => userGesture && route?.animation?.status == AnimationStatus.reverse;
+  bool get dragging => userGesture && !committing;
+
+  /// The picture's frame in the navigator, with the page's own back-swipe
+  /// transform (scale, shift) applied.
+  Rect? liveRect() {
+    final box = key.currentContext?.findRenderObject();
+    final navigator = route?.navigator?.context.findRenderObject();
+    if (box is! RenderBox || !box.attached || !box.hasSize || navigator is! RenderBox) return null;
+    return MatrixUtils.transformRect(box.getTransformTo(navigator), Offset.zero & box.size);
+  }
+}
+
+/// The page's own edge while a back swipe moves it: the page rounds its
+/// corners as it shrinks and clips what is in it, but the flying picture is
+/// above the page, so it takes the same rounded edge, in the picture's own
+/// (unscaled) coordinates.
+class _PageEdgeClipper extends CustomClipper<RRect> {
+  _PageEdgeClipper(this.stage, Listenable reclip) : super(reclip: reclip);
+
+  final _StagePose stage;
+
+  @override
+  RRect getClip(Size size) {
+    final picture = stage.key.currentContext?.findRenderObject();
+    final page = stage.route?.subtreeContext?.findRenderObject();
+    final bounds = picture is RenderBox && picture.attached && page is RenderBox && page.attached && page.hasSize
+        ? MatrixUtils.transformRect(page.getTransformTo(picture), Offset.zero & page.size)
+        : Offset.zero & size;
+    // The radius follows the swipe as the page's own does (frost_ui's drag pose).
+    final progress = (1 - (stage.route?.animation?.value ?? 1)).clamp(0.0, 1.0);
+    return RRect.fromRectAndRadius(bounds, Radius.circular(FrostMetrics.modalRadius * (progress * 4).clamp(0.0, 1.0)));
+  }
+
+  @override
+  bool shouldReclip(_PageEdgeClipper oldClipper) => true;
+}
+
+final Expando<_StagePose> _stagePoses = Expando('ArtworkHero stage pose');
+
+/// A straight path, not Material's arc: the picture travels directly between
+/// the card and the stage. A back swipe moves the page, so while the finger
+/// drags, the picture stays where the page puts it (the shuttle follows the
+/// stage, see [_StagePose.link], and the tween holds still); a committed swipe
+/// then flies it on from there.
+class _FlightRectTween extends RectTween {
+  _FlightRectTween({required super.begin, required super.end, required this.tag});
+
+  final ArtworkHeroTag tag;
+
+  @override
+  Rect? lerp(double t) {
+    final stage = _stagePoses[tag];
+    if (stage == null || !stage.userGesture) {
+      stage?.held = null;
+      return super.lerp(t);
+    }
+    if (stage.dragging) return begin;
+    return Rect.lerp(stage.held ??= stage.liveRect() ?? begin, end, t);
+  }
+}
+
+/// The detail stage's artwork hero: an [ArtworkHero] whose position a back
+/// swipe can read, so the picture moves with the page while the finger drags.
+class ArtworkStageHero extends StatefulWidget {
+  const ArtworkStageHero({required this.tag, required this.child, super.key});
+
+  final ArtworkHeroTag tag;
+  final Widget child;
+
+  @override
+  State<ArtworkStageHero> createState() => _ArtworkStageHeroState();
+}
+
+class _ArtworkStageHeroState extends State<ArtworkStageHero> {
+  final _pose = _StagePose(GlobalKey());
+
+  @override
+  void initState() {
+    super.initState();
+    _stagePoses[widget.tag] = _pose;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _pose.route = ModalRoute.of(context);
+  }
+
+  @override
+  void didUpdateWidget(ArtworkStageHero oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.tag == widget.tag) return;
+    if (identical(_stagePoses[oldWidget.tag], _pose)) _stagePoses[oldWidget.tag] = null;
+    _stagePoses[widget.tag] = _pose;
+  }
+
+  @override
+  void dispose() {
+    if (identical(_stagePoses[widget.tag], _pose)) _stagePoses[widget.tag] = null;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => CompositedTransformTarget(
+    link: _pose.link,
+    child: KeyedSubtree(
+      key: _pose.key,
+      child: ArtworkHero(tag: widget.tag, child: widget.child),
+    ),
+  );
+}
+
 /// The hero around an artwork on either end of the flight.
 class ArtworkHero extends StatelessWidget {
   const ArtworkHero({required this.tag, required this.child, super.key});
@@ -96,13 +235,18 @@ class ArtworkHero extends StatelessWidget {
     // With reduced motion the page simply appears; nothing flies.
     return HeroMode(
       enabled: !MediaQuery.disableAnimationsOf(context),
-      child: Hero(tag: tag, transitionOnUserGestures: true, createRectTween: _straight, flightShuttleBuilder: _flight, child: child),
+      // Also on user gestures, so a back swipe's flight exists from the start:
+      // it stays with the page while the finger drags and flies on when the
+      // swipe is committed (see [_FlightRectTween]).
+      child: Hero(
+        tag: tag,
+        transitionOnUserGestures: true,
+        createRectTween: (begin, end) => _FlightRectTween(begin: begin, end: end, tag: tag),
+        flightShuttleBuilder: _flight,
+        child: child,
+      ),
     );
   }
-
-  /// A straight path, not Material's arc: the picture travels directly
-  /// between the card and the stage.
-  static Tween<Rect?> _straight(Rect? begin, Rect? end) => RectTween(begin: begin, end: end);
 
   static Widget _flight(
     BuildContext flightContext,
@@ -118,11 +262,24 @@ class ArtworkHero extends StatelessWidget {
     // relaxes steadily as the frame's shape approaches the picture's, with no
     // second timing that could make the picture shrink and regrow. The route
     // animation runs 0 → 1 on push and 1 → 0 on pop: 0 is the card.
+    final picture = PixivImage(url: tag.imageUrl);
     return AnimatedBuilder(
       animation: animation,
-      builder: (context, child) =>
-          ClipRRect(borderRadius: BorderRadius.lerp(tag.sourceRadius, BorderRadius.zero, Curves.fastOutSlowIn.transform(animation.value))!, child: child),
-      child: PixivImage(url: tag.imageUrl),
+      builder: (context, child) {
+        // While a swipe drags the page the picture is the stage's own
+        // square-edged one, following it; the radius and the path to the card
+        // begin only when the swipe is committed.
+        final stage = _stagePoses[tag];
+        if (stage != null && stage.dragging) {
+          return CompositedTransformFollower(
+            link: stage.link,
+            showWhenUnlinked: false,
+            child: ClipRRect(clipper: _PageEdgeClipper(stage, animation), child: child),
+          );
+        }
+        return ClipRRect(borderRadius: BorderRadius.lerp(tag.sourceRadius, BorderRadius.zero, Curves.fastOutSlowIn.transform(animation.value))!, child: child);
+      },
+      child: picture,
     );
   }
 }

@@ -236,7 +236,7 @@ class _StageHero extends StatelessWidget {
             size: picture,
             child: HeroMode(
               enabled: enabled,
-              child: ArtworkHero(tag: tag, child: child),
+              child: ArtworkStageHero(tag: tag, child: child),
             ),
           ),
         );
