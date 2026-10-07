@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart' show FrostAmbientBackdrop;
 
 class _Counter extends StatefulWidget {
   const _Counter({super.key});
@@ -73,6 +74,18 @@ void main() {
     await tester.pumpAndSettle();
     expect(_pageTransform(tester).entry(0, 0), 1);
     expect(tester.state(find.byKey(const ValueKey('detail'))), same(state));
+  });
+
+  testWidgets('a back swipe shrinks the backdrop copy with the page, so it still fills it', (tester) async {
+    await _pumpApp(tester, const Size(400, 800));
+    await _backGesture(tester, 'startBackGesture', progress: 0);
+    await _backGesture(tester, 'updateBackGestureProgress', progress: .5);
+    await tester.pump();
+    expect(_pageTransform(tester).entry(0, 0), closeTo(.95, .001));
+    // The backdrop copy moves and scales with the page, edge to edge.
+    expect(tester.getRect(find.byType(FrostAmbientBackdrop)), tester.getRect(find.byType(Scaffold).last));
+    await _backGesture(tester, 'cancelBackGesture');
+    await tester.pumpAndSettle();
   });
 
   testWidgets('a committed back swipe pops the page', (tester) async {
