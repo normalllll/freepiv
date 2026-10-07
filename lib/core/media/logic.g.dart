@@ -12,7 +12,13 @@ part of 'logic.dart';
 @ProviderFor(rustMediaTransport)
 final rustMediaTransportProvider = RustMediaTransportProvider._();
 
-final class RustMediaTransportProvider extends $FunctionalProvider<RustMediaTransport, RustMediaTransport, RustMediaTransport>
+final class RustMediaTransportProvider
+    extends
+        $FunctionalProvider<
+          RustMediaTransport,
+          RustMediaTransport,
+          RustMediaTransport
+        >
     with $Provider<RustMediaTransport> {
   RustMediaTransportProvider._()
     : super(
@@ -30,7 +36,9 @@ final class RustMediaTransportProvider extends $FunctionalProvider<RustMediaTran
 
   @$internal
   @override
-  $ProviderElement<RustMediaTransport> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
+  $ProviderElement<RustMediaTransport> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
   RustMediaTransport create(Ref ref) {
@@ -39,8 +47,12 @@ final class RustMediaTransportProvider extends $FunctionalProvider<RustMediaTran
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(RustMediaTransport value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<RustMediaTransport>(value));
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RustMediaTransport>(value),
+    );
   }
 }
 
-String _$rustMediaTransportHash() => r'47cf39f1714ae44c64d727492637cea477880d77';
+String _$rustMediaTransportHash() =>
+    r'47cf39f1714ae44c64d727492637cea477880d77';

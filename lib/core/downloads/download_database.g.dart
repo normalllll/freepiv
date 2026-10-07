@@ -2465,7 +2465,7 @@ class $$DownloadJobsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$DownloadJobsTable, DownloadJob>(table),
                   $$DownloadJobsTableReferences(db, table, e),
                 ),
               )
@@ -2904,7 +2904,7 @@ class $$DownloadStatesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$DownloadStatesTable, DownloadState>(table),
                   $$DownloadStatesTableReferences(db, table, e),
                 ),
               )

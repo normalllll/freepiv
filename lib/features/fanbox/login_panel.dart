@@ -203,7 +203,9 @@ class _FanboxCookieDialogState extends ConsumerState<_FanboxCookieDialog> {
     if (result.isEmpty || !mounted) return;
     final success = await ref.read(fanboxOperationProvider('login').notifier).run(() async {
       final file = result.single;
-      if (await file.length() > 64 * 1024) throw const FormatException();
+      // The size may be unknown; the bytes are checked again once read.
+      final size = await file.length();
+      if (size != null && size > 64 * 1024) throw const FormatException();
       final bytes = await file.readAsBytes();
       if (bytes.length > 64 * 1024 || !mounted) throw const FormatException();
       await ref.read(fanboxSessionProvider.notifier).signIn(utf8.decode(bytes), canCommit: () => mounted);

@@ -12,10 +12,24 @@ part of 'logic.dart';
 @ProviderFor(pixivisionApi)
 final pixivisionApiProvider = PixivisionApiFamily._();
 
-final class PixivisionApiProvider extends $FunctionalProvider<AsyncValue<PixivisionApi>, PixivisionApi, FutureOr<PixivisionApi>>
+final class PixivisionApiProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<PixivisionApi>,
+          PixivisionApi,
+          FutureOr<PixivisionApi>
+        >
     with $FutureModifier<PixivisionApi>, $FutureProvider<PixivisionApi> {
-  PixivisionApiProvider._({required PixivisionApiFamily super.from, required String super.argument})
-    : super(retry: null, name: r'pixivisionApiProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+  PixivisionApiProvider._({
+    required PixivisionApiFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'pixivisionApiProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$pixivisionApiHash();
@@ -29,7 +43,9 @@ final class PixivisionApiProvider extends $FunctionalProvider<AsyncValue<Pixivis
 
   @$internal
   @override
-  $FutureProviderElement<PixivisionApi> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+  $FutureProviderElement<PixivisionApi> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<PixivisionApi> create(Ref ref) {
@@ -50,10 +66,19 @@ final class PixivisionApiProvider extends $FunctionalProvider<AsyncValue<Pixivis
 
 String _$pixivisionApiHash() => r'bc9cf69ba0b4ff41213e5d981d57f9f696e68a41';
 
-final class PixivisionApiFamily extends $Family with $FunctionalFamilyOverride<FutureOr<PixivisionApi>, String> {
-  PixivisionApiFamily._() : super(retry: null, name: r'pixivisionApiProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+final class PixivisionApiFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<PixivisionApi>, String> {
+  PixivisionApiFamily._()
+    : super(
+        retry: null,
+        name: r'pixivisionApiProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  PixivisionApiProvider call(String language) => PixivisionApiProvider._(argument: language, from: this);
+  PixivisionApiProvider call(String language) =>
+      PixivisionApiProvider._(argument: language, from: this);
 
   @override
   String toString() => r'pixivisionApiProvider';
@@ -62,7 +87,12 @@ final class PixivisionApiFamily extends $Family with $FunctionalFamilyOverride<F
 @ProviderFor(PixivisionBrowseSelection)
 final pixivisionBrowseSelectionProvider = PixivisionBrowseSelectionProvider._();
 
-final class PixivisionBrowseSelectionProvider extends $NotifierProvider<PixivisionBrowseSelection, ({PixivisionSection section, String? url})> {
+final class PixivisionBrowseSelectionProvider
+    extends
+        $NotifierProvider<
+          PixivisionBrowseSelection,
+          ({PixivisionSection section, String? url})
+        > {
   PixivisionBrowseSelectionProvider._()
     : super(
         from: null,
@@ -83,22 +113,36 @@ final class PixivisionBrowseSelectionProvider extends $NotifierProvider<Pixivisi
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(({PixivisionSection section, String? url}) value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<({PixivisionSection section, String? url})>(value));
+    return $ProviderOverride(
+      origin: this,
+      providerOverride:
+          $SyncValueProvider<({PixivisionSection section, String? url})>(value),
+    );
   }
 }
 
-String _$pixivisionBrowseSelectionHash() => r'9c2892429b55de5c6e1a370109fa8974d8d9ba2d';
+String _$pixivisionBrowseSelectionHash() =>
+    r'9c2892429b55de5c6e1a370109fa8974d8d9ba2d';
 
-abstract class _$PixivisionBrowseSelection extends $Notifier<({PixivisionSection section, String? url})> {
+abstract class _$PixivisionBrowseSelection
+    extends $Notifier<({PixivisionSection section, String? url})> {
   ({PixivisionSection section, String? url}) build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<({PixivisionSection section, String? url}), ({PixivisionSection section, String? url})>;
+    final ref =
+        this.ref
+            as $Ref<
+              ({PixivisionSection section, String? url}),
+              ({PixivisionSection section, String? url})
+            >;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<({PixivisionSection section, String? url}), ({PixivisionSection section, String? url})>,
+              AnyNotifier<
+                ({PixivisionSection section, String? url}),
+                ({PixivisionSection section, String? url})
+              >,
               ({PixivisionSection section, String? url}),
               Object?,
               Object?
@@ -110,9 +154,18 @@ abstract class _$PixivisionBrowseSelection extends $Notifier<({PixivisionSection
 @ProviderFor(PixivisionBrowse)
 final pixivisionBrowseProvider = PixivisionBrowseFamily._();
 
-final class PixivisionBrowseProvider extends $AsyncNotifierProvider<PixivisionBrowse, PixivisionListing> {
-  PixivisionBrowseProvider._({required PixivisionBrowseFamily super.from, required String super.argument})
-    : super(retry: null, name: r'pixivisionBrowseProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+final class PixivisionBrowseProvider
+    extends $AsyncNotifierProvider<PixivisionBrowse, PixivisionListing> {
+  PixivisionBrowseProvider._({
+    required PixivisionBrowseFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'pixivisionBrowseProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$pixivisionBrowseHash();
@@ -142,10 +195,25 @@ final class PixivisionBrowseProvider extends $AsyncNotifierProvider<PixivisionBr
 String _$pixivisionBrowseHash() => r'b869d8d1c83dd1da4b09305be850eb396ee805f1';
 
 final class PixivisionBrowseFamily extends $Family
-    with $ClassFamilyOverride<PixivisionBrowse, AsyncValue<PixivisionListing>, PixivisionListing, FutureOr<PixivisionListing>, String> {
-  PixivisionBrowseFamily._() : super(retry: null, name: r'pixivisionBrowseProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+    with
+        $ClassFamilyOverride<
+          PixivisionBrowse,
+          AsyncValue<PixivisionListing>,
+          PixivisionListing,
+          FutureOr<PixivisionListing>,
+          String
+        > {
+  PixivisionBrowseFamily._()
+    : super(
+        retry: null,
+        name: r'pixivisionBrowseProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  PixivisionBrowseProvider call(String url) => PixivisionBrowseProvider._(argument: url, from: this);
+  PixivisionBrowseProvider call(String url) =>
+      PixivisionBrowseProvider._(argument: url, from: this);
 
   @override
   String toString() => r'pixivisionBrowseProvider';
@@ -159,9 +227,16 @@ abstract class _$PixivisionBrowse extends $AsyncNotifier<PixivisionListing> {
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<PixivisionListing>, PixivisionListing>;
+    final ref =
+        this.ref as $Ref<AsyncValue<PixivisionListing>, PixivisionListing>;
     final element =
-        ref.element as $ClassProviderElement<AnyNotifier<AsyncValue<PixivisionListing>, PixivisionListing>, AsyncValue<PixivisionListing>, Object?, Object?>;
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<PixivisionListing>, PixivisionListing>,
+              AsyncValue<PixivisionListing>,
+              Object?,
+              Object?
+            >;
     return element.handleCreate(ref, () => build(_$args));
   }
 }
@@ -169,10 +244,26 @@ abstract class _$PixivisionBrowse extends $AsyncNotifier<PixivisionListing> {
 @ProviderFor(pixivisionArticle)
 final pixivisionArticleProvider = PixivisionArticleFamily._();
 
-final class PixivisionArticleProvider extends $FunctionalProvider<AsyncValue<PixivisionDocument>, PixivisionDocument, FutureOr<PixivisionDocument>>
-    with $FutureModifier<PixivisionDocument>, $FutureProvider<PixivisionDocument> {
-  PixivisionArticleProvider._({required PixivisionArticleFamily super.from, required String super.argument})
-    : super(retry: null, name: r'pixivisionArticleProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+final class PixivisionArticleProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<PixivisionDocument>,
+          PixivisionDocument,
+          FutureOr<PixivisionDocument>
+        >
+    with
+        $FutureModifier<PixivisionDocument>,
+        $FutureProvider<PixivisionDocument> {
+  PixivisionArticleProvider._({
+    required PixivisionArticleFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'pixivisionArticleProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$pixivisionArticleHash();
@@ -186,7 +277,9 @@ final class PixivisionArticleProvider extends $FunctionalProvider<AsyncValue<Pix
 
   @$internal
   @override
-  $FutureProviderElement<PixivisionDocument> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+  $FutureProviderElement<PixivisionDocument> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<PixivisionDocument> create(Ref ref) {
@@ -207,11 +300,19 @@ final class PixivisionArticleProvider extends $FunctionalProvider<AsyncValue<Pix
 
 String _$pixivisionArticleHash() => r'7f0f60be10f9ef8b45f27ff82717a98041fc2c2b';
 
-final class PixivisionArticleFamily extends $Family with $FunctionalFamilyOverride<FutureOr<PixivisionDocument>, String> {
+final class PixivisionArticleFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<PixivisionDocument>, String> {
   PixivisionArticleFamily._()
-    : super(retry: null, name: r'pixivisionArticleProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+    : super(
+        retry: null,
+        name: r'pixivisionArticleProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  PixivisionArticleProvider call(String url) => PixivisionArticleProvider._(argument: url, from: this);
+  PixivisionArticleProvider call(String url) =>
+      PixivisionArticleProvider._(argument: url, from: this);
 
   @override
   String toString() => r'pixivisionArticleProvider';
@@ -220,10 +321,24 @@ final class PixivisionArticleFamily extends $Family with $FunctionalFamilyOverri
 @ProviderFor(pixivisionTags)
 final pixivisionTagsProvider = PixivisionTagsFamily._();
 
-final class PixivisionTagsProvider extends $FunctionalProvider<AsyncValue<TagDirectory>, TagDirectory, FutureOr<TagDirectory>>
+final class PixivisionTagsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<TagDirectory>,
+          TagDirectory,
+          FutureOr<TagDirectory>
+        >
     with $FutureModifier<TagDirectory>, $FutureProvider<TagDirectory> {
-  PixivisionTagsProvider._({required PixivisionTagsFamily super.from, required String super.argument})
-    : super(retry: null, name: r'pixivisionTagsProvider', isAutoDispose: true, dependencies: null, $allTransitiveDependencies: null);
+  PixivisionTagsProvider._({
+    required PixivisionTagsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'pixivisionTagsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$pixivisionTagsHash();
@@ -237,7 +352,9 @@ final class PixivisionTagsProvider extends $FunctionalProvider<AsyncValue<TagDir
 
   @$internal
   @override
-  $FutureProviderElement<TagDirectory> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+  $FutureProviderElement<TagDirectory> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<TagDirectory> create(Ref ref) {
@@ -258,10 +375,19 @@ final class PixivisionTagsProvider extends $FunctionalProvider<AsyncValue<TagDir
 
 String _$pixivisionTagsHash() => r'63ba9db333be6130ff0a36b105105aebef4f9be7';
 
-final class PixivisionTagsFamily extends $Family with $FunctionalFamilyOverride<FutureOr<TagDirectory>, String> {
-  PixivisionTagsFamily._() : super(retry: null, name: r'pixivisionTagsProvider', dependencies: null, $allTransitiveDependencies: null, isAutoDispose: true);
+final class PixivisionTagsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<TagDirectory>, String> {
+  PixivisionTagsFamily._()
+    : super(
+        retry: null,
+        name: r'pixivisionTagsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  PixivisionTagsProvider call(String language) => PixivisionTagsProvider._(argument: language, from: this);
+  PixivisionTagsProvider call(String language) =>
+      PixivisionTagsProvider._(argument: language, from: this);
 
   @override
   String toString() => r'pixivisionTagsProvider';

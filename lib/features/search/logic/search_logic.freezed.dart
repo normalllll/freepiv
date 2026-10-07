@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'search_logic.dart';
@@ -9,6 +9,7 @@ part of 'search_logic.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $SearchDraftStateCopyWith<SearchDraftState> get copyWith => _$SearchDraftStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchDraftState&&(identical(other.text, text) || other.text == text)&&(identical(other.type, type) || other.type == type));
+  final _this = this as SearchDraftState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchDraftState&&(identical(other.text, _this.text) || other.text == _this.text)&&(identical(other.type, _this.type) || other.type == _this.type));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,text,type);
+int get hashCode {
+  final _this = this as SearchDraftState;
+  return Object.hash(runtimeType,_this.text,_this.type);
+}
 
 @override
 String toString() {
-  return 'SearchDraftState(text: $text, type: $type)';
+  final _this = this as SearchDraftState;
+  return 'SearchDraftState(text: ${_this.text}, type: ${_this.type})';
 }
 
 
@@ -63,7 +69,7 @@ class _$SearchDraftStateCopyWithImpl<$Res>
 /// Create a copy of SearchDraftState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? text = null,Object? type = null,}) {
-  return _then(_self.copyWith(
+  return _then(SearchDraftState(
 text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as SearchType,
@@ -217,16 +223,18 @@ _$SearchDraftStateCopyWith<_SearchDraftState> get copyWith => __$SearchDraftStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchDraftState&&(identical(other.text, text) || other.text == text)&&(identical(other.type, type) || other.type == type));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchDraftState&&(identical(other.text, text) || other.text == text)&&(identical(other.type, type) || other.type == type));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,text,type);
+int get hashCode {
+    return Object.hash(runtimeType,text,type);
+}
 
 @override
 String toString() {
-  return 'SearchDraftState(text: $text, type: $type)';
+    return 'SearchDraftState(text: $text, type: $type)';
 }
 
 
@@ -279,16 +287,21 @@ $SearchFiltersStateCopyWith<SearchFiltersState> get copyWith => _$SearchFiltersS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchFiltersState&&(identical(other.illust, illust) || other.illust == illust)&&(identical(other.novel, novel) || other.novel == novel));
+  final _this = this as SearchFiltersState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchFiltersState&&(identical(other.illust, _this.illust) || other.illust == _this.illust)&&(identical(other.novel, _this.novel) || other.novel == _this.novel));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,illust,novel);
+int get hashCode {
+  final _this = this as SearchFiltersState;
+  return Object.hash(runtimeType,_this.illust,_this.novel);
+}
 
 @override
 String toString() {
-  return 'SearchFiltersState(illust: $illust, novel: $novel)';
+  final _this = this as SearchFiltersState;
+  return 'SearchFiltersState(illust: ${_this.illust}, novel: ${_this.novel})';
 }
 
 
@@ -317,7 +330,7 @@ class _$SearchFiltersStateCopyWithImpl<$Res>
 /// Create a copy of SearchFiltersState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? illust = null,Object? novel = null,}) {
-  return _then(_self.copyWith(
+  return _then(SearchFiltersState(
 illust: null == illust ? _self.illust : illust // ignore: cast_nullable_to_non_nullable
 as SearchFilterState,novel: null == novel ? _self.novel : novel // ignore: cast_nullable_to_non_nullable
 as SearchFilterState,
@@ -489,16 +502,18 @@ _$SearchFiltersStateCopyWith<_SearchFiltersState> get copyWith => __$SearchFilte
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchFiltersState&&(identical(other.illust, illust) || other.illust == illust)&&(identical(other.novel, novel) || other.novel == novel));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchFiltersState&&(identical(other.illust, illust) || other.illust == illust)&&(identical(other.novel, novel) || other.novel == novel));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,illust,novel);
+int get hashCode {
+    return Object.hash(runtimeType,illust,novel);
+}
 
 @override
 String toString() {
-  return 'SearchFiltersState(illust: $illust, novel: $novel)';
+    return 'SearchFiltersState(illust: $illust, novel: $novel)';
 }
 
 
@@ -569,16 +584,21 @@ $SearchFilterStateCopyWith<SearchFilterState> get copyWith => _$SearchFilterStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchFilterState&&(identical(other.order, order) || other.order == order)&&(identical(other.target, target) || other.target == target)&&(identical(other.novelTarget, novelTarget) || other.novelTarget == novelTarget)&&(identical(other.datePreset, datePreset) || other.datePreset == datePreset)&&(identical(other.customStart, customStart) || other.customStart == customStart)&&(identical(other.customEnd, customEnd) || other.customEnd == customEnd)&&(identical(other.bookmarkTotal, bookmarkTotal) || other.bookmarkTotal == bookmarkTotal)&&(identical(other.contentType, contentType) || other.contentType == contentType)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.minWidth, minWidth) || other.minWidth == minWidth)&&(identical(other.minHeight, minHeight) || other.minHeight == minHeight)&&(identical(other.tool, tool) || other.tool == tool));
+  final _this = this as SearchFilterState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchFilterState&&(identical(other.order, _this.order) || other.order == _this.order)&&(identical(other.target, _this.target) || other.target == _this.target)&&(identical(other.novelTarget, _this.novelTarget) || other.novelTarget == _this.novelTarget)&&(identical(other.datePreset, _this.datePreset) || other.datePreset == _this.datePreset)&&(identical(other.customStart, _this.customStart) || other.customStart == _this.customStart)&&(identical(other.customEnd, _this.customEnd) || other.customEnd == _this.customEnd)&&(identical(other.bookmarkTotal, _this.bookmarkTotal) || other.bookmarkTotal == _this.bookmarkTotal)&&(identical(other.contentType, _this.contentType) || other.contentType == _this.contentType)&&(identical(other.ratio, _this.ratio) || other.ratio == _this.ratio)&&(identical(other.minWidth, _this.minWidth) || other.minWidth == _this.minWidth)&&(identical(other.minHeight, _this.minHeight) || other.minHeight == _this.minHeight)&&(identical(other.tool, _this.tool) || other.tool == _this.tool));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,order,target,novelTarget,datePreset,customStart,customEnd,bookmarkTotal,contentType,ratio,minWidth,minHeight,tool);
+int get hashCode {
+  final _this = this as SearchFilterState;
+  return Object.hash(runtimeType,_this.order,_this.target,_this.novelTarget,_this.datePreset,_this.customStart,_this.customEnd,_this.bookmarkTotal,_this.contentType,_this.ratio,_this.minWidth,_this.minHeight,_this.tool);
+}
 
 @override
 String toString() {
-  return 'SearchFilterState(order: $order, target: $target, novelTarget: $novelTarget, datePreset: $datePreset, customStart: $customStart, customEnd: $customEnd, bookmarkTotal: $bookmarkTotal, contentType: $contentType, ratio: $ratio, minWidth: $minWidth, minHeight: $minHeight, tool: $tool)';
+  final _this = this as SearchFilterState;
+  return 'SearchFilterState(order: ${_this.order}, target: ${_this.target}, novelTarget: ${_this.novelTarget}, datePreset: ${_this.datePreset}, customStart: ${_this.customStart}, customEnd: ${_this.customEnd}, bookmarkTotal: ${_this.bookmarkTotal}, contentType: ${_this.contentType}, ratio: ${_this.ratio}, minWidth: ${_this.minWidth}, minHeight: ${_this.minHeight}, tool: ${_this.tool})';
 }
 
 
@@ -607,7 +627,7 @@ class _$SearchFilterStateCopyWithImpl<$Res>
 /// Create a copy of SearchFilterState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? order = null,Object? target = null,Object? novelTarget = null,Object? datePreset = null,Object? customStart = freezed,Object? customEnd = freezed,Object? bookmarkTotal = freezed,Object? contentType = freezed,Object? ratio = freezed,Object? minWidth = freezed,Object? minHeight = freezed,Object? tool = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(SearchFilterState(
 order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
 as SearchOrder,target: null == target ? _self.target : target // ignore: cast_nullable_to_non_nullable
 as SearchTarget,novelTarget: null == novelTarget ? _self.novelTarget : novelTarget // ignore: cast_nullable_to_non_nullable
@@ -781,16 +801,18 @@ _$SearchFilterStateCopyWith<_SearchFilterState> get copyWith => __$SearchFilterS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchFilterState&&(identical(other.order, order) || other.order == order)&&(identical(other.target, target) || other.target == target)&&(identical(other.novelTarget, novelTarget) || other.novelTarget == novelTarget)&&(identical(other.datePreset, datePreset) || other.datePreset == datePreset)&&(identical(other.customStart, customStart) || other.customStart == customStart)&&(identical(other.customEnd, customEnd) || other.customEnd == customEnd)&&(identical(other.bookmarkTotal, bookmarkTotal) || other.bookmarkTotal == bookmarkTotal)&&(identical(other.contentType, contentType) || other.contentType == contentType)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.minWidth, minWidth) || other.minWidth == minWidth)&&(identical(other.minHeight, minHeight) || other.minHeight == minHeight)&&(identical(other.tool, tool) || other.tool == tool));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchFilterState&&(identical(other.order, order) || other.order == order)&&(identical(other.target, target) || other.target == target)&&(identical(other.novelTarget, novelTarget) || other.novelTarget == novelTarget)&&(identical(other.datePreset, datePreset) || other.datePreset == datePreset)&&(identical(other.customStart, customStart) || other.customStart == customStart)&&(identical(other.customEnd, customEnd) || other.customEnd == customEnd)&&(identical(other.bookmarkTotal, bookmarkTotal) || other.bookmarkTotal == bookmarkTotal)&&(identical(other.contentType, contentType) || other.contentType == contentType)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.minWidth, minWidth) || other.minWidth == minWidth)&&(identical(other.minHeight, minHeight) || other.minHeight == minHeight)&&(identical(other.tool, tool) || other.tool == tool));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,order,target,novelTarget,datePreset,customStart,customEnd,bookmarkTotal,contentType,ratio,minWidth,minHeight,tool);
+int get hashCode {
+    return Object.hash(runtimeType,order,target,novelTarget,datePreset,customStart,customEnd,bookmarkTotal,contentType,ratio,minWidth,minHeight,tool);
+}
 
 @override
 String toString() {
-  return 'SearchFilterState(order: $order, target: $target, novelTarget: $novelTarget, datePreset: $datePreset, customStart: $customStart, customEnd: $customEnd, bookmarkTotal: $bookmarkTotal, contentType: $contentType, ratio: $ratio, minWidth: $minWidth, minHeight: $minHeight, tool: $tool)';
+    return 'SearchFilterState(order: $order, target: $target, novelTarget: $novelTarget, datePreset: $datePreset, customStart: $customStart, customEnd: $customEnd, bookmarkTotal: $bookmarkTotal, contentType: $contentType, ratio: $ratio, minWidth: $minWidth, minHeight: $minHeight, tool: $tool)';
 }
 
 
@@ -853,16 +875,21 @@ $SearchResultRequestCopyWith<SearchResultRequest> get copyWith => _$SearchResult
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchResultRequest&&(identical(other.keyword, keyword) || other.keyword == keyword)&&(identical(other.filter, filter) || other.filter == filter));
+  final _this = this as SearchResultRequest;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchResultRequest&&(identical(other.keyword, _this.keyword) || other.keyword == _this.keyword)&&(identical(other.filter, _this.filter) || other.filter == _this.filter));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,keyword,filter);
+int get hashCode {
+  final _this = this as SearchResultRequest;
+  return Object.hash(runtimeType,_this.keyword,_this.filter);
+}
 
 @override
 String toString() {
-  return 'SearchResultRequest(keyword: $keyword, filter: $filter)';
+  final _this = this as SearchResultRequest;
+  return 'SearchResultRequest(keyword: ${_this.keyword}, filter: ${_this.filter})';
 }
 
 
@@ -891,7 +918,7 @@ class _$SearchResultRequestCopyWithImpl<$Res>
 /// Create a copy of SearchResultRequest
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? keyword = null,Object? filter = null,}) {
-  return _then(_self.copyWith(
+  return _then(SearchResultRequest(
 keyword: null == keyword ? _self.keyword : keyword // ignore: cast_nullable_to_non_nullable
 as String,filter: null == filter ? _self.filter : filter // ignore: cast_nullable_to_non_nullable
 as SearchFilterState,
@@ -1054,16 +1081,18 @@ _$SearchResultRequestCopyWith<_SearchResultRequest> get copyWith => __$SearchRes
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchResultRequest&&(identical(other.keyword, keyword) || other.keyword == keyword)&&(identical(other.filter, filter) || other.filter == filter));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchResultRequest&&(identical(other.keyword, keyword) || other.keyword == keyword)&&(identical(other.filter, filter) || other.filter == filter));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,keyword,filter);
+int get hashCode {
+    return Object.hash(runtimeType,keyword,filter);
+}
 
 @override
 String toString() {
-  return 'SearchResultRequest(keyword: $keyword, filter: $filter)';
+    return 'SearchResultRequest(keyword: $keyword, filter: $filter)';
 }
 
 
