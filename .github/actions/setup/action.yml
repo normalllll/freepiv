@@ -20,7 +20,7 @@ runs:
         echo "version=$version" >> "$GITHUB_OUTPUT"
 
     - name: Install Rust
-      uses: actions-rust-lang/setup-rust-toolchain@v1
+      uses: actions-rust-lang/setup-rust-toolchain@v2
       with:
         toolchain: ${{ steps.rust-version.outputs.version }}
         target: ${{ inputs.rust-targets }}
@@ -28,12 +28,13 @@ runs:
         components: rustfmt
         cache: false
         rustflags: ''
+        build-warnings: warn
 
     # Native Assets supplies its own --target-dir (including temporary paths on
     # Windows), so caching rust/target would not cache Flutter's Rust builds.
     - name: Cache Cargo downloads
       id: cargo-cache
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: |
           ~/.cargo/registry/index
@@ -47,7 +48,7 @@ runs:
     - name: Set up compiler cache
       uses: mozilla-actions/sccache-action@v0.0.11
       with:
-        version: v0.16.0
+        version: v0.18.0
 
     - name: Enable compiler cache
       shell: bash
@@ -76,12 +77,12 @@ runs:
       uses: subosito/flutter-action@v2
       with:
         channel: stable
-        flutter-version: '3.47.3'
+        flutter-version: '3.47.6'
         cache: true
         pub-cache: true
-        cache-key: flutter-v1-${{ runner.os }}-${{ runner.arch }}-3.47.3-${{ inputs.platform }}
+        cache-key: flutter-v1-${{ runner.os }}-${{ runner.arch }}-3.47.6-${{ inputs.platform }}
         # flutter-action appends the pubspec.lock hash automatically.
-        pub-cache-key: pub-v1-${{ runner.os }}-${{ runner.arch }}-3.47.3
+        pub-cache-key: pub-v1-${{ runner.os }}-${{ runner.arch }}-3.47.6
 
     - name: Restore Flutter dependencies
       shell: bash
