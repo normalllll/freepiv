@@ -147,14 +147,28 @@ class _UserDetailContentState extends State<UserDetailContent> with SingleTicker
           builder: (context, physics, locators) {
             // Swipeable like the other tabbed pages; a tab stays alive once
             // opened, keeping its list, scroll position and requests.
+            //
+            // Only the selected tab's list joins the nested scroll. The
+            // coordinator drives every attached inner list together, so a kept
+            // tab resting at its top would expand the header over the selected
+            // list while that list is still mid-way.
+            final nestedController = PrimaryScrollController.maybeOf(context);
             return MouseDragScroll(
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  for (final tab in _tabs)
+                  for (final (index, tab) in _tabs.indexed)
                     _KeptAlive(
                       key: PageStorageKey<String>('user-detail-active-tab-${widget.detail.user.id}-${tab.kind}'),
-                      child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
+                      child: index == _currentIndex && nestedController != null
+                          ? PrimaryScrollController(
+                              controller: nestedController,
+                              automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
+                              child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
+                            )
+                          : PrimaryScrollController.none(
+                              child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
+                            ),
                     ),
                 ],
               ),
