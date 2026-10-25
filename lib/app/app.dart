@@ -14,6 +14,7 @@ import 'package:freepiv/features/downloads/presentation/mobile_download_floating
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import 'window/native_window.dart';
 import 'window/window_title.dart';
@@ -101,28 +102,33 @@ class _FreepivMaterialAppState extends ConsumerState<_FreepivMaterialApp> {
           // the transparent backdrop.
           return AnnotatedRegion<SystemUiOverlayStyle>(
             value: frostSystemOverlayStyle(FrostThemeTokens.of(context)),
-            child: FrostWindowTitleScope(
-              registry: _windowTitles,
-              child: AnimatedBuilder(
-                animation: _windowTitles,
-                // The title bar, navigation and pages are transparent over one
-                // window-wide ambient backdrop, so the window reads as one surface.
-                builder: (context, _) => FrostAmbientBackdropHost(
-                  image: _backdropImage(resolveWindowArtwork(_windowTitles.location, _windowTitles)),
-                  child: NativeWindowFrame(
-                    title: resolveWindowTitle(_windowTitles.location, context.t, _windowTitles),
-                    brandTitle: context.t.app.title,
-                    leading: Image.asset('assets/icon-512.png', cacheWidth: 96, cacheHeight: 96),
-                    background: Colors.transparent,
-                    foreground: colors.onSurfaceVariant,
-                    border: Colors.transparent,
-                    child: FrostLayoutScope(
-                      // Notices sit over the pages but below the Windows title
-                      // bar, inside the theme and locale.
-                      child: FrostToastHost(
-                        child: FrostFontWarmUp(
-                          samples: _fontSamples,
-                          child: MobileDownloadFloatingWindow(child: child ?? const SizedBox.shrink()),
+            // Skeletons follow the app's theme mode; left alone they resolve
+            // their shimmer from the platform brightness.
+            child: SkeletonizerConfig(
+              data: SkeletonizerConfigData(brightness: Theme.of(context).brightness),
+              child: FrostWindowTitleScope(
+                registry: _windowTitles,
+                child: AnimatedBuilder(
+                  animation: _windowTitles,
+                  // The title bar, navigation and pages are transparent over one
+                  // window-wide ambient backdrop, so the window reads as one surface.
+                  builder: (context, _) => FrostAmbientBackdropHost(
+                    image: _backdropImage(resolveWindowArtwork(_windowTitles.location, _windowTitles)),
+                    child: NativeWindowFrame(
+                      title: resolveWindowTitle(_windowTitles.location, context.t, _windowTitles),
+                      brandTitle: context.t.app.title,
+                      leading: Image.asset('assets/icon-512.png', cacheWidth: 96, cacheHeight: 96),
+                      background: Colors.transparent,
+                      foreground: colors.onSurfaceVariant,
+                      border: Colors.transparent,
+                      child: FrostLayoutScope(
+                        // Notices sit over the pages but below the Windows title
+                        // bar, inside the theme and locale.
+                        child: FrostToastHost(
+                          child: FrostFontWarmUp(
+                            samples: _fontSamples,
+                            child: MobileDownloadFloatingWindow(child: child ?? const SizedBox.shrink()),
+                          ),
                         ),
                       ),
                     ),
