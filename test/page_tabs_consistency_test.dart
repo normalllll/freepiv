@@ -116,7 +116,9 @@ void main() {
                   child: Scaffold(
                     body: CustomScrollView(
                       slivers: [
-                        UserDetailTabBarSliver(tabs: tabs, controller: DefaultTabController.of(context), glassCoverage: 0),
+                        SliverToBoxAdapter(
+                          child: UserDetailTabBar(tabs: tabs, controller: DefaultTabController.of(context)),
+                        ),
                         const SliverToBoxAdapter(child: SizedBox(height: 1000)),
                       ],
                     ),

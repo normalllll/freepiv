@@ -11,16 +11,22 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 class UserCollapsibleHeaderSliver extends StatelessWidget {
   const UserCollapsibleHeaderSliver({
     required this.detail,
-    required this.overlapsContent,
     required this.includeTopPadding,
     required this.showBackButton,
+    required this.bottom,
+    required this.bottomHeight,
     super.key,
   });
 
   final UserDetailResult detail;
-  final bool overlapsContent;
   final bool includeTopPadding;
   final bool showBackButton;
+
+  /// Pinned below the header in the same sliver and under the same glass, so
+  /// the two share one layout: no seam opens between them and neither can be
+  /// pushed past the other.
+  final Widget bottom;
+  final double bottomHeight;
 
   static double collapseExtentFor(BuildContext context, double width, UserDetailResult detail) {
     return expandedHeightFor(context, width, detail) - collapsedHeightFor(width, context);
@@ -164,8 +170,9 @@ class UserCollapsibleHeaderSliver extends StatelessWidget {
         topPadding: includeTopPadding ? snap(mediaQuery.padding.top) : 0,
         expandedHeight: snap(expandedHeightFor(context, width, detail)),
         collapsedHeight: snap(collapsedHeightFor(width, context)),
-        overlapsContent: overlapsContent,
         showBackButton: showBackButton,
+        bottom: bottom,
+        bottomHeight: bottomHeight,
       ),
     );
   }
@@ -266,86 +273,97 @@ class _UserHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.topPadding,
     required this.expandedHeight,
     required this.collapsedHeight,
-    required this.overlapsContent,
     required this.showBackButton,
+    required this.bottom,
+    required this.bottomHeight,
   });
 
   final UserDetailResult detail;
   final double topPadding;
   final double expandedHeight;
   final double collapsedHeight;
-  final bool overlapsContent;
   final bool showBackButton;
+  final Widget bottom;
+  final double bottomHeight;
 
   @override
-  double get minExtent => topPadding + collapsedHeight;
+  double get minExtent => topPadding + collapsedHeight + bottomHeight;
 
   @override
-  double get maxExtent => topPadding + expandedHeight;
+  double get maxExtent => topPadding + expandedHeight + bottomHeight;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     final progress = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
-    final size = MediaQuery.sizeOf(context);
-    final expandedOpacity = (1 - progress * 1.7).clamp(0.0, 1.0);
-    final collapsedOpacity = ((progress - 0.58) / 0.42).clamp(0.0, 1.0);
 
     // Transparent over the ambient backdrop while expanded; the glass fades
-    // in as the header collapses and works start passing beneath it.
+    // in as the header collapses and works start passing beneath it. One
+    // glass covers the header and the bar below it.
     return Material(
       type: MaterialType.transparency,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // The tab bar pinned below continues this glass as one outline.
-          Positioned.fill(
-            child: FrostPinnedChromeGlass(opacity: math.max(progress, this.overlapsContent ? 1.0 : 0.0), animate: false, corners: FrostPinnedChromeCorners.top),
-          ),
-          Positioned.fill(
-            top: topPadding,
-            child: IgnorePointer(
-              ignoring: expandedOpacity < 0.35,
-              child: ClipRect(
-                child: OverflowBox(
-                  alignment: Alignment.topCenter,
-                  minHeight: 0,
-                  maxHeight: expandedHeight,
-                  child: SizedBox(
-                    height: expandedHeight,
-                    child: Opacity(
-                      opacity: expandedOpacity,
-                      child: _ExpandedUserHeader(detail: detail, availableWidth: size.width),
-                    ),
+          Positioned.fill(child: FrostPinnedChromeGlass(opacity: progress, animate: false)),
+          Positioned.fill(bottom: bottomHeight, child: _headerContent(context, progress)),
+          Positioned(left: 0, right: 0, bottom: 0, height: bottomHeight, child: bottom),
+        ],
+      ),
+    );
+  }
+
+  Widget _headerContent(BuildContext context, double progress) {
+    final size = MediaQuery.sizeOf(context);
+    final expandedOpacity = (1 - progress * 1.7).clamp(0.0, 1.0);
+    final collapsedOpacity = ((progress - 0.58) / 0.42).clamp(0.0, 1.0);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned.fill(
+          top: topPadding,
+          child: IgnorePointer(
+            ignoring: expandedOpacity < 0.35,
+            child: ClipRect(
+              child: OverflowBox(
+                alignment: Alignment.topCenter,
+                minHeight: 0,
+                maxHeight: expandedHeight,
+                child: SizedBox(
+                  height: expandedHeight,
+                  child: Opacity(
+                    opacity: expandedOpacity,
+                    child: _ExpandedUserHeader(detail: detail, availableWidth: size.width),
                   ),
                 ),
               ),
             ),
           ),
-          PositionedDirectional(
-            top: topPadding,
-            start: 0,
-            end: 0,
-            height: collapsedHeight,
-            child: IgnorePointer(
-              ignoring: collapsedOpacity < 0.35,
-              child: Opacity(
-                opacity: collapsedOpacity,
-                child: _CollapsedUserHeader(detail: detail, showBackButton: showBackButton),
-              ),
+        ),
+        PositionedDirectional(
+          top: topPadding,
+          start: 0,
+          end: 0,
+          height: collapsedHeight,
+          child: IgnorePointer(
+            ignoring: collapsedOpacity < 0.35,
+            child: Opacity(
+              opacity: collapsedOpacity,
+              child: _CollapsedUserHeader(detail: detail, showBackButton: showBackButton),
             ),
           ),
-          if (showBackButton)
-            PositionedDirectional(
-              top: topPadding + 8,
-              start: 8,
-              child: FrostSurfaceIconButton(
-                icon: FrostIconData.glyph(Icons.arrow_back),
-                tooltip: t.common.back,
-                onPressed: FrostShellNavigationScope.maybeOf(context)?.goBack ?? () => Navigator.of(context).maybePop(),
-              ),
+        ),
+        if (showBackButton)
+          PositionedDirectional(
+            top: topPadding + 8,
+            start: 8,
+            child: FrostSurfaceIconButton(
+              icon: FrostIconData.glyph(Icons.arrow_back),
+              tooltip: t.common.back,
+              onPressed: FrostShellNavigationScope.maybeOf(context)?.goBack ?? () => Navigator.of(context).maybePop(),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 
@@ -355,8 +373,9 @@ class _UserHeaderDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.topPadding != topPadding ||
         oldDelegate.expandedHeight != expandedHeight ||
         oldDelegate.collapsedHeight != collapsedHeight ||
-        oldDelegate.overlapsContent != overlapsContent ||
-        oldDelegate.showBackButton != showBackButton;
+        oldDelegate.showBackButton != showBackButton ||
+        oldDelegate.bottom != bottom ||
+        oldDelegate.bottomHeight != bottomHeight;
   }
 }
 

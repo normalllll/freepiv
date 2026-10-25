@@ -101,21 +101,21 @@ void main() {
     await tester.pump();
     final nested = tester.state<NestedScrollViewState>(find.byType(NestedScrollView));
     List<double> glass() => tester.widgetList<FrostPinnedChromeGlass>(find.byType(FrostPinnedChromeGlass)).map((bar) => bar.opacity).toList();
-    expect(glass(), [0, 0]);
+    // The header and its tab bar share one glass.
+    expect(glass(), [0]);
     nested.outerController.jumpTo(collapseExtent / 2);
     await tester.pump();
-    expect(glass()[0], closeTo(.5, .01));
-    expect(glass()[1], closeTo(.5, .01));
+    expect(glass().single, closeTo(.5, .01));
     await tester.pump(const Duration(milliseconds: 500));
-    expect(glass()[1], closeTo(.5, .01));
+    expect(glass().single, closeTo(.5, .01));
     nested.outerController.jumpTo(collapseExtent);
     nested.innerController.jumpTo(12);
     await tester.pump();
-    expect(glass(), [1, 1]);
+    expect(glass(), [1]);
     nested.innerController.jumpTo(0);
     nested.outerController.jumpTo(0);
     await tester.pump();
-    expect(glass(), [0, 0], reason: 'refresh-to-top has no boolean overlap flash');
+    expect(glass(), [0], reason: 'refresh-to-top has no boolean overlap flash');
     expect(tester.takeException(), isNull);
   });
 
@@ -126,7 +126,7 @@ void main() {
       _app(
         CustomScrollView(
           slivers: [
-            const UserCollapsibleHeaderSliver(detail: _detail, overlapsContent: false, includeTopPadding: false, showBackButton: true),
+            const UserCollapsibleHeaderSliver(detail: _detail, includeTopPadding: false, showBackButton: true, bottom: SizedBox.shrink(), bottomHeight: 0),
             const SliverToBoxAdapter(child: SizedBox(height: 1000)),
           ],
         ),

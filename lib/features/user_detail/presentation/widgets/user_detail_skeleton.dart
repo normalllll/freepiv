@@ -262,10 +262,10 @@ class _SkeletonTabBarDelegate extends SliverPersistentHeaderDelegate {
   const _SkeletonTabBarDelegate();
 
   @override
-  double get minExtent => UserDetailTabBarSliver.height;
+  double get minExtent => UserDetailTabBar.height;
 
   @override
-  double get maxExtent => UserDetailTabBarSliver.height;
+  double get maxExtent => UserDetailTabBar.height;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -274,7 +274,7 @@ class _SkeletonTabBarDelegate extends SliverPersistentHeaderDelegate {
       child: DecoratedBox(
         decoration: const BoxDecoration(),
         child: SizedBox(
-          height: UserDetailTabBarSliver.height,
+          height: UserDetailTabBar.height,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_collapsible_header.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -40,10 +39,6 @@ class UserDetailTabScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final topPadding = includeTopPadding ? mediaQuery.padding.top : 0.0;
-    final pinnedHeaderExtent = topPadding + UserCollapsibleHeaderSliver.collapsedHeightFor(mediaQuery.size.width, context) + UserDetailTabBarSliver.height;
-
     return FrostNestedRefreshView(
       onRefresh: onRefresh,
       builder: (context, refresh) {
@@ -56,35 +51,15 @@ class UserDetailTabScaffold extends StatelessWidget {
             return [
               SliverOverlapAbsorber(
                 handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-                sliver: _UserDetailPinnedHeaderGroup(
-                  maxScrollObstructionExtent: pinnedHeaderExtent,
-                  sliver: SliverLayoutBuilder(
-                    builder: (context, constraints) {
-                      // A fixed-height pinned delegate cannot express how far
-                      // the outer header has collapsed. Use the group's actual
-                      // outer offset, with the same snapped extents as the top.
-                      double snap(double value) => (value * mediaQuery.devicePixelRatio).roundToDouble() / mediaQuery.devicePixelRatio;
-                      final collapseExtent =
-                          snap(UserCollapsibleHeaderSliver.expandedHeightFor(context, mediaQuery.size.width, detail)) -
-                          snap(UserCollapsibleHeaderSliver.collapsedHeightFor(mediaQuery.size.width, context));
-                      final coverage = (constraints.scrollOffset / collapseExtent).clamp(0.0, 1.0);
-                      return SliverMainAxisGroup(
-                        slivers: [
-                          UserCollapsibleHeaderSliver(
-                            detail: detail,
-                            // The coordinator exhausts outer collapse before inner
-                            // lists scroll. The measured outer progress therefore
-                            // also covers inner scrolling and refresh-to-top, with
-                            // no delayed boolean override at the joined edge.
-                            overlapsContent: false,
-                            includeTopPadding: includeTopPadding,
-                            showBackButton: showBackButton,
-                          ),
-                          UserDetailTabBarSliver(tabs: tabs, controller: tabController, glassCoverage: coverage),
-                        ],
-                      );
-                    },
-                  ),
+                // The coordinator exhausts outer collapse before inner lists
+                // scroll, so the header's own collapse progress also covers
+                // inner scrolling and refresh-to-top.
+                sliver: UserCollapsibleHeaderSliver(
+                  detail: detail,
+                  includeTopPadding: includeTopPadding,
+                  showBackButton: showBackButton,
+                  bottom: UserDetailTabBar(tabs: tabs, controller: tabController),
+                  bottomHeight: UserDetailTabBar.height,
                 ),
               ),
             ];
@@ -119,83 +94,25 @@ class UserDetailNestedSliverHeader extends StatelessWidget {
   }
 }
 
-class _UserDetailPinnedHeaderGroup extends SingleChildRenderObjectWidget {
-  const _UserDetailPinnedHeaderGroup({required this.maxScrollObstructionExtent, required Widget sliver}) : super(child: sliver);
-
-  final double maxScrollObstructionExtent;
-
-  @override
-  _RenderUserDetailPinnedHeaderGroup createRenderObject(BuildContext context) {
-    return _RenderUserDetailPinnedHeaderGroup(maxScrollObstructionExtent);
-  }
-
-  @override
-  void updateRenderObject(BuildContext context, _RenderUserDetailPinnedHeaderGroup renderObject) {
-    renderObject.maxScrollObstructionExtent = maxScrollObstructionExtent;
-  }
-}
-
-class _RenderUserDetailPinnedHeaderGroup extends RenderProxySliver {
-  _RenderUserDetailPinnedHeaderGroup(this._maxScrollObstructionExtent);
-
-  double get maxScrollObstructionExtent => _maxScrollObstructionExtent;
-  double _maxScrollObstructionExtent;
-
-  set maxScrollObstructionExtent(double value) {
-    if (value == _maxScrollObstructionExtent) {
-      return;
-    }
-
-    _maxScrollObstructionExtent = value;
-    markNeedsLayout();
-  }
-
-  @override
-  void performLayout() {
-    super.performLayout();
-    geometry = geometry?.copyWith(maxScrollObstructionExtent: maxScrollObstructionExtent);
-  }
-}
-
-class UserDetailTabBarSliver extends StatelessWidget {
-  const UserDetailTabBarSliver({required this.tabs, required this.controller, required this.glassCoverage, super.key});
+/// The tab row pinned under the user header, drawn on the header's glass.
+class UserDetailTabBar extends StatelessWidget {
+  const UserDetailTabBar({required this.tabs, required this.controller, super.key});
 
   final List<UserDetailTabItem> tabs;
   final TabController controller;
-  final double glassCoverage;
 
   static const height = 52.0;
 
   @override
   Widget build(BuildContext context) {
-    return SliverPersistentHeader(
-      pinned: true,
-      delegate: _UserTabBarDelegate(tabs: tabs, controller: controller, glassCoverage: glassCoverage),
-    );
-  }
-}
-
-class _UserTabBarDelegate extends SliverPersistentHeaderDelegate {
-  const _UserTabBarDelegate({required this.tabs, required this.controller, required this.glassCoverage});
-
-  final List<UserDetailTabItem> tabs;
-  final TabController controller;
-  final double glassCoverage;
-
-  @override
-  double get minExtent => UserDetailTabBarSliver.height;
-
-  @override
-  double get maxExtent => UserDetailTabBarSliver.height;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    // Continues the collapsed header's glass once works pass beneath.
-    return SizedBox.expand(
-      child: FrostPinnedChromeGlass(
-        opacity: glassCoverage,
-        animate: false,
-        corners: FrostPinnedChromeCorners.bottom,
+    // A floating glass panel is inset and rounded; keep tab highlights on it.
+    final insets = FrostPinnedChromeGlass.insetsOf(context);
+    final floats = insets != EdgeInsetsDirectional.zero;
+    return Padding(
+      padding: insets,
+      child: ClipRRect(
+        borderRadius: floats ? const BorderRadius.vertical(bottom: Radius.circular(FrostMetrics.groupRadius + 4)) : BorderRadius.zero,
+        clipBehavior: floats ? Clip.antiAlias : Clip.none,
         child: Material(
           type: MaterialType.transparency,
           child: LayoutBuilder(
@@ -211,7 +128,7 @@ class _UserTabBarDelegate extends SliverPersistentHeaderDelegate {
                   tabs: [
                     for (final tab in tabs)
                       Tab(
-                        height: UserDetailTabBarSliver.height,
+                        height: height,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [Icon(tab.icon, size: 18), const SizedBox(width: 6), Text(tab.label, maxLines: 1)],
@@ -225,10 +142,5 @@ class _UserTabBarDelegate extends SliverPersistentHeaderDelegate {
         ),
       ),
     );
-  }
-
-  @override
-  bool shouldRebuild(_UserTabBarDelegate oldDelegate) {
-    return oldDelegate.tabs != tabs || oldDelegate.controller != controller || oldDelegate.glassCoverage != glassCoverage;
   }
 }
