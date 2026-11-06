@@ -9,6 +9,7 @@ import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/app/router/route_activity.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/app/router/app_route_pages.dart' as route_pages;
 import 'package:freepiv/app/router/single_top_go_router.dart';
@@ -27,6 +28,7 @@ class AppRouter {
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoute.home.path,
     refreshListenable: pixivAccountNotifier,
+    observers: [appRootRouteActivity],
     config: RoutingConfig(
       redirect: _redirect,
       routes: [

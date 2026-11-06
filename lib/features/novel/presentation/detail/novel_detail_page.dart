@@ -1,3 +1,4 @@
+import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +40,7 @@ class NovelDetailPage extends ConsumerWidget {
           return const NovelNotFoundPage();
         }
 
-        return PivErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
+        return AppPageError.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
     );
     final id = novelId ?? novel?.id;

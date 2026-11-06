@@ -1,3 +1,4 @@
+import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/core/downloads/models/download_origin.dart';
 import 'package:freepiv/core/utils/illust_image_url.dart';
@@ -43,7 +44,7 @@ class IllustDetailPage extends ConsumerWidget {
           return const _IllustNotFoundPage();
         }
 
-        return PivErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
+        return AppPageError.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
     );
     final id = illustId ?? illust?.id;
@@ -186,18 +187,7 @@ class _IllustNotFoundPage extends StatelessWidget {
   const _IllustNotFoundPage();
 
   @override
-  Widget build(BuildContext context) {
-    return FrostAutoScaffold(
-      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
-        return Scaffold(
-          appBar: PivAppBar(FrostPageHeader(title: Text(context.t.common.notFound))),
-          body: SafeArea(
-            child: FrostEmptyState(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), title: context.t.common.notFound),
-          ),
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => AppPageError.notFound(message: context.t.common.notFound);
 }
 
 bool _isNotFoundError(Object error) {

@@ -1,3 +1,5 @@
+import 'package:freepiv/app/router/route_activity.dart';
+import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:flutter/gestures.dart';
@@ -43,7 +45,7 @@ class NovelReaderPage extends ConsumerWidget {
     final error = detailValue.error ?? textValue.error;
     if (error != null && !detailValue.isLoading && !textValue.isLoading) {
       if (_isNotFoundError(error)) return const NovelNotFoundPage();
-      return PivErrorPage.fromError(
+      return AppPageError.fromError(
         error: error,
         onRetry: () {
           if (detailValue.hasError) ref.read(provider.notifier).reload();
@@ -102,7 +104,15 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
   double _endTravel = 0;
 
   bool get _controlsEligible =>
-      mounted && _foreground && _windowFocused && !_accountChanged && !_settingsOpen && !_selectionActive && ModalRoute.of(context)?.isCurrent == true;
+      mounted &&
+      _foreground &&
+      _windowFocused &&
+      !_accountChanged &&
+      !_settingsOpen &&
+      !_selectionActive &&
+      ModalRoute.of(context)?.isCurrent == true &&
+      // A dialog of the root navigator covers the reader from outside its route.
+      !appRootRouteActivity.popupOnTop;
 
   Novel get _novel => widget.detail.novel;
 
@@ -134,6 +144,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
       },
     );
     pixivAccountNotifier.addListener(_handleAccountChange);
+    appRootRouteActivity.addListener(_handleRouteActivity);
     _rebuildReaderModel();
     _restoreSession();
     _pageController = PageController(initialPage: _pageIndex);
@@ -169,6 +180,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
     _autoTicker.dispose();
     _volumeLease.release();
     pixivAccountNotifier.removeListener(_handleAccountChange);
+    appRootRouteActivity.removeListener(_handleRouteActivity);
     WidgetsBinding.instance.removeObserver(this);
     _disposeSegmentScrollControllers();
     _shortcutFocusNode.dispose();
@@ -582,7 +594,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
     }
 
     if (event.logicalKey == LogicalKeyboardKey.escape) {
-      if (ModalRoute.of(context)?.isCurrent != true || _settingsOpen) return KeyEventResult.ignored;
+      if (ModalRoute.of(context)?.isCurrent != true || appRootRouteActivity.popupOnTop || _settingsOpen) return KeyEventResult.ignored;
       if (_selectionActive) {
         final selection = _blockKeys[_currentPageIndex]?.firstOrNull?.currentContext?.findAncestorStateOfType<SelectionAreaState>()?.selectableRegion;
         selection?.hideToolbar();

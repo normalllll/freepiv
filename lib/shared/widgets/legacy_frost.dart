@@ -87,24 +87,6 @@ class PivAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) => SafeArea(bottom: false, child: header);
 }
 
-/// The removed `FrostErrorPage.fromError`: a header and a whole-page error.
-class PivErrorPage extends StatelessWidget {
-  const PivErrorPage.fromError({required this.error, required this.onRetry, super.key});
-
-  final Object error;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      const SafeArea(bottom: false, child: FrostPageHeader()),
-      Expanded(
-        child: FrostErrorContent.fromError(error: error, onRetry: onRetry),
-      ),
-    ],
-  );
-}
-
 /// The removed `FrostSliverPagedList` for lists paged by a provider rather than
 /// a `FrostListSource`: asks for the next page when the end comes into view.
 class PivSliverPagedList<T> extends StatelessWidget {

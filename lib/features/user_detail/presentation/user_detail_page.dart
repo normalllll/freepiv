@@ -1,3 +1,4 @@
+import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
@@ -69,7 +70,7 @@ class UserDetailPage extends ConsumerWidget {
             return UserDetailLoadingSkeleton(useHorizontalLayout: useHorizontalLayout);
           },
           error: (error, stackTrace) {
-            return PivErrorPage.fromError(error: error, onRetry: () => ref.read(userDetailProvider(args).notifier).reload());
+            return AppPageError.fromError(error: error, onRetry: () => ref.read(userDetailProvider(args).notifier).reload());
           },
         );
       },

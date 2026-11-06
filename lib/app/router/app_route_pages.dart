@@ -1,3 +1,4 @@
+import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -302,13 +303,6 @@ int? _commentCountFromExtra(Object? extra) {
 Page<void> _missingRoutePage({required LocalKey key, required String message}) {
   return FrostDetailPage(
     key: key,
-    child: FrostAutoScaffold(
-      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
-        return Scaffold(
-          appBar: useHorizontalLayout ? null : AppBar(title: Text(context.t.common.notFound)),
-          body: Center(child: Text(message)),
-        );
-      },
-    ),
+    child: AppPageError.notFound(message: message),
   );
 }
