@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'dart:async';
 import 'package:flutter/scheduler.dart';
 import 'package:freepiv/core/platform/reader_volume_keys.dart';
+import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/features/novel/presentation/reader/reader_scroll_clock.dart';
 import 'dart:math' as math;
@@ -75,14 +76,15 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
   late int _totalTextCharacters;
 
   int _pageIndex = 0;
-  double _fontSize = 18;
-  double _lineHeight = 1.78;
+  late double _fontSize;
+  late double _lineHeight;
   bool _chromeVisible = true;
   NovelReadingPosition? _pendingRestore;
   late final ReaderVolumeKeyLease _volumeLease;
+  late final ReaderSettingsNotifier _readerSettings;
   late final Ticker _autoTicker;
   final _scrollClock = ReaderScrollClock();
-  bool _volumeEnabled = false;
+  late bool _volumeEnabled;
   bool _windowFocused = true;
   bool _foreground = true;
   bool _settingsOpen = false;
@@ -91,7 +93,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
   late final String? _sessionAccountId;
   bool _autoScrolling = false;
   bool _advancingSegment = false;
-  double _scrollSpeed = 36;
+  late double _scrollSpeed;
   double _endTravel = 0;
 
   bool get _controlsEligible =>
@@ -106,6 +108,12 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
   @override
   void initState() {
     super.initState();
+    _readerSettings = ProviderScope.containerOf(context, listen: false).read(readerSettingsProvider.notifier);
+    final saved = ProviderScope.containerOf(context, listen: false).read(readerSettingsProvider);
+    _fontSize = saved.fontSize;
+    _lineHeight = saved.lineHeight;
+    _scrollSpeed = saved.autoScrollSpeed;
+    _volumeEnabled = saved.volumeKeys;
     WidgetsBinding.instance.addObserver(this);
     _sessionAccountId = pixivAccountNotifier.value?.user.id;
     _foreground = WidgetsBinding.instance.lifecycleState == null || WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
@@ -538,12 +546,14 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
     _reflowAtCurrentPosition(() {
       _fontSize = value.clamp(15, 26).toDouble();
     });
+    _readerSettings.setFontSize(_fontSize);
   }
 
   void _setLineHeight(double value) {
     _reflowAtCurrentPosition(() {
       _lineHeight = value.clamp(1.45, 2.2).toDouble();
     });
+    _readerSettings.setLineHeight(_lineHeight);
   }
 
   void _toggleChrome() {
@@ -664,10 +674,14 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
               volumeEnabled: _volumeEnabled,
               onVolumeChanged: (enabled) => updateSheet(() {
                 setState(() => _volumeEnabled = enabled);
+                _readerSettings.setVolumeKeys(enabled);
                 _handleRouteActivity();
               }),
               scrollSpeed: _scrollSpeed,
-              onSpeedChanged: (speed) => updateSheet(() => setState(() => _scrollSpeed = speed)),
+              onSpeedChanged: (speed) => updateSheet(() {
+                setState(() => _scrollSpeed = speed);
+                _readerSettings.setAutoScrollSpeed(speed);
+              }),
             ),
           );
         },

@@ -114,12 +114,23 @@ class AppSettings {
   static const _maxConcurrentDownloadsKey = 'maxConcurrentDownloads';
   static const _proxyEnabledKey = 'proxyEnabled';
   static const _proxyUrlKey = 'proxyUrl';
+  static const _navigationPlacementKey = 'navigationPlacement';
+  static const _sidebarExpandedKey = 'sidebarExpanded';
+  static const _windowPlacementKey = 'windowPlacement';
+  static const _readerFontSizeKey = 'readerFontSize';
+  static const _readerLineHeightKey = 'readerLineHeight';
+  static const _readerAutoScrollSpeedKey = 'readerAutoScrollSpeed';
+  static const _readerVolumeKeysKey = 'readerVolumeKeys';
+  static const _downloadEntryPositionKey = 'downloadEntryPosition';
 
   static const defaultLocaleCode = 'en-US';
   static const supportedLocaleCodes = {'en-US', 'zh-CN', 'zh-Hant-TW', 'ja-JP'};
   static const defaultMaxConcurrentDownloads = 3;
   static const minConcurrentDownloads = 1;
   static const maxConcurrentDownloadsLimit = 6;
+  static const readerFontSizeRange = (min: 15.0, max: 26.0, fallback: 18.0);
+  static const readerLineHeightRange = (min: 1.45, max: 2.2, fallback: 1.78);
+  static const readerAutoScrollSpeedRange = (min: 12.0, max: 96.0, fallback: 36.0);
 
   static const _settingKeys = {
     _searchHistoryKey,
@@ -135,6 +146,14 @@ class AppSettings {
     _maxConcurrentDownloadsKey,
     _proxyEnabledKey,
     _proxyUrlKey,
+    _navigationPlacementKey,
+    _sidebarExpandedKey,
+    _windowPlacementKey,
+    _readerFontSizeKey,
+    _readerLineHeightKey,
+    _readerAutoScrollSpeedKey,
+    _readerVolumeKeysKey,
+    _downloadEntryPositionKey,
   };
 
   static final Map<String, dynamic> _values = {};
@@ -270,6 +289,44 @@ class AppSettings {
     _write(_proxyUrlKey, value == null ? null : normalizeProxyUrl(value));
   }
 
+  /// The navigation placement the user chose; automatic follows the window.
+  static FrostNavigationPlacement get navigationPlacement =>
+      _enumSetting(_navigationPlacementKey, FrostNavigationPlacement.values, FrostNavigationPlacement.automatic);
+
+  static set navigationPlacement(FrostNavigationPlacement value) => _write(_navigationPlacementKey, value.name);
+
+  static bool get sidebarExpanded => _values[_sidebarExpandedKey] == true;
+
+  static set sidebarExpanded(bool value) => _write(_sidebarExpandedKey, value);
+
+  /// The desktop window's last normal bounds, display and maximized state.
+  static FrostWindowPlacement? get windowPlacement => _windowPlacementFrom(_values[_windowPlacementKey]);
+
+  static set windowPlacement(FrostWindowPlacement? value) => _write(_windowPlacementKey, value?.toMap());
+
+  static double get readerFontSize => _rangeSetting(_readerFontSizeKey, readerFontSizeRange);
+
+  static set readerFontSize(double value) => _write(_readerFontSizeKey, _clampRange(value, readerFontSizeRange));
+
+  static double get readerLineHeight => _rangeSetting(_readerLineHeightKey, readerLineHeightRange);
+
+  static set readerLineHeight(double value) => _write(_readerLineHeightKey, _clampRange(value, readerLineHeightRange));
+
+  static double get readerAutoScrollSpeed => _rangeSetting(_readerAutoScrollSpeedKey, readerAutoScrollSpeedRange);
+
+  static set readerAutoScrollSpeed(double value) => _write(_readerAutoScrollSpeedKey, _clampRange(value, readerAutoScrollSpeedRange));
+
+  static bool get readerVolumeKeys => _values[_readerVolumeKeysKey] == true;
+
+  static set readerVolumeKeys(bool value) => _write(_readerVolumeKeysKey, value);
+
+  /// Where the phone layout's floating download button last snapped.
+  static FrostFloatingEntryPosition get downloadEntryPosition =>
+      _downloadEntryPositionFrom(_values[_downloadEntryPositionKey]) ?? const FrostFloatingEntryPosition();
+
+  static set downloadEntryPosition(FrostFloatingEntryPosition value) =>
+      _write(_downloadEntryPositionKey, {'edge': value.edge.name, 'fraction': value.fraction});
+
   static Future<void> initialize({AppSettingsStore? store}) async {
     _store = store ?? await HiveAppSettingsStore.open();
 
@@ -317,6 +374,13 @@ class AppSettings {
       _maxConcurrentDownloadsKey => value is int && _isValidMaxConcurrentDownloads(value),
       _proxyEnabledKey => value is bool,
       _proxyUrlKey => value is String && normalizeProxyUrl(value) != null,
+      _navigationPlacementKey => _isEnumSettingValue(value, FrostNavigationPlacement.values),
+      _sidebarExpandedKey || _readerVolumeKeysKey => value is bool,
+      _windowPlacementKey => _windowPlacementFrom(value) != null,
+      _readerFontSizeKey => _inRange(value, readerFontSizeRange),
+      _readerLineHeightKey => _inRange(value, readerLineHeightRange),
+      _readerAutoScrollSpeedKey => _inRange(value, readerAutoScrollSpeedRange),
+      _downloadEntryPositionKey => _downloadEntryPositionFrom(value) != null,
       _ => false,
     };
   }
@@ -337,6 +401,32 @@ class AppSettings {
   static bool _isEnumSettingValue<T extends Enum>(Object value, List<T> values) {
     return value is String && values.any((enumValue) => enumValue.name == value);
   }
+
+  static FrostWindowPlacement? _windowPlacementFrom(Object? value) {
+    if (value is! Map) return null;
+    try {
+      return FrostWindowPlacement.fromMap(Map<Object?, Object?>.from(value));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static FrostFloatingEntryPosition? _downloadEntryPositionFrom(Object? value) {
+    if (value is! Map) return null;
+    final edge = FrostFloatingEntryEdge.values.where((edge) => edge.name == value['edge']).firstOrNull;
+    final fraction = value['fraction'];
+    if (edge == null || fraction is! num || fraction < 0 || fraction > 1) return null;
+    return FrostFloatingEntryPosition(edge: edge, fraction: fraction.toDouble());
+  }
+
+  static bool _inRange(Object value, ({double min, double max, double fallback}) range) => value is num && value >= range.min && value <= range.max;
+
+  static double _rangeSetting(String key, ({double min, double max, double fallback}) range) {
+    final value = _values[key];
+    return value is num ? value.toDouble() : range.fallback;
+  }
+
+  static double _clampRange(double value, ({double min, double max, double fallback}) range) => value.clamp(range.min, range.max).toDouble();
 
   static bool _isValidMaxConcurrentDownloads(int value) {
     return value >= minConcurrentDownloads && value <= maxConcurrentDownloadsLimit;

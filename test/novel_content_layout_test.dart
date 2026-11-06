@@ -3,6 +3,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:flutter/gestures.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/platform/reader_volume_keys.dart';
+import 'package:freepiv/core/services/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -77,6 +78,9 @@ Widget _host(Widget child, {double textScale = 1}) => ProviderScope(
 );
 
 void main() {
+  // The reader saves its typography; keep those writes in memory.
+  setUp(() => AppSettings.initialize(store: _MemorySettingsStore()));
+
   testWidgets('novel tile keeps real summary, separate rank and original tag', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -428,3 +432,13 @@ Widget _readerHost(String text, {ReaderVolumeKeys? volumeKeys, bool reducedMotio
     ),
   ),
 );
+
+class _MemorySettingsStore implements AppSettingsStore {
+  final values = <String, dynamic>{};
+
+  @override
+  Map<String, dynamic> load() => Map.of(values);
+
+  @override
+  Future<void> write(String key, dynamic value) async => value == null ? values.remove(key) : values[key] = value;
+}

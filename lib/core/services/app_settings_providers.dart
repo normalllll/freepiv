@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:flutter/foundation.dart';
+import 'package:frost_ui/frost_ui.dart';
 
 final appLocaleProvider = NotifierProvider<AppLocaleNotifier, AppLocale?>(AppLocaleNotifier.new);
 
@@ -17,6 +19,12 @@ final downloadSavePathSettingsProvider = NotifierProvider<DownloadSavePathSettin
 final maxConcurrentDownloadsProvider = NotifierProvider<MaxConcurrentDownloadsNotifier, int>(MaxConcurrentDownloadsNotifier.new);
 
 final proxySettingsProvider = NotifierProvider<AppProxySettingsNotifier, AppProxySettings>(AppProxySettingsNotifier.new);
+
+final navigationPlacementProvider = NotifierProvider<NavigationPlacementNotifier, FrostNavigationPlacement>(NavigationPlacementNotifier.new);
+
+final sidebarExpandedProvider = NotifierProvider<SidebarExpandedNotifier, bool>(SidebarExpandedNotifier.new);
+
+final readerSettingsProvider = NotifierProvider<ReaderSettingsNotifier, ReaderSettings>(ReaderSettingsNotifier.new);
 
 Future<void> initializeLocaleSettings() async {
   final localeCode = AppSettings.localeCode;
@@ -153,5 +161,79 @@ AppLocale _appLocaleFromCode(String code) {
     return AppLocaleUtils.parse(code);
   } catch (_) {
     return AppLocale.enUs;
+  }
+}
+
+class NavigationPlacementNotifier extends Notifier<FrostNavigationPlacement> {
+  @override
+  FrostNavigationPlacement build() => AppSettings.navigationPlacement;
+
+  void setPlacement(FrostNavigationPlacement placement) {
+    if (state == placement) return;
+    state = placement;
+    AppSettings.navigationPlacement = placement;
+  }
+}
+
+class SidebarExpandedNotifier extends Notifier<bool> {
+  @override
+  bool build() => AppSettings.sidebarExpanded;
+
+  void setExpanded(bool expanded) {
+    if (state == expanded) return;
+    state = expanded;
+    AppSettings.sidebarExpanded = expanded;
+  }
+}
+
+/// The novel reader's typography and controls, kept across launches.
+@immutable
+class ReaderSettings {
+  const ReaderSettings({required this.fontSize, required this.lineHeight, required this.autoScrollSpeed, required this.volumeKeys});
+
+  final double fontSize;
+  final double lineHeight;
+  final double autoScrollSpeed;
+  final bool volumeKeys;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ReaderSettings &&
+      other.fontSize == fontSize &&
+      other.lineHeight == lineHeight &&
+      other.autoScrollSpeed == autoScrollSpeed &&
+      other.volumeKeys == volumeKeys;
+
+  @override
+  int get hashCode => Object.hash(fontSize, lineHeight, autoScrollSpeed, volumeKeys);
+}
+
+class ReaderSettingsNotifier extends Notifier<ReaderSettings> {
+  @override
+  ReaderSettings build() => ReaderSettings(
+    fontSize: AppSettings.readerFontSize,
+    lineHeight: AppSettings.readerLineHeight,
+    autoScrollSpeed: AppSettings.readerAutoScrollSpeed,
+    volumeKeys: AppSettings.readerVolumeKeys,
+  );
+
+  void setFontSize(double value) {
+    AppSettings.readerFontSize = value;
+    state = build();
+  }
+
+  void setLineHeight(double value) {
+    AppSettings.readerLineHeight = value;
+    state = build();
+  }
+
+  void setAutoScrollSpeed(double value) {
+    AppSettings.readerAutoScrollSpeed = value;
+    state = build();
+  }
+
+  void setVolumeKeys(bool value) {
+    AppSettings.readerVolumeKeys = value;
+    state = build();
   }
 }
