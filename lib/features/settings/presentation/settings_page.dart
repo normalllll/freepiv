@@ -55,6 +55,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 value: reduceTransparency,
                 onChanged: (value) => ref.read(reduceTransparencyProvider.notifier).setEnabled(value),
               ),
+              const SizedBox(height: 16),
+              FrostFormRow(
+                label: Text(translations.navigationPlacement.title),
+                control: FrostPicker<FrostNavigationPlacement>.menu(
+                  label: translations.navigationPlacement.title,
+                  value: ref.watch(navigationPlacementProvider),
+                  options: [
+                    FrostPickerOption(value: FrostNavigationPlacement.automatic, label: translations.navigationPlacement.automatic),
+                    FrostPickerOption(value: FrostNavigationPlacement.bottom, label: translations.navigationPlacement.bottom),
+                    FrostPickerOption(value: FrostNavigationPlacement.sidebar, label: translations.navigationPlacement.sidebar),
+                  ],
+                  onChanged: ref.read(navigationPlacementProvider.notifier).setPlacement,
+                ),
+              ),
             ],
           ),
         ),

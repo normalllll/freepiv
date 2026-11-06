@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/downloads/presentation/download_bulk_actions.dart';
 import 'dart:async';
@@ -26,32 +27,36 @@ class DownloadsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FrostAutoScaffold(
-      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
-        return Scaffold(
-          body: FrostCollapsingHeader(
-            header: useHorizontalLayout ? null : _downloadsAppBar(),
-            child: SafeArea(
-              top: useHorizontalLayout,
-              child: Column(
-                children: [
-                  if (useHorizontalLayout)
-                    FrostInlinePageHeading(
-                      title: t.settings.downloads.tasksTitle,
-                      actions: [
-                        IconButton(tooltip: t.settings.downloads.sync, icon: const Icon(Icons.sync_outlined), onPressed: () => unawaited(_syncDownloads())),
-                      ],
-                    ),
+    // F5 syncs, like the sync button.
+    return AppRefreshScope(
+      onRefresh: _syncDownloads,
+      child: FrostAutoScaffold(
+        builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
+          return Scaffold(
+            body: FrostCollapsingHeader(
+              header: useHorizontalLayout ? null : _downloadsAppBar(),
+              child: SafeArea(
+                top: useHorizontalLayout,
+                child: Column(
+                  children: [
+                    if (useHorizontalLayout)
+                      FrostInlinePageHeading(
+                        title: t.settings.downloads.tasksTitle,
+                        actions: [
+                          IconButton(tooltip: t.settings.downloads.sync, icon: const Icon(Icons.sync_outlined), onPressed: () => unawaited(_syncDownloads())),
+                        ],
+                      ),
 
-                  Expanded(
-                    child: _DownloadsBody(onSync: _syncDownloads, focusItem: focusItem, taskStream: taskStream),
-                  ),
-                ],
+                    Expanded(
+                      child: _DownloadsBody(onSync: _syncDownloads, focusItem: focusItem, taskStream: taskStream),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 

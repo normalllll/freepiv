@@ -39,6 +39,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsJaJp $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsJaJp(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final _Translations$navigationPlacement$ja_JP navigationPlacement = _Translations$navigationPlacement$ja_JP._(_root);
 	@override late final _Translations$frost$ja_JP frost = _Translations$frost$ja_JP._(_root);
 	@override late final _Translations$nativeWindow$ja_JP nativeWindow = _Translations$nativeWindow$ja_JP._(_root);
 	@override late final _Translations$discover$ja_JP discover = _Translations$discover$ja_JP._(_root);
@@ -63,6 +64,19 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$richText$ja_JP richText = _Translations$richText$ja_JP._(_root);
 	@override late final _Translations$fanbox$ja_JP fanbox = _Translations$fanbox$ja_JP._(_root);
 	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
+}
+
+// Path: navigationPlacement
+class _Translations$navigationPlacement$ja_JP extends Translations$navigationPlacement$en_US {
+	_Translations$navigationPlacement$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'ナビゲーション';
+	@override String get automatic => '自動';
+	@override String get bottom => '下部バー';
+	@override String get sidebar => 'サイドバー';
 }
 
 // Path: frost
@@ -205,6 +219,7 @@ class _Translations$navigation$ja_JP extends Translations$navigation$en_US {
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
+	@override String get backToFirst => '最初のページに戻る';
 	@override String get activity => '新着';
 	@override String get home => 'ホーム';
 	@override String get search => '検索';
@@ -1415,6 +1430,10 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 extension on TranslationsJaJp {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'navigationPlacement.title' => 'ナビゲーション',
+			'navigationPlacement.automatic' => '自動',
+			'navigationPlacement.bottom' => '下部バー',
+			'navigationPlacement.sidebar' => 'サイドバー',
 			'frost.retry' => '再試行',
 			'frost.error' => 'エラー',
 			'frost.errorDetails' => 'エラーの詳細',
@@ -1512,6 +1531,7 @@ extension on TranslationsJaJp {
 			'discover.deleteHistoryItem' => 'この検索履歴を削除',
 			'discover.emptyHistory' => '検索履歴がここに表示されます',
 			'app.title' => 'freepiv',
+			'navigation.backToFirst' => '最初のページに戻る',
 			'navigation.activity' => '新着',
 			'navigation.home' => 'ホーム',
 			'navigation.search' => '検索',
@@ -1922,13 +1942,13 @@ extension on TranslationsJaJp {
 			'illust.section.comments' => 'コメント',
 			'illust.section.commentsWithCount' => ({required Object count}) => 'コメント（${count}）',
 			'illust.section.relatedWorks' => '関連作品',
+			_ => null,
+		} ?? switch (path) {
 			'illust.metadata.type' => '種類',
 			'illust.metadata.created' => '作成日時',
 			'illust.badge.aiArtwork' => 'AI 作品',
 			'illust.badge.original' => 'オリジナル',
 			'illust.stats.size' => 'サイズ',
-			_ => null,
-		} ?? switch (path) {
 			'illust.stats.views' => '閲覧',
 			'illust.stats.bookmarks' => 'ブックマーク',
 			'illust.stats.pages' => 'ページ',

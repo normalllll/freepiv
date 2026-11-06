@@ -1,4 +1,10 @@
 {
+  "navigationPlacement": {
+    "title": "Navigation",
+    "automatic": "Automatic",
+    "bottom": "Bottom bar",
+    "sidebar": "Sidebar"
+  },
   "frost": {
     "retry": "Retry",
     "error": "Error",
@@ -91,6 +97,7 @@
     "title": "freepiv"
   },
   "navigation": {
+    "backToFirst": "Back to first page",
     "activity": "Activity",
     "home": "Home",
     "search": "Search",

@@ -1,4 +1,10 @@
 {
+  "navigationPlacement": {
+    "title": "导航位置",
+    "automatic": "自动",
+    "bottom": "底栏",
+    "sidebar": "侧栏"
+  },
   "frost": {
     "retry": "重试",
     "error": "错误",
@@ -91,6 +97,7 @@
     "title": "freepiv"
   },
   "navigation": {
+    "backToFirst": "回到第一页",
     "activity": "动态",
     "home": "首页",
     "search": "搜索",

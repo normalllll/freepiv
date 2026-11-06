@@ -1,4 +1,10 @@
 {
+  "navigationPlacement": {
+    "title": "導覽位置",
+    "automatic": "自動",
+    "bottom": "底部列",
+    "sidebar": "側欄"
+  },
   "frost": {
     "retry": "重試",
     "error": "錯誤",
@@ -91,6 +97,7 @@
     "title": "freepiv"
   },
   "navigation": {
+    "backToFirst": "回到第一頁",
     "activity": "動態",
     "home": "首頁",
     "search": "搜尋",

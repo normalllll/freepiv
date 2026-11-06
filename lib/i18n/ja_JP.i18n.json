@@ -1,4 +1,10 @@
 {
+  "navigationPlacement": {
+    "title": "ナビゲーション",
+    "automatic": "自動",
+    "bottom": "下部バー",
+    "sidebar": "サイドバー"
+  },
   "frost": {
     "retry": "再試行",
     "error": "エラー",
@@ -91,6 +97,7 @@
     "title": "freepiv"
   },
   "navigation": {
+    "backToFirst": "最初のページに戻る",
     "activity": "新着",
     "home": "ホーム",
     "search": "検索",

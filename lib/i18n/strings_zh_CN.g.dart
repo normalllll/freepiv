@@ -39,6 +39,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsZhCn $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhCn(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$navigationPlacement$zh_CN navigationPlacement = Translations$navigationPlacement$zh_CN.internal(_root);
 	@override late final Translations$frost$zh_CN frost = Translations$frost$zh_CN.internal(_root);
 	@override late final Translations$nativeWindow$zh_CN nativeWindow = Translations$nativeWindow$zh_CN.internal(_root);
 	@override late final Translations$discover$zh_CN discover = Translations$discover$zh_CN.internal(_root);
@@ -63,6 +64,19 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$richText$zh_CN richText = Translations$richText$zh_CN.internal(_root);
 	@override late final Translations$fanbox$zh_CN fanbox = Translations$fanbox$zh_CN.internal(_root);
 	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
+}
+
+// Path: navigationPlacement
+class Translations$navigationPlacement$zh_CN extends Translations$navigationPlacement$en_US {
+	Translations$navigationPlacement$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '导航位置';
+	@override String get automatic => '自动';
+	@override String get bottom => '底栏';
+	@override String get sidebar => '侧栏';
 }
 
 // Path: frost
@@ -205,6 +219,7 @@ class Translations$navigation$zh_CN extends Translations$navigation$en_US {
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
+	@override String get backToFirst => '回到第一页';
 	@override String get activity => '动态';
 	@override String get home => '首页';
 	@override String get search => '搜索';
@@ -1415,6 +1430,10 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 extension on TranslationsZhCn {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'navigationPlacement.title' => '导航位置',
+			'navigationPlacement.automatic' => '自动',
+			'navigationPlacement.bottom' => '底栏',
+			'navigationPlacement.sidebar' => '侧栏',
 			'frost.retry' => '重试',
 			'frost.error' => '错误',
 			'frost.errorDetails' => '错误详情',
@@ -1512,6 +1531,7 @@ extension on TranslationsZhCn {
 			'discover.deleteHistoryItem' => '删除这条搜索记录',
 			'discover.emptyHistory' => '搜索记录会显示在这里',
 			'app.title' => 'freepiv',
+			'navigation.backToFirst' => '回到第一页',
 			'navigation.activity' => '动态',
 			'navigation.home' => '首页',
 			'navigation.search' => '搜索',
@@ -1922,13 +1942,13 @@ extension on TranslationsZhCn {
 			'illust.section.comments' => '评论',
 			'illust.section.commentsWithCount' => ({required Object count}) => '评论（${count}）',
 			'illust.section.relatedWorks' => '相似作品',
+			_ => null,
+		} ?? switch (path) {
 			'illust.metadata.type' => '类型',
 			'illust.metadata.created' => '创建时间',
 			'illust.badge.aiArtwork' => 'AI 作品',
 			'illust.badge.original' => '原创',
 			'illust.stats.size' => '尺寸',
-			_ => null,
-		} ?? switch (path) {
 			'illust.stats.views' => '浏览',
 			'illust.stats.bookmarks' => '收藏',
 			'illust.stats.pages' => '页数',

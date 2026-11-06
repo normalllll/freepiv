@@ -39,6 +39,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	TranslationsZhHantTw $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhHantTw(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$navigationPlacement$zh_Hant_TW navigationPlacement = Translations$navigationPlacement$zh_Hant_TW.internal(_root);
 	@override late final Translations$frost$zh_Hant_TW frost = Translations$frost$zh_Hant_TW.internal(_root);
 	@override late final Translations$nativeWindow$zh_Hant_TW nativeWindow = Translations$nativeWindow$zh_Hant_TW.internal(_root);
 	@override late final Translations$discover$zh_Hant_TW discover = Translations$discover$zh_Hant_TW.internal(_root);
@@ -63,6 +64,19 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$richText$zh_Hant_TW richText = Translations$richText$zh_Hant_TW.internal(_root);
 	@override late final Translations$fanbox$zh_Hant_TW fanbox = Translations$fanbox$zh_Hant_TW.internal(_root);
 	@override late final Translations$pixivision$zh_Hant_TW pixivision = Translations$pixivision$zh_Hant_TW.internal(_root);
+}
+
+// Path: navigationPlacement
+class Translations$navigationPlacement$zh_Hant_TW extends Translations$navigationPlacement$en_US {
+	Translations$navigationPlacement$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '導覽位置';
+	@override String get automatic => '自動';
+	@override String get bottom => '底部列';
+	@override String get sidebar => '側欄';
 }
 
 // Path: frost
@@ -205,6 +219,7 @@ class Translations$navigation$zh_Hant_TW extends Translations$navigation$en_US {
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
+	@override String get backToFirst => '回到第一頁';
 	@override String get activity => '動態';
 	@override String get home => '首頁';
 	@override String get search => '搜尋';
@@ -1415,6 +1430,10 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 extension on TranslationsZhHantTw {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'navigationPlacement.title' => '導覽位置',
+			'navigationPlacement.automatic' => '自動',
+			'navigationPlacement.bottom' => '底部列',
+			'navigationPlacement.sidebar' => '側欄',
 			'frost.retry' => '重試',
 			'frost.error' => '錯誤',
 			'frost.errorDetails' => '錯誤詳細資料',
@@ -1512,6 +1531,7 @@ extension on TranslationsZhHantTw {
 			'discover.deleteHistoryItem' => '刪除這筆搜尋記錄',
 			'discover.emptyHistory' => '搜尋記錄會顯示在這裡',
 			'app.title' => 'freepiv',
+			'navigation.backToFirst' => '回到第一頁',
 			'navigation.activity' => '動態',
 			'navigation.home' => '首頁',
 			'navigation.search' => '搜尋',
@@ -1922,13 +1942,13 @@ extension on TranslationsZhHantTw {
 			'illust.section.comments' => '留言',
 			'illust.section.commentsWithCount' => ({required Object count}) => '留言（${count}）',
 			'illust.section.relatedWorks' => '相似作品',
+			_ => null,
+		} ?? switch (path) {
 			'illust.metadata.type' => '類型',
 			'illust.metadata.created' => '建立時間',
 			'illust.badge.aiArtwork' => 'AI 作品',
 			'illust.badge.original' => '原創',
 			'illust.stats.size' => '尺寸',
-			_ => null,
-		} ?? switch (path) {
 			'illust.stats.views' => '瀏覽',
 			'illust.stats.bookmarks' => '收藏',
 			'illust.stats.pages' => '頁數',

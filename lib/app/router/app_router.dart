@@ -7,7 +7,9 @@ import 'package:freepiv/features/fanbox/page.dart';
 import 'package:freepiv/features/fanbox/detail.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
+import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/app/router/app_route_pages.dart' as route_pages;
 import 'package:freepiv/app/router/single_top_go_router.dart';
 import 'package:freepiv/app/router_shell.dart';
@@ -19,10 +21,9 @@ class AppRouter {
 
   static final rootNavigatorKey = GlobalKey<NavigatorState>();
   static final rightNavigatorKey = GlobalKey<NavigatorState>();
-  static final rightNavigatorCanPop = ValueNotifier<bool>(false);
   static String? _pendingProtectedTarget;
 
-  static final router = SingleTopGoRouter(
+  static final SingleTopGoRouter router = SingleTopGoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoute.home.path,
     refreshListenable: pixivAccountNotifier,
@@ -33,19 +34,27 @@ class AppRouter {
         ShellRoute(
           navigatorKey: rightNavigatorKey,
           builder: (context, state, child) {
-            WidgetsBinding.instance.addPostFrameCallback((_) => _refreshRightNavigatorCanPop());
+            final location = currentUri;
             return RouterShell(
-              canPopListenable: rightNavigatorCanPop,
-              onBack: _popRightNavigator,
-              onResetRightNavigator: _popRightNavigatorToRoot,
+              location: location,
+              selectedIndex: destinationIndexFor(location.path),
+              routeDepth: rightNavigatorDepth,
+              atSecondaryRoot: atSwitchedSecondary,
+              onBack: popRightNavigator,
+              onBackToFirst: popRightNavigatorToRoot,
+              onDestinationSelected: (index) => router.go(appRouteDestinations[index].route.path),
+              onSecondarySelected: switchToSecondary,
               child: child,
             );
           },
           routes: [
             StatefulShellRoute.indexedStack(
-              builder: (context, state, navigationShell) {
-                return navigationShell;
-              },
+              // The destinations' root pages are retained page infrastructure:
+              // the shell keeps them below every pushed page.
+              pageBuilder: (context, state, navigationShell) => NoTransitionPage<void>(
+                key: state.pageKey,
+                child: FrostShellDestination(child: navigationShell),
+              ),
               // Only primary navigation destinations retain independent stacks.
               // Secondary pages are pushed above them so all back controls agree.
               branches: [
@@ -166,13 +175,100 @@ class AppRouter {
     return null;
   }
 
-  static void _popRightNavigator() {
-    rightNavigatorKey.currentState?.maybePop();
+  /// The location on top: GoRouter keeps the base location for pushed pages,
+  /// so the last imperative match is the visible one.
+  static Uri get currentUri {
+    final configuration = router.routerDelegate.currentConfiguration;
+    if (configuration.isEmpty) return router.routeInformationProvider.value.uri;
+    return switch (configuration.last) {
+      ImperativeRouteMatch(:final matches) => matches.uri,
+      _ => configuration.uri,
+    };
   }
 
-  static void _popRightNavigatorToRoot() {
+  /// The destination that opened the pages above a destination's root page.
+  static int? _opener;
+
+  /// The destination to highlight for [path]: its own, or for pages any
+  /// destination can open (a work, a search), the one they were opened from.
+  /// A secondary page (downloads, FANBOX, settings) belongs to no primary
+  /// destination: the shell highlights its secondary item alone.
+  static int? destinationIndexFor(String path) {
+    if (appSecondaryIndexForPath(path) != null) return null;
+    final byPath = appDestinationIndexForPath(path);
+    if (byPath == null) return _opener ?? 0;
+    _opener = byPath;
+    return byPath;
+  }
+
+  /// Back one page; a page reached without history goes to the page it
+  /// belongs to.
+  static void popRightNavigator() {
+    final navigator = rightNavigatorKey.currentState;
+    if (rightNavigatorDepth > 0 && navigator != null) {
+      navigator.maybePop();
+    } else if (fallbackPathFor(currentUri.path) case final fallback?) {
+      router.go(fallback);
+    }
+  }
+
+  /// The secondary destination chosen in the sidebar, while it is the page
+  /// right above the destination's root.
+  static String? _switchedSecondary;
+
+  /// Set from the choice until the page is on the stack.
+  static bool _switchPending = false;
+  static bool _watchingSwitch = false;
+
+  /// The sidebar's secondary destinations are destinations too: choosing one
+  /// replaces the pages above the current destination's root with it, as
+  /// choosing a primary destination does, so Back does not return to the page
+  /// it was chosen from and repeated choices do not stack pages. Pages that
+  /// open these from elsewhere (Me's rows) push them as usual.
+  static void switchToSecondary(AppRoute route) {
+    if (AppRoute.match(currentUri.path) == route) return;
+    if (!_watchingSwitch) {
+      _watchingSwitch = true;
+      router.routerDelegate.addListener(_trackSwitchedSecondary);
+    }
+    _switchedSecondary = route.path;
+    _switchPending = true;
+    if (rightNavigatorDepth > 0) router.go(router.routerDelegate.currentConfiguration.uri.toString());
+    router.push(route.path);
+  }
+
+  static void _trackSwitchedSecondary() {
+    final switched = _switchedSecondary;
+    if (switched == null) return;
+    final first = _pushedPath(1);
+    if (first == switched) {
+      _switchPending = false;
+    } else if (!_switchPending) {
+      _switchedSecondary = null;
+    }
+  }
+
+  /// Whether the page on top is a secondary destination chosen in the
+  /// sidebar: a destination root, with nothing for Back to return to.
+  static bool get atSwitchedSecondary => _switchedSecondary != null && rightNavigatorDepth == 1 && _pushedPath(1) == _switchedSecondary;
+
+  /// The path of the right navigator's page at [index] (0 is the
+  /// destination's root).
+  static String? _pushedPath(int index) {
+    for (final match in router.routerDelegate.currentConfiguration.matches) {
+      if (match is ShellRouteMatch && match.navigatorKey == rightNavigatorKey) {
+        if (index >= match.matches.length) return null;
+        return switch (match.matches[index]) {
+          ImperativeRouteMatch(:final matches) => matches.uri.path,
+          final other => other.matchedLocation,
+        };
+      }
+    }
+    return null;
+  }
+
+  static void popRightNavigatorToRoot() {
     rightNavigatorKey.currentState?.popUntil((route) => route.isFirst);
-    _refreshRightNavigatorCanPop();
   }
 
   /// How many pages the right navigator holds above the destination's root.
@@ -183,12 +279,5 @@ class AppRouter {
       }
     }
     return 0;
-  }
-
-  static void _refreshRightNavigatorCanPop() {
-    final canPop = rightNavigatorDepth > 0;
-    if (rightNavigatorCanPop.value != canPop) {
-      rightNavigatorCanPop.value = canPop;
-    }
   }
 }

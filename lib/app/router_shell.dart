@@ -1,67 +1,147 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'package:go_router/go_router.dart';
 
-/// freepiv's routes on the shared navigation shell: the capsule sidebar, the
-/// phone bottom bar, the secondary destinations in More, and the download
-/// dock aligned with the sidebar's icon column.
-class RouterShell extends StatelessWidget {
-  const RouterShell({required this.child, required this.canPopListenable, required this.onBack, required this.onResetRightNavigator, super.key});
+/// The destinations kept off the phone's bottom bar, in order.
+const appSecondaryRoutes = [AppRoute.downloads, AppRoute.fanbox, AppRoute.settings];
 
-  final Widget child;
-  final ValueListenable<bool> canPopListenable;
+/// The secondary destination a location belongs to.
+int? appSecondaryIndexForPath(String path) => switch (AppRoute.match(path)) {
+  AppRoute.downloads => 0,
+  AppRoute.fanbox || AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator => 1,
+  AppRoute.settings => 2,
+  _ => null,
+};
+
+/// freepiv's routes on the shared navigation shell: the three destinations,
+/// the secondary group, Back, and the keys that act on the visible page.
+class RouterShell extends ConsumerWidget {
+  const RouterShell({
+    required this.location,
+    required this.selectedIndex,
+    required this.routeDepth,
+    this.atSecondaryRoot = false,
+    required this.onBack,
+    required this.onBackToFirst,
+    required this.onDestinationSelected,
+    required this.onSecondarySelected,
+    required this.child,
+    super.key,
+  });
+
+  /// The location on top of the content navigator.
+  final Uri location;
+
+  /// The destination to highlight; pages any destination opens keep the one
+  /// they were opened from.
+  final int? selectedIndex;
+
+  /// Pages above the destination's root page.
+  final int routeDepth;
+
+  /// The page on top is a secondary destination chosen in the sidebar: a
+  /// destination root like the primary ones, with no Back.
+  final bool atSecondaryRoot;
   final VoidCallback onBack;
-  final VoidCallback onResetRightNavigator;
+  final VoidCallback onBackToFirst;
+  final ValueChanged<int> onDestinationSelected;
+  final ValueChanged<AppRoute> onSecondarySelected;
+  final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    final path = GoRouterState.of(context).uri.path;
+  Widget build(BuildContext context, WidgetRef ref) {
     final translations = context.t;
-    final secondaryIndex = _secondaryRoutes.indexWhere((route) => path == route.path || path.startsWith('${route.path}/'));
-    return ValueListenableBuilder<bool>(
-      valueListenable: canPopListenable,
-      builder: (context, canPop, _) {
-        void goBack() {
-          if (canPopListenable.value) {
-            onBack();
-          } else if (fallbackPathFor(path) case final fallback?) {
-            context.go(fallback);
-          }
-        }
-
-        return FrostShell(
-          destinations: [
-            for (final destination in appRouteDestinations)
-              FrostNavDestination(icon: destination.icon, label: appRouteDestinationLabel(translations, destination)),
+    final path = location.path;
+    final atDestinationRoot = (routeDepth == 0 && isMobileNavigationPath(path)) || atSecondaryRoot;
+    final shell = FrostShell(
+      destinations: [
+        for (final destination in appRouteDestinations) FrostNavDestination(icon: destination.icon, label: appRouteDestinationLabel(translations, destination)),
+      ],
+      selectedIndex: selectedIndex,
+      atDestinationRoot: atDestinationRoot,
+      onDestinationSelected: onDestinationSelected,
+      secondary: FrostShellSecondary(
+        destinations: [
+          for (final route in appSecondaryRoutes) FrostNavDestination(icon: _secondaryIcon(route), label: appRouteNavigationLabel(translations, route)),
+        ],
+        selectedIndex: appSecondaryIndexForPath(path),
+        onSelected: (index) => onSecondarySelected(appSecondaryRoutes[index]),
+      ),
+      canGoBack: !atDestinationRoot,
+      onBack: onBack,
+      showsMobileNavigation: true,
+      navigationPlacement: ref.watch(navigationPlacementProvider),
+      initiallyExpanded: ref.read(sidebarExpandedProvider),
+      onExpandedChanged: ref.read(sidebarExpandedProvider.notifier).setExpanded,
+      brand: FrostShellBrand(
+        expanded: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const _BrandIcon(),
+            const SizedBox(width: FrostGap.related),
+            Flexible(
+              child: FrostText(translations.app.title, role: FrostTextRole.callout, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ),
           ],
-          selectedIndex: appDestinationIndexForPath(path),
-          atDestinationRoot: !canPop && isMobileNavigationPath(path),
-          onDestinationSelected: (index) {
-            onResetRightNavigator();
-            context.go(appRouteDestinations[index].route.path);
-          },
-          secondary: FrostShellSecondary(
-            destinations: [
-              for (final route in _secondaryRoutes) FrostNavDestination(icon: _secondaryIcon(route), label: appRouteNavigationLabel(translations, route)),
-            ],
-            selectedIndex: secondaryIndex < 0 ? null : secondaryIndex,
-            onSelected: (index) {
-              final route = _secondaryRoutes[index];
-              if (path != route.path) context.push(route.path);
-            },
-          ),
-          canGoBack: canPop || fallbackPathFor(path) != null,
-          onBack: goBack,
-          showsMobileNavigation: isMobileNavigationPath(path),
-          child: child,
-        );
-      },
+        ),
+        icon: const _BrandIcon(),
+        label: translations.app.title,
+      ),
+      routeDepth: routeDepth,
+      backToFirst: FrostShellBackToFirst(label: translations.navigation.backToFirst, icon: PivIcons.home, onPressed: onBackToFirst),
+      child: child,
     );
+    // An Escape nothing inside the shell took goes back one page; at a
+    // destination's root it does nothing. It has its own intent: the Scaffolds
+    // around the pages map DismissIntent to their drawers and would swallow it.
+    return Shortcuts(
+      shortcuts: const {SingleActivator(LogicalKeyboardKey.escape): _PageBackIntent(), SingleActivator(LogicalKeyboardKey.f5): _PageRefreshIntent()},
+      child: Actions(
+        actions: {
+          _PageBackIntent: _PageBackAction(enabled: !atDestinationRoot, onBack: onBack),
+          _PageRefreshIntent: CallbackAction<_PageRefreshIntent>(onInvoke: (_) => AppRefreshScope.refreshVisible()),
+        },
+        child: shell,
+      ),
+    );
+  }
+}
+
+class _BrandIcon extends StatelessWidget {
+  const _BrandIcon();
+
+  @override
+  Widget build(BuildContext context) => Image.asset('assets/icon-512.png', width: 24, height: 24, cacheWidth: 96, cacheHeight: 96, excludeFromSemantics: true);
+}
+
+class _PageBackIntent extends Intent {
+  const _PageBackIntent();
+}
+
+class _PageRefreshIntent extends Intent {
+  const _PageRefreshIntent();
+}
+
+class _PageBackAction extends Action<_PageBackIntent> {
+  _PageBackAction({required this.enabled, required this.onBack});
+
+  final bool enabled;
+  final VoidCallback onBack;
+
+  @override
+  bool isEnabled(_PageBackIntent intent) => enabled;
+
+  @override
+  Object? invoke(_PageBackIntent intent) {
+    onBack();
+    return null;
   }
 }
 
@@ -82,13 +162,9 @@ String? fallbackPathFor(String path) {
   };
 }
 
-const _secondaryRoutes = [AppRoute.fanbox, AppRoute.pixivision, AppRoute.downloads, AppRoute.settings, AppRoute.about];
-
 FrostIconData _secondaryIcon(AppRoute route) => switch (route) {
   AppRoute.fanbox => PivIcons.heart,
-  AppRoute.pixivision => PivIcons.newspaper,
   AppRoute.downloads => PivIcons.download,
   AppRoute.settings => PivIcons.settings,
-  AppRoute.about => PivIcons.info,
   _ => PivIcons.more,
 };

@@ -41,6 +41,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
+	late final Translations$navigationPlacement$en_US navigationPlacement = Translations$navigationPlacement$en_US.internal(_root);
 	late final Translations$frost$en_US frost = Translations$frost$en_US.internal(_root);
 	late final Translations$nativeWindow$en_US nativeWindow = Translations$nativeWindow$en_US.internal(_root);
 	late final Translations$discover$en_US discover = Translations$discover$en_US.internal(_root);
@@ -65,6 +66,19 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$richText$en_US richText = Translations$richText$en_US.internal(_root);
 	late final Translations$fanbox$en_US fanbox = Translations$fanbox$en_US.internal(_root);
 	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
+}
+
+// Path: navigationPlacement
+class Translations$navigationPlacement$en_US {
+	Translations$navigationPlacement$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Navigation';
+	String get automatic => 'Automatic';
+	String get bottom => 'Bottom bar';
+	String get sidebar => 'Sidebar';
 }
 
 // Path: frost
@@ -207,6 +221,7 @@ class Translations$navigation$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+	String get backToFirst => 'Back to first page';
 	String get activity => 'Activity';
 	String get home => 'Home';
 	String get search => 'Search';
@@ -1417,6 +1432,10 @@ class Translations$novel$reader$en_US {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'navigationPlacement.title' => 'Navigation',
+			'navigationPlacement.automatic' => 'Automatic',
+			'navigationPlacement.bottom' => 'Bottom bar',
+			'navigationPlacement.sidebar' => 'Sidebar',
 			'frost.retry' => 'Retry',
 			'frost.error' => 'Error',
 			'frost.errorDetails' => 'Error details',
@@ -1514,6 +1533,7 @@ extension on Translations {
 			'discover.deleteHistoryItem' => 'Remove recent search',
 			'discover.emptyHistory' => 'Your searches will appear here',
 			'app.title' => 'freepiv',
+			'navigation.backToFirst' => 'Back to first page',
 			'navigation.activity' => 'Activity',
 			'navigation.home' => 'Home',
 			'navigation.search' => 'Search',
@@ -1924,13 +1944,13 @@ extension on Translations {
 			'illust.section.comments' => 'Comments',
 			'illust.section.commentsWithCount' => ({required Object count}) => 'Comments (${count})',
 			'illust.section.relatedWorks' => 'Related works',
+			_ => null,
+		} ?? switch (path) {
 			'illust.metadata.type' => 'Type',
 			'illust.metadata.created' => 'Created',
 			'illust.badge.aiArtwork' => 'AI Artwork',
 			'illust.badge.original' => 'Original',
 			'illust.stats.size' => 'Size',
-			_ => null,
-		} ?? switch (path) {
 			'illust.stats.views' => 'Views',
 			'illust.stats.bookmarks' => 'Bookmarks',
 			'illust.stats.pages' => 'Pages',
