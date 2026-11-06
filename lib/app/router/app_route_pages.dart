@@ -84,7 +84,10 @@ class _RankingRoute extends StatelessWidget {
 
 /// The discover page, pushed above the destination it was opened from.
 Page<void> discoverPage(BuildContext context, GoRouterState state) {
-  return FrostDetailPage(key: state.pageKey, child: const DiscoverPage());
+  return FrostDetailPage(
+    key: state.pageKey,
+    child: DiscoverPage(focusSearch: state.uri.queryParameters[AppRouteQuery.focus] == AppRouteQuery.on),
+  );
 }
 
 /// The tag search route (`?q=&type=`): works carrying exactly the tag.

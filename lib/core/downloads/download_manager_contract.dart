@@ -38,7 +38,8 @@ abstract interface class DownloadManager {
   /// Records a task for a file the app makes itself (a GIF composed from an
   /// animation's frames) and saves it like a download: the task shows as
   /// running with the progress [generate] reports, then saved, or failed with
-  /// the error in its log.
+  /// the error in its log. [origin] is a [generatedDownloadAddress]; such a
+  /// task is never retried by downloading ([GeneratedDownloadRetryRefused]).
   Future<DownloadedFile> saveGenerated({
     required DownloadOrigin origin,
     required DownloadSource source,
@@ -75,7 +76,8 @@ abstract interface class DownloadManager {
 }
 
 extension DownloadManagerBatchActions on DownloadManager {
-  Future<void> retryFailed() => _applyToTasks((task) => task.needsRetry, retry);
+  /// Files the app made itself are left out: only their work can make them again.
+  Future<void> retryFailed() => _applyToTasks((task) => task.needsRetry && !isGeneratedDownload(task.origin), retry);
 
   Future<void> clearCompleted() => _applyToTasks((task) => task.isCompleted, deleteTask);
 

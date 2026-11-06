@@ -30,7 +30,6 @@ class AppRouter {
     config: RoutingConfig(
       redirect: _redirect,
       routes: [
-        GoRoute(path: AppRoute.login.path, name: AppRoute.login.name, pageBuilder: route_pages.loginPage),
         ShellRoute(
           navigatorKey: rightNavigatorKey,
           builder: (context, state, child) {
@@ -70,6 +69,8 @@ class AppRouter {
               ],
             ),
             GoRoute(path: AppRoute.discover.path, name: AppRoute.discover.name, pageBuilder: route_pages.discoverPage),
+            // Inside the shell, so the download entry stays reachable while signed out.
+            GoRoute(path: AppRoute.login.path, name: AppRoute.login.name, pageBuilder: route_pages.loginPage),
             GoRoute(path: AppRoute.downloads.path, name: AppRoute.downloads.name, pageBuilder: route_pages.downloadsPage),
             GoRoute(
               path: AppRoute.pixivision.path,

@@ -49,6 +49,18 @@ final class ArtworkPage extends DownloadOrigin {
 /// A file shown inside other content (an image in a Pixivision article or a
 /// novel, an image or attachment of a FANBOX post) that is not a Pixiv work
 /// page; a task per file address.
+/// The scheme of a file the app makes itself (an animation's GIF). Its task
+/// address names the file, not anything to download: such a task cannot be
+/// retried by downloading, only by making the file again.
+const generatedDownloadScheme = 'freepiv-generated';
+
+/// The task address of a file the app makes: [kind] and the [name] of the
+/// file, for example `generatedDownloadAddress('ugoira', '123.gif')`.
+Uri generatedDownloadAddress(String kind, String name) => Uri(scheme: generatedDownloadScheme, host: kind, path: '/$name');
+
+/// Whether [origin] is a file the app makes rather than downloads.
+bool isGeneratedDownload(DownloadOrigin origin) => origin is ContentFile && origin.address.scheme == generatedDownloadScheme;
+
 final class ContentFile extends DownloadOrigin {
   const ContentFile(this.address);
 

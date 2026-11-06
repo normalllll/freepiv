@@ -14,6 +14,12 @@ class DownloadException implements Exception {
   }
 }
 
+/// A file the app made itself (an animation's GIF) failed; retrying would
+/// download its source as the file, so it has to be made again from its work.
+class GeneratedDownloadRetryRefused extends DownloadException {
+  const GeneratedDownloadRetryRefused() : super('This file is made in the app; open its work to make it again.');
+}
+
 /// Everything asked for is already queued or downloading; nothing was added.
 class DownloadAlreadyQueued extends DownloadException {
   const DownloadAlreadyQueued() : super('This image is already queued or downloading.');

@@ -1,4 +1,11 @@
 {
+  "downloadEntry": {
+    "summary": "$active in progress · $failed failed",
+    "retryFailed": "Retry failed",
+    "clearCompleted": "Clear completed",
+    "more": "$count more",
+    "viewAll": "View all"
+  },
   "novelText": {
     "loadFailed": "The text couldn't load"
   },

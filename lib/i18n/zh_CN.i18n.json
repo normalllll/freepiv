@@ -1,4 +1,11 @@
 {
+  "downloadEntry": {
+    "summary": "$active 项进行中 · $failed 项失败",
+    "retryFailed": "重试失败",
+    "clearCompleted": "清除已完成",
+    "more": "还有 $count 项",
+    "viewAll": "查看全部"
+  },
   "novelText": {
     "loadFailed": "正文加载失败"
   },

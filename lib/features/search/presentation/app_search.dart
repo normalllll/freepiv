@@ -22,6 +22,86 @@ final appSearchSessionProvider = Provider<SearchAutocompleteSession>((ref) {
   return session;
 });
 
+/// Whether the title row shows the search right now; kept by
+/// [AppSearchPlacementProbe] inside the shell.
+final appSearchInCaption = ValueNotifier<bool>(false);
+
+/// Asks the page header search on top to take focus.
+final appSearchHeaderFocusRequests = ValueNotifier<int>(0);
+
+/// Ctrl K and the home page's search entry: the title bar search when the
+/// title row shows it; otherwise the discover page, opened with its search
+/// focused (or, when it is already on top, its search focused again).
+void openAppSearch(WidgetRef ref, GoRouter router) {
+  if (appSearchInCaption.value) {
+    ref.read(appSearchSessionProvider).focusNode.requestFocus();
+    return;
+  }
+  if (AppRoute.match(router.state.uri.path) == AppRoute.discover) {
+    appSearchHeaderFocusRequests.value++;
+    return;
+  }
+  router.push(AppLocations.discover(focusSearch: true));
+}
+
+/// Marks a search result page: a search submitted from the title bar or a
+/// header while it is on top goes to [onSubmitted] instead of opening another
+/// result page.
+class AppSearchResultsScope extends StatefulWidget {
+  const AppSearchResultsScope({required this.onSubmitted, required this.child, super.key});
+
+  final void Function(String query, SearchType type) onSubmitted;
+  final Widget child;
+
+  static final List<_AppSearchResultsScopeState> _scopes = [];
+
+  /// The result page on the current route, if any.
+  static _AppSearchResultsScopeState? get _visible {
+    for (final scope in _scopes.reversed) {
+      if (scope.mounted && (ModalRoute.isCurrentOf(scope.context) ?? false)) return scope;
+    }
+    return null;
+  }
+
+  @override
+  State<AppSearchResultsScope> createState() => _AppSearchResultsScopeState();
+}
+
+class _AppSearchResultsScopeState extends State<AppSearchResultsScope> {
+  @override
+  void initState() {
+    super.initState();
+    AppSearchResultsScope._scopes.add(this);
+  }
+
+  @override
+  void dispose() {
+    AppSearchResultsScope._scopes.remove(this);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+/// Placed in the shell's content: records whether the title row holds the
+/// search ([FrostShell.titleContentInCaptionOf]), which the shell's own
+/// shortcuts cannot ask from above the shell.
+class AppSearchPlacementProbe extends StatelessWidget {
+  const AppSearchPlacementProbe({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final inCaption = FrostShell.titleContentInCaptionOf(context);
+    if (appSearchInCaption.value != inCaption) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => appSearchInCaption.value = inCaption);
+    }
+    return child;
+  }
+}
+
 /// How many recent searches and trending tags the dropdown shows.
 const _recentSearches = 5;
 const _dropdownTrendingTags = 8;
@@ -67,15 +147,13 @@ class AppSearchActions {
       callback(query, kind);
       return;
     }
-    final router = GoRouter.of(context);
-    final location = AppLocations.search(appSearchKind(kind), query);
-    final top = AppRoute.match(router.state.uri.path);
-    final onResults = top == AppRoute.searchIllustResult || top == AppRoute.searchNovelResult || top == AppRoute.searchUserResult;
-    if (onResults) {
-      router.pushReplacement(location);
-    } else {
-      router.push(location);
+    // A result page on top (a tag search included) changes its words in place,
+    // keeping its filters, tabs and scroll.
+    if (AppSearchResultsScope._visible case final results?) {
+      results.widget.onSubmitted(query, kind);
+      return;
     }
+    GoRouter.of(context).push(AppLocations.search(appSearchKind(kind), query));
   }
 
   void open(String location) {

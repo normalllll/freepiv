@@ -1,3 +1,4 @@
+import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -67,45 +68,50 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
     ref.listen(searchDraftProvider.select((draft) => draft.text.trim().isEmpty), (_, empty) {
       if (empty && !_cleared) setState(() => _cleared = true);
     });
-    return FrostAutoScaffold(
-      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
-        // The query bar floats over the results; they scroll beneath it.
-        return Scaffold(
-          body: FrostPinnedChrome(
-            chrome: SafeArea(
-              bottom: false,
-              child: SearchHeader(
-                showBackButton: !useHorizontalLayout,
-                onBack: () => Navigator.of(context).maybePop(),
-                onSearch: _submitSearch,
-                onSelected: _handleSearchSelection,
-                onTypeChanged: _showType,
-                typeController: _tabs,
+    // Searches submitted from the title bar while this page is on top change
+    // its words here instead of opening another result page.
+    return AppSearchResultsScope(
+      onSubmitted: (query, type) => _submitSearch(SearchSubmission(type: type, query: query)),
+      child: FrostAutoScaffold(
+        builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
+          // The query bar floats over the results; they scroll beneath it.
+          return Scaffold(
+            body: FrostPinnedChrome(
+              chrome: SafeArea(
+                bottom: false,
+                child: SearchHeader(
+                  showBackButton: !useHorizontalLayout,
+                  onBack: () => Navigator.of(context).maybePop(),
+                  onSearch: _submitSearch,
+                  onSelected: _handleSearchSelection,
+                  onTypeChanged: _showType,
+                  typeController: _tabs,
+                ),
               ),
+              body: _cleared
+                  ? const SizedBox.expand()
+                  : TabBarView(
+                      controller: _tabs,
+                      children: [
+                        // A new keyword gets fresh tabs, so each starts at the top.
+                        FrostKeepAlive(
+                          key: ValueKey(('illust', _keyword)),
+                          child: Consumer(builder: (context, ref, _) => _buildIllustResult(ref)),
+                        ),
+                        FrostKeepAlive(
+                          key: ValueKey(('novel', _keyword)),
+                          child: Consumer(builder: (context, ref, _) => _buildNovelResult(ref)),
+                        ),
+                        FrostKeepAlive(
+                          key: ValueKey(('user', _keyword)),
+                          child: Consumer(builder: (context, ref, _) => _buildUserResult(ref)),
+                        ),
+                      ],
+                    ),
             ),
-            body: _cleared
-                ? const SizedBox.expand()
-                : TabBarView(
-                    controller: _tabs,
-                    children: [
-                      // A new keyword gets fresh tabs, so each starts at the top.
-                      FrostKeepAlive(
-                        key: ValueKey(('illust', _keyword)),
-                        child: Consumer(builder: (context, ref, _) => _buildIllustResult(ref)),
-                      ),
-                      FrostKeepAlive(
-                        key: ValueKey(('novel', _keyword)),
-                        child: Consumer(builder: (context, ref, _) => _buildNovelResult(ref)),
-                      ),
-                      FrostKeepAlive(
-                        key: ValueKey(('user', _keyword)),
-                        child: Consumer(builder: (context, ref, _) => _buildUserResult(ref)),
-                      ),
-                    ],
-                  ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 

@@ -39,6 +39,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsJaJp $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsJaJp(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final _Translations$downloadEntry$ja_JP downloadEntry = _Translations$downloadEntry$ja_JP._(_root);
 	@override late final _Translations$novelText$ja_JP novelText = _Translations$novelText$ja_JP._(_root);
 	@override late final _Translations$signOut$ja_JP signOut = _Translations$signOut$ja_JP._(_root);
 	@override late final _Translations$appSearch$ja_JP appSearch = _Translations$appSearch$ja_JP._(_root);
@@ -67,6 +68,20 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$richText$ja_JP richText = _Translations$richText$ja_JP._(_root);
 	@override late final _Translations$fanbox$ja_JP fanbox = _Translations$fanbox$ja_JP._(_root);
 	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
+}
+
+// Path: downloadEntry
+class _Translations$downloadEntry$ja_JP extends Translations$downloadEntry$en_US {
+	_Translations$downloadEntry$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String summary({required Object active, required Object failed}) => '進行中 ${active} 件 · 失敗 ${failed} 件';
+	@override String get retryFailed => '失敗を再試行';
+	@override String get clearCompleted => '完了を消去';
+	@override String more({required Object count}) => 'ほか ${count} 件';
+	@override String get viewAll => 'すべて表示';
 }
 
 // Path: novelText
@@ -1474,6 +1489,11 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 extension on TranslationsJaJp {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'downloadEntry.summary' => ({required Object active, required Object failed}) => '進行中 ${active} 件 · 失敗 ${failed} 件',
+			'downloadEntry.retryFailed' => '失敗を再試行',
+			'downloadEntry.clearCompleted' => '完了を消去',
+			'downloadEntry.more' => ({required Object count}) => 'ほか ${count} 件',
+			'downloadEntry.viewAll' => 'すべて表示',
 			'novelText.loadFailed' => '本文を読み込めませんでした',
 			'signOut.title' => 'pixiv からログアウトしますか？',
 			'signOut.message' => '閲覧するには再度ログインが必要です。ダウンロードと設定はこの端末に残ります。',
@@ -1981,13 +2001,13 @@ extension on TranslationsJaJp {
 			'illust.toast.copying' => ({required Object label}) => '${label}をコピーしています',
 			'illust.toast.copied' => ({required Object label}) => '${label}をコピーしました',
 			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '${label}をコピーしました：${value}',
+			_ => null,
+		} ?? switch (path) {
 			'illust.toast.copyFailed' => ({required Object label}) => '${label}のコピーに失敗しました',
 			'illust.toast.openFailed' => 'Pixiv で作品を開けませんでした',
 			'illust.toast.linkCopied' => 'リンクをコピーしました',
 			'illust.toast.linkCopyFailed' => 'リンクをコピーできませんでした',
 			'illust.toast.alreadyDownloading' => 'このページはすでにダウンロード待ちです',
-			_ => null,
-		} ?? switch (path) {
 			'illust.tooltip.play' => 'アニメーションを再生',
 			'illust.tooltip.previousImage' => '前の画像',
 			'illust.tooltip.nextImage' => '次の画像',

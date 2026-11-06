@@ -41,6 +41,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
+	late final Translations$downloadEntry$en_US downloadEntry = Translations$downloadEntry$en_US.internal(_root);
 	late final Translations$novelText$en_US novelText = Translations$novelText$en_US.internal(_root);
 	late final Translations$signOut$en_US signOut = Translations$signOut$en_US.internal(_root);
 	late final Translations$appSearch$en_US appSearch = Translations$appSearch$en_US.internal(_root);
@@ -69,6 +70,20 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$richText$en_US richText = Translations$richText$en_US.internal(_root);
 	late final Translations$fanbox$en_US fanbox = Translations$fanbox$en_US.internal(_root);
 	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
+}
+
+// Path: downloadEntry
+class Translations$downloadEntry$en_US {
+	Translations$downloadEntry$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String summary({required Object active, required Object failed}) => '${active} in progress · ${failed} failed';
+	String get retryFailed => 'Retry failed';
+	String get clearCompleted => 'Clear completed';
+	String more({required Object count}) => '${count} more';
+	String get viewAll => 'View all';
 }
 
 // Path: novelText
@@ -1476,6 +1491,11 @@ class Translations$novel$reader$en_US {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'downloadEntry.summary' => ({required Object active, required Object failed}) => '${active} in progress · ${failed} failed',
+			'downloadEntry.retryFailed' => 'Retry failed',
+			'downloadEntry.clearCompleted' => 'Clear completed',
+			'downloadEntry.more' => ({required Object count}) => '${count} more',
+			'downloadEntry.viewAll' => 'View all',
 			'novelText.loadFailed' => 'The text couldn\'t load',
 			'signOut.title' => 'Sign out of Pixiv?',
 			'signOut.message' => 'You need to sign in again to browse. Downloads and settings stay on this device.',
@@ -1983,13 +2003,13 @@ extension on Translations {
 			'illust.toast.copying' => ({required Object label}) => 'Copying ${label}',
 			'illust.toast.copied' => ({required Object label}) => 'Copied ${label}',
 			'illust.toast.copiedValue' => ({required Object label, required Object value}) => 'Copied ${label}: ${value}',
+			_ => null,
+		} ?? switch (path) {
 			'illust.toast.copyFailed' => ({required Object label}) => 'Failed to copy ${label}',
 			'illust.toast.openFailed' => 'Could not open this work on Pixiv',
 			'illust.toast.linkCopied' => 'Link copied',
 			'illust.toast.linkCopyFailed' => 'Could not copy the link',
 			'illust.toast.alreadyDownloading' => 'This page is already in the download queue',
-			_ => null,
-		} ?? switch (path) {
 			'illust.tooltip.play' => 'Play animation',
 			'illust.tooltip.previousImage' => 'Previous image',
 			'illust.tooltip.nextImage' => 'Next image',

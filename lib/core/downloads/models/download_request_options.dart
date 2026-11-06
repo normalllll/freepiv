@@ -1,3 +1,4 @@
+import 'download_origin.dart' show generatedDownloadScheme;
 import 'dart:io';
 
 enum DownloadChecksumAlgorithm { md5, sha256 }
@@ -153,6 +154,9 @@ class DownloadNetworkOptions {
   }
 
   DownloadNetworkOptions normalizedFor(Uri uri) {
+    // A generated file's task address is never downloaded (see
+    // generatedDownloadScheme); it carries no network options of its own.
+    if (uri.scheme == generatedDownloadScheme) return this;
     if (uri.scheme != 'http' && uri.scheme != 'https') {
       throw ArgumentError.value(uri, 'uri', 'Only HTTP and HTTPS downloads are supported.');
     }

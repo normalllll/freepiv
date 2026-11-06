@@ -39,6 +39,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsZhCn $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhCn(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$downloadEntry$zh_CN downloadEntry = Translations$downloadEntry$zh_CN.internal(_root);
 	@override late final Translations$novelText$zh_CN novelText = Translations$novelText$zh_CN.internal(_root);
 	@override late final Translations$signOut$zh_CN signOut = Translations$signOut$zh_CN.internal(_root);
 	@override late final Translations$appSearch$zh_CN appSearch = Translations$appSearch$zh_CN.internal(_root);
@@ -67,6 +68,20 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$richText$zh_CN richText = Translations$richText$zh_CN.internal(_root);
 	@override late final Translations$fanbox$zh_CN fanbox = Translations$fanbox$zh_CN.internal(_root);
 	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
+}
+
+// Path: downloadEntry
+class Translations$downloadEntry$zh_CN extends Translations$downloadEntry$en_US {
+	Translations$downloadEntry$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String summary({required Object active, required Object failed}) => '${active} 项进行中 · ${failed} 项失败';
+	@override String get retryFailed => '重试失败';
+	@override String get clearCompleted => '清除已完成';
+	@override String more({required Object count}) => '还有 ${count} 项';
+	@override String get viewAll => '查看全部';
 }
 
 // Path: novelText
@@ -1474,6 +1489,11 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 extension on TranslationsZhCn {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'downloadEntry.summary' => ({required Object active, required Object failed}) => '${active} 项进行中 · ${failed} 项失败',
+			'downloadEntry.retryFailed' => '重试失败',
+			'downloadEntry.clearCompleted' => '清除已完成',
+			'downloadEntry.more' => ({required Object count}) => '还有 ${count} 项',
+			'downloadEntry.viewAll' => '查看全部',
 			'novelText.loadFailed' => '正文加载失败',
 			'signOut.title' => '退出 Pixiv 登录？',
 			'signOut.message' => '需要重新登录才能浏览。下载记录和设置会保留在这台设备上。',
@@ -1981,13 +2001,13 @@ extension on TranslationsZhCn {
 			'illust.toast.copying' => ({required Object label}) => '正在复制${label}',
 			'illust.toast.copied' => ({required Object label}) => '已复制${label}',
 			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '已复制${label}：${value}',
+			_ => null,
+		} ?? switch (path) {
 			'illust.toast.copyFailed' => ({required Object label}) => '复制${label}失败',
 			'illust.toast.openFailed' => '无法在 Pixiv 打开作品',
 			'illust.toast.linkCopied' => '已复制链接',
 			'illust.toast.linkCopyFailed' => '无法复制链接',
 			'illust.toast.alreadyDownloading' => '这一页已在下载队列中',
-			_ => null,
-		} ?? switch (path) {
 			'illust.tooltip.play' => '播放动画',
 			'illust.tooltip.previousImage' => '上一张图片',
 			'illust.tooltip.nextImage' => '下一张图片',

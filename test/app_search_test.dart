@@ -92,7 +92,7 @@ void main() {
     await _finish(tester);
   });
 
-  testWidgets('submitting trims, records history and opens the results; a result page changes in place', (tester) async {
+  testWidgets('submitting trims, records history and opens the results with the chosen type', (tester) async {
     final (router, container) = await _mount(tester);
     final session = container.read(appSearchSessionProvider);
     final element = tester.element(find.byType(AppTitleBarSearch));
@@ -112,10 +112,10 @@ void main() {
     session.controller.text = 'rin';
     _submit(tester.element(find.byType(AppTitleBarSearch)), type: SearchType.novel);
     await tester.pumpAndSettle();
+    // This flat router has no result page scope, so the submission opens a
+    // page; in-place changes are covered with the app router in
+    // search_in_place_test.dart.
     expect(find.text('at ${AppLocations.search(AppSearchKind.novel, 'rin')}'), findsOneWidget);
-    router.pop();
-    await tester.pumpAndSettle();
-    expect(find.text('at /'), findsOneWidget, reason: 'the new words replaced the result page instead of stacking another');
     await _finish(tester);
   });
 

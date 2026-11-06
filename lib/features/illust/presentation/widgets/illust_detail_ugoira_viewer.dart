@@ -234,7 +234,7 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
       // its own file of the work, apart from the work's pages.
       final fallbackZip = Uri.parse(widget.fallbackDownloadUrl);
       final file = await downloadManager.saveGenerated(
-        origin: ContentFile.of(fallbackZip.replace(path: '${fallbackZip.path}.gif')),
+        origin: ContentFile(generatedDownloadAddress('ugoira', '${widget.artwork.illustId}.gif')),
         source: widget.artwork,
         sourceUrl: fallbackZip,
         filename: '${widget.artwork.illustId}.gif',

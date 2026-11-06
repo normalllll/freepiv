@@ -34,6 +34,7 @@ class SearchHeader extends ConsumerWidget {
     this.onTypeChanged,
     this.typeController,
     this.searchBoxKey,
+    this.autofocusSearch = false,
     super.key,
   });
 
@@ -50,6 +51,9 @@ class SearchHeader extends ConsumerWidget {
   /// the tabs then follow the page instead of the search draft.
   final TabController? typeController;
   final GlobalKey<SearchBoxState>? searchBoxKey;
+
+  /// Focuses the search when the header first shows.
+  final bool autofocusSearch;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,7 +84,7 @@ class SearchHeader extends ConsumerWidget {
           const SizedBox(width: 4),
         ],
         Expanded(
-          child: SearchBox(key: searchBoxKey, onSearch: onSearch, onSelected: onSelected, showFilters: showFilters),
+          child: SearchBox(key: searchBoxKey, onSearch: onSearch, onSelected: onSelected, showFilters: showFilters, autofocus: autofocusSearch),
         ),
       ],
     );

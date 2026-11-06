@@ -14,7 +14,10 @@ export 'search_models.dart';
 /// only while the title row does not hold it (FrostShell.titleContentInCaptionOf).
 /// The draft of the page's scope follows the session and the other way round.
 class SearchBox extends ConsumerStatefulWidget {
-  const SearchBox({required this.onSearch, this.fixedType, this.onSelected, this.showFilters = true, super.key});
+  const SearchBox({required this.onSearch, this.fixedType, this.onSelected, this.showFilters = true, this.autofocus = false, super.key});
+
+  /// Focuses the field when it first shows.
+  final bool autofocus;
 
   final bool showFilters;
 
@@ -38,8 +41,13 @@ class SearchBoxState extends ConsumerState<SearchBox> {
     super.initState();
     _session.addInputFocus(_focus);
     _session.addListener(_publishDraft);
-    final draft = ref.read(searchDraftProvider);
-    if (!_session.hasFocus) _session.applyDraft(text: draft.text, type: widget.fixedType ?? draft.type);
+    appSearchHeaderFocusRequests.addListener(_focusOnRequest);
+    // The session notifies the title bar search too; not while building.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _session.hasFocus) return;
+      final draft = ref.read(searchDraftProvider);
+      _session.applyDraft(text: draft.text, type: widget.fixedType ?? draft.type);
+    });
   }
 
   @override
@@ -53,6 +61,7 @@ class SearchBoxState extends ConsumerState<SearchBox> {
   @override
   void dispose() {
     _session.removeListener(_publishDraft);
+    appSearchHeaderFocusRequests.removeListener(_focusOnRequest);
     _session.removeInputFocus(_focus);
     _focus.dispose();
     super.dispose();
@@ -63,6 +72,11 @@ class SearchBoxState extends ConsumerState<SearchBox> {
     _session.commitTerm(tag, suppressAutocomplete: true);
     if (!mounted) return;
     (FrostShell.titleContentInCaptionOf(context) ? _session.focusNode : _focus).requestFocus();
+  }
+
+  /// Ctrl K while this header holds the search on the page on top.
+  void _focusOnRequest() {
+    if (_current && !FrostShell.titleContentInCaptionOf(context)) _focus.requestFocus();
   }
 
   bool get _current => mounted && (ModalRoute.isCurrentOf(context) ?? true);
@@ -97,6 +111,10 @@ class SearchBoxState extends ConsumerState<SearchBox> {
           controller: _session.controller,
           focusNode: _focus,
           placeholder: context.t.discover.searchHint,
+          autofocus: widget.autofocus,
+          // The headers built before the rebuild are not FrostPageHeaders, which
+          // would lay inline suggestions over the page; a floating list fits them.
+          placement: FrostSuggestionPlacement.overlay,
           onSubmitted: (_) => actions.submit(type: widget.fixedType),
           onClear: _session.clearAll,
           suggestions: appSearchSuggestions(context, ref, actions),

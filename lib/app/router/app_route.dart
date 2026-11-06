@@ -103,6 +103,10 @@ abstract final class AppRouteQuery {
   static const type = 'type';
   static const mode = 'mode';
 
+  /// Set to [on] to open the discover page with its search focused.
+  static const focus = 'focus';
+  static const on = '1';
+
   /// The [tab] value that opens an author's public bookmarks.
   static const bookmarksTab = 'bookmarks';
 }
@@ -147,6 +151,10 @@ abstract final class AppLocations {
   /// The ranking of [kind], on [mode] (a ranking mode's name) when given.
   static String ranking({AppRankingKind kind = AppRankingKind.illust, String? mode}) =>
       AppRoute.ranking._location(query: {AppRouteQuery.type: kind.name, AppRouteQuery.mode: mode});
+
+  /// The discover page; [focusSearch] opens it with its search focused, the
+  /// way the bottom-bar layout searches.
+  static String discover({bool focusSearch = false}) => AppRoute.discover._location(query: {AppRouteQuery.focus: focusSearch ? AppRouteQuery.on : null});
 
   static String downloads({String? item}) => AppRoute.downloads._location(query: {AppRouteQuery.item: item});
 

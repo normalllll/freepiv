@@ -278,12 +278,17 @@ final class DefaultDownloadManager implements DownloadManager {
     String? title,
     String? thumbnailUrl,
   }) async {
+    if (!isGeneratedDownload(origin)) {
+      throw ArgumentError.value(origin, 'origin', 'A generated file needs a generatedDownloadAddress origin');
+    }
     await _ensureInitialized();
     await _activePermissionGuard.ensureReadyForDownload();
+    // The task's address is the generated file's own, so nothing can download
+    // the source in its place.
     final job = DownloadJob.create(
       origin: origin,
       source: source,
-      url: sourceUrl,
+      url: (origin as ContentFile).address,
       filename: filename,
       saveTarget: _defaultSaveTarget(),
       title: title,
@@ -389,6 +394,10 @@ final class DefaultDownloadManager implements DownloadManager {
     final job = await _activeStore.getJob(jobId);
     if (job == null) {
       throw DownloadException('Download task does not exist: $jobId');
+    }
+    if (isGeneratedDownload(job.origin)) {
+      await _activeStore.appendLog(jobId, 'Retry refused: the app made this file; it is made again from its work.');
+      throw const GeneratedDownloadRetryRefused();
     }
 
     final task = await _activeStore.getTask(jobId);

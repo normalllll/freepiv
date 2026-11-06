@@ -8,7 +8,6 @@ import 'package:freepiv/app/theme/transparency_logic.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/core/platform/platform_info.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
-import 'package:freepiv/features/downloads/presentation/mobile_download_floating_window.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -102,10 +101,7 @@ class _FreepivMaterialAppState extends ConsumerState<_FreepivMaterialApp> {
                 title: _windowTitle,
                 child: FrostAmbientBackdropHost(
                   image: _backdropImage(resolveWindowArtwork(_windowTitles.location, _windowTitles)),
-                  child: FrostFontWarmUp(
-                    samples: _fontSamples,
-                    child: MobileDownloadFloatingWindow(child: child ?? const SizedBox.shrink()),
-                  ),
+                  child: FrostFontWarmUp(samples: _fontSamples, child: child ?? const SizedBox.shrink()),
                 ),
               ),
             ),

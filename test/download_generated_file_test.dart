@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/core/downloads/default_download_manager.dart';
 import 'package:freepiv/core/downloads/download_engine.dart';
+import 'package:freepiv/core/downloads/download_manager_contract.dart';
 import 'package:freepiv/core/downloads/download_manager_configuration.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/core/downloads/download_permission_guard.dart';
@@ -34,7 +35,7 @@ class _RecordingStore implements DownloadStore {
   Future<void> appendLog(String jobId, String message) async => events.add('log');
 
   @override
-  Future<List<DownloadTaskSnapshot>> listTasks({int? illustId, DownloadStatus? status, SaveState? saveState}) async => [];
+  Future<List<DownloadTaskSnapshot>> listTasks({int? illustId, DownloadStatus? status, SaveState? saveState}) async => failed;
 
   @override
   Future<List<DownloadTaskSnapshot>> listRecoverableTasks() async => [];
@@ -44,6 +45,12 @@ class _RecordingStore implements DownloadStore {
 
   @override
   Future<DownloadTaskSnapshot?> getTask(String jobId) async => null;
+
+  @override
+  Future<DownloadJob?> getJob(String jobId) async => job?.id == jobId ? job : null;
+
+  /// Failed tasks [listTasks] reports.
+  final failed = <DownloadTaskSnapshot>[];
 
   @override
   Future<void> close() async {}
@@ -112,7 +119,7 @@ void main() {
 
   test('a GIF is a download task from the start, with its progress, then saved', () async {
     final file = await manager.saveGenerated(
-      origin: ContentFile.of(zip.replace(path: '${zip.path}.gif')),
+      origin: ContentFile(generatedDownloadAddress('ugoira', '2.gif')),
       source: const ArtworkSource(illustId: 2, title: 'Animation'),
       sourceUrl: zip,
       filename: '2.gif',
@@ -134,7 +141,7 @@ void main() {
   test('a GIF that cannot be composed is a failed task with a log', () async {
     await expectLater(
       manager.saveGenerated(
-        origin: ContentFile.of(zip.replace(path: '${zip.path}.gif')),
+        origin: ContentFile(generatedDownloadAddress('ugoira', '2.gif')),
         source: const ArtworkSource(illustId: 2, title: 'Animation'),
         sourceUrl: zip,
         filename: '2.gif',
@@ -144,6 +151,50 @@ void main() {
     );
     expect(store.events, containsAllInOrder(['status running', 'log', 'status failed']));
     expect(saver.saved, isEmpty);
+  });
+
+  test('a failed GIF is not retried by downloading its source as the GIF', () async {
+    await expectLater(
+      manager.saveGenerated(
+        origin: ContentFile(generatedDownloadAddress('ugoira', '2.gif')),
+        source: const ArtworkSource(illustId: 2, title: 'Animation'),
+        sourceUrl: zip,
+        filename: '2.gif',
+        generate: (_) async => throw StateError('frames unavailable'),
+      ),
+      throwsStateError,
+    );
+    final job = store.job!;
+    expect(job.url.scheme, generatedDownloadScheme, reason: 'the task names the GIF, not the ZIP');
+    expect(job.url.toString(), isNot(contains('.zip')));
+    store.events.clear();
+    await expectLater(manager.retry(job.id), throwsA(isA<GeneratedDownloadRetryRefused>()));
+    expect(store.events.where((event) => event.startsWith('status')), isEmpty, reason: 'nothing was queued');
+    expect(saver.saved, isEmpty);
+  });
+
+  test('retrying all failed leaves generated files out', () async {
+    store.failed.add(
+      DownloadTaskSnapshot(
+        id: 'image_ugoira/2.gif',
+        origin: ContentFile(generatedDownloadAddress('ugoira', '2.gif')),
+        source: const ArtworkSource(illustId: 2, title: 'Animation'),
+        title: '2.gif',
+        filename: '2.gif',
+        status: DownloadStatus.failed,
+        saveState: SaveState.none,
+        receivedBytes: 0,
+        totalBytes: 0,
+        progress: 0,
+        localPath: null,
+        error: 'frames unavailable',
+        log: null,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      ),
+    );
+    await manager.retryFailed();
+    expect(store.events, isEmpty);
   });
 }
 

@@ -6,9 +6,12 @@ import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
+import 'package:freepiv/features/downloads/presentation/download_entry.dart';
+import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:go_router/go_router.dart';
 
 /// The destinations kept off the phone's bottom bar, in order.
 const appSecondaryRoutes = [AppRoute.downloads, AppRoute.fanbox, AppRoute.settings];
@@ -61,47 +64,65 @@ class RouterShell extends ConsumerWidget {
     final translations = context.t;
     final path = location.path;
     final atDestinationRoot = (routeDepth == 0 && isMobileNavigationPath(path)) || atSecondaryRoot;
-    final shell = FrostShell(
-      destinations: [
-        for (final destination in appRouteDestinations) FrostNavDestination(icon: destination.icon, label: appRouteDestinationLabel(translations, destination)),
-      ],
-      selectedIndex: selectedIndex,
-      atDestinationRoot: atDestinationRoot,
-      onDestinationSelected: onDestinationSelected,
-      secondary: FrostShellSecondary(
+    // The login page is where signed-out navigation ends up; there is no page
+    // to go back to from it.
+    final canGoBack = !atDestinationRoot && AppRoute.match(path) != AppRoute.login;
+    final downloads = ref.watch(downloadActivityProvider);
+    final shell = ValueListenableBuilder<bool>(
+      valueListenable: DownloadFlight.revealRequested,
+      builder: (context, revealed, _) => FrostShell(
         destinations: [
-          for (final route in appSecondaryRoutes) FrostNavDestination(icon: _secondaryIcon(route), label: appRouteNavigationLabel(translations, route)),
+          for (final destination in appRouteDestinations)
+            FrostNavDestination(icon: destination.icon, label: appRouteDestinationLabel(translations, destination)),
         ],
-        selectedIndex: appSecondaryIndexForPath(path),
-        onSelected: (index) => onSecondarySelected(appSecondaryRoutes[index]),
-      ),
-      canGoBack: !atDestinationRoot,
-      onBack: onBack,
-      showsMobileNavigation: true,
-      navigationPlacement: ref.watch(navigationPlacementProvider),
-      initiallyExpanded: ref.read(sidebarExpandedProvider),
-      onExpandedChanged: ref.read(sidebarExpandedProvider.notifier).setExpanded,
-      brand: FrostShellBrand(
-        expanded: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const _BrandIcon(),
-            const SizedBox(width: FrostGap.related),
-            Flexible(
-              child: FrostText(translations.app.title, role: FrostTextRole.callout, maxLines: 1, overflow: TextOverflow.ellipsis),
-            ),
+        selectedIndex: selectedIndex,
+        atDestinationRoot: atDestinationRoot,
+        onDestinationSelected: onDestinationSelected,
+        secondary: FrostShellSecondary(
+          destinations: [
+            for (final route in appSecondaryRoutes)
+              route == AppRoute.downloads
+                  ? FrostNavDestination(
+                      icon: _secondaryIcon(route),
+                      label: appRouteNavigationLabel(translations, route),
+                      badge: downloads.badge,
+                      badgeTone: downloads.badgeTone,
+                      progress: downloads.progress,
+                    )
+                  : FrostNavDestination(icon: _secondaryIcon(route), label: appRouteNavigationLabel(translations, route)),
           ],
+          selectedIndex: appSecondaryIndexForPath(path),
+          onSelected: (index) => onSecondarySelected(appSecondaryRoutes[index]),
         ),
-        icon: const _BrandIcon(),
-        label: translations.app.title,
+        canGoBack: canGoBack,
+        onBack: onBack,
+        showsMobileNavigation: true,
+        navigationPlacement: ref.watch(navigationPlacementProvider),
+        initiallyExpanded: ref.read(sidebarExpandedProvider),
+        onExpandedChanged: ref.read(sidebarExpandedProvider.notifier).setExpanded,
+        brand: FrostShellBrand(
+          expanded: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const _BrandIcon(),
+              const SizedBox(width: FrostGap.related),
+              Flexible(
+                child: FrostText(translations.app.title, role: FrostTextRole.callout, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ],
+          ),
+          icon: const _BrandIcon(),
+          label: translations.app.title,
+        ),
+        // Frost shows it in the title row when the sidebar layout has room; the
+        // pages that offer a search carry the same session in their header
+        // otherwise.
+        titleBarSearch: const AppTitleBarSearch(),
+        routeDepth: routeDepth,
+        backToFirst: FrostShellBackToFirst(label: translations.navigation.backToFirst, icon: PivIcons.home, onPressed: onBackToFirst),
+        taskEntry: appDownloadTaskEntry(downloads, revealed: revealed),
+        child: AppSearchPlacementProbe(child: child),
       ),
-      // Frost shows it in the title row when the sidebar layout has room; the
-      // pages that offer a search carry the same session in their header
-      // otherwise.
-      titleBarSearch: const AppTitleBarSearch(),
-      routeDepth: routeDepth,
-      backToFirst: FrostShellBackToFirst(label: translations.navigation.backToFirst, icon: PivIcons.home, onPressed: onBackToFirst),
-      child: child,
     );
     // An Escape nothing inside the shell took goes back one page; at a
     // destination's root it does nothing. It has its own intent: the Scaffolds
@@ -115,9 +136,9 @@ class RouterShell extends ConsumerWidget {
       },
       child: Actions(
         actions: {
-          _PageBackIntent: _PageBackAction(enabled: !atDestinationRoot, onBack: onBack),
+          _PageBackIntent: _PageBackAction(enabled: canGoBack, onBack: onBack),
           _PageRefreshIntent: CallbackAction<_PageRefreshIntent>(onInvoke: (_) => AppRefreshScope.refreshVisible()),
-          _FocusSearchIntent: CallbackAction<_FocusSearchIntent>(onInvoke: (_) => ref.read(appSearchSessionProvider).focusNode.requestFocus()),
+          _FocusSearchIntent: CallbackAction<_FocusSearchIntent>(onInvoke: (_) => openAppSearch(ref, GoRouter.of(context))),
         },
         // The title bar search sits outside the page navigators: when it lets
         // go of focus, focus falls back to the nearest scope. This one keeps

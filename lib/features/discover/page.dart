@@ -1,8 +1,6 @@
-import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,7 +19,10 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'search_history.dart';
 
 class DiscoverPage extends ConsumerStatefulWidget {
-  const DiscoverPage({super.key});
+  const DiscoverPage({this.focusSearch = false, super.key});
+
+  /// Opens with the header search focused (the bottom-bar layout's search).
+  final bool focusSearch;
 
   @override
   ConsumerState<DiscoverPage> createState() => _DiscoverPageState();
@@ -30,32 +31,9 @@ class DiscoverPage extends ConsumerStatefulWidget {
 class _DiscoverPageState extends ConsumerState<DiscoverPage> {
   final _searchBoxKey = GlobalKey<SearchBoxState>();
   final _scrollController = ScrollController();
-  ValueListenable<({int index, int sequence})>? _primaryReselection;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final next = FrostShellNavigationScope.maybeOf(context)?.primaryReselection;
-    if (identical(next, _primaryReselection)) return;
-    _primaryReselection?.removeListener(_handlePrimaryReselection);
-    _primaryReselection = next;
-    next?.addListener(_handlePrimaryReselection);
-  }
-
-  void _handlePrimaryReselection() {
-    final signal = _primaryReselection?.value;
-    if (signal == null || appRouteDestinations[signal.index].route != AppRoute.discover || signal.sequence == 0 || !_scrollController.hasClients) return;
-    final duration = FrostMotion.duration(context, FrostMotion.navigation);
-    if (duration == Duration.zero) {
-      _scrollController.jumpTo(0);
-    } else {
-      unawaited(_scrollController.animateTo(0, duration: duration, curve: Curves.easeOutCubic));
-    }
-  }
 
   @override
   void dispose() {
-    _primaryReselection?.removeListener(_handlePrimaryReselection);
     _scrollController.dispose();
     super.dispose();
   }
@@ -74,6 +52,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
             onSelected: _handleSearchSelection,
             typePlacement: SearchTypePlacement.besideQuery,
             showFilters: false,
+            autofocusSearch: widget.focusSearch,
           ),
         ),
         body: FrostRefreshView(

@@ -1,3 +1,4 @@
+import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'dart:math' as math;
 
@@ -112,13 +113,33 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
         bucket: _homePageStorageBucket,
         // The type tabs float over the feed; artwork scrolls beneath them.
         child: FrostPinnedChrome(
-          extent: MediaQuery.paddingOf(context).top + kTextTabBarHeight,
           chrome: SafeArea(
             bottom: false,
             child: LayoutBuilder(
               builder: (context, constraints) => Padding(
                 padding: EdgeInsets.symmetric(horizontal: FrostMetrics.pageTabInset(constraints.maxWidth)),
-                child: _HomeTypeSelector(controller: _homeTabController, onTypeChanged: (type) => ref.read(homeProvider.notifier).setType(type)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Without the title bar search (the bottom-bar layout), the
+                    // home header carries the way to search: the discover page
+                    // with its search focused.
+                    if (!FrostShell.titleContentInCaptionOf(context))
+                      Padding(
+                        padding: const EdgeInsets.only(top: FrostGap.related),
+                        child: FrostSearchEntry(
+                          key: const ValueKey('home-search-entry'),
+                          placeholder: context.t.appSearch.placeholder,
+                          onPressed: () => openAppSearch(ref, GoRouter.of(context)),
+                        ),
+                      ),
+                    SizedBox(
+                      height: kTextTabBarHeight,
+                      child: _HomeTypeSelector(controller: _homeTabController, onTypeChanged: (type) => ref.read(homeProvider.notifier).setType(type)),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -16,14 +16,18 @@ abstract interface class DownloadFlightTarget {
 }
 
 /// “Added to downloads”: a small copy of the work jumps from where the user
-/// tapped to the download badge, which bounces as it lands
-/// (docs/MOTION_SPEC.md). Purely visual; the download runs regardless.
+/// tapped to the download badge, which bounces as it lands.
+/// Purely visual; the download runs regardless.
 abstract final class DownloadFlight {
   static final List<DownloadFlightTarget> _targets = [];
 
   static void attach(DownloadFlightTarget target) => _targets.add(target);
 
   static void detach(DownloadFlightTarget target) => _targets.remove(target);
+
+  /// Set while a flight waits for a hidden entry to appear: the first
+  /// download shows the entry before its record exists.
+  static final revealRequested = ValueNotifier<bool>(false);
 
   static DownloadFlightTarget? get _target => _targets.reversed.where((target) => target.badgeRect != null).firstOrNull;
 
@@ -39,10 +43,26 @@ abstract final class DownloadFlight {
   /// being downloaded as its source shows it (a Pixiv or FANBOX image with
   /// the requests each needs). Without artwork a download glyph flies. With
   /// reduced motion only the landing bounce plays.
-  static void launch({required Rect? origin, Widget? artwork}) {
+  static void launch({required Rect? origin, Widget? artwork}) => _launch(origin: origin, artwork: artwork, waited: false);
+
+  static void _launch({required Rect? origin, Widget? artwork, required bool waited}) {
     final target = _target;
     final overlay = AppRouter.rootNavigatorKey.currentState?.overlay;
-    if (target == null) return;
+    if (target == null) {
+      if (waited) {
+        revealRequested.value = false;
+        return;
+      }
+      // Show the entry first, then fly once it is laid out.
+      revealRequested.value = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _launch(origin: origin, artwork: artwork, waited: true));
+        WidgetsBinding.instance.scheduleFrame();
+      });
+      WidgetsBinding.instance.scheduleFrame();
+      return;
+    }
+    if (waited) revealRequested.value = false;
     if (origin == null || overlay == null || MediaQuery.disableAnimationsOf(overlay.context)) {
       target.land();
       return;
