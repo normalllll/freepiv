@@ -1,6 +1,7 @@
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/core/downloads/download_manager.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/core/utils/text_format.dart';
@@ -130,18 +131,15 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
                                     },
                             ),
                             FrostMenuAnchor(
-                              menuChildren: [
-                                Builder(
-                                  builder: (itemContext) => FrostMenuItem(
-                                    onPressed: collecting || creatorState.value == null
-                                        ? null
-                                        : () => downloadFanboxCreator(ref, creator, origin: DownloadFlight.originOf(itemContext)),
-                                    child: Text(t.downloadCreator),
-                                  ),
+                              entries: [
+                                FrostMenuAction(
+                                  t.downloadCreator,
+                                  enabled: !collecting && creatorState.value != null,
+                                  onSelected: () => downloadFanboxCreator(ref, creator, origin: DownloadFlight.originOf(context)),
                                 ),
-                                FrostMenuItem(
-                                  onPressed: () => openFanboxLink(context, 'https://www.fanbox.cc/@${Uri.encodeComponent(widget.creatorId)}'),
-                                  child: Text(t.openOriginal),
+                                FrostMenuAction(
+                                  t.openOriginal,
+                                  onSelected: () => openFanboxLink(context, 'https://www.fanbox.cc/@${Uri.encodeComponent(widget.creatorId)}'),
                                 ),
                               ],
                               builder: (context, focusNode, toggle) => IconButton(
@@ -226,13 +224,14 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: FrostSegmentedButton<bool>(
-                          segments: [
-                            ButtonSegment(value: false, label: Text(t.posts), icon: const Icon(Icons.article_outlined)),
-                            ButtonSegment(value: true, label: Text(t.creatorPlans), icon: const Icon(Icons.card_membership)),
+                        child: FrostPicker<bool>.segmented(
+                          label: t.posts,
+                          options: [
+                            FrostPickerOption(value: false, label: t.posts, leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.article_outlined))),
+                            FrostPickerOption(value: true, label: t.creatorPlans, leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.card_membership))),
                           ],
-                          selected: {_plans},
-                          onSelectionChanged: (value) => setState(() => _plans = value.single),
+                          value: _plans,
+                          onChanged: (value) => setState(() => _plans = value),
                         ),
                       ),
                     ],
@@ -262,7 +261,7 @@ class FanboxFanCardDialog extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const AspectRatio(aspectRatio: 1.6, child: FrostImageSkeleton()),
+                  AspectRatio(aspectRatio: 1.6, child: PivImageSkeleton()),
                   TextButton(onPressed: null, child: Text(context.t.fanbox.download)),
                 ],
               ),
@@ -380,7 +379,7 @@ class FanboxPostDetailPage extends ConsumerWidget {
                     const SizedBox(height: 24),
                   ],
                   if (post.isRestricted) ...[
-                    FrostCard(
+                    PivCard(
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -402,7 +401,7 @@ class FanboxPostDetailPage extends ConsumerWidget {
                   ] else ...[
                     for (final block in post.blocks) Padding(padding: const EdgeInsets.only(bottom: 16), child: FanboxBlockView(block)),
                     if (post.unknownBodyJson != null)
-                      FrostCard(
+                      PivCard(
                         child: Padding(padding: const EdgeInsets.all(16), child: Text(t.unknown)),
                       ),
                     const SizedBox(height: 12),
@@ -436,7 +435,6 @@ class FanboxPostDetailPage extends ConsumerWidget {
                         TextButton(
                           onPressed: () => showModalBottomSheet<void>(
                             context: context,
-                            sheetAnimationStyle: frostSheetAnimationStyle(context),
                             isScrollControlled: true,
                             builder: (_) => SafeArea(
                               child: DraggableScrollableSheet(
@@ -564,7 +562,7 @@ class FanboxBlockView extends ConsumerWidget {
         ),
       ),
     ),
-    FanboxBlock_File(:final file) => FrostCard(
+    FanboxBlock_File(:final file) => PivCard(
       child: ListTile(
         leading: const Icon(Icons.attach_file),
         title: Text('${file.name}.${file.extension_}'),
@@ -580,7 +578,7 @@ class FanboxBlockView extends ConsumerWidget {
       ),
     ),
     FanboxBlock_Embed(:final url, :final html) => _FanboxEmbed(url: url, content: html),
-    FanboxBlock_PostLink(:final postId, :final title) => FrostCard(
+    FanboxBlock_PostLink(:final postId, :final title) => PivCard(
       child: ListTile(
         leading: const Icon(Icons.article_outlined),
         title: Text(title),
@@ -606,7 +604,7 @@ class _FanboxEmbed extends StatelessWidget {
   Widget build(BuildContext context) {
     final document = html.parseFragment(content ?? '');
     final links = <String>{?url, ...document.querySelectorAll('a[href]').map((e) => e.attributes['href']!)};
-    return FrostCard(
+    return PivCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

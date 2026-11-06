@@ -6,6 +6,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:frost_data/frost_data.dart';
 
 const _relatedWaterfallPadding = EdgeInsets.fromLTRB(12, 0, 12, 24);
 const _relatedWaterfallSpacing = 8.0;

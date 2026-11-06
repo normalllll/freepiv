@@ -10,6 +10,7 @@ import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleto
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
+import 'package:frost_data/frost_data.dart';
 
 class RankingIllustPage extends ConsumerStatefulWidget {
   const RankingIllustPage({super.key});
@@ -85,14 +86,11 @@ class _RankingIllustPageState extends ConsumerState<RankingIllustPage> with Sing
       body: AnimatedBuilder(
         animation: Listenable.merge(state.illustSources.values.toList()),
         builder: (context, child) {
-          return MouseDragScroll(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                for (final mode in IllustRankingMode.values)
-                  _IllustRankingTab(key: PageStorageKey('ranking-illust-$mode'), source: state.illustSourceFor(mode)),
-              ],
-            ),
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              for (final mode in IllustRankingMode.values) _IllustRankingTab(key: PageStorageKey('ranking-illust-$mode'), source: state.illustSourceFor(mode)),
+            ],
           );
         },
       ),
@@ -174,13 +172,11 @@ class _RankingMangaPageState extends ConsumerState<RankingMangaPage> with Single
       body: AnimatedBuilder(
         animation: Listenable.merge(state.mangaSources.values.toList()),
         builder: (context, child) {
-          return MouseDragScroll(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                for (final mode in MangaRankingMode.values) _MangaRankingTab(key: PageStorageKey('ranking-manga-$mode'), source: state.mangaSourceFor(mode)),
-              ],
-            ),
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              for (final mode in MangaRankingMode.values) _MangaRankingTab(key: PageStorageKey('ranking-manga-$mode'), source: state.mangaSourceFor(mode)),
+            ],
           );
         },
       ),
@@ -264,13 +260,11 @@ class _RankingNovelPageState extends ConsumerState<RankingNovelPage> with Single
       body: AnimatedBuilder(
         animation: Listenable.merge(state.novelSources.values.toList()),
         builder: (context, child) {
-          return MouseDragScroll(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                for (final mode in NovelRankingMode.values) _NovelRankingTab(key: PageStorageKey('ranking-novel-$mode'), source: state.novelSourceFor(mode)),
-              ],
-            ),
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              for (final mode in NovelRankingMode.values) _NovelRankingTab(key: PageStorageKey('ranking-novel-$mode'), source: state.novelSourceFor(mode)),
+            ],
           );
         },
       ),
@@ -293,9 +287,7 @@ class _RankingPageScaffold extends StatelessWidget {
       builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
           body: FrostCollapsingHeader(
-            header: frostWindowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout)
-                ? null
-                : FrostPageHeader(title: Text(appRouteLabel(context.t, route))),
+            header: FrostPageHeader(title: Text(appRouteLabel(context.t, route))),
             // The mode picker floats over the ranking as glass.
             child: FrostPinnedChrome(chrome: header, body: body),
           ),
@@ -330,7 +322,7 @@ class _RankingHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: onContentColumn
-            ? FrostContentColumn(bleed: _pickerPadding, child: row)
+            ? FrostContentColumn(child: row)
             : Padding(
                 padding: EdgeInsets.symmetric(horizontal: FrostMetrics.browseInset(MediaQuery.sizeOf(context).width) - _pickerPadding),
                 child: row,
@@ -353,10 +345,11 @@ class _RankingModePicker<T extends Enum> extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (context, _) => FrostValueMenuButton<T>(
+      builder: (context, _) => FrostPicker<T>.menu(
+        label: t.navigation.ranking,
         value: modes[controller.index],
-        items: [for (final mode in modes) FrostSelectItem(value: mode, label: _rankingModeNameLabel(mode.name, t))],
-        onSelected: (mode) {
+        options: [for (final mode in modes) FrostPickerOption(value: mode, label: _rankingModeNameLabel(mode.name, t))],
+        onChanged: (mode) {
           controller.animateTo(mode.index, duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 200));
           onModeChanged(mode);
         },
@@ -395,7 +388,7 @@ class _ImageRankingTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FrostNestedRefreshView(
-      onRefresh: () => source.refresh(source.isEmpty),
+      onRefresh: () => source.refresh(source.items.isEmpty),
       builder: (context, refresh) {
         return NestedScrollView(
           controller: refresh.scrollController,
@@ -422,7 +415,7 @@ class _NovelRankingTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FrostNestedRefreshView(
-      onRefresh: () => source.refresh(source.isEmpty),
+      onRefresh: () => source.refresh(source.items.isEmpty),
       builder: (context, refresh) {
         return NestedScrollView(
           controller: refresh.scrollController,
@@ -466,11 +459,11 @@ class _ImageRankingBody extends StatelessWidget {
       );
     }
 
-    if (source.initialized && source.isEmpty) {
+    if (source.initialized && source.items.isEmpty) {
       return FrostSliverFillBody(
         physics: physics,
         sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
-        child: FrostEmptyContent(
+        child: FrostEmptyState(
           icon: FrostIconData.glyph(Icons.emoji_events_outlined),
           title: context.t.ranking.emptyTitle,
           message: context.t.ranking.emptyMessage,
@@ -527,11 +520,11 @@ class _NovelRankingBody extends StatelessWidget {
       );
     }
 
-    if (source.initialized && source.isEmpty) {
+    if (source.initialized && source.items.isEmpty) {
       return FrostSliverFillBody(
         physics: physics,
         sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
-        child: FrostEmptyContent(
+        child: FrostEmptyState(
           icon: FrostIconData.glyph(Icons.menu_book_outlined),
           title: context.t.ranking.emptyTitle,
           message: context.t.ranking.emptyMessage,

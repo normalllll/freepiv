@@ -104,9 +104,9 @@ class IllustImagePager extends StatelessWidget {
               top: 0,
               bottom: 0,
               child: Center(
-                child: FrostSurfaceIconButton(
+                child: FrostButton.iconFilled(
                   icon: FrostIconData.glyph(Icons.chevron_left),
-                  tooltip: context.t.illust.tooltip.previousImage,
+                  label: context.t.illust.tooltip.previousImage,
                   onPressed: pageIndex == 0 ? null : () => _animateToPage(context, pageIndex - 1),
                 ),
               ),
@@ -116,9 +116,9 @@ class IllustImagePager extends StatelessWidget {
               top: 0,
               bottom: 0,
               child: Center(
-                child: FrostSurfaceIconButton(
+                child: FrostButton.iconFilled(
                   icon: FrostIconData.glyph(Icons.chevron_right),
-                  tooltip: context.t.illust.tooltip.nextImage,
+                  label: context.t.illust.tooltip.nextImage,
                   onPressed: pageIndex >= pageCount - 1 ? null : () => _animateToPage(context, pageIndex + 1),
                 ),
               ),
@@ -607,7 +607,7 @@ class _ImageLoadError extends StatelessWidget {
           child: Material(
             color: colorScheme.surface.withValues(alpha: 0.9),
             elevation: 2,
-            borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
+            borderRadius: BorderRadius.circular(FrostRadius.lg),
             child: IconButton(tooltip: context.t.common.retry, icon: const Icon(Icons.refresh_outlined), onPressed: onRetry),
           ),
         ),
@@ -625,7 +625,7 @@ class _PageIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.58), borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.58), borderRadius: BorderRadius.circular(FrostRadius.lg)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         child: Text(

@@ -1,4 +1,5 @@
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
@@ -34,7 +35,7 @@ class NovelPreviewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = _novelAccent(context);
-    final card = FrostCard(
+    final card = PivCard(
       accentColor: accent,
       onTap: onTap,
       padding: const EdgeInsets.all(12),
@@ -92,14 +93,14 @@ class NovelPreviewerSkeleton extends StatelessWidget {
     child: ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: FrostMetrics.contentMaxWidth),
       child: Skeletonizer.zone(
-        child: FrostCard(
+        child: PivCard(
           padding: const EdgeInsets.all(12),
           child: SizedBox(
             height: NovelPreviewer.contentHeight(context),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Bone(width: PivMetrics.novelCoverWidth, height: PivMetrics.novelCoverHeight, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+                Bone(width: PivMetrics.novelCoverWidth, height: PivMetrics.novelCoverHeight, borderRadius: BorderRadius.circular(FrostRadius.lg)),
                 const SizedBox(width: 12),
                 const Expanded(
                   child: Column(
@@ -114,7 +115,7 @@ class NovelPreviewerSkeleton extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Bone.circle(size: FrostMetrics.controlHeight),
+                Bone.circle(size: FrostDensity.of(context).controlHeight),
               ],
             ),
           ),
@@ -129,7 +130,7 @@ class NovelCoverImage extends StatelessWidget {
     required this.url,
     required this.width,
     required this.height,
-    this.borderRadius = const BorderRadius.all(Radius.circular(FrostMetrics.controlRadius)),
+    this.borderRadius = const BorderRadius.all(Radius.circular(FrostRadius.lg)),
     super.key,
   });
 
@@ -309,20 +310,9 @@ class _NovelTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = _tagAccent(context);
-
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: compact ? 112 : 180),
-      child: FrostPill(
-        accentColor: accent,
-        padding: EdgeInsets.symmetric(horizontal: compact ? 7 : 9, vertical: compact ? 3 : 5),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: compact ? Theme.of(context).textTheme.labelSmall : Theme.of(context).textTheme.bodySmall,
-        ),
-      ),
+      child: FrostBadge(label: label),
     );
   }
 }
@@ -338,7 +328,7 @@ class _MetaPill extends StatelessWidget {
     final tokens = FrostThemeTokens.of(context);
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: tokens.surfaceRaised, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+      decoration: BoxDecoration(color: tokens.surfaceRaised, borderRadius: BorderRadius.circular(FrostRadius.lg)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
         child: Text(
@@ -366,11 +356,6 @@ String _previewCaption(String html) {
 }
 
 Color _novelAccent(BuildContext context) {
-  final tokens = FrostThemeTokens.of(context);
-  return tokens.accent;
-}
-
-Color _tagAccent(BuildContext context) {
   final tokens = FrostThemeTokens.of(context);
   return tokens.accent;
 }

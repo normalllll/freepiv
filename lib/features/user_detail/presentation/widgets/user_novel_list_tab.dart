@@ -8,6 +8,7 @@ import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
+import 'package:frost_data/frost_data.dart';
 
 class UserNovelListTabBody extends ConsumerStatefulWidget {
   const UserNovelListTabBody({required this.detail, required this.physics, this.sliverHeader, super.key});
@@ -50,7 +51,7 @@ class _UserNovelListTabBodyState extends ConsumerState<UserNovelListTabBody> imp
   @override
   Future<bool> refreshTab() {
     final source = _readSource();
-    return source.refresh(source.isEmpty);
+    return source.refresh(source.items.isEmpty);
   }
 
   void _ensureLoaded() {
@@ -110,12 +111,12 @@ class UserNovelListBody extends StatelessWidget {
       );
     }
 
-    if (source.initialized && source.isEmpty) {
+    if (source.initialized && source.items.isEmpty) {
       return _SliverStateBody(
         physics: physics,
         sliverHeader: sliverHeader,
         leadingSlivers: leadingSlivers,
-        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.menu_book_outlined), title: emptyTitle),
+        child: FrostEmptyState(icon: FrostIconData.glyph(Icons.menu_book_outlined), title: emptyTitle),
       );
     }
 

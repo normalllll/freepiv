@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -87,7 +88,7 @@ class FanboxPostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.t.fanbox;
-    return FrostCard(
+    return PivCard(
       onTap: onTap,
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -168,7 +169,7 @@ class FanboxPlanCard extends StatelessWidget {
   const FanboxPlanCard(this.plan, {super.key});
   final FanboxPlan plan;
   @override
-  Widget build(BuildContext context) => FrostCard(
+  Widget build(BuildContext context) => PivCard(
     onTap: () => _showDescription(context, plan.title, plan.description),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -209,7 +210,7 @@ class FanboxCreatorCard extends StatelessWidget {
   final FanboxCreator creator;
   final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => FrostCard(
+  Widget build(BuildContext context) => PivCard(
     onTap: onTap,
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
     child: Row(
@@ -240,7 +241,7 @@ class FanboxTagCard extends StatelessWidget {
   final FanboxTag tag;
   final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => FrostCard(
+  Widget build(BuildContext context) => PivCard(
     onTap: onTap,
     padding: const EdgeInsets.all(16),
     child: Row(
@@ -262,7 +263,7 @@ class FanboxNoticeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.t.fanbox;
     final title = notice.title.isEmpty ? t.unknownNotice : notice.title;
-    return FrostCard(
+    return PivCard(
       onTap: () => _showDescription(context, title, notice.body),
       padding: const EdgeInsets.all(16),
       child: Column(

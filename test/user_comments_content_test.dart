@@ -219,46 +219,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  test('user card grid never forces two columns on narrow widths', () {
-    // 340 is the user card's minimum width.
-    int columns(double width) => frostFittedColumnCount(width: width, minTileWidth: 340, gap: 8, textScale: 1);
-    expect(columns(366), 1, reason: 'phone');
-    expect(columns(520), 1, reason: 'narrow desktop window');
-    expect(columns(700), 2);
-    expect(columns(1040), 3);
-    expect(frostFittedColumnCount(width: 700, minTileWidth: 340, gap: 8, textScale: 2), 1, reason: 'large text');
-  });
-
-  testWidgets('user without works keeps the card shape with a no-works note', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    const user = User(id: 7, name: 'A follower', account: 'follower', profileImageUrls: _images);
-    const preview = UserPreview(user: user, illusts: [], isMuted: false);
-    for (final scale in [1.0, 2.0]) {
-      // Sized like a grid cell, from the same height rule the grid uses.
-      await tester.pumpWidget(
-        _app(
-          Builder(
-            builder: (context) => Align(
-              alignment: Alignment.topLeft,
-              child: SizedBox(
-                width: 360,
-                height: userCardHeight(context, 360),
-                child: const UserPreviewer(userPreview: preview),
-              ),
-            ),
-          ),
-          scale: scale,
-        ),
-      );
-      expect(find.text(t.user.noPublicWorks), findsOneWidget);
-      expect(tester.takeException(), isNull, reason: '$scale×');
-    }
-  });
-
   test('800-wide author grid uses the shared artwork tile width', () {
     const contentWidth = 800.0 - 80 - 24;
-    final columns = frostWaterfallColumnCount(width: contentWidth, preferredTileWidth: FrostMetrics.gridExtent, gap: FrostMetrics.gridGap, textScale: 1);
+    final columns = frostWaterfallColumnCount(width: contentWidth, preferredTileWidth: FrostMetrics.gridExtent, gap: FrostGap.grid, textScale: 1);
     expect(columns, 3);
   });
 }

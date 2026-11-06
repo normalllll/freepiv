@@ -1,7 +1,6 @@
 import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:flutter/material.dart';
-import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
@@ -41,7 +40,7 @@ class NovelDetailPage extends ConsumerWidget {
           return const NovelNotFoundPage();
         }
 
-        return FrostErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
+        return PivErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
     );
     final id = novelId ?? novel?.id;
@@ -108,8 +107,8 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
                           flexibleSpace: const FrostPinnedChromeGlass(opacity: 1),
                           automaticallyImplyLeading: false,
                           leading: FrostPageHeader.leadingFor(context),
-                          leadingWidth: FrostPageHeader.leadingWidth,
-                          titleSpacing: FrostPageHeader.titleSpacingOf(context),
+                          leadingWidth: 44.0,
+                          titleSpacing: 8.0,
                           title: Text(_novel.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                         ),
                       SliverToBoxAdapter(

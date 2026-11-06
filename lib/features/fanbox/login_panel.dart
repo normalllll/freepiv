@@ -81,7 +81,8 @@ class _FanboxLoginPanelState extends ConsumerState<FanboxLoginPanel> {
             const SizedBox(height: 12),
             Text(t.browserHelp),
             const SizedBox(height: 24),
-            if (supportsFanboxWebLogin) FrostButton(label: t.browserLogin, kind: FrostButtonKind.primary, loading: busy, onPressed: _browser),
+            if (supportsFanboxWebLogin)
+              FrostButton.prominent(label: t.browserLogin, state: busy ? const FrostActionState.running() : FrostActionState.idle, onPressed: _browser),
             const SizedBox(height: 12),
             OutlinedButton(onPressed: busy ? null : _manual, child: Text(t.manualLogin)),
             SizedBox(
@@ -237,7 +238,11 @@ class _FanboxCookieDialogState extends ConsumerState<_FanboxCookieDialog> {
                 onSubmitted: operation.isLoading ? null : _submit,
               ),
               const SizedBox(height: 16),
-              FrostButton(label: t.login, loading: operation.isLoading, kind: FrostButtonKind.primary, onPressed: () => _submit(_cookie.text)),
+              FrostButton.prominent(
+                label: t.login,
+                state: operation.isLoading ? const FrostActionState.running() : FrostActionState.idle,
+                onPressed: () => _submit(_cookie.text),
+              ),
               const SizedBox(height: 12),
               OutlinedButton(onPressed: operation.isLoading ? null : _import, child: Text(t.importSession)),
               SizedBox(

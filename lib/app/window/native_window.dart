@@ -320,7 +320,7 @@ class _NativeWindowFrameState extends State<NativeWindowFrame> with WidgetsBindi
                 ),
               ),
               // The caption shows the page title, so pages skip their own.
-              Expanded(child: FrostWindowCaptionScope(showsTitle: true, child: widget.child)),
+              Expanded(child: FrostWindowCaptionScope(child: widget.child)),
             ],
           ),
         );

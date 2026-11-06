@@ -8,6 +8,7 @@ import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_lis
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
+import 'package:frost_data/frost_data.dart';
 
 class UserBookmarksTabBody extends ConsumerStatefulWidget {
   const UserBookmarksTabBody({required this.detail, required this.physics, this.sliverHeader, super.key});
@@ -65,7 +66,7 @@ class _UserBookmarksTabBodyState extends ConsumerState<UserBookmarksTabBody> imp
   @override
   Future<bool> refreshTab() {
     final source = _readCurrentSource();
-    return source.refresh(source.isEmpty);
+    return source.refresh(source.items.isEmpty);
   }
 
   Widget _buildIllustBookmarks(BuildContext context, UserIllustBookmarkListSource source, ScrollPhysics? physics, Widget? sliverHeader) {
@@ -145,18 +146,22 @@ class _BookmarkKindSelector extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(inset, 10, inset, 6),
           child: Align(
             alignment: AlignmentDirectional.centerStart,
-            child: FrostConstrainedSegmentedButton<UserBookmarkKind>(
-              maxWidth: 420,
-              segments: [
-                ButtonSegment(
+            child: FrostPicker<UserBookmarkKind>.segmented(
+              label: translations.user.tabs.bookmarks,
+              options: [
+                FrostPickerOption(
                   value: UserBookmarkKind.illustManga,
-                  icon: const Icon(Icons.collections_outlined),
-                  label: Text(translations.user.bookmarks.illustManga),
+                  leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.collections_outlined)),
+                  label: translations.user.bookmarks.illustManga,
                 ),
-                ButtonSegment(value: UserBookmarkKind.novel, icon: const Icon(Icons.menu_book_outlined), label: Text(translations.user.bookmarks.novels)),
+                FrostPickerOption(
+                  value: UserBookmarkKind.novel,
+                  leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.menu_book_outlined)),
+                  label: translations.user.bookmarks.novels,
+                ),
               ],
-              selected: {value},
-              onSelectionChanged: (selection) => onChanged(selection.single),
+              value: value,
+              onChanged: (selection) => onChanged(selection),
             ),
           ),
         ),

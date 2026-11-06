@@ -6,6 +6,7 @@ import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_ta
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
+import 'package:frost_data/frost_data.dart';
 
 class UserFollowingTabBody extends ConsumerStatefulWidget {
   const UserFollowingTabBody({required this.detail, required this.physics, this.sliverHeader, super.key});
@@ -48,7 +49,7 @@ class _UserFollowingTabBodyState extends ConsumerState<UserFollowingTabBody> imp
   @override
   Future<bool> refreshTab() {
     final source = _readSource();
-    return source.refresh(source.isEmpty);
+    return source.refresh(source.items.isEmpty);
   }
 
   void _ensureLoaded() {
@@ -85,7 +86,7 @@ class UserFollowingBody extends StatelessWidget {
       return UserErrorBody(error: lastError, onRetry: () => source.refresh(true), physics: physics, sliverHeader: sliverHeader);
     }
 
-    if (source.initialized && source.isEmpty) {
+    if (source.initialized && source.items.isEmpty) {
       return UserEmptyBody(icon: Icons.people_outline, title: context.t.user.empty.following, physics: physics, sliverHeader: sliverHeader);
     }
 

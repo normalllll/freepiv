@@ -144,7 +144,6 @@ Page<void> illustDetailPage(BuildContext context, GoRouterState state) {
 
   return FrostDetailPage(
     key: state.pageKey,
-    heroLed: heroTag != null,
     child: ArtworkHeroScope(
       tag: heroTag,
       child: IllustDetailPage(illustId: illustId, illust: illust),

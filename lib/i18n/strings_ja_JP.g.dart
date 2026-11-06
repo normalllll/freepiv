@@ -39,6 +39,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsJaJp $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsJaJp(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final _Translations$frost$ja_JP frost = _Translations$frost$ja_JP._(_root);
 	@override late final _Translations$nativeWindow$ja_JP nativeWindow = _Translations$nativeWindow$ja_JP._(_root);
 	@override late final _Translations$discover$ja_JP discover = _Translations$discover$ja_JP._(_root);
 	@override late final _Translations$app$ja_JP app = _Translations$app$ja_JP._(_root);
@@ -62,6 +63,92 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$richText$ja_JP richText = _Translations$richText$ja_JP._(_root);
 	@override late final _Translations$fanbox$ja_JP fanbox = _Translations$fanbox$ja_JP._(_root);
 	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
+}
+
+// Path: frost
+class _Translations$frost$ja_JP extends Translations$frost$en_US {
+	_Translations$frost$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get retry => '再試行';
+	@override String get error => 'エラー';
+	@override String get errorDetails => 'エラーの詳細';
+	@override String get copyDetails => '詳細をコピー';
+	@override String get copied => 'コピーしました';
+	@override String get loading => '読み込み中';
+	@override String get actionSucceeded => '完了しました';
+	@override String get actionFailed => '失敗しました';
+	@override String get loadFailed => '読み込めませんでした';
+	@override String get noItems => 'まだ項目がありません';
+	@override String get noMoreItems => 'すべて表示しました';
+	@override String get pullToRefresh => '引っ張って更新';
+	@override String get releaseToRefresh => '離して更新';
+	@override String get refreshing => '更新中';
+	@override String get refreshComplete => '更新しました';
+	@override String get refreshFailed => '更新できませんでした';
+	@override String get previous => '前へ';
+	@override String get next => '次へ';
+	@override String get back => '戻る';
+	@override String get more => 'その他';
+	@override String get expandNavigation => 'サイドバーを開く';
+	@override String get collapseNavigation => 'サイドバーを閉じる';
+	@override String get clearText => '入力を消去';
+	@override String get search => '検索';
+	@override String noResults({required Object query}) => '「${query}」の結果はありません';
+	@override String get clearSearch => '検索を消去';
+	@override String get dismiss => '閉じる';
+	@override String get expandText => 'もっと見る';
+	@override String get collapseText => '折りたたむ';
+	@override String get showAll => 'すべて表示';
+	@override String get copy => 'コピー';
+	@override String get clearAll => 'すべて消去';
+	@override String get showPassword => 'パスワードを表示';
+	@override String get hidePassword => 'パスワードを隠す';
+	@override String get chooseDate => '日付を選択';
+	@override String get chooseTime => '時刻を選択';
+	@override String get increment => '増やす';
+	@override String get decrement => '減らす';
+	@override String get reorderHandle => '並べ替え';
+	@override String get sortAscending => '昇順';
+	@override String get sortDescending => '降順';
+	@override String get play => '再生';
+	@override String get pause => '一時停止';
+	@override String get loop => 'ループ再生';
+	@override String get mute => 'ミュート';
+	@override String get unmute => 'ミュートを解除';
+	@override String get fullscreen => '全画面表示';
+	@override String get exitFullscreen => '全画面表示を終了';
+	@override String get minimize => '最小化';
+	@override String get maximize => '最大化';
+	@override String get restore => '元のサイズに戻す';
+	@override String get close => '閉じる';
+	@override String get cancel => 'キャンセル';
+	@override String get apply => '適用';
+	@override String get clear => '消去';
+	@override String get choose => '選択';
+	@override String get showInFolder => 'フォルダーで表示';
+	@override String selectedCount({required Object count}) => '${count}件を選択中';
+	@override String pageOf({required Object total, required Object page}) => '${total}ページ中${page}ページ';
+	@override String get selectAll => 'すべて選択';
+	@override String get done => '完了';
+	@override String itemPosition({required Object total, required Object position}) => '${total}件中${position}件目';
+	@override String tableDimensions({required Object rows, required Object columns}) => '${rows}行、${columns}列';
+	@override String get taskQueued => '待機中';
+	@override String get taskRunning => 'ダウンロード中';
+	@override String get taskPaused => '一時停止中';
+	@override String get taskCompleted => '完了';
+	@override String get taskFailed => '失敗';
+	@override String get taskCancelled => 'キャンセル済み';
+	@override String get remove => '削除';
+	@override String get seek => '再生位置';
+	@override String showReplies({required Object count}) => '${count}件の返信を表示';
+	@override String moreMedia({required Object count}) => 'ほか${count}枚';
+	@override String navigationCount({required Object count}) => '${count}件';
+	@override String navigationProgress({required Object progress}) => '進捗${progress}%';
+	@override String get listSeparator => '、';
+	@override String retryAfter({required Object seconds}) => '${seconds} 秒後に再試行';
 }
 
 // Path: nativeWindow
@@ -1328,6 +1415,83 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 extension on TranslationsJaJp {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'frost.retry' => '再試行',
+			'frost.error' => 'エラー',
+			'frost.errorDetails' => 'エラーの詳細',
+			'frost.copyDetails' => '詳細をコピー',
+			'frost.copied' => 'コピーしました',
+			'frost.loading' => '読み込み中',
+			'frost.actionSucceeded' => '完了しました',
+			'frost.actionFailed' => '失敗しました',
+			'frost.loadFailed' => '読み込めませんでした',
+			'frost.noItems' => 'まだ項目がありません',
+			'frost.noMoreItems' => 'すべて表示しました',
+			'frost.pullToRefresh' => '引っ張って更新',
+			'frost.releaseToRefresh' => '離して更新',
+			'frost.refreshing' => '更新中',
+			'frost.refreshComplete' => '更新しました',
+			'frost.refreshFailed' => '更新できませんでした',
+			'frost.previous' => '前へ',
+			'frost.next' => '次へ',
+			'frost.back' => '戻る',
+			'frost.more' => 'その他',
+			'frost.expandNavigation' => 'サイドバーを開く',
+			'frost.collapseNavigation' => 'サイドバーを閉じる',
+			'frost.clearText' => '入力を消去',
+			'frost.search' => '検索',
+			'frost.noResults' => ({required Object query}) => '「${query}」の結果はありません',
+			'frost.clearSearch' => '検索を消去',
+			'frost.dismiss' => '閉じる',
+			'frost.expandText' => 'もっと見る',
+			'frost.collapseText' => '折りたたむ',
+			'frost.showAll' => 'すべて表示',
+			'frost.copy' => 'コピー',
+			'frost.clearAll' => 'すべて消去',
+			'frost.showPassword' => 'パスワードを表示',
+			'frost.hidePassword' => 'パスワードを隠す',
+			'frost.chooseDate' => '日付を選択',
+			'frost.chooseTime' => '時刻を選択',
+			'frost.increment' => '増やす',
+			'frost.decrement' => '減らす',
+			'frost.reorderHandle' => '並べ替え',
+			'frost.sortAscending' => '昇順',
+			'frost.sortDescending' => '降順',
+			'frost.play' => '再生',
+			'frost.pause' => '一時停止',
+			'frost.loop' => 'ループ再生',
+			'frost.mute' => 'ミュート',
+			'frost.unmute' => 'ミュートを解除',
+			'frost.fullscreen' => '全画面表示',
+			'frost.exitFullscreen' => '全画面表示を終了',
+			'frost.minimize' => '最小化',
+			'frost.maximize' => '最大化',
+			'frost.restore' => '元のサイズに戻す',
+			'frost.close' => '閉じる',
+			'frost.cancel' => 'キャンセル',
+			'frost.apply' => '適用',
+			'frost.clear' => '消去',
+			'frost.choose' => '選択',
+			'frost.showInFolder' => 'フォルダーで表示',
+			'frost.selectedCount' => ({required Object count}) => '${count}件を選択中',
+			'frost.pageOf' => ({required Object total, required Object page}) => '${total}ページ中${page}ページ',
+			'frost.selectAll' => 'すべて選択',
+			'frost.done' => '完了',
+			'frost.itemPosition' => ({required Object total, required Object position}) => '${total}件中${position}件目',
+			'frost.tableDimensions' => ({required Object rows, required Object columns}) => '${rows}行、${columns}列',
+			'frost.taskQueued' => '待機中',
+			'frost.taskRunning' => 'ダウンロード中',
+			'frost.taskPaused' => '一時停止中',
+			'frost.taskCompleted' => '完了',
+			'frost.taskFailed' => '失敗',
+			'frost.taskCancelled' => 'キャンセル済み',
+			'frost.remove' => '削除',
+			'frost.seek' => '再生位置',
+			'frost.showReplies' => ({required Object count}) => '${count}件の返信を表示',
+			'frost.moreMedia' => ({required Object count}) => 'ほか${count}枚',
+			'frost.navigationCount' => ({required Object count}) => '${count}件',
+			'frost.navigationProgress' => ({required Object progress}) => '進捗${progress}%',
+			'frost.listSeparator' => '、',
+			'frost.retryAfter' => ({required Object seconds}) => '${seconds} 秒後に再試行',
 			'nativeWindow.minimize' => '最小化',
 			'nativeWindow.maximize' => '最大化',
 			'nativeWindow.restore' => '元に戻す',
@@ -1763,6 +1927,8 @@ extension on TranslationsJaJp {
 			'illust.badge.aiArtwork' => 'AI 作品',
 			'illust.badge.original' => 'オリジナル',
 			'illust.stats.size' => 'サイズ',
+			_ => null,
+		} ?? switch (path) {
 			'illust.stats.views' => '閲覧',
 			'illust.stats.bookmarks' => 'ブックマーク',
 			'illust.stats.pages' => 'ページ',
@@ -1840,8 +2006,6 @@ extension on TranslationsJaJp {
 			'follow.followed' => 'フォロー中',
 			'follow.follow' => 'フォロー',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
-			_ => null,
-		} ?? switch (path) {
 			'richText.illustId' => ({required Object id}) => 'イラスト ID：${id}',
 			'richText.userId' => ({required Object id}) => 'ユーザー ID：${id}',
 			'fanbox.accountConnected' => 'ログイン済み',

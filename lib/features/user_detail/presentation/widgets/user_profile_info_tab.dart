@@ -23,7 +23,7 @@ class UserProfileInfoBody extends StatelessWidget {
         if (entries.isEmpty)
           SliverFillRemaining(
             hasScrollBody: false,
-            child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.info_outline), title: context.t.user.empty.profile),
+            child: FrostEmptyState(icon: FrostIconData.glyph(Icons.info_outline), title: context.t.user.empty.profile),
           )
         else
           SliverToBoxAdapter(

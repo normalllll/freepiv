@@ -123,9 +123,9 @@ class _SkeletonHeaderDelegate extends SliverPersistentHeaderDelegate {
             PositionedDirectional(
               top: topPadding + 8,
               start: 8,
-              child: FrostSurfaceIconButton(
+              child: FrostButton.iconFilled(
                 icon: FrostIconData.glyph(Icons.arrow_back),
-                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                label: MaterialLocalizations.of(context).backButtonTooltip,
                 onPressed: null,
               ),
             ),

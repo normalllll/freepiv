@@ -301,8 +301,6 @@ class _DraggableDownloadWindow extends StatelessWidget {
               // shrinks away into it, and the reverse on closing.
               child: FrostSpringReveal(
                 shown: expanded,
-                alignment: AlignmentDirectional.bottomEnd,
-                hiddenScale: .82,
                 child: RepaintBoundary(
                   child: TickerMode(
                     enabled: expanded,
@@ -331,8 +329,6 @@ class _DraggableDownloadWindow extends StatelessWidget {
               excluding: expanded,
               child: FrostSpringReveal(
                 shown: !expanded,
-                alignment: Alignment.center,
-                hiddenScale: .82,
                 child: wrapButton(
                   child: DownloadDockButton(
                     focusNode: buttonFocusNode,

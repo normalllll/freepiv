@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freepiv/core/utils/text_format.dart';
-import 'package:freepiv/shared/widgets/mouse_drag_scroll.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -22,7 +22,7 @@ class PixivisionScaffold extends StatelessWidget {
     builder: (context, layout, orientation, desktop) => Scaffold(
       body: FrostCollapsingHeader(
         header: desktop ? null : FrostPageHeader(title: Text(title), onBack: () => context.canPop() ? context.pop() : context.go('/search')),
-        child: MouseDragScroll(child: SafeArea(bottom: false, child: child)),
+        child: SafeArea(bottom: false, child: child),
       ),
     ),
   );
@@ -53,7 +53,7 @@ class PixivisionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Skeletonizer(
     enabled: article == null,
-    child: FrostCard(
+    child: PivCard(
       onTap: article == null ? null : () => openPixivisionLink(context, article!.url, summary: article),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -69,18 +69,18 @@ class PixivisionCard extends StatelessWidget {
                 : PixivisionImage(url: article!.thumbnail!),
           );
           final details = Padding(
-            padding: preview ? FrostMetrics.contentSectionPadding : FrostMetrics.panelPadding,
+            padding: EdgeInsets.all(preview ? FrostGap.of(context).group : FrostGap.panelInset),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _CardTitle(pixivisionArticleTitle(article?.title ?? 'Article title')),
                 if (!preview) ...[
-                  const SizedBox(height: FrostMetrics.compactSectionGap),
+                  const SizedBox(height: FrostGap.group),
                   Row(
                     children: [
                       Expanded(child: Text(article?.category?.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis)),
-                      const SizedBox(width: FrostMetrics.compactSectionGap),
+                      const SizedBox(width: FrostGap.group),
                       Flexible(child: Text(pixivisionDate(context, article?.publishDate ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis)),
                     ],
                   ),

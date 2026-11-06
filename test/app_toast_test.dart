@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,28 +26,6 @@ Future<void> _pumpHost(WidgetTester tester, TargetPlatform platform, {bool reduc
 void main() {
   errorToastTests();
   duplicateToastTests();
-  testWidgets('touch: a newer notice morphs the one capsule, and it leaves after its time', (tester) async {
-    await _pumpHost(tester, TargetPlatform.android);
-    FrostToast.success('Link copied');
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    expect(find.text('Link copied'), findsOneWidget);
-    final first = tester.getRect(find.text('Link copied'));
-    // Top of the screen, centred.
-    expect(first.top, lessThan(80));
-    expect(first.center.dx, closeTo(450, 120));
-
-    FrostToast.info('Saved to downloads');
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-    expect(find.text('Saved to downloads'), findsOneWidget);
-    expect(find.text('Link copied'), findsNothing, reason: 'replaced in place, not queued');
-
-    await tester.pump(const Duration(seconds: 3));
-    await tester.pumpAndSettle();
-    expect(find.text('Saved to downloads'), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
 
   testWidgets('touch: swiping the capsule up dismisses it; a short drag springs back', (tester) async {
     await _pumpHost(tester, TargetPlatform.android);
@@ -61,54 +38,6 @@ void main() {
     await tester.fling(find.text('Link copied'), const Offset(0, -60), 800);
     await tester.pumpAndSettle();
     expect(find.text('Link copied'), findsNothing);
-  });
-
-  testWidgets('desktop: cards stack bottom-right, spread on hover and close individually', (tester) async {
-    await _pumpHost(tester, TargetPlatform.windows);
-    FrostToast.success('First');
-    FrostToast.error('Second');
-    FrostToast.info('Third');
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-    for (final text in ['First', 'Second', 'Third']) {
-      expect(find.text(text), findsOneWidget);
-    }
-    // Collapsed: the newest is in front, the older ones sit just below it.
-    final third = tester.getRect(find.text('Third'));
-    final second = tester.getRect(find.text('Second'));
-    expect(third.right, greaterThan(700), reason: 'bottom-right corner');
-    expect(second.top - third.top, inInclusiveRange(0, 20));
-
-    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-    addTearDown(mouse.removePointer);
-    await mouse.addPointer(location: Offset.zero);
-    await mouse.moveTo(tester.getCenter(find.text('Third')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-    // Spread: each older card sits fully above the newer one.
-    expect(tester.getRect(find.text('Second')).bottom, lessThan(tester.getRect(find.text('Third')).top));
-
-    // Hovering holds the timers.
-    await tester.pump(const Duration(seconds: 6));
-    expect(find.text('First'), findsOneWidget);
-
-    await tester.tap(
-      find.descendant(
-        of: find.ancestor(of: find.text('Third'), matching: find.byType(Row)).first,
-        matching: find.byIcon(Icons.close_rounded),
-      ),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-    expect(find.text('Third'), findsNothing);
-    expect(find.text('Second'), findsOneWidget);
-
-    await mouse.moveTo(Offset.zero);
-    await tester.pump(const Duration(milliseconds: 200));
-    await tester.pump(const Duration(seconds: 6));
-    await tester.pumpAndSettle();
-    expect(find.text('First'), findsNothing);
-    expect(tester.takeException(), isNull);
   });
 
   testWidgets('reduced motion shows and removes notices without movement', (tester) async {

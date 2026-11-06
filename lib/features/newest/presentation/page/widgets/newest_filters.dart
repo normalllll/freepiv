@@ -33,7 +33,7 @@ class NewestFilterButton extends StatelessWidget {
         focusNode: focusNode,
         onPressed: onPressed,
         style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12)),
-        icon: Icon(newestWorkTypeIcon(workType), size: FrostMetrics.iconSize),
+        icon: Icon(newestWorkTypeIcon(workType), size: FrostControlSize.regular.iconSize),
         label: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -46,33 +46,32 @@ class NewestFilterButton extends StatelessWidget {
     );
     if (!pointer) return trigger(() => _showSheet(context, workType, state.followScope));
 
-    final tokens = FrostThemeTokens.of(context);
-    Widget check(bool selected) => SizedBox.square(dimension: 18, child: selected ? Icon(Icons.check_rounded, size: 18, color: tokens.selectionInk) : null);
-    Widget heading(String label) => Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-      child: Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: tokens.textSecondary)),
-    );
     return FrostMenuAnchor(
-      alignmentOffset: const Offset(0, 4),
-      menuChildren: [
-        heading(translations.common.type),
-        for (final option in newestWorkTypeOptions(audience))
-          FrostMenuItem(
-            leadingIcon: Icon(newestWorkTypeIcon(option), size: FrostMetrics.iconSize),
-            trailingIcon: check(option == workType),
-            onPressed: () => onWorkTypeChanged(option),
-            child: Text(newestWorkTypeLabel(option, translations)),
+      entries: [
+        FrostMenuSection(
+          header: translations.common.type,
+          entries: [
+            for (final option in newestWorkTypeOptions(audience))
+              FrostMenuAction(
+                newestWorkTypeLabel(option, translations),
+                leading: FrostGlyph.icon(FrostIconData.glyph(newestWorkTypeIcon(option))),
+                checked: option == workType,
+                onSelected: () => onWorkTypeChanged(option),
+              ),
+          ],
+        ),
+        if (following)
+          FrostMenuSection(
+            header: translations.newest.followScope.title,
+            entries: [
+              for (final option in NewestFollowScope.values)
+                FrostMenuAction(
+                  newestFollowScopeLabel(option, translations),
+                  checked: option == state.followScope,
+                  onSelected: () => onFollowScopeChanged(option),
+                ),
+            ],
           ),
-        if (following) ...[
-          const Divider(height: 9),
-          heading(translations.newest.followScope.title),
-          for (final option in NewestFollowScope.values)
-            FrostMenuItem(
-              trailingIcon: check(option == state.followScope),
-              onPressed: () => onFollowScopeChanged(option),
-              child: Text(newestFollowScopeLabel(option, translations)),
-            ),
-        ],
       ],
       builder: (context, focusNode, toggle) => trigger(toggle, focusNode: focusNode),
     );
@@ -83,7 +82,6 @@ class NewestFilterButton extends StatelessWidget {
     var scope = initialScope;
     return showModalBottomSheet<void>(
       context: context,
-      sheetAnimationStyle: frostSheetAnimationStyle(context),
       useSafeArea: true,
       showDragHandle: true,
       isScrollControlled: true,

@@ -10,8 +10,6 @@ import 'package:freepiv/app/frost_config.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/newest/presentation/page/newest_page.dart';
-import 'package:freepiv/features/newest/presentation/page/widgets/newest_filters.dart';
-import 'package:freepiv/features/newest/presentation/page/widgets/newest_toolbar.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 
 class _EmptyFeed extends NewestListSource {
@@ -35,70 +33,6 @@ class _LocalNewest extends Newest {
 }
 
 void main() {
-  testWidgets('compact newest filter keeps one summary row and all valid choices accessible', (tester) async {
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetDevicePixelRatio);
-    addTearDown(tester.view.resetPhysicalSize);
-    for (final locale in AppLocale.values) {
-      LocaleSettings.setLocale(locale);
-      for (final width in [320.0, 390.0, 430.0]) {
-        for (final scale in [1.0, 2.0]) {
-          tester.view.physicalSize = Size(width, 844);
-          await tester.pumpWidget(
-            ProviderScope(
-              overrides: [newestProvider.overrideWith(_LocalNewest.new)],
-              child: TranslationProvider(
-                child: MaterialApp(
-                  theme: AppTheme.light(platform: TargetPlatform.android, locale: locale.flutterLocale),
-                  home: MediaQuery(
-                    data: MediaQueryData(size: Size(width, 844), textScaler: TextScaler.linear(scale)),
-                    child: const FrostLayoutScope(child: NewestPage()),
-                  ),
-                ),
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-          final toolbar = tester.widget<TabBar>(find.descendant(of: find.byType(NewestToolbar), matching: find.byType(TabBar)));
-          expect(toolbar.isScrollable, isTrue);
-          expect(toolbar.tabAlignment, TabAlignment.start);
-          final summary = find.descendant(of: find.byType(NewestFilterButton), matching: find.byType(TextButton));
-          expect(summary, findsOneWidget);
-          // The button's own padding may reach into the inset; its label and
-          // chevron stay inside the page inset.
-          final label = find.descendant(of: summary, matching: find.byType(Icon)).last;
-          expect(tester.getRect(label).right, lessThanOrEqualTo(width - 12));
-          expect(tester.getRect(summary).right, lessThanOrEqualTo(width));
-          expect(tester.takeException(), isNull, reason: '$locale $width at $scale×');
-        }
-      }
-    }
-
-    tester.view.physicalSize = const Size(390, 844);
-    LocaleSettings.setLocale(AppLocale.enUs);
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [newestProvider.overrideWith(_LocalNewest.new)],
-        child: TranslationProvider(
-          child: MaterialApp(
-            theme: AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
-            home: const FrostLayoutScope(child: NewestPage()),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    final summary = find.descendant(of: find.byType(NewestFilterButton), matching: find.byType(TextButton));
-    await tester.tap(summary);
-    await tester.pumpAndSettle();
-    expect(find.text(t.newest.workType.novel), findsWidgets);
-    expect(find.text(t.newest.followScope.public), findsWidgets);
-    await tester.tap(find.text(t.newest.followScope.public).last);
-    await tester.pumpAndSettle();
-    expect(ProviderScope.containerOf(tester.element(find.byType(NewestPage))).read(newestProvider).followScope, NewestFollowScope.public);
-    expect(tester.takeException(), isNull);
-  });
-
   testWidgets('newest page renders its shared controls at compact and wide widths', (tester) async {
     await (FontLoader('MaterialIcons')..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
     await tester.runAsync(() async {

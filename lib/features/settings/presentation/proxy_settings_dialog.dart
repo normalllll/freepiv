@@ -1,4 +1,5 @@
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -132,9 +133,7 @@ class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
                       alignment: AlignmentDirectional.centerStart,
                       child: OutlinedButton.icon(
                         onPressed: _isFetchingSystemProxy ? null : _loadSystemProxy,
-                        icon: _isFetchingSystemProxy
-                            ? const SizedBox.square(dimension: 16, child: FrostSkeletonBlock())
-                            : const Icon(Icons.travel_explore_outlined),
+                        icon: _isFetchingSystemProxy ? SizedBox.square(dimension: 16, child: PivSkeletonBlock()) : const Icon(Icons.travel_explore_outlined),
                         label: Text(proxyTranslations.loadSystem),
                       ),
                     ),
@@ -293,7 +292,7 @@ class _ProxyPowerTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: FrostClickSurface(
-        borderRadius: BorderRadius.circular(8),
+        shape: FrostClickShape.rounded(BorderRadius.circular(8)),
         onTap: () => onChanged(!enabled),
         child: AnimatedContainer(
           duration: FrostMotion.duration(context, const Duration(milliseconds: 180)),
@@ -332,7 +331,7 @@ class _ProxyPowerTile extends StatelessWidget {
                   ],
                 ),
               ),
-              FrostSwitch(value: enabled, onChanged: onChanged),
+              FrostSwitch(value: enabled, onChanged: onChanged, semanticLabel: translations.enabled),
             ],
           ),
         ),
@@ -362,12 +361,21 @@ class _ProxyProtocolSelector extends StatelessWidget {
           const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
-            child: FrostSegmentedButton<AppProxyProtocol>(
-              selected: {protocol},
-              onSelectionChanged: enabled ? (selected) => onChanged(selected.first) : null,
-              segments: [
-                ButtonSegment(value: AppProxyProtocol.http, icon: const Icon(Icons.public_outlined), label: Text(translations.protocolHttp)),
-                ButtonSegment(value: AppProxyProtocol.socks, icon: const Icon(Icons.route_outlined), label: Text(translations.protocolSocks)),
+            child: FrostPicker<AppProxyProtocol>.segmented(
+              label: translations.protocol,
+              value: protocol,
+              onChanged: enabled ? (selected) => onChanged(selected) : null,
+              options: [
+                FrostPickerOption(
+                  value: AppProxyProtocol.http,
+                  leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.public_outlined)),
+                  label: translations.protocolHttp,
+                ),
+                FrostPickerOption(
+                  value: AppProxyProtocol.socks,
+                  leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.route_outlined)),
+                  label: translations.protocolSocks,
+                ),
               ],
             ),
           ),

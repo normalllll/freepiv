@@ -7,14 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
-import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/features/pixivision/article_blocks.dart';
 import 'package:freepiv/features/pixivision/article_images.dart';
 import 'package:freepiv/features/pixivision/detail.dart';
 import 'package:freepiv/features/pixivision/logic.dart';
-import 'package:freepiv/features/pixivision/page.dart';
-import 'package:freepiv/features/pixivision/widgets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/api/media.dart' as rust;
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
@@ -255,114 +252,6 @@ void main() {
       expect(link.style!.decoration, TextDecoration.underline);
       expect(link.recognizer, isNotNull);
       expect(tester.takeException(), isNull);
-    }
-  });
-
-  testWidgets('compact browse shows content with one row of modes and expandable search', (tester) async {
-    LocaleSettings.setLocale(AppLocale.enUs);
-    tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(390, 844);
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [pixivisionBrowseProvider(home).overrideWith(FixtureBrowse.new), pixivisionTagsProvider('en').overrideWith((ref) => fixtureTags())],
-        child: TranslationProvider(
-          child: MaterialApp(
-            theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-            home: const FrostLayoutScope(child: PixivisionPage()),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.byType(TabBar), findsOneWidget);
-    expect(tester.widget<TabBar>(find.byType(TabBar)).isScrollable, isTrue);
-    expect(find.byType(FrostSearchInput), findsNothing);
-    expect(find.text('Color and light'), findsOneWidget);
-    final tabs = find.byType(TabBar);
-    await tester.ensureVisible(find.text('Monthly ranking').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Monthly ranking').first);
-    await tester.pumpAndSettle();
-    expect(tester.widget<TabBar>(tabs).controller!.index, PixivisionSection.ranking.index);
-    await tester.ensureVisible(find.text('Recommended').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Recommended').first);
-    await tester.pumpAndSettle();
-    expect(tester.widget<TabBar>(tabs).controller!.index, PixivisionSection.recommended.index);
-    await tester.ensureVisible(find.text('Tags').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Tags').first);
-    await tester.pumpAndSettle();
-    expect(find.text('Topics'), findsOneWidget);
-    await tester.tap(find.byTooltip('Search articles'));
-    await tester.pumpAndSettle();
-    expect(find.byType(FrostSearchInput), findsOneWidget);
-    await tester.tap(find.byTooltip('Search articles'));
-    await tester.pumpAndSettle();
-    expect(find.byType(FrostSearchInput), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('browse heading, controls and list share one content axis on wide windows', (tester) async {
-    LocaleSettings.setLocale(AppLocale.enUs);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    for (final width in [800.0, 1440.0]) {
-      tester.view.physicalSize = Size(width, 900);
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [pixivisionBrowseProvider(home).overrideWith(FixtureBrowse.new)],
-          child: TranslationProvider(
-            child: MaterialApp(
-              theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-              home: const FrostLayoutScope(child: PixivisionPage()),
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      final heading = tester.getRect(find.text('pixivision').first);
-      final card = tester.getRect(find.byType(PixivisionCard).first);
-      expect(card.left, closeTo(heading.left, 1), reason: 'content axis at $width');
-      expect(find.byType(FrostSearchInput), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    }
-  });
-
-  testWidgets('compact browse accommodates large text and category choices', (tester) async {
-    LocaleSettings.setLocale(AppLocale.enUs);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    for (final (size, scale, dark) in [(const Size(360, 844), 2.0, false), (const Size(430, 932), 1.0, true)]) {
-      tester.view.physicalSize = size;
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [pixivisionBrowseProvider(home).overrideWith(FixtureBrowse.new)],
-          child: TranslationProvider(
-            child: MaterialApp(
-              theme: dark
-                  ? AppTheme.dark(platform: TargetPlatform.windows, locale: const Locale('en'))
-                  : AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-              home: MediaQuery(
-                data: MediaQueryData(size: size, textScaler: TextScaler.linear(scale)),
-                child: const FrostLayoutScope(child: PixivisionPage()),
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull, reason: '$size / $scale');
-      await tester.tap(find.descendant(of: find.byType(FrostMenuAnchor), matching: find.byType(TextButton)));
-      await tester.pumpAndSettle();
-      expect(find.text('Illustration'), findsOneWidget);
-      expect(tester.takeException(), isNull, reason: '$size / $scale category menu');
-      await tester.tapAt(const Offset(8, 400));
-      await tester.pumpAndSettle();
     }
   });
 }

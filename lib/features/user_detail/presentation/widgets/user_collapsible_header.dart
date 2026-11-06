@@ -357,9 +357,9 @@ class _UserHeaderDelegate extends SliverPersistentHeaderDelegate {
           PositionedDirectional(
             top: topPadding + 8,
             start: 8,
-            child: FrostSurfaceIconButton(
+            child: FrostButton.iconFilled(
               icon: FrostIconData.glyph(Icons.arrow_back),
-              tooltip: t.common.back,
+              label: t.common.back,
               onPressed: FrostShellNavigationScope.maybeOf(context)?.goBack ?? () => Navigator.of(context).maybePop(),
             ),
           ),
@@ -503,7 +503,7 @@ class _UserCommentPreview extends StatelessWidget {
     return Material(
       type: MaterialType.transparency,
       child: FrostClickSurface(
-        borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
+        shape: FrostClickShape.rounded(BorderRadius.circular(FrostRadius.lg)),
         onTap: () => _showUserCommentDialog(context, comment),
         child: preview,
       ),

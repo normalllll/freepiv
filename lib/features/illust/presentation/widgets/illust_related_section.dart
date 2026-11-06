@@ -6,6 +6,7 @@ import 'package:freepiv/features/illust/presentation/widgets/illust_detail_secti
 import 'package:freepiv/features/illust/presentation/widgets/vertical_illust_preview_grid.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
+import 'package:frost_data/frost_data.dart';
 
 const _previewCount = 8;
 

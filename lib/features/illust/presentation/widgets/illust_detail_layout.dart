@@ -64,7 +64,7 @@ class DesktopIllustDetailLayout extends StatelessWidget {
               width: panelWidth,
               child: FrostSurface(
                 role: FrostSurfaceRole.panel,
-                borderRadius: BorderRadius.circular(FrostMetrics.groupRadius + 4),
+                borderRadius: BorderRadius.circular(FrostRadius.xl + 4),
                 child: IllustDetailPanel(
                   illust: illust,
                   onIllustTap: onIllustTap,
@@ -240,7 +240,7 @@ class _CompactTitleBar extends StatelessWidget {
         // the action does not crowd the rounded end. Without a back control
         // the title then starts on the body's 16 edge.
         child: Padding(
-          padding: FrostPinnedChromeGlass.insetsOf(context),
+          padding: EdgeInsetsDirectional.zero,
           child: Row(
             children: [
               const SizedBox(width: 4),

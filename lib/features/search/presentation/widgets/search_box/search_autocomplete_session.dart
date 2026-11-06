@@ -20,7 +20,10 @@ class SearchAutocompleteSession extends ChangeNotifier {
   static final _numericPattern = RegExp(r'^\d+$');
   static const _debounceDuration = Duration(milliseconds: 250);
 
-  final controller = FrostHighlightTextEditingController();
+  /// Completed words (followed by a space) are bold, as tokens of the query.
+  final controller = FrostTokenEditingController(
+    rules: [FrostTokenRule(pattern: RegExp(r'^\S+$'), tone: FrostTokenTone.neutral)],
+  );
   final focusNode = FocusNode();
 
   Timer? _debounceTimer;

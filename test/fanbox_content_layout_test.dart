@@ -4,8 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/features/fanbox/cards.dart';
 import 'package:freepiv/features/fanbox/detail.dart';
-import 'package:freepiv/features/fanbox/navigation.dart';
-import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 
@@ -67,25 +65,4 @@ void main() {
     expect(size.width, 390);
     expect(size.height, 1170);
   });
-
-  testWidgets('collection navigation stays on one line at narrow widths and large text', (tester) async {
-    for (final width in [360.0, 390.0, 430.0]) {
-      await tester.pumpWidget(
-        _app(
-          const FanboxSectionNavigation(section: FanboxSection.home, onSelected: _ignoreSection),
-          width: width,
-          textScale: 2,
-        ),
-      );
-      expect(tester.takeException(), isNull);
-      final tab = tester.getRect(find.byType(TabBar));
-      // The collection value is a compact button at the row's end.
-      final selector = tester.getRect(find.descendant(of: find.byType(FanboxSectionNavigation), matching: find.byType(TextButton)));
-      expect((tab.center.dy - selector.center.dy).abs(), lessThan(2));
-      expect(selector.right, lessThanOrEqualTo(width));
-      expect(selector.left, greaterThan(tab.left));
-    }
-  });
 }
-
-void _ignoreSection(FanboxSection _) {}

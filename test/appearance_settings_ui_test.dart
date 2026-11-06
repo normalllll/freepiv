@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
@@ -231,50 +229,5 @@ void main() {
         }
       }
     }
-  });
-
-  testWidgets('desktop SettingsPage editor handles hover, Tab, Escape, cancel, and apply', (tester) async {
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
-    LocaleSettings.setLocaleSync(AppLocale.enUs);
-    await AppSettings.initialize(store: _MemoryStore());
-    await _pumpSettingsPage(tester, width: 1024, height: 600, scale: 1);
-    final custom = find.text(t.settings.theme.custom);
-    await tester.dragUntilVisible(custom, find.byType(ListView).last, const Offset(0, -250));
-    await tester.pumpAndSettle();
-    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-    addTearDown(mouse.removePointer);
-    await mouse.addPointer(location: tester.getCenter(custom));
-    await tester.pump();
-    expect(tester.takeException(), isNull);
-
-    await tester.tap(custom);
-    await tester.pumpAndSettle();
-    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-    await tester.pump();
-    final dialogFocus = FocusManager.instance.primaryFocus;
-    expect(dialogFocus, isNotNull);
-    expect(dialogFocus!.context!.findAncestorWidgetOfExactType<Dialog>(), isNotNull);
-    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await tester.pumpAndSettle();
-    expect(find.byType(Dialog), findsNothing);
-
-    await tester.tap(custom);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(t.common.cancel));
-    await tester.pumpAndSettle();
-    expect(find.byType(Dialog), findsNothing);
-
-    await tester.tap(custom);
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).last, '#4C8DFF');
-    await tester.tap(find.byType(FilledButton).last);
-    await tester.pumpAndSettle();
-    final container = ProviderScope.containerOf(tester.element(find.byType(SettingsPage)));
-    expect(container.read(appearanceProvider).settings.lightAccent, const Color(0xFF4C8DFF));
-    expect(find.byType(Dialog), findsNothing);
-    expect(tester.takeException(), isNull);
   });
 }

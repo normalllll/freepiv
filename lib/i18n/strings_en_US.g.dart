@@ -41,6 +41,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
+	late final Translations$frost$en_US frost = Translations$frost$en_US.internal(_root);
 	late final Translations$nativeWindow$en_US nativeWindow = Translations$nativeWindow$en_US.internal(_root);
 	late final Translations$discover$en_US discover = Translations$discover$en_US.internal(_root);
 	late final Translations$app$en_US app = Translations$app$en_US.internal(_root);
@@ -64,6 +65,92 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$richText$en_US richText = Translations$richText$en_US.internal(_root);
 	late final Translations$fanbox$en_US fanbox = Translations$fanbox$en_US.internal(_root);
 	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
+}
+
+// Path: frost
+class Translations$frost$en_US {
+	Translations$frost$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get retry => 'Retry';
+	String get error => 'Error';
+	String get errorDetails => 'Error details';
+	String get copyDetails => 'Copy details';
+	String get copied => 'Copied';
+	String get loading => 'Loading';
+	String get actionSucceeded => 'Action succeeded';
+	String get actionFailed => 'Action failed';
+	String get loadFailed => 'Couldn\'t load';
+	String get noItems => 'No items';
+	String get noMoreItems => 'No more items';
+	String get pullToRefresh => 'Pull to refresh';
+	String get releaseToRefresh => 'Release to refresh';
+	String get refreshing => 'Refreshing';
+	String get refreshComplete => 'Refresh complete';
+	String get refreshFailed => 'Refresh failed';
+	String get previous => 'Previous';
+	String get next => 'Next';
+	String get back => 'Back';
+	String get more => 'More';
+	String get expandNavigation => 'Expand sidebar';
+	String get collapseNavigation => 'Collapse sidebar';
+	String get clearText => 'Clear text';
+	String get search => 'Search';
+	String noResults({required Object query}) => 'No results for “${query}”';
+	String get clearSearch => 'Clear search';
+	String get dismiss => 'Dismiss';
+	String get expandText => 'Show more';
+	String get collapseText => 'Show less';
+	String get showAll => 'Show all';
+	String get copy => 'Copy';
+	String get clearAll => 'Clear all';
+	String get showPassword => 'Show password';
+	String get hidePassword => 'Hide password';
+	String get chooseDate => 'Choose date';
+	String get chooseTime => 'Choose time';
+	String get increment => 'Increase';
+	String get decrement => 'Decrease';
+	String get reorderHandle => 'Reorder';
+	String get sortAscending => 'Ascending';
+	String get sortDescending => 'Descending';
+	String get play => 'Play';
+	String get pause => 'Pause';
+	String get loop => 'Loop';
+	String get mute => 'Mute';
+	String get unmute => 'Unmute';
+	String get fullscreen => 'Full screen';
+	String get exitFullscreen => 'Exit full screen';
+	String get minimize => 'Minimize';
+	String get maximize => 'Maximize';
+	String get restore => 'Restore';
+	String get close => 'Close';
+	String get cancel => 'Cancel';
+	String get apply => 'Apply';
+	String get clear => 'Clear';
+	String get choose => 'Choose';
+	String get showInFolder => 'Show in folder';
+	String selectedCount({required Object count}) => '${count} selected';
+	String pageOf({required Object page, required Object total}) => 'Page ${page} of ${total}';
+	String get selectAll => 'Select all';
+	String get done => 'Done';
+	String itemPosition({required Object position, required Object total}) => '${position} of ${total}';
+	String tableDimensions({required Object rows, required Object columns}) => '${rows} rows, ${columns} columns';
+	String get taskQueued => 'Queued';
+	String get taskRunning => 'Downloading';
+	String get taskPaused => 'Paused';
+	String get taskCompleted => 'Completed';
+	String get taskFailed => 'Failed';
+	String get taskCancelled => 'Cancelled';
+	String get remove => 'Remove';
+	String get seek => 'Playback position';
+	String showReplies({required Object count}) => 'Show ${count} replies';
+	String moreMedia({required Object count}) => '${count} more images';
+	String navigationCount({required Object count}) => '${count} items';
+	String navigationProgress({required Object progress}) => '${progress}% complete';
+	String get listSeparator => ', ';
+	String retryAfter({required Object seconds}) => 'Retry in ${seconds} s';
 }
 
 // Path: nativeWindow
@@ -1330,6 +1417,83 @@ class Translations$novel$reader$en_US {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'frost.retry' => 'Retry',
+			'frost.error' => 'Error',
+			'frost.errorDetails' => 'Error details',
+			'frost.copyDetails' => 'Copy details',
+			'frost.copied' => 'Copied',
+			'frost.loading' => 'Loading',
+			'frost.actionSucceeded' => 'Action succeeded',
+			'frost.actionFailed' => 'Action failed',
+			'frost.loadFailed' => 'Couldn\'t load',
+			'frost.noItems' => 'No items',
+			'frost.noMoreItems' => 'No more items',
+			'frost.pullToRefresh' => 'Pull to refresh',
+			'frost.releaseToRefresh' => 'Release to refresh',
+			'frost.refreshing' => 'Refreshing',
+			'frost.refreshComplete' => 'Refresh complete',
+			'frost.refreshFailed' => 'Refresh failed',
+			'frost.previous' => 'Previous',
+			'frost.next' => 'Next',
+			'frost.back' => 'Back',
+			'frost.more' => 'More',
+			'frost.expandNavigation' => 'Expand sidebar',
+			'frost.collapseNavigation' => 'Collapse sidebar',
+			'frost.clearText' => 'Clear text',
+			'frost.search' => 'Search',
+			'frost.noResults' => ({required Object query}) => 'No results for “${query}”',
+			'frost.clearSearch' => 'Clear search',
+			'frost.dismiss' => 'Dismiss',
+			'frost.expandText' => 'Show more',
+			'frost.collapseText' => 'Show less',
+			'frost.showAll' => 'Show all',
+			'frost.copy' => 'Copy',
+			'frost.clearAll' => 'Clear all',
+			'frost.showPassword' => 'Show password',
+			'frost.hidePassword' => 'Hide password',
+			'frost.chooseDate' => 'Choose date',
+			'frost.chooseTime' => 'Choose time',
+			'frost.increment' => 'Increase',
+			'frost.decrement' => 'Decrease',
+			'frost.reorderHandle' => 'Reorder',
+			'frost.sortAscending' => 'Ascending',
+			'frost.sortDescending' => 'Descending',
+			'frost.play' => 'Play',
+			'frost.pause' => 'Pause',
+			'frost.loop' => 'Loop',
+			'frost.mute' => 'Mute',
+			'frost.unmute' => 'Unmute',
+			'frost.fullscreen' => 'Full screen',
+			'frost.exitFullscreen' => 'Exit full screen',
+			'frost.minimize' => 'Minimize',
+			'frost.maximize' => 'Maximize',
+			'frost.restore' => 'Restore',
+			'frost.close' => 'Close',
+			'frost.cancel' => 'Cancel',
+			'frost.apply' => 'Apply',
+			'frost.clear' => 'Clear',
+			'frost.choose' => 'Choose',
+			'frost.showInFolder' => 'Show in folder',
+			'frost.selectedCount' => ({required Object count}) => '${count} selected',
+			'frost.pageOf' => ({required Object page, required Object total}) => 'Page ${page} of ${total}',
+			'frost.selectAll' => 'Select all',
+			'frost.done' => 'Done',
+			'frost.itemPosition' => ({required Object position, required Object total}) => '${position} of ${total}',
+			'frost.tableDimensions' => ({required Object rows, required Object columns}) => '${rows} rows, ${columns} columns',
+			'frost.taskQueued' => 'Queued',
+			'frost.taskRunning' => 'Downloading',
+			'frost.taskPaused' => 'Paused',
+			'frost.taskCompleted' => 'Completed',
+			'frost.taskFailed' => 'Failed',
+			'frost.taskCancelled' => 'Cancelled',
+			'frost.remove' => 'Remove',
+			'frost.seek' => 'Playback position',
+			'frost.showReplies' => ({required Object count}) => 'Show ${count} replies',
+			'frost.moreMedia' => ({required Object count}) => '${count} more images',
+			'frost.navigationCount' => ({required Object count}) => '${count} items',
+			'frost.navigationProgress' => ({required Object progress}) => '${progress}% complete',
+			'frost.listSeparator' => ', ',
+			'frost.retryAfter' => ({required Object seconds}) => 'Retry in ${seconds} s',
 			'nativeWindow.minimize' => 'Minimize',
 			'nativeWindow.maximize' => 'Maximize',
 			'nativeWindow.restore' => 'Restore',
@@ -1765,6 +1929,8 @@ extension on Translations {
 			'illust.badge.aiArtwork' => 'AI Artwork',
 			'illust.badge.original' => 'Original',
 			'illust.stats.size' => 'Size',
+			_ => null,
+		} ?? switch (path) {
 			'illust.stats.views' => 'Views',
 			'illust.stats.bookmarks' => 'Bookmarks',
 			'illust.stats.pages' => 'Pages',
@@ -1842,8 +2008,6 @@ extension on Translations {
 			'follow.followed' => 'Following',
 			'follow.follow' => 'Follow',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter: ${username}',
-			_ => null,
-		} ?? switch (path) {
 			'richText.illustId' => ({required Object id}) => 'Illust ID: ${id}',
 			'richText.userId' => ({required Object id}) => 'User ID: ${id}',
 			'fanbox.accountConnected' => 'Connected',

@@ -9,6 +9,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
+import 'package:frost_data/frost_data.dart';
 
 typedef CommentRepliesSourceBuilder = CommentRepliesListSource Function(Comment comment);
 typedef CommentDeleteCallback = void Function(Comment comment, CommentRepliesListSource? repliesSource);
@@ -72,7 +73,7 @@ class PixivCommentTile extends StatelessWidget {
             dimension: 48,
             child: FrostClickSurface(
               feedback: FrostClickFeedback.media,
-              customBorder: const CircleBorder(),
+              shape: const FrostClickShape.circle(),
               onTap: () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${comment.user.id}'}),
               child: Center(
                 child: SizedBox.square(
@@ -185,11 +186,12 @@ class _CommentActions extends StatelessWidget {
         if (onReply != null) CommentReplyButton(onPressed: () => onReply!(comment)),
         if (onDelete != null)
           FrostMenuAnchor(
-            menuChildren: [
-              FrostMenuItem(
-                onPressed: onDelete,
-                leadingIcon: Icon(Icons.delete_outline, size: 18, color: colorScheme.error),
-                child: Text(context.t.illust.comments.delete),
+            entries: [
+              FrostMenuAction(
+                context.t.illust.comments.delete,
+                leading: FrostGlyph.icon(const FrostIconData.glyph(Icons.delete_outline)),
+                destructive: true,
+                onSelected: onDelete,
               ),
             ],
             builder: (context, focusNode, toggle) => IconButton(
@@ -197,9 +199,7 @@ class _CommentActions extends StatelessWidget {
               tooltip: context.t.navigation.more,
               onPressed: isDeleting ? null : toggle,
               iconSize: 18,
-              icon: isDeleting
-                  ? const SizedBox.square(dimension: 16, child: FrostSkeletonBlock())
-                  : Icon(Icons.more_horiz, color: colorScheme.onSurfaceVariant),
+              icon: isDeleting ? SizedBox.square(dimension: 16, child: PivSkeletonBlock()) : Icon(Icons.more_horiz, color: colorScheme.onSurfaceVariant),
             ),
           ),
       ],
@@ -281,8 +281,8 @@ class _CommentRepliesSectionState extends State<CommentRepliesSection> {
         final lastError = source.lastError;
 
         if (source.phase == FrostLoadPhase.loading) {
-          return const _RepliesStatus(
-            icon: SizedBox.square(dimension: 16, child: FrostSkeletonBlock()),
+          return _RepliesStatus(
+            icon: SizedBox.square(dimension: 16, child: PivSkeletonBlock()),
             label: '',
           );
         }
@@ -297,7 +297,7 @@ class _CommentRepliesSectionState extends State<CommentRepliesSection> {
           );
         }
 
-        if (source.initialized && source.isEmpty) {
+        if (source.initialized && source.items.isEmpty) {
           return const SizedBox.shrink();
         }
 
@@ -320,10 +320,10 @@ class _CommentRepliesSectionState extends State<CommentRepliesSection> {
                 ),
               ],
               if (source.loadingMore)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(top: 8),
                   child: _RepliesStatus(
-                    icon: SizedBox.square(dimension: 16, child: FrostSkeletonBlock()),
+                    icon: SizedBox.square(dimension: 16, child: PivSkeletonBlock()),
                     label: '',
                   ),
                 )

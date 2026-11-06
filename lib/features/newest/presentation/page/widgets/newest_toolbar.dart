@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_labels.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/mouse_drag_scroll.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// Single toolbar row: audience tabs, with the feed filter summary at the end.
@@ -31,20 +30,15 @@ class NewestToolbar extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: MouseDragScroll(
-                      child: FrostTabBar(
-                        controller: tabController,
-                        isScrollable: true,
-                        tabAlignment: TabAlignment.start,
-                        dividerColor: Colors.transparent,
-                        labelPadding: EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
-                        onTap: (index) => onAudienceChanged(newestAudienceForIndex(index)),
-                        tabs: [
-                          Tab(text: translations.newest.audience.following),
-                          Tab(text: translations.newest.audience.mypixiv),
-                          Tab(text: translations.newest.audience.everyone),
-                        ],
-                      ),
+                    child: FrostTabBar(
+                      controller: tabController,
+                      scrollable: true,
+                      onTap: (index) => onAudienceChanged(newestAudienceForIndex(index)),
+                      tabs: [
+                        FrostTab(label: translations.newest.audience.following),
+                        FrostTab(label: translations.newest.audience.mypixiv),
+                        FrostTab(label: translations.newest.audience.everyone),
+                      ],
                     ),
                   ),
                   ConstrainedBox(

@@ -207,10 +207,9 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
                         top: 0,
                         bottom: 0,
                         child: Center(
-                          child: FrostSurfaceIconButton(
+                          child: FrostButton.iconFilled(
                             icon: FrostIconData.glyph(Icons.chevron_left),
-                            tooltip: context.t.illust.tooltip.previousImage,
-                            iconSize: 30,
+                            label: context.t.illust.tooltip.previousImage,
                             onPressed: _pageIndex == 0 ? null : () => _animateToPage(_pageIndex - 1),
                           ),
                         ),
@@ -220,10 +219,9 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
                         top: 0,
                         bottom: 0,
                         child: Center(
-                          child: FrostSurfaceIconButton(
+                          child: FrostButton.iconFilled(
                             icon: FrostIconData.glyph(Icons.chevron_right),
-                            tooltip: context.t.illust.tooltip.nextImage,
-                            iconSize: 30,
+                            label: context.t.illust.tooltip.nextImage,
                             onPressed: _pageIndex >= pageCount - 1 ? null : () => _animateToPage(_pageIndex + 1),
                           ),
                         ),
@@ -533,7 +531,7 @@ class _OriginalImageLoadingPlaceholder extends StatelessWidget {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: colorScheme.surface.withValues(alpha: 0.84),
-                    borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
+                    borderRadius: BorderRadius.circular(FrostRadius.lg),
                     boxShadow: [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.12), blurRadius: 12, offset: const Offset(0, 4))],
                   ),
                   child: Padding(
@@ -541,7 +539,7 @@ class _OriginalImageLoadingPlaceholder extends StatelessWidget {
                     child: SizedBox(
                       width: progressWidth,
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
+                        borderRadius: BorderRadius.circular(FrostRadius.lg),
                         child: LinearProgressIndicator(value: progress, minHeight: 4),
                       ),
                     ),
@@ -576,7 +574,7 @@ class _OriginalImageLoadError extends StatelessWidget {
         Center(
           child: Material(
             color: colorScheme.surface.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
+            borderRadius: BorderRadius.circular(FrostRadius.lg),
             child: IconButton(tooltip: context.t.common.retry, color: colorScheme.onSurface, icon: const Icon(Icons.refresh_outlined), onPressed: onRetry),
           ),
         ),

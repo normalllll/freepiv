@@ -6,6 +6,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// Pixiv's image hosts serve only requests coming from pixiv.net.
@@ -79,7 +80,7 @@ class _PixivImagePlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const FrostImageSkeleton();
+    return const PivImageSkeleton();
   }
 }
 

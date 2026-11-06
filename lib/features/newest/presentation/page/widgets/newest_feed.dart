@@ -7,6 +7,7 @@ import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
+import 'package:frost_data/frost_data.dart';
 
 class NewestFeedView extends StatelessWidget {
   const NewestFeedView({required this.source, required this.filterSliver, super.key});
@@ -17,7 +18,7 @@ class NewestFeedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FrostRefreshView(
-      onRefresh: () => source.refresh(source.isEmpty),
+      onRefresh: () => source.refresh(source.items.isEmpty),
       builder: (context, physics, locators) {
         return NewestBody(source: source, physics: physics, locators: locators, filterSliver: filterSliver);
       },
@@ -56,12 +57,12 @@ class NewestBody extends StatelessWidget {
       );
     }
 
-    if (source.initialized && source.isEmpty) {
+    if (source.initialized && source.items.isEmpty) {
       return SliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
         leadingSlivers: [filterSliver],
-        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.inbox_outlined), title: context.t.newest.emptyTitle),
+        child: FrostEmptyState(icon: FrostIconData.glyph(Icons.inbox_outlined), title: context.t.newest.emptyTitle),
       );
     }
 

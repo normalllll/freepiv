@@ -74,7 +74,7 @@ class _CommentInputBarState extends State<CommentInputBar> {
           padding: const EdgeInsets.only(top: 6, bottom: 8),
           child: FrostSurface(
             role: FrostSurfaceRole.chrome,
-            borderRadius: BorderRadius.circular(FrostMetrics.groupRadius + 4),
+            borderRadius: BorderRadius.circular(FrostRadius.xl + 4),
             child: AnimatedSize(
               duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 240),
               alignment: Alignment.topCenter,
@@ -143,10 +143,9 @@ class _CommentInputBarState extends State<CommentInputBar> {
                                     : const Icon(Icons.arrow_upward, size: 20),
                               )
                             else
-                              FrostButton(
+                              FrostButton.prominent(
                                 label: context.t.common.send,
-                                loading: _submitting,
-                                kind: FrostButtonKind.primary,
+                                state: _submitting ? const FrostActionState.running() : FrostActionState.idle,
                                 onPressed: hasText ? _submitText : null,
                               ),
                           ],
@@ -332,7 +331,7 @@ class _StampGrid extends StatelessWidget {
         return Tooltip(
           message: asset.name,
           child: FrostClickSurface(
-            borderRadius: BorderRadius.circular(8),
+            shape: FrostClickShape.rounded(BorderRadius.circular(8)),
             onTap: () => onSelected(asset),
             child: Padding(
               padding: const EdgeInsets.all(4),

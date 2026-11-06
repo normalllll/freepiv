@@ -1,7 +1,68 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:freepiv/app/icons.g.dart';
 import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
+
+/// The icons Frost's own components draw, from the app's Lucide icon font.
+const freepivFrostIcons = FrostIconSet(
+  back: PivIcons.arrowLeft,
+  forward: FrostIconData.glyph(FreepivIcons.arrowRight),
+  close: PivIcons.close,
+  more: PivIcons.more,
+  chevronLeft: FrostIconData.glyph(FreepivIcons.chevronLeft),
+  chevronRight: FrostIconData.glyph(FreepivIcons.chevronRight),
+  chevronUp: FrostIconData.glyph(FreepivIcons.chevronUp),
+  chevronDown: FrostIconData.glyph(FreepivIcons.chevronDown),
+  arrowDown: FrostIconData.glyph(FreepivIcons.arrowDown),
+  chevronUpDown: FrostIconData.glyph(FreepivIcons.chevronsUpDown),
+  expand: FrostIconData.glyph(FreepivIcons.chevronDown),
+  collapse: FrostIconData.glyph(FreepivIcons.chevronUp),
+  sidebarExpand: FrostIconData.glyph(FreepivIcons.panelLeftOpen),
+  sidebarCollapse: FrostIconData.glyph(FreepivIcons.panelLeftClose),
+  externalLink: PivIcons.externalLink,
+  link: FrostIconData.glyph(FreepivIcons.link),
+  search: PivIcons.search,
+  refresh: PivIcons.refreshCw,
+  copy: PivIcons.copy,
+  share: FrostIconData.glyph(FreepivIcons.share2),
+  download: PivIcons.download,
+  upload: FrostIconData.glyph(FreepivIcons.upload),
+  delete: FrostIconData.glyph(FreepivIcons.trash),
+  edit: FrostIconData.glyph(FreepivIcons.squarePen),
+  add: FrostIconData.glyph(FreepivIcons.plus),
+  remove: FrostIconData.glyph(FreepivIcons.minus),
+  filter: FrostIconData.glyph(FreepivIcons.listFilter),
+  sort: FrostIconData.glyph(FreepivIcons.arrowDownUp),
+  check: FrostIconData.glyph(FreepivIcons.check),
+  dragHandle: FrostIconData.glyph(FreepivIcons.gripVertical),
+  success: FrostIconData.glyph(FreepivIcons.circleCheck),
+  info: PivIcons.info,
+  error: FrostIconData.glyph(FreepivIcons.circleAlert),
+  empty: FrostIconData.glyph(FreepivIcons.inbox),
+  play: FrostIconData.glyph(FreepivIcons.play),
+  pause: FrostIconData.glyph(FreepivIcons.pause),
+  repeat: FrostIconData.glyph(FreepivIcons.repeat),
+  volumeOn: FrostIconData.glyph(FreepivIcons.volume2),
+  volumeOff: FrostIconData.glyph(FreepivIcons.volumeX),
+  fullscreen: FrostIconData.glyph(FreepivIcons.maximize),
+  exitFullscreen: FrostIconData.glyph(FreepivIcons.minimize),
+  zoomIn: FrostIconData.glyph(FreepivIcons.zoomIn),
+  zoomOut: FrostIconData.glyph(FreepivIcons.zoomOut),
+  image: FrostIconData.glyph(FreepivIcons.image),
+  imageError: FrostIconData.glyph(FreepivIcons.imageOff),
+  multiPage: FrostIconData.glyph(FreepivIcons.images),
+  minimize: FrostIconData.glyph(FreepivIcons.minus),
+  maximize: FrostIconData.glyph(FreepivIcons.square),
+  restore: PivIcons.copy,
+  calendar: FrostIconData.glyph(FreepivIcons.calendarDays),
+  clock: FrostIconData.glyph(FreepivIcons.clock),
+  folder: FrostIconData.glyph(FreepivIcons.folder),
+  eye: FrostIconData.glyph(FreepivIcons.eye),
+  eyeOff: FrostIconData.glyph(FreepivIcons.eyeOff),
+  user: PivIcons.user,
+  textFormat: FrostIconData.glyph(FreepivIcons.type),
+);
 
 /// freepiv's choices for the shared Frost design language: the pink palettes,
 /// the bundled Noto subsets, its icons and its localized texts.
@@ -14,84 +75,131 @@ final freepivFrostConfig = FrostConfig(
     // preferred when neither the locale nor the text identifies a variant.
     defaultScript: FrostContentScript.japanese,
   ),
-  icons: const FrostIconSet(
-    back: PivIcons.arrowLeft,
-    close: FrostIconData.glyph(Icons.close_rounded),
-    more: PivIcons.more,
-    expand: FrostIconData.glyph(Icons.expand_more),
-    collapse: FrostIconData.glyph(Icons.expand_less),
-    chevronLeft: FrostIconData.glyph(Icons.chevron_left_rounded),
-    chevronRight: FrostIconData.glyph(Icons.chevron_right_rounded),
-    chevronDown: FrostIconData.glyph(Icons.keyboard_arrow_down_rounded),
-    refresh: FrostIconData.glyph(Icons.refresh),
-    copy: FrostIconData.glyph(Icons.content_copy_outlined),
-    search: FrostIconData.glyph(Icons.search),
-    check: FrostIconData.glyph(Icons.check_rounded),
-    success: FrostIconData.glyph(Icons.check_circle_outline),
-    info: FrostIconData.glyph(Icons.info_outline_rounded),
-    warning: FrostIconData.glyph(Icons.warning_amber_rounded),
-    error: FrostIconData.glyph(Icons.error_outline),
-    empty: FrostIconData.glyph(Icons.inbox_outlined),
-    sidebarExpand: FrostIconData.glyph(Icons.keyboard_double_arrow_right_rounded),
-    sidebarCollapse: FrostIconData.glyph(Icons.keyboard_double_arrow_left_rounded),
-  ),
-  labels: _labels,
+  icons: freepivFrostIcons,
+  labels: freepivFrostLabels,
   errors: FrostErrorPresenter(message: (context, error) => formatPixivError(error), details: pixivErrorDetails),
 );
 
-FrostLabels _labels(BuildContext context) {
+FrostLabels freepivFrostLabels(BuildContext context) {
   // Follows the TranslationProvider when present so a locale switch rebuilds
   // the labels; widgets built outside it use the global locale.
   final t =
       context.dependOnInheritedWidgetOfExactType<InheritedLocaleData<AppLocale, Translations>>()?.translations ?? LocaleSettings.instance.currentTranslations;
-  final material = MaterialLocalizations.of(context);
+  final labels = t.frost;
   return FrostLabels(
-    retry: t.common.retry,
-    error: t.common.error,
-    errorDetails: t.common.errorDetails,
-    copyDetails: t.common.copyDetails,
-    detailsCopied: t.common.detailsCopied,
-    loading: t.refresh.loading,
-    loadFailed: t.refresh.loadFailed,
-    noMoreItems: t.refresh.noMoreItems,
-    pullToRefresh: t.refresh.pullToRefresh,
-    releaseToRefresh: t.refresh.releaseToRefresh,
-    refreshing: t.refresh.refreshing,
-    refreshComplete: t.refresh.refreshComplete,
-    refreshFailed: t.refresh.refreshFailed,
-    previous: t.illust.tooltip.previousImage,
-    next: t.illust.tooltip.nextImage,
-    back: material.backButtonTooltip,
-    more: t.navigation.more,
-    expandNavigation: t.navigation.expand,
-    collapseNavigation: t.navigation.collapse,
-    clearText: material.deleteButtonTooltip,
-    search: material.searchFieldLabel,
-    dismiss: material.closeButtonTooltip,
+    retry: labels.retry,
+    retryAfter: (seconds) => labels.retryAfter(seconds: formatCount(seconds)),
+    error: labels.error,
+    errorDetails: labels.errorDetails,
+    copyDetails: labels.copyDetails,
+    copied: labels.copied,
+    loading: labels.loading,
+    actionSucceeded: labels.actionSucceeded,
+    actionFailed: labels.actionFailed,
+    loadFailed: labels.loadFailed,
+    noMoreItems: labels.noMoreItems,
+    noItems: labels.noItems,
+    pullToRefresh: labels.pullToRefresh,
+    releaseToRefresh: labels.releaseToRefresh,
+    refreshing: labels.refreshing,
+    refreshComplete: labels.refreshComplete,
+    refreshFailed: labels.refreshFailed,
+    previous: labels.previous,
+    next: labels.next,
+    back: labels.back,
+    more: labels.more,
+    expandNavigation: labels.expandNavigation,
+    collapseNavigation: labels.collapseNavigation,
+    navigationStatus: (count, progressPercent) => [
+      if (count > 0) labels.navigationCount(count: formatCount(count)),
+      if (progressPercent != null) labels.navigationProgress(progress: formatCount(progressPercent)),
+    ].join(labels.listSeparator),
+    clearText: labels.clearText,
+    search: labels.search,
+    noResults: (query) => labels.noResults(query: query),
+    clearSearch: labels.clearSearch,
+    dismiss: labels.dismiss,
+    expandText: labels.expandText,
+    collapseText: labels.collapseText,
+    showAll: labels.showAll,
+    copy: labels.copy,
+    clearAll: labels.clearAll,
+    showPassword: labels.showPassword,
+    hidePassword: labels.hidePassword,
+    chooseDate: labels.chooseDate,
+    chooseTime: labels.chooseTime,
+    increment: labels.increment,
+    decrement: labels.decrement,
+    reorderHandle: labels.reorderHandle,
+    sortAscending: labels.sortAscending,
+    sortDescending: labels.sortDescending,
+    play: labels.play,
+    pause: labels.pause,
+    loop: labels.loop,
+    mute: labels.mute,
+    unmute: labels.unmute,
+    fullscreen: labels.fullscreen,
+    exitFullscreen: labels.exitFullscreen,
+    minimize: labels.minimize,
+    maximize: labels.maximize,
+    restore: labels.restore,
+    close: labels.close,
+    cancel: labels.cancel,
+    apply: labels.apply,
+    clear: labels.clear,
+    choose: labels.choose,
+    showInFolder: labels.showInFolder,
+    selectedCount: (count) => labels.selectedCount(count: formatCount(count)),
+    pageOf: (page, total) => labels.pageOf(page: formatCount(page), total: formatCount(total)),
+    selectAll: labels.selectAll,
+    done: labels.done,
+    itemPosition: (position, total) => labels.itemPosition(position: formatCount(position), total: formatCount(total)),
+    tableDimensions: (rows, columns) => labels.tableDimensions(rows: formatCount(rows), columns: formatCount(columns)),
+    taskQueued: labels.taskQueued,
+    taskRunning: labels.taskRunning,
+    taskPaused: labels.taskPaused,
+    taskCompleted: labels.taskCompleted,
+    taskFailed: labels.taskFailed,
+    taskCancelled: labels.taskCancelled,
+    remove: labels.remove,
+    seek: labels.seek,
+    showReplies: (count) => labels.showReplies(count: formatCount(count)),
+    moreMedia: (count) => labels.moreMedia(count: formatCount(count)),
   );
 }
 
-/// The bundled Lucide icons (assets/icons, ISC).
+/// The app's icons by meaning, from the bundled Lucide icon font (ISC).
 abstract final class PivIcons {
-  static const home = FrostIconData.svg('assets/icons/house.svg');
-  static const compass = FrostIconData.svg('assets/icons/compass.svg');
-  static const activity = FrostIconData.svg('assets/icons/activity.svg');
-  static const user = FrostIconData.svg('assets/icons/user-round.svg');
-  static const more = FrostIconData.svg('assets/icons/ellipsis.svg');
-  static const heart = FrostIconData.svg('assets/icons/heart.svg');
-  static const heartFilled = FrostIconData.svg('assets/icons/heart-filled.svg');
-  static const newspaper = FrostIconData.svg('assets/icons/newspaper.svg');
-  static const download = FrostIconData.svg('assets/icons/download.svg');
-  static const settings = FrostIconData.svg('assets/icons/settings.svg');
-  static const info = FrostIconData.svg('assets/icons/info.svg');
-  static const code = FrostIconData.svg('assets/icons/code.svg');
-  static const send = FrostIconData.svg('assets/icons/send.svg');
-  static const messageCircle = FrostIconData.svg('assets/icons/message-circle.svg');
-  static const externalLink = FrostIconData.svg('assets/icons/external-link.svg');
-  static const refreshCw = FrostIconData.svg('assets/icons/refresh-cw.svg');
-  static const arrowLeft = FrostIconData.svg('assets/icons/arrow-left.svg', mirrorInRtl: true);
-  static const close = FrostIconData.svg('assets/icons/x.svg');
-  static const copy = FrostIconData.svg('assets/icons/copy.svg');
+  static const home = FrostIconData.glyph(FreepivIcons.house);
+  static const compass = FrostIconData.glyph(FreepivIcons.compass);
+  static const activity = FrostIconData.glyph(FreepivIcons.activity);
+  static const user = FrostIconData.glyph(FreepivIcons.userRound);
+  static const more = FrostIconData.glyph(FreepivIcons.ellipsis);
+  static const heart = FrostIconData.glyph(FreepivIcons.heart);
+  static const heartFilled = FrostIconData.glyph(FreepivIcons.heartFilled);
+  static const newspaper = FrostIconData.glyph(FreepivIcons.newspaper);
+  static const download = FrostIconData.glyph(FreepivIcons.download);
+  static const settings = FrostIconData.glyph(FreepivIcons.settings);
+  static const info = FrostIconData.glyph(FreepivIcons.info);
+  static const code = FrostIconData.glyph(FreepivIcons.code);
+  static const send = FrostIconData.glyph(FreepivIcons.send);
+  static const messageCircle = FrostIconData.glyph(FreepivIcons.messageCircle);
+  static const externalLink = FrostIconData.glyph(FreepivIcons.externalLink);
+  static const refreshCw = FrostIconData.glyph(FreepivIcons.refreshCw);
+  static const arrowLeft = FrostIconData.glyph(FreepivIcons.arrowLeft);
+  static const close = FrostIconData.glyph(FreepivIcons.x);
+  static const copy = FrostIconData.glyph(FreepivIcons.copy);
+  static const search = FrostIconData.glyph(FreepivIcons.search);
+  static const link = FrostIconData.glyph(FreepivIcons.link);
+  static const tags = FrostIconData.glyph(FreepivIcons.tags);
+  static const users = FrostIconData.glyph(FreepivIcons.userRound);
+  static const trash = FrostIconData.glyph(FreepivIcons.trash);
+  static const images = FrostIconData.glyph(FreepivIcons.images);
+  static const folder = FrostIconData.glyph(FreepivIcons.folder);
+  static const play = FrostIconData.glyph(FreepivIcons.play);
+  static const pause = FrostIconData.glyph(FreepivIcons.pause);
+  static const clock = FrostIconData.glyph(FreepivIcons.clock);
+  static const eye = FrostIconData.glyph(FreepivIcons.eye);
 }
 
 /// freepiv's own sizes, outside the shared design values.
@@ -107,7 +215,8 @@ abstract final class PivMetrics {
 /// error details.
 void toastErrorWithCause(String message, Object error) => FrostToast.error(t.common.errorWithCause(message: message, cause: formatPixivError(error)));
 
-/// freepiv's theme: the Frost theme built from [freepivFrostConfig].
+/// freepiv's theme: the Frost theme built from [freepivFrostConfig], for
+/// widget tests that host pages without [FrostApp].
 abstract final class AppTheme {
   static ThemeData light({required TargetPlatform platform, required Locale locale, FrostTone tone = FrostTone.neutral, Color? accent}) =>
       FrostTheme.build(config: freepivFrostConfig, brightness: Brightness.light, platform: platform, locale: locale, tone: tone, accent: accent);

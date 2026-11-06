@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/services/updater_service.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -24,9 +25,7 @@ class _AboutPageState extends State<AboutPage> {
     return FrostAutoScaffold(
       builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
-          appBar: frostWindowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout)
-              ? null
-              : FrostPageHeader(title: Text(translations.about.title)),
+          appBar: PivAppBar(FrostPageHeader(title: Text(translations.about.title))),
           body: SafeArea(
             top: useHorizontalLayout,
             child: FutureBuilder<PackageInfo>(
@@ -255,7 +254,7 @@ class _AboutHero extends StatelessWidget {
               children: [
                 FilledButton.icon(
                   onPressed: checkingUpdate ? null : onCheckUpdate,
-                  icon: checkingUpdate ? const SizedBox.square(dimension: 16, child: FrostSkeletonBlock()) : const FrostIcon(PivIcons.refreshCw, size: 18),
+                  icon: checkingUpdate ? SizedBox.square(dimension: 16, child: PivSkeletonBlock()) : const FrostIcon(PivIcons.refreshCw, size: 18),
                   label: Text(translations.checkUpdate),
                 ),
                 OutlinedButton.icon(
@@ -290,7 +289,7 @@ class _AboutSection extends StatelessWidget {
             style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
           ),
         ),
-        FrostGroupedRows(children: children),
+        FrostGroupedSection(children: children),
       ],
     );
   }

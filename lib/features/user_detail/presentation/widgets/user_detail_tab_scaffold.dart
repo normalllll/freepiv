@@ -106,36 +106,22 @@ class UserDetailTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // A floating glass panel is inset and rounded; keep tab highlights on it.
-    final insets = FrostPinnedChromeGlass.insetsOf(context);
+    final insets = EdgeInsetsDirectional.zero;
     final floats = insets != EdgeInsetsDirectional.zero;
     return Padding(
       padding: insets,
       child: ClipRRect(
-        borderRadius: floats ? const BorderRadius.vertical(bottom: Radius.circular(FrostMetrics.groupRadius + 4)) : BorderRadius.zero,
+        borderRadius: floats ? const BorderRadius.vertical(bottom: Radius.circular(FrostRadius.xl + 4)) : BorderRadius.zero,
         clipBehavior: floats ? Clip.antiAlias : Clip.none,
         child: Material(
           type: MaterialType.transparency,
           child: LayoutBuilder(
             builder: (context, constraints) => Padding(
               padding: EdgeInsets.symmetric(horizontal: FrostMetrics.pageTabInset(constraints.maxWidth)),
-              child: MouseDragScroll(
-                child: FrostTabBar(
-                  controller: controller,
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  dividerColor: Colors.transparent,
-                  labelPadding: EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
-                  tabs: [
-                    for (final tab in tabs)
-                      Tab(
-                        height: height,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [Icon(tab.icon, size: 18), const SizedBox(width: 6), Text(tab.label, maxLines: 1)],
-                        ),
-                      ),
-                  ],
-                ),
+              child: FrostTabBar(
+                controller: controller,
+                scrollable: true,
+                tabs: [for (final tab in tabs) FrostTab(label: tab.label, icon: FrostIconData.glyph(tab.icon))],
               ),
             ),
           ),

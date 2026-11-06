@@ -47,7 +47,7 @@ class UserEmptyBody extends StatelessWidget {
     return UserSliverFillBody(
       physics: physics,
       sliverHeader: sliverHeader,
-      child: FrostEmptyContent(icon: FrostIconData.glyph(icon), title: title, message: message),
+      child: FrostEmptyState(icon: FrostIconData.glyph(icon), title: title, message: message),
     );
   }
 }

@@ -1,8 +1,10 @@
 import 'package:freepiv/core/services/pixiv_service.dart';
-import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
+import 'dart:collection';
+
+import 'package:frost_data/frost_data.dart';
 
 enum CommentWorkType { illust, novel }
 
@@ -10,7 +12,7 @@ extension CommentWorkTypeX on CommentWorkType {
   bool get supportsPosting => true;
 }
 
-class WorkCommentsListSource extends FrostCursorListSource<Comment, CommentPageResult> {
+class WorkCommentsListSource extends FrostCursorListSource<Comment, CommentPageResult> with _LocalCommentEdits {
   WorkCommentsListSource({required this.workType, required this.workId});
 
   final CommentWorkType workType;
@@ -47,8 +49,7 @@ class WorkCommentsListSource extends FrostCursorListSource<Comment, CommentPageR
     };
 
     if (parentCommentId == null && initialized) {
-      insert(0, result.comment);
-      notifyDataChanged();
+      _prepend(result.comment);
     }
 
     return result.comment;
@@ -63,18 +64,10 @@ class WorkCommentsListSource extends FrostCursorListSource<Comment, CommentPageR
     _removeComment(comment);
   }
 
-  void _removeComment(Comment comment) {
-    final index = indexWhere((item) => item.id == comment.id);
-    if (index < 0) {
-      return;
-    }
-
-    removeAt(index);
-    notifyDataChanged();
-  }
+  void _removeComment(Comment comment) => _remove(comment);
 }
 
-class CommentRepliesListSource extends FrostCursorListSource<Comment, CommentPageResult> {
+class CommentRepliesListSource extends FrostCursorListSource<Comment, CommentPageResult> with _LocalCommentEdits {
   CommentRepliesListSource({required this.workType, required this.parentCommentId});
 
   final CommentWorkType workType;
@@ -108,8 +101,7 @@ class CommentRepliesListSource extends FrostCursorListSource<Comment, CommentPag
       return;
     }
 
-    insert(0, comment);
-    notifyDataChanged();
+    _prepend(comment);
   }
 
   Future<void> deleteComment(Comment comment) async {
@@ -118,12 +110,49 @@ class CommentRepliesListSource extends FrostCursorListSource<Comment, CommentPag
       CommentWorkType.novel => pixivApi.postNovelCommentDelete(commentId: comment.id),
     };
 
-    final index = indexWhere((item) => item.id == comment.id);
-    if (index < 0) {
-      return;
-    }
+    _remove(comment);
+  }
+}
 
-    removeAt(index);
+/// Comments posted or deleted here, shown over the loaded pages until the next
+/// refresh brings the server's list. The loaded pages themselves only change by
+/// loading.
+mixin _LocalCommentEdits on FrostListSource<Comment> {
+  final List<Comment> _added = [];
+  final Set<int> _removed = {};
+
+  @override
+  UnmodifiableListView<Comment> get items {
+    final loaded = super.items;
+    if (_added.isEmpty && _removed.isEmpty) return loaded;
+    return UnmodifiableListView([
+      for (final comment in _added)
+        if (!_removed.contains(comment.id)) comment,
+      for (final comment in loaded)
+        if (!_removed.contains(comment.id) && !_added.any((added) => added.id == comment.id)) comment,
+    ]);
+  }
+
+  void _prepend(Comment comment) {
+    _added.insert(0, comment);
+    _removed.remove(comment.id);
     notifyDataChanged();
+  }
+
+  void _remove(Comment comment) {
+    if (!items.any((item) => item.id == comment.id)) return;
+    _removed.add(comment.id);
+    notifyDataChanged();
+  }
+
+  @override
+  Future<bool> refresh([bool notifyStateChanged = false]) async {
+    final refreshed = await super.refresh(notifyStateChanged);
+    if (refreshed) {
+      _added.clear();
+      _removed.clear();
+      notifyDataChanged();
+    }
+    return refreshed;
   }
 }

@@ -15,6 +15,7 @@ import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:frost_data/frost_data.dart';
 
 class WorkCommentsPage extends ConsumerStatefulWidget {
   const WorkCommentsPage({required this.workType, required this.workId, this.totalComments, super.key});
@@ -76,7 +77,7 @@ class _WorkCommentsPageState extends ConsumerState<WorkCommentsPage> {
                 assets: assets,
                 workType: widget.workType,
                 repliesSourceBuilder: _replySourceFor,
-                onRefresh: () => _source.refresh(_source.isEmpty),
+                onRefresh: () => _source.refresh(_source.items.isEmpty),
                 onReply: canPost ? _setReplyingTo : null,
                 onDelete: _deleteComment,
                 currentUserId: currentUserId,
@@ -391,11 +392,11 @@ class _CommentsBody extends StatelessWidget {
       );
     }
 
-    if (source.initialized && source.isEmpty) {
+    if (source.initialized && source.items.isEmpty) {
       return FrostSliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.chat_bubble_outline), title: context.t.illust.comments.empty),
+        child: FrostEmptyState(icon: FrostIconData.glyph(Icons.chat_bubble_outline), title: context.t.illust.comments.empty),
       );
     }
 
@@ -422,7 +423,7 @@ class _CommentsBody extends StatelessWidget {
                     isDeletingComment: isDeletingComment,
                     hasLocalReply: hasLocalReply(comment),
                   ),
-                  if (index < source.length - 1) const CommentSeparator(),
+                  if (index < source.items.length - 1) const CommentSeparator(),
                 ],
               ),
             );

@@ -13,6 +13,7 @@ import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
+import 'package:frost_data/frost_data.dart';
 
 class NovelCommentsSection extends ConsumerStatefulWidget {
   const NovelCommentsSection({required this.novelId, required this.totalComments, this.initiallyExpanded = false, super.key});
@@ -36,7 +37,7 @@ class _NovelCommentsSectionState extends ConsumerState<NovelCommentsSection> {
     final title = translations.illust.section.commentsWithCount(count: formatCount(widget.totalComments));
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(FrostMetrics.groupRadius),
+      borderRadius: BorderRadius.circular(FrostRadius.xl),
       child: Material(
         color: Colors.transparent,
         child: Theme(

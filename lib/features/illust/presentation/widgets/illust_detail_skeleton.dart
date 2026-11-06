@@ -41,7 +41,7 @@ class _DesktopIllustDetailSkeleton extends StatelessWidget {
               width: panelWidth,
               child: FrostSurface(
                 role: FrostSurfaceRole.panel,
-                borderRadius: BorderRadius.circular(FrostMetrics.groupRadius + 4),
+                borderRadius: BorderRadius.circular(FrostRadius.xl + 4),
                 child: const _DetailPanelSkeleton(scrollable: true),
               ),
             ),

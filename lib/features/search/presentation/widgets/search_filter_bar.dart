@@ -16,7 +16,7 @@ class SearchFilterButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dimension = FrostMetrics.controlHeight;
+    final dimension = FrostDensity.of(context).controlHeight;
     final iconSize = compact ? 18.0 : 20.0;
     final tokens = FrostThemeTokens.of(context);
     final colorScheme = Theme.of(context).colorScheme;
@@ -66,7 +66,6 @@ class SearchFilterButton extends ConsumerWidget {
     if (mobile) {
       return showModalBottomSheet<void>(
         context: context,
-        sheetAnimationStyle: frostSheetAnimationStyle(context),
         useSafeArea: true,
         showDragHandle: true,
         isScrollControlled: true,
@@ -120,7 +119,7 @@ class SearchFilterButton extends ConsumerWidget {
                 width: width,
                 child: FrostSurface(
                   role: FrostSurfaceRole.overlay,
-                  borderRadius: BorderRadius.circular(FrostMetrics.modalRadius),
+                  borderRadius: BorderRadius.circular(FrostRadius.xxl),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxHeight: size.height - top - 8),
                     child: Padding(padding: const EdgeInsets.all(16), child: panel),
@@ -230,22 +229,34 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (allowTypeSelection) ...[
-                      const SizedBox(height: FrostMetrics.compactSectionGap),
+                      const SizedBox(height: FrostGap.group),
                       _SectionTitle(icon: Icons.category_outlined, label: context.t.common.type),
                       const SizedBox(height: 8),
-                      FrostSegmentedButton<SearchType>(
-                        showSelectedIcon: false,
-                        segments: [
-                          ButtonSegment(value: SearchType.illust, icon: const Icon(Icons.image_outlined), label: Text(context.t.search.type.illustManga)),
-                          ButtonSegment(value: SearchType.novel, icon: const Icon(Icons.menu_book_outlined), label: Text(context.t.search.type.novel)),
-                          ButtonSegment(value: SearchType.user, icon: const Icon(Icons.person_outline), label: Text(context.t.search.type.user)),
+                      FrostPicker<SearchType>.segmented(
+                        label: context.t.common.type,
+                        options: [
+                          FrostPickerOption(
+                            value: SearchType.illust,
+                            leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.image_outlined)),
+                            label: context.t.search.type.illustManga,
+                          ),
+                          FrostPickerOption(
+                            value: SearchType.novel,
+                            leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.menu_book_outlined)),
+                            label: context.t.search.type.novel,
+                          ),
+                          FrostPickerOption(
+                            value: SearchType.user,
+                            leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.person_outline)),
+                            label: context.t.search.type.user,
+                          ),
                         ],
-                        selected: {activeType},
-                        onSelectionChanged: (selection) => setType(selection.single),
+                        value: activeType,
+                        onChanged: (selection) => setType(selection),
                       ),
                     ],
                     if (activeType != SearchType.user) ...[
-                      const SizedBox(height: FrostMetrics.compactSectionGap),
+                      const SizedBox(height: FrostGap.group),
                       _SectionTitle(icon: Icons.sort_outlined, label: context.t.search.filters.sort),
                       const SizedBox(height: 8),
                       _ChoiceWrap<SearchOrder>(
@@ -264,7 +275,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ),
-                      const SizedBox(height: FrostMetrics.compactSectionGap),
+                      const SizedBox(height: FrostGap.group),
                       _SectionTitle(icon: Icons.track_changes_outlined, label: context.t.search.filters.target),
                       const SizedBox(height: 8),
                       if (activeType == SearchType.novel)
@@ -285,12 +296,13 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                             setFilter(activeFilter.copyWith(target: value));
                           },
                         ),
-                      const SizedBox(height: FrostMetrics.compactSectionGap),
+                      const SizedBox(height: FrostGap.group),
                       _SectionTitle(icon: Icons.date_range_outlined, label: context.t.search.filters.date),
                       const SizedBox(height: 8),
-                      FrostSelect<SearchDatePreset>(
+                      FrostPicker<SearchDatePreset>.menu(
+                        label: context.t.search.filters.date,
                         value: activeFilter.datePreset,
-                        items: [for (final value in SearchDatePreset.values) FrostSelectItem(value: value, label: _datePresetLabel(context, value))],
+                        options: [for (final value in SearchDatePreset.values) FrostPickerOption(value: value, label: _datePresetLabel(context, value))],
                         onChanged: (value) {
                           if (value == SearchDatePreset.custom) {
                             _pickDateRange(context, activeFilter, setFilter);
@@ -308,14 +320,15 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ),
-                      const SizedBox(height: FrostMetrics.compactSectionGap),
+                      const SizedBox(height: FrostGap.group),
                       _SectionTitle(icon: Icons.bookmark_outline, label: context.t.search.filters.bookmarks),
                       const SizedBox(height: 8),
-                      FrostSelect<int>(
+                      FrostPicker<int>.menu(
+                        label: context.t.search.filters.bookmarks,
                         value: activeFilter.bookmarkTotal ?? 0,
-                        items: [
+                        options: [
                           for (final value in searchBookmarkTotalOptions)
-                            FrostSelectItem(value: value, label: _bookmarkLabel(context, value == 0 ? null : value)),
+                            FrostPickerOption(value: value, label: _bookmarkLabel(context, value == 0 ? null : value)),
                         ],
                         onChanged: (value) {
                           setFilter(activeFilter.copyWith(bookmarkTotal: value == 0 ? null : value));
@@ -325,7 +338,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                     // Only a full illustration search takes these; the popular
                     // preview and novel search ignore them.
                     if (activeType == SearchType.illust && !activeFilter.isPopularPreview) ...[
-                      const SizedBox(height: FrostMetrics.compactSectionGap),
+                      const SizedBox(height: FrostGap.group),
                       _SectionTitle(icon: Icons.photo_library_outlined, label: context.t.search.filters.contentType),
                       const SizedBox(height: 8),
                       _ChoiceWrap<SearchContentType?>(
@@ -334,7 +347,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                         labelBuilder: (value) => _contentTypeLabel(context, value),
                         onSelected: (value) => setFilter(activeFilter.copyWith(contentType: value)),
                       ),
-                      const SizedBox(height: FrostMetrics.compactSectionGap),
+                      const SizedBox(height: FrostGap.group),
                       _SectionTitle(icon: Icons.crop_outlined, label: context.t.search.filters.ratio),
                       const SizedBox(height: 8),
                       _ChoiceWrap<SearchRatio?>(
@@ -343,7 +356,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                         labelBuilder: (value) => _ratioLabel(context, value),
                         onSelected: (value) => setFilter(activeFilter.copyWith(ratio: value)),
                       ),
-                      const SizedBox(height: FrostMetrics.compactSectionGap),
+                      const SizedBox(height: FrostGap.group),
                       _SectionTitle(icon: Icons.aspect_ratio_outlined, label: context.t.search.filters.size),
                       const SizedBox(height: 8),
                       _ChoiceWrap<int?>(
@@ -359,12 +372,12 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                         labelBuilder: (value) => value == null ? context.t.search.size.any : context.t.search.size.minHeight(px: value),
                         onSelected: (value) => setFilter(activeFilter.copyWith(minHeight: value)),
                       ),
-                      const SizedBox(height: FrostMetrics.compactSectionGap),
+                      const SizedBox(height: FrostGap.group),
                       _SectionTitle(icon: Icons.brush_outlined, label: context.t.search.filters.tool),
                       const SizedBox(height: 8),
                       FrostTextField(
                         controller: _tool,
-                        hintText: context.t.search.filters.toolHint,
+                        placeholder: context.t.search.filters.toolHint,
                         onChanged: (value) {
                           final tool = value.trim();
                           setFilter(activeFilter.copyWith(tool: tool.isEmpty ? null : tool));
@@ -375,7 +388,7 @@ class _SearchFilterPanelState extends ConsumerState<SearchFilterPanel> {
                 ),
               ),
             ),
-            const SizedBox(height: FrostMetrics.compactSectionGap),
+            const SizedBox(height: FrostGap.group),
             Row(
               children: [
                 TextButton(

@@ -113,7 +113,6 @@ class AppearanceSettingsSection extends ConsumerWidget {
     if (MediaQuery.sizeOf(context).width < 600) {
       await showModalBottomSheet<void>(
         context: context,
-        sheetAnimationStyle: frostSheetAnimationStyle(context),
         isScrollControlled: true,
         useSafeArea: true,
         constraints: const BoxConstraints(maxWidth: 600),
@@ -256,7 +255,7 @@ class _ToneOption extends StatelessWidget {
           color: Colors.transparent,
           child: FrostClickSurface(
             feedback: FrostClickFeedback.quiet,
-            borderRadius: BorderRadius.circular(8),
+            shape: FrostClickShape.rounded(BorderRadius.circular(8)),
             onTap: enabled ? onTap : null,
             child: Container(
               constraints: const BoxConstraints(minHeight: 48),
@@ -552,7 +551,10 @@ class _CustomAccentEditorState extends ConsumerState<_CustomAccentEditor> {
         runSpacing: 8,
         children: [
           if (rejected)
-            TextButton(onPressed: _saving ? null : () => _setHsv(HSVColor.fromColor(freepivFrostConfig.palettes.defaultAccent(widget.brightness))), child: Text(labels.useDefault)),
+            TextButton(
+              onPressed: _saving ? null : () => _setHsv(HSVColor.fromColor(freepivFrostConfig.palettes.defaultAccent(widget.brightness))),
+              child: Text(labels.useDefault),
+            ),
           TextButton(onPressed: _saving ? null : () => Navigator.of(context).pop(), child: Text(t.common.cancel)),
           FilledButton(
             onPressed: _validHex && !rejected && !_saving ? _apply : null,

@@ -11,6 +11,7 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
+import 'package:frost_data/frost_data.dart';
 
 class MePage extends StatefulWidget {
   const MePage({super.key});
@@ -79,7 +80,7 @@ class _MePageState extends State<MePage> {
                       ],
                     ],
                     groups: [
-                      FrostGroupedRows(
+                      FrostGroupedSection(
                         children: [
                           _MeNavigationEntry(
                             icon: Icons.bookmarks_outlined,
@@ -102,7 +103,7 @@ class _MePageState extends State<MePage> {
                           ),
                         ],
                       ),
-                      FrostGroupedRows(
+                      FrostGroupedSection(
                         children: [
                           _MeNavigationEntry(
                             icon: Icons.download_outlined,
@@ -190,14 +191,14 @@ class _MeUserListPageState extends State<MeUserListPage> {
       builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
           body: FrostCollapsingHeader(
-            header: frostWindowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout) ? null : FrostPageHeader(title: Text(title)),
+            header: FrostPageHeader(title: Text(title)),
             child: SafeArea(
               child: source == null
                   ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          FrostEmptyContent(
+                          FrostEmptyState(
                             icon: FrostIconData.glyph(Icons.account_circle_outlined),
                             title: translations.settings.account.notSignedIn,
                             message: translations.settings.account.signedOutSubtitle,
@@ -387,7 +388,7 @@ class _MeAccountAvatar extends StatelessWidget {
 
     avatar = Tooltip(
       message: context.t.me.openProfile,
-      child: FrostClickSurface(customBorder: const CircleBorder(), onTap: onTap, child: avatar),
+      child: FrostClickSurface(shape: const FrostClickShape.circle(), onTap: onTap, child: avatar),
     );
 
     return Semantics(button: true, label: context.t.me.openProfile, child: avatar);
@@ -472,11 +473,11 @@ class _MeUserListPaneState extends State<_MeUserListPane> {
       );
     }
 
-    if (source.initialized && source.isEmpty) {
+    if (source.initialized && source.items.isEmpty) {
       return FrostSliverFillBody(
         physics: physics,
         sliverHeader: locators.sliverHeader,
-        child: FrostEmptyContent(icon: FrostIconData.glyph(widget.emptyIcon), title: widget.emptyTitle),
+        child: FrostEmptyState(icon: FrostIconData.glyph(widget.emptyIcon), title: widget.emptyTitle),
       );
     }
 

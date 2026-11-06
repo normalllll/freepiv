@@ -173,7 +173,7 @@ class NovelCoverTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(FrostMetrics.controlRadius);
+    final borderRadius = BorderRadius.circular(FrostRadius.lg);
 
     return Tooltip(
       message: novel.title,
@@ -234,7 +234,7 @@ class HorizontalNovelStripSkeleton extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(width: _novelStripSpacing),
             itemBuilder: (context, index) {
               return Skeletonizer.zone(
-                child: Bone(width: tileWidth, height: tileHeight, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+                child: Bone(width: tileWidth, height: tileHeight, borderRadius: BorderRadius.circular(FrostRadius.lg)),
               );
             },
           ),

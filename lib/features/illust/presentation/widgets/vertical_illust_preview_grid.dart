@@ -64,7 +64,7 @@ class RelatedPreviewGridSkeleton extends StatelessWidget {
             for (var index = 0; index < itemCount; index++)
               SizedBox.square(
                 dimension: itemExtent,
-                child: const FrostImageSkeleton(borderRadius: BorderRadius.all(Radius.circular(8))),
+                child: const PivImageSkeleton(borderRadius: BorderRadius.all(Radius.circular(8))),
               ),
           ],
         );

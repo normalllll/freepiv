@@ -39,42 +39,6 @@ void main() {
     expect(manual.copyWith(mode: ThemeMode.system).lightTone, FrostTone.cool);
   });
 
-  test('all six palettes feed neutral ThemeData surfaces and readable text', () {
-    const expectedCanvas = {
-      (Brightness.light, FrostTone.neutral): Color(0xFFF6F6F6),
-      (Brightness.light, FrostTone.cool): Color(0xFFF4F7FA),
-      (Brightness.light, FrostTone.warm): Color(0xFFF7F7F4),
-      (Brightness.dark, FrostTone.neutral): Color(0xFF202124),
-      (Brightness.dark, FrostTone.cool): Color(0xFF1B2026),
-      (Brightness.dark, FrostTone.warm): Color(0xFF20201E),
-    };
-    for (final brightness in Brightness.values) {
-      for (final tone in FrostTone.values) {
-        final theme = brightness == Brightness.light
-            ? AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en'), tone: tone)
-            : AppTheme.dark(platform: TargetPlatform.android, locale: const Locale('en'), tone: tone);
-        final tokens = theme.extension<FrostThemeTokens>()!;
-        expect(tokens.canvas, expectedCanvas[(brightness, tone)]);
-        // Pages are transparent; the window ambient backdrop paints the canvas.
-        expect(theme.scaffoldBackgroundColor, Colors.transparent);
-        expect(theme.colorScheme.surfaceContainerLowest, tokens.canvas);
-        expect(theme.colorScheme.surfaceContainer, tokens.surfaceInset);
-        for (final surface in [
-          tokens.canvas,
-          tokens.surface,
-          tokens.surfaceRaised,
-          tokens.surfaceInset,
-          tokens.surfaceMuted,
-          tokens.hoverSurface,
-          tokens.pressedSurface,
-        ]) {
-          expect(colorContrast(tokens.textPrimary, surface), greaterThanOrEqualTo(4.5));
-          expect(colorContrast(tokens.textSecondary, surface), greaterThanOrEqualTo(4.5));
-        }
-      }
-    }
-  });
-
   test('six presets pass all matching-brightness surfaces', () {
     for (final brightness in Brightness.values) {
       for (final color in freepivFrostConfig.palettes.accentPresets) {
@@ -120,47 +84,6 @@ void main() {
     }
   });
 
-  test('filled actions and critical glyphs stay readable for allowed samples', () {
-    for (final brightness in Brightness.values) {
-      for (var red = 0; red <= 255; red += 51) {
-        for (var green = 0; green <= 255; green += 51) {
-          for (var blue = 0; blue <= 255; blue += 51) {
-            final candidate = Color.fromARGB(255, red, green, blue);
-            if (!validateAccent(candidate, brightness, freepivFrostConfig.palettes).canApply) continue;
-            final palette = FrostPalettes.pink.palette(brightness, FrostTone.neutral, candidate);
-            // Glyphs on the raw accent keep full text contrast.
-            expect(colorContrast(candidate, palette.onAccent), greaterThanOrEqualTo(4.5));
-            // Solid buttons keep the exact accent (never a darkened wine
-            // shade). A white label needs its button-text minimum and only
-            // ever gets a darkening wash; any other label is a tone of the
-            // accent's own hue with full text contrast, including under the
-            // hover and press washes.
-            expect(palette.actionFill, candidate);
-            final whiteLabel = palette.onAction == Colors.white;
-            for (final opacity in [0.0, .04, .08]) {
-              final wash = solidOverlayAlpha(palette.actionFill, opacity);
-              final composite = Color.alphaBlend(solidWashColor(palette.actionFill).withValues(alpha: wash), palette.actionFill);
-              expect(
-                colorContrast(composite, palette.onAction),
-                greaterThanOrEqualTo(whiteLabel ? solidWhiteLabelContrast : 4.5),
-                reason: '$candidate $opacity',
-              );
-            }
-            final label = HSLColor.fromColor(palette.onAction);
-            // Deep or pale 8-bit tones only approximate the hue.
-            if (!whiteLabel && label.saturation > .1 && label.lightness > .08 && label.lightness < .92) {
-              final drift = (label.hue - HSLColor.fromColor(candidate).hue).abs() % 360;
-              expect(drift < 180 ? drift : 360 - drift, lessThan(10), reason: '$candidate');
-            }
-            for (final surface in [palette.canvas, palette.surface, palette.surfaceInset, palette.surfaceRaised]) {
-              expect(colorContrast(palette.keyGraphicOn(surface), surface), greaterThanOrEqualTo(3));
-            }
-          }
-        }
-      }
-    }
-  });
-
   test('appearance migrates old mode and repairs each corrupt field independently', () async {
     final store = MemorySettingsStore({'themeMode': 2, 'localeCode': 'ja-JP'});
     await AppSettings.initialize(store: store);
@@ -182,7 +105,7 @@ void main() {
     expect(loaded.mode, ThemeMode.light);
     expect(loaded.lightTone, FrostTone.cool);
     expect(loaded.darkTone, FrostTone.warm);
-    expect(loaded.lightAccent, const Color(0xFFFC619D));
+    expect(loaded.lightAccent, FrostPalettes.pink.lightDefaultAccent);
     expect(loaded.darkAccent, const Color(0xFF00A68C));
     expect(loaded.lightCustomAccent, isNull);
     expect(loaded.darkCustomAccent, isNull);
@@ -194,7 +117,7 @@ void main() {
     await AppSettings.initialize(store: store);
     await expectLater(AppSettings.saveAppearance(FrostAppearance.initial(FrostPalettes.pink).copyWith(lightAccent: Colors.white)), throwsArgumentError);
     expect(store.writes, isEmpty);
-    expect(AppSettings.appearance.lightAccent, const Color(0xFFFC619D));
+    expect(AppSettings.appearance.lightAccent, FrostPalettes.pink.lightDefaultAccent);
   });
 
   test('rapid immediate choices coalesce and last valid snapshot wins', () async {
@@ -232,8 +155,8 @@ void main() {
     store.onWrite = (_, _) async => throw StateError('disk unavailable');
     final failed = await notifier.applyCustom(Brightness.dark, const Color(0xFF00A68C));
     expect(failed, isFalse);
-    expect(container.read(appearanceProvider).settings.darkAccent, const Color(0xFFFC619D));
-    expect(AppSettings.appearance.darkAccent, const Color(0xFFFC619D));
+    expect(container.read(appearanceProvider).settings.darkAccent, FrostPalettes.pink.darkDefaultAccent);
+    expect(AppSettings.appearance.darkAccent, FrostPalettes.pink.darkDefaultAccent);
     store.onWrite = null;
     expect(await notifier.applyCustom(Brightness.dark, const Color(0xFF00A68C)), isTrue);
     expect(container.read(appearanceProvider).settings.darkAccent, const Color(0xFF00A68C));

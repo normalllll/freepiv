@@ -68,7 +68,7 @@ class UserDetailPage extends ConsumerWidget {
             return UserDetailLoadingSkeleton(useHorizontalLayout: useHorizontalLayout);
           },
           error: (error, stackTrace) {
-            return FrostErrorPage.fromError(error: error, onRetry: () => ref.read(userDetailProvider(args).notifier).reload());
+            return PivErrorPage.fromError(error: error, onRetry: () => ref.read(userDetailProvider(args).notifier).reload());
           },
         );
       },
@@ -153,25 +153,23 @@ class _UserDetailContentState extends State<UserDetailContent> with SingleTicker
             // tab resting at its top would expand the header over the selected
             // list while that list is still mid-way.
             final nestedController = PrimaryScrollController.maybeOf(context);
-            return MouseDragScroll(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  for (final (index, tab) in _tabs.indexed)
-                    _KeptAlive(
-                      key: PageStorageKey<String>('user-detail-active-tab-${widget.detail.user.id}-${tab.kind}'),
-                      child: index == _currentIndex && nestedController != null
-                          ? PrimaryScrollController(
-                              controller: nestedController,
-                              automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
-                              child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
-                            )
-                          : PrimaryScrollController.none(
-                              child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
-                            ),
-                    ),
-                ],
-              ),
+            return TabBarView(
+              controller: _tabController,
+              children: [
+                for (final (index, tab) in _tabs.indexed)
+                  _KeptAlive(
+                    key: PageStorageKey<String>('user-detail-active-tab-${widget.detail.user.id}-${tab.kind}'),
+                    child: index == _currentIndex && nestedController != null
+                        ? PrimaryScrollController(
+                            controller: nestedController,
+                            automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
+                            child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
+                          )
+                        : PrimaryScrollController.none(
+                            child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
+                          ),
+                  ),
+              ],
             );
           },
         ),

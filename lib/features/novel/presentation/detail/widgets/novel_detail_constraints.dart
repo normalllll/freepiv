@@ -9,7 +9,7 @@ class NovelDetailWidthLimiter extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => FrostContentColumn(bleed: 20, child: child);
+  Widget build(BuildContext context) => FrostContentColumn(child: child);
 }
 
 /// Reading column for novel text shown on the detail page.
@@ -21,7 +21,6 @@ class NovelReaderWidthLimiter extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FrostContentColumn(
     maxWidth: FrostMetrics.readingMaxWidth,
-    bleed: 20,
     child: SizedBox(width: double.infinity, child: child),
   );
 }

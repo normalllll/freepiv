@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
+  frost_window
   pasteboard
   url_launcher_windows
 )

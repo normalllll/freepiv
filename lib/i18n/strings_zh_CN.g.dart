@@ -39,6 +39,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsZhCn $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhCn(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$frost$zh_CN frost = Translations$frost$zh_CN.internal(_root);
 	@override late final Translations$nativeWindow$zh_CN nativeWindow = Translations$nativeWindow$zh_CN.internal(_root);
 	@override late final Translations$discover$zh_CN discover = Translations$discover$zh_CN.internal(_root);
 	@override late final Translations$app$zh_CN app = Translations$app$zh_CN.internal(_root);
@@ -62,6 +63,92 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$richText$zh_CN richText = Translations$richText$zh_CN.internal(_root);
 	@override late final Translations$fanbox$zh_CN fanbox = Translations$fanbox$zh_CN.internal(_root);
 	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
+}
+
+// Path: frost
+class Translations$frost$zh_CN extends Translations$frost$en_US {
+	Translations$frost$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get retry => '重试';
+	@override String get error => '错误';
+	@override String get errorDetails => '错误详情';
+	@override String get copyDetails => '复制详情';
+	@override String get copied => '已复制';
+	@override String get loading => '正在加载';
+	@override String get actionSucceeded => '操作成功';
+	@override String get actionFailed => '操作失败';
+	@override String get loadFailed => '加载失败';
+	@override String get noItems => '暂无内容';
+	@override String get noMoreItems => '没有更多内容';
+	@override String get pullToRefresh => '下拉刷新';
+	@override String get releaseToRefresh => '松开刷新';
+	@override String get refreshing => '正在刷新';
+	@override String get refreshComplete => '刷新完成';
+	@override String get refreshFailed => '刷新失败';
+	@override String get previous => '上一个';
+	@override String get next => '下一个';
+	@override String get back => '返回';
+	@override String get more => '更多';
+	@override String get expandNavigation => '展开侧栏';
+	@override String get collapseNavigation => '收起侧栏';
+	@override String get clearText => '清除文字';
+	@override String get search => '搜索';
+	@override String noResults({required Object query}) => '未找到“${query}”的结果';
+	@override String get clearSearch => '清除搜索';
+	@override String get dismiss => '关闭';
+	@override String get expandText => '展开';
+	@override String get collapseText => '收起';
+	@override String get showAll => '显示全部';
+	@override String get copy => '复制';
+	@override String get clearAll => '全部清除';
+	@override String get showPassword => '显示密码';
+	@override String get hidePassword => '隐藏密码';
+	@override String get chooseDate => '选择日期';
+	@override String get chooseTime => '选择时间';
+	@override String get increment => '增加';
+	@override String get decrement => '减少';
+	@override String get reorderHandle => '调整顺序';
+	@override String get sortAscending => '升序';
+	@override String get sortDescending => '降序';
+	@override String get play => '播放';
+	@override String get pause => '暂停';
+	@override String get loop => '循环';
+	@override String get mute => '静音';
+	@override String get unmute => '取消静音';
+	@override String get fullscreen => '全屏';
+	@override String get exitFullscreen => '退出全屏';
+	@override String get minimize => '最小化';
+	@override String get maximize => '最大化';
+	@override String get restore => '还原';
+	@override String get close => '关闭';
+	@override String get cancel => '取消';
+	@override String get apply => '应用';
+	@override String get clear => '清除';
+	@override String get choose => '选择';
+	@override String get showInFolder => '在文件夹中显示';
+	@override String selectedCount({required Object count}) => '已选 ${count} 项';
+	@override String pageOf({required Object page, required Object total}) => '第 ${page} 页，共 ${total} 页';
+	@override String get selectAll => '全选';
+	@override String get done => '完成';
+	@override String itemPosition({required Object position, required Object total}) => '第 ${position} 项，共 ${total} 项';
+	@override String tableDimensions({required Object rows, required Object columns}) => '${rows} 行，${columns} 列';
+	@override String get taskQueued => '等待中';
+	@override String get taskRunning => '下载中';
+	@override String get taskPaused => '已暂停';
+	@override String get taskCompleted => '已完成';
+	@override String get taskFailed => '失败';
+	@override String get taskCancelled => '已取消';
+	@override String get remove => '移除';
+	@override String get seek => '播放位置';
+	@override String showReplies({required Object count}) => '显示 ${count} 条回复';
+	@override String moreMedia({required Object count}) => '还有 ${count} 张图片';
+	@override String navigationCount({required Object count}) => '${count} 项';
+	@override String navigationProgress({required Object progress}) => '已完成 ${progress}%';
+	@override String get listSeparator => '，';
+	@override String retryAfter({required Object seconds}) => '${seconds} 秒后重试';
 }
 
 // Path: nativeWindow
@@ -1328,6 +1415,83 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 extension on TranslationsZhCn {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'frost.retry' => '重试',
+			'frost.error' => '错误',
+			'frost.errorDetails' => '错误详情',
+			'frost.copyDetails' => '复制详情',
+			'frost.copied' => '已复制',
+			'frost.loading' => '正在加载',
+			'frost.actionSucceeded' => '操作成功',
+			'frost.actionFailed' => '操作失败',
+			'frost.loadFailed' => '加载失败',
+			'frost.noItems' => '暂无内容',
+			'frost.noMoreItems' => '没有更多内容',
+			'frost.pullToRefresh' => '下拉刷新',
+			'frost.releaseToRefresh' => '松开刷新',
+			'frost.refreshing' => '正在刷新',
+			'frost.refreshComplete' => '刷新完成',
+			'frost.refreshFailed' => '刷新失败',
+			'frost.previous' => '上一个',
+			'frost.next' => '下一个',
+			'frost.back' => '返回',
+			'frost.more' => '更多',
+			'frost.expandNavigation' => '展开侧栏',
+			'frost.collapseNavigation' => '收起侧栏',
+			'frost.clearText' => '清除文字',
+			'frost.search' => '搜索',
+			'frost.noResults' => ({required Object query}) => '未找到“${query}”的结果',
+			'frost.clearSearch' => '清除搜索',
+			'frost.dismiss' => '关闭',
+			'frost.expandText' => '展开',
+			'frost.collapseText' => '收起',
+			'frost.showAll' => '显示全部',
+			'frost.copy' => '复制',
+			'frost.clearAll' => '全部清除',
+			'frost.showPassword' => '显示密码',
+			'frost.hidePassword' => '隐藏密码',
+			'frost.chooseDate' => '选择日期',
+			'frost.chooseTime' => '选择时间',
+			'frost.increment' => '增加',
+			'frost.decrement' => '减少',
+			'frost.reorderHandle' => '调整顺序',
+			'frost.sortAscending' => '升序',
+			'frost.sortDescending' => '降序',
+			'frost.play' => '播放',
+			'frost.pause' => '暂停',
+			'frost.loop' => '循环',
+			'frost.mute' => '静音',
+			'frost.unmute' => '取消静音',
+			'frost.fullscreen' => '全屏',
+			'frost.exitFullscreen' => '退出全屏',
+			'frost.minimize' => '最小化',
+			'frost.maximize' => '最大化',
+			'frost.restore' => '还原',
+			'frost.close' => '关闭',
+			'frost.cancel' => '取消',
+			'frost.apply' => '应用',
+			'frost.clear' => '清除',
+			'frost.choose' => '选择',
+			'frost.showInFolder' => '在文件夹中显示',
+			'frost.selectedCount' => ({required Object count}) => '已选 ${count} 项',
+			'frost.pageOf' => ({required Object page, required Object total}) => '第 ${page} 页，共 ${total} 页',
+			'frost.selectAll' => '全选',
+			'frost.done' => '完成',
+			'frost.itemPosition' => ({required Object position, required Object total}) => '第 ${position} 项，共 ${total} 项',
+			'frost.tableDimensions' => ({required Object rows, required Object columns}) => '${rows} 行，${columns} 列',
+			'frost.taskQueued' => '等待中',
+			'frost.taskRunning' => '下载中',
+			'frost.taskPaused' => '已暂停',
+			'frost.taskCompleted' => '已完成',
+			'frost.taskFailed' => '失败',
+			'frost.taskCancelled' => '已取消',
+			'frost.remove' => '移除',
+			'frost.seek' => '播放位置',
+			'frost.showReplies' => ({required Object count}) => '显示 ${count} 条回复',
+			'frost.moreMedia' => ({required Object count}) => '还有 ${count} 张图片',
+			'frost.navigationCount' => ({required Object count}) => '${count} 项',
+			'frost.navigationProgress' => ({required Object progress}) => '已完成 ${progress}%',
+			'frost.listSeparator' => '，',
+			'frost.retryAfter' => ({required Object seconds}) => '${seconds} 秒后重试',
 			'nativeWindow.minimize' => '最小化',
 			'nativeWindow.maximize' => '最大化',
 			'nativeWindow.restore' => '还原',
@@ -1763,6 +1927,8 @@ extension on TranslationsZhCn {
 			'illust.badge.aiArtwork' => 'AI 作品',
 			'illust.badge.original' => '原创',
 			'illust.stats.size' => '尺寸',
+			_ => null,
+		} ?? switch (path) {
 			'illust.stats.views' => '浏览',
 			'illust.stats.bookmarks' => '收藏',
 			'illust.stats.pages' => '页数',
@@ -1840,8 +2006,6 @@ extension on TranslationsZhCn {
 			'follow.followed' => '已关注',
 			'follow.follow' => '关注',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
-			_ => null,
-		} ?? switch (path) {
 			'richText.illustId' => ({required Object id}) => '插画 ID：${id}',
 			'richText.userId' => ({required Object id}) => '用户 ID：${id}',
 			'fanbox.accountConnected' => '已登录',

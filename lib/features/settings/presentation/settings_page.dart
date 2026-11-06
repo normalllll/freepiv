@@ -1,5 +1,4 @@
 import 'package:freepiv/app/frost_config.dart';
-import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'package:freepiv/features/fanbox/account_settings.dart';
@@ -23,6 +22,9 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
+  int _section = 0;
+  bool _sectionOpen = false;
+
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(appearanceProvider).settings.mode;
@@ -35,10 +37,115 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final reduceTransparency = ref.watch(reduceTransparencyProvider);
     final translations = t;
 
+    final groups = <List<Widget>>[
+      [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AppearanceSettingsSection(
+                modeSelector: ThemeModeSelector(value: themeMode, onChanged: (mode) => ref.read(appearanceProvider.notifier).setMode(mode)),
+              ),
+              const SizedBox(height: 16),
+              FrostListRow.toggle(
+                title: translations.settings.theme.reduceTransparency,
+                subtitle: FrostRowSubtitle(translations.settings.theme.reduceTransparencyHint),
+                value: reduceTransparency,
+                onChanged: (value) => ref.read(reduceTransparencyProvider.notifier).setEnabled(value),
+              ),
+            ],
+          ),
+        ),
+      ],
+      [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(translations.settings.language.title, style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 12),
+              _LanguageSelector(
+                value: appLocale,
+                onChanged: (locale) {
+                  unawaited(ref.read(appLocaleProvider.notifier).setLocale(locale));
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+      [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _ImageSettingsSection(
+                previewQuality: previewQuality,
+                viewerQuality: viewerQuality,
+                onPreviewQualityChanged: (quality) {
+                  ref.read(previewImageQualityProvider.notifier).setQuality(quality);
+                },
+                onViewerQualityChanged: (quality) {
+                  ref.read(viewerImageQualityProvider.notifier).setQuality(quality);
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+      [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [_ProxySettingsSection(settings: proxySettings, onTap: () => showProxySettingsDialog(context))],
+          ),
+        ),
+      ],
+      [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _DownloadSettingsSection(
+                settings: downloadPathSettings,
+                maxConcurrentDownloads: maxConcurrentDownloads,
+                onModeChanged: _setDownloadPathMode,
+                onChooseDirectory: _chooseDownloadDirectory,
+                onMaxConcurrentDownloadsChanged: (value) {
+                  ref.read(maxConcurrentDownloadsProvider.notifier).setLimit(value);
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+      [const Padding(padding: EdgeInsets.all(16), child: FanboxAccountSettings())],
+      [
+        ListTile(
+          title: Text(translations.settings.account.signOut),
+          leading: const Icon(Icons.logout),
+          onTap: pixivAccountNotifier.value == null
+              ? null
+              : () {
+                  setPixivAccount(null);
+                  context.go('/login');
+                },
+        ),
+      ],
+    ];
+    Widget section(int index) => SingleChildScrollView(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: groups[index]),
+    );
+
     return FrostAutoScaffold(
       builder: (context, layout, orientation, useHorizontalLayout) {
         return Scaffold(
-          appBar: useHorizontalLayout ? null : FrostPageHeader(title: Text(translations.navigation.settings)),
+          appBar: useHorizontalLayout ? null : PivAppBar(FrostPageHeader(title: Text(translations.navigation.settings))),
           body: _withSidebarHeading(
             context,
             useHorizontalLayout: useHorizontalLayout,
@@ -52,108 +159,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 translations.fanbox.title,
                 translations.settings.account.title,
               ],
-              groups: [
-                [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        AppearanceSettingsSection(
-                          modeSelector: ThemeModeSelector(value: themeMode, onChanged: (mode) => ref.read(appearanceProvider.notifier).setMode(mode)),
-                        ),
-                        const SizedBox(height: 16),
-                        FrostSwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(translations.settings.theme.reduceTransparency),
-                          subtitle: Text(translations.settings.theme.reduceTransparencyHint),
-                          value: reduceTransparency,
-                          onChanged: (value) => ref.read(reduceTransparencyProvider.notifier).setEnabled(value),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(translations.settings.language.title, style: Theme.of(context).textTheme.titleMedium),
-                        const SizedBox(height: 12),
-                        _LanguageSelector(
-                          value: appLocale,
-                          onChanged: (locale) {
-                            unawaited(ref.read(appLocaleProvider.notifier).setLocale(locale));
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _ImageSettingsSection(
-                          previewQuality: previewQuality,
-                          viewerQuality: viewerQuality,
-                          onPreviewQualityChanged: (quality) {
-                            ref.read(previewImageQualityProvider.notifier).setQuality(quality);
-                          },
-                          onViewerQualityChanged: (quality) {
-                            ref.read(viewerImageQualityProvider.notifier).setQuality(quality);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [_ProxySettingsSection(settings: proxySettings, onTap: () => showProxySettingsDialog(context))],
-                    ),
-                  ),
-                ],
-                [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _DownloadSettingsSection(
-                          settings: downloadPathSettings,
-                          maxConcurrentDownloads: maxConcurrentDownloads,
-                          onModeChanged: _setDownloadPathMode,
-                          onChooseDirectory: _chooseDownloadDirectory,
-                          onMaxConcurrentDownloadsChanged: (value) {
-                            ref.read(maxConcurrentDownloadsProvider.notifier).setLimit(value);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                [const Padding(padding: EdgeInsets.all(16), child: FanboxAccountSettings())],
-                [
-                  ListTile(
-                    title: Text(translations.settings.account.signOut),
-                    leading: const Icon(Icons.logout),
-                    onTap: pixivAccountNotifier.value == null
-                        ? null
-                        : () {
-                            setPixivAccount(null);
-                            context.go('/login');
-                          },
-                  ),
-                ],
-              ],
+              selectedIndex: _section,
+              onSelected: (index) => setState(() => _section = index),
+              sectionBuilder: (context, index) => section(index),
+              compact: FrostSectionsCompact(
+                section: _sectionOpen ? section(_section) : null,
+                onClose: () => setState(() => _sectionOpen = false),
+                onNavigate: (index) => setState(() {
+                  _section = index;
+                  _sectionOpen = true;
+                }),
+              ),
             ),
           ),
         );
@@ -164,12 +180,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   /// In the sidebar layout the page title is a large heading above the
   /// sections, like the downloads page; Windows shows it in the caption bar.
   Widget _withSidebarHeading(BuildContext context, {required bool useHorizontalLayout, required Widget child}) {
-    if (!useHorizontalLayout || frostWindowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout)) return child;
+    if (!useHorizontalLayout) return child;
     return SafeArea(
       bottom: false,
       child: Column(
         children: [
-          FrostInlinePageHeading(title: t.navigation.settings, maxWidth: FrostMetrics.settingsMaxWidth),
+          FrostInlinePageHeading(title: t.navigation.settings),
           Expanded(child: child),
         ],
       ),
@@ -255,7 +271,7 @@ class ThemeModeSelector extends StatelessWidget {
         ];
         return DecoratedBox(
           key: const ValueKey('theme-mode-track'),
-          decoration: BoxDecoration(color: tokens.surfaceInset, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+          decoration: BoxDecoration(color: tokens.surfaceInset, borderRadius: BorderRadius.circular(FrostRadius.lg)),
           child: Padding(
             padding: const EdgeInsets.all(4),
             child: vertical
@@ -303,10 +319,10 @@ class _ThemeModeOption extends StatelessWidget {
             color: Colors.transparent,
             child: FrostClickSurface(
               feedback: FrostClickFeedback.quiet,
-              borderRadius: BorderRadius.circular(8),
+              shape: FrostClickShape.rounded(BorderRadius.circular(8)),
               onTap: onTap,
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: FrostMetrics.fieldHeight(context)),
+                constraints: BoxConstraints(minHeight: FrostDensity.of(context).pointerFieldHeight),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: Column(
@@ -318,7 +334,7 @@ class _ThemeModeOption extends StatelessWidget {
                         children: [
                           // Same selection language as FrostSegmentedButton:
                           // raised pill, accent ink and weight, no underline.
-                          Icon(icon, size: FrostMetrics.iconSize, color: selected ? tokens.selectionInk : tokens.textSecondary),
+                          Icon(icon, size: FrostControlSize.regular.iconSize, color: selected ? tokens.selectionInk : tokens.textSecondary),
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
@@ -357,12 +373,13 @@ class _LanguageSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return FrostSelect<AppLocale?>(
+    return FrostPicker<AppLocale?>.menu(
+      label: translations.settings.language.title,
       value: value,
-      items: [
-        FrostSelectItem(value: null, label: translations.settings.language.systemDefault),
+      options: [
+        FrostPickerOption(value: null, label: translations.settings.language.systemDefault),
         // Each language is named in itself, so a wrong pick can always be undone.
-        for (final entry in languageOptionNames.entries) FrostSelectItem(value: entry.key, label: entry.value),
+        for (final entry in languageOptionNames.entries) FrostPickerOption(value: entry.key, label: entry.value),
       ],
       onChanged: onChanged,
     );
@@ -413,14 +430,22 @@ class _PreviewQualitySelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return FrostConstrainedSegmentedButton<PreviewImageQuality>(
-      maxWidth: null,
-      segments: [
-        ButtonSegment(value: PreviewImageQuality.medium, icon: const Icon(Icons.image_outlined), label: Text(translations.settings.images.medium)),
-        ButtonSegment(value: PreviewImageQuality.large, icon: const Icon(Icons.photo_outlined), label: Text(translations.settings.images.large)),
+    return FrostPicker<PreviewImageQuality>.segmented(
+      label: translations.settings.images.title,
+      options: [
+        FrostPickerOption(
+          value: PreviewImageQuality.medium,
+          leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.image_outlined)),
+          label: translations.settings.images.medium,
+        ),
+        FrostPickerOption(
+          value: PreviewImageQuality.large,
+          leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.photo_outlined)),
+          label: translations.settings.images.large,
+        ),
       ],
-      selected: {value},
-      onSelectionChanged: (selection) => onChanged(selection.single),
+      value: value,
+      onChanged: (selection) => onChanged(selection),
     );
   }
 }
@@ -435,18 +460,22 @@ class _ViewerQualitySelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return FrostConstrainedSegmentedButton<ViewerImageQuality>(
-      maxWidth: null,
-      segments: [
-        ButtonSegment(
+    return FrostPicker<ViewerImageQuality>.segmented(
+      label: translations.settings.images.title,
+      options: [
+        FrostPickerOption(
           value: ViewerImageQuality.large,
-          icon: const Icon(Icons.photo_size_select_large_outlined),
-          label: Text(translations.settings.images.large),
+          leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.photo_size_select_large_outlined)),
+          label: translations.settings.images.large,
         ),
-        ButtonSegment(value: ViewerImageQuality.original, icon: const Icon(Icons.open_in_full_outlined), label: Text(translations.settings.images.original)),
+        FrostPickerOption(
+          value: ViewerImageQuality.original,
+          leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.open_in_full_outlined)),
+          label: translations.settings.images.original,
+        ),
       ],
-      selected: {value},
-      onSelectionChanged: (selection) => onChanged(selection.single),
+      value: value,
+      onChanged: (selection) => onChanged(selection),
     );
   }
 }
@@ -489,7 +518,7 @@ class _ProxySettingsTile extends StatelessWidget {
       color: tokens.surfaceRaised,
       borderRadius: BorderRadius.circular(8),
       child: FrostClickSurface(
-        borderRadius: BorderRadius.circular(8),
+        shape: FrostClickShape.rounded(BorderRadius.circular(8)),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
@@ -609,18 +638,22 @@ class _DownloadPathModeSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final translations = t;
 
-    return FrostConstrainedSegmentedButton<DownloadSavePathMode>(
-      maxWidth: null,
-      segments: [
-        ButtonSegment(
+    return FrostPicker<DownloadSavePathMode>.segmented(
+      label: translations.settings.images.title,
+      options: [
+        FrostPickerOption(
           value: DownloadSavePathMode.defaultPath,
-          icon: const Icon(Icons.download_outlined),
-          label: Text(translations.settings.downloads.defaultPath),
+          leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.download_outlined)),
+          label: translations.settings.downloads.defaultPath,
         ),
-        ButtonSegment(value: DownloadSavePathMode.custom, icon: const Icon(Icons.folder_outlined), label: Text(translations.settings.downloads.customPath)),
+        FrostPickerOption(
+          value: DownloadSavePathMode.custom,
+          leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.folder_outlined)),
+          label: translations.settings.downloads.customPath,
+        ),
       ],
-      selected: {value},
-      onSelectionChanged: (selection) => onChanged(selection.single),
+      value: value,
+      onChanged: (selection) => onChanged(selection),
     );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_autocomplete_session.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_suggestion.dart';
@@ -30,7 +29,7 @@ class SuggestionSurface extends StatelessWidget {
 
         return FrostSurface(
           role: FrostSurfaceRole.overlay,
-          borderRadius: BorderRadius.circular(FrostMetrics.groupRadius),
+          borderRadius: BorderRadius.circular(FrostRadius.xl),
           child: ConstrainedBox(
             constraints: BoxConstraints(maxHeight: maxHeight),
             child: SuggestionPanelBody(session: session, selectedIndex: selectedIndex, onSelected: onSelected),
@@ -95,7 +94,7 @@ class SuggestionPanelBody extends StatelessWidget {
               ],
             ),
             // Overlay loading feedback so the first row still reaches the edge.
-            if (session.loading) const Positioned(top: 0, left: 0, right: 0, child: FrostSkeletonBlock(width: double.infinity, height: 2)),
+            if (session.loading) Positioned(top: 0, left: 0, right: 0, child: PivSkeletonBlock(width: double.infinity, height: 2)),
           ],
         );
       },

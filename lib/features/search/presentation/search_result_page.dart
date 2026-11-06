@@ -12,6 +12,7 @@ import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleton.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
+import 'package:frost_data/frost_data.dart';
 
 class _ScopedSearchResultPage extends ConsumerStatefulWidget {
   const _ScopedSearchResultPage({required this.type, required this.initialKeyword});
@@ -71,7 +72,6 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
         // The query bar floats over the results; they scroll beneath it.
         return Scaffold(
           body: FrostPinnedChrome(
-            estimatedExtent: MediaQuery.paddingOf(context).top + FrostMetrics.compactTargetHeight + FrostMetrics.compactGap * 2,
             chrome: SafeArea(
               bottom: false,
               child: SearchHeader(
@@ -85,25 +85,23 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
             ),
             body: _cleared
                 ? const SizedBox.expand()
-                : MouseDragScroll(
-                    child: TabBarView(
-                      controller: _tabs,
-                      children: [
-                        // A new keyword gets fresh tabs, so each starts at the top.
-                        FrostKeepAlive(
-                          key: ValueKey(('illust', _keyword)),
-                          child: Consumer(builder: (context, ref, _) => _buildIllustResult(ref)),
-                        ),
-                        FrostKeepAlive(
-                          key: ValueKey(('novel', _keyword)),
-                          child: Consumer(builder: (context, ref, _) => _buildNovelResult(ref)),
-                        ),
-                        FrostKeepAlive(
-                          key: ValueKey(('user', _keyword)),
-                          child: Consumer(builder: (context, ref, _) => _buildUserResult(ref)),
-                        ),
-                      ],
-                    ),
+                : TabBarView(
+                    controller: _tabs,
+                    children: [
+                      // A new keyword gets fresh tabs, so each starts at the top.
+                      FrostKeepAlive(
+                        key: ValueKey(('illust', _keyword)),
+                        child: Consumer(builder: (context, ref, _) => _buildIllustResult(ref)),
+                      ),
+                      FrostKeepAlive(
+                        key: ValueKey(('novel', _keyword)),
+                        child: Consumer(builder: (context, ref, _) => _buildNovelResult(ref)),
+                      ),
+                      FrostKeepAlive(
+                        key: ValueKey(('user', _keyword)),
+                        child: Consumer(builder: (context, ref, _) => _buildUserResult(ref)),
+                      ),
+                    ],
                   ),
           ),
         );
@@ -118,7 +116,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
 
     return FrostRefreshView(
       key: ValueKey(filter),
-      onRefresh: () => source.refresh(source.isEmpty),
+      onRefresh: () => source.refresh(source.items.isEmpty),
       builder: (context, physics, locators) {
         return AnimatedBuilder(
           animation: source,
@@ -143,19 +141,19 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
 
     return FrostRefreshView(
       key: ValueKey(filter),
-      onRefresh: () => source.refresh(source.isEmpty),
+      onRefresh: () => source.refresh(source.items.isEmpty),
       builder: (context, physics, locators) {
         return AnimatedBuilder(
           animation: source,
           builder: (context, child) {
-            if (source.initialized && source.isEmpty && filter != const SearchFilterState()) {
+            if (source.initialized && source.items.isEmpty && filter != const SearchFilterState()) {
               return FrostSliverFillBody(
                 physics: physics,
                 sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    FrostEmptyContent(icon: FrostIconData.glyph(Icons.menu_book_outlined), title: context.t.search.empty.novels),
+                    FrostEmptyState(icon: FrostIconData.glyph(Icons.menu_book_outlined), title: context.t.search.empty.novels),
                     TextButton(
                       onPressed: () => ref.read(searchFiltersProvider.notifier).setFilter(SearchType.novel, const SearchFilterState()),
                       child: Text(context.t.common.reset),
@@ -181,7 +179,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
     _ensureLoaded(source);
 
     return FrostRefreshView(
-      onRefresh: () => source.refresh(source.isEmpty),
+      onRefresh: () => source.refresh(source.items.isEmpty),
       builder: (context, physics, locators) {
         return AnimatedBuilder(
           animation: source,
@@ -275,14 +273,14 @@ class _IllustResultBody extends StatelessWidget {
       );
     }
 
-    if (source.initialized && source.isEmpty) {
+    if (source.initialized && source.items.isEmpty) {
       return FrostSliverFillBody(
         physics: physics,
         sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FrostEmptyContent(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), title: context.t.search.empty.illustrations),
+            FrostEmptyState(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), title: context.t.search.empty.illustrations),
             if (hasActiveFilter) TextButton(onPressed: onResetFilters, child: Text(context.t.common.reset)),
           ],
         ),
@@ -330,11 +328,11 @@ class _UserResultBody extends StatelessWidget {
       );
     }
 
-    if (source.initialized && source.isEmpty) {
+    if (source.initialized && source.items.isEmpty) {
       return FrostSliverFillBody(
         physics: physics,
         sliverHeader: frostChromeSliverHeader(locators.sliverHeader),
-        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.people_outline), title: context.t.search.empty.users),
+        child: FrostEmptyState(icon: FrostIconData.glyph(Icons.people_outline), title: context.t.search.empty.users),
       );
     }
 

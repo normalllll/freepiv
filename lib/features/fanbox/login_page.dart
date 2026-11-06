@@ -1,3 +1,5 @@
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -167,12 +169,12 @@ class _FanboxWebLoginPageState extends ConsumerState<FanboxWebLoginPage> {
         if (!didPop) unawaited(_back());
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(t.login),
-          leading: FrostCompactBackButton(onPressed: _back),
-          leadingWidth: FrostPageHeader.leadingWidth,
-          titleSpacing: FrostPageHeader.titleSpacingAfterBack,
-          actions: [IconButton(tooltip: t.cancel, icon: const Icon(Icons.close), onPressed: () => _close(false))],
+        appBar: PivAppBar(
+          FrostPageHeader(
+            title: Text(t.login),
+            onBack: _back,
+            actions: [FrostToolbarItem.action(label: t.cancel, icon: PivIcons.close, onPressed: () => _close(false))],
+          ),
         ),
         body: SafeArea(
           top: false,

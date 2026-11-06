@@ -92,7 +92,7 @@ class LargeNovelCoverImage extends StatelessWidget {
           label: t.novel.detail.images,
           child: FrostClickSurface(
             feedback: FrostClickFeedback.media,
-            borderRadius: borderRadius,
+            shape: FrostClickShape.rounded(borderRadius),
             onTap: () => context.pushNamed(
               AppRoute.originalImageViewer.name,
               extra: OriginalImageViewerArgs(
@@ -131,7 +131,7 @@ class NovelHeaderInfo extends StatelessWidget {
       children: [
         if (!supportingOnly) ...[
           _NovelTitleGroup(novel: novel),
-          const SizedBox(height: FrostMetrics.compactSectionGap),
+          const SizedBox(height: FrostGap.group),
           _NovelReadButton(novel: novel, webviewNovel: webviewNovel, onStartReading: onStartReading),
           const SizedBox(height: 14),
         ],
@@ -139,10 +139,10 @@ class NovelHeaderInfo extends StatelessWidget {
           IllustSectionTitle(title: translations.illust.section.caption, icon: Icons.notes_outlined),
           const SizedBox(height: 7),
           NovelCaptionBox(caption: caption),
-          const SizedBox(height: FrostMetrics.compactSectionGap),
+          const SizedBox(height: FrostGap.group),
         ],
         NovelTagChips(tags: novel.tags, maxTags: 3),
-        const SizedBox(height: FrostMetrics.compactSectionGap),
+        const SizedBox(height: FrostGap.group),
         NovelStatsStrip(novel: novel, webviewNovel: webviewNovel),
         const SizedBox(height: 8),
         NovelRestrictionBadges(novel: novel, webviewNovel: webviewNovel),
@@ -294,7 +294,7 @@ class NovelInfoBadge extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(FrostRadius.lg)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         child: Row(

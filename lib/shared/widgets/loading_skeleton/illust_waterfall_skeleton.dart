@@ -1,4 +1,5 @@
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -31,8 +32,8 @@ class SliverIllustWaterfallSkeleton extends StatelessWidget {
   const SliverIllustWaterfallSkeleton({
     this.padding,
     this.preferredTileWidth = FrostMetrics.gridExtent,
-    this.crossAxisSpacing = FrostMetrics.gridGap,
-    this.mainAxisSpacing = FrostMetrics.gridGap,
+    this.crossAxisSpacing = FrostGap.grid,
+    this.mainAxisSpacing = FrostGap.grid,
     super.key,
   });
 
@@ -77,7 +78,7 @@ class IllustPreviewerSkeleton extends StatelessWidget {
   final double aspectRatio;
   @override
   Widget build(BuildContext context) => Skeletonizer.zone(
-    child: FrostCard(
+    child: PivCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -86,10 +87,10 @@ class IllustPreviewerSkeleton extends StatelessWidget {
             child: const Bone(
               width: double.infinity,
               height: double.infinity,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(FrostMetrics.controlRadius)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(FrostRadius.lg)),
             ),
           ),
-          const Padding(
+          Padding(
             padding: PivMetrics.artworkFooterPadding,
             child: Row(
               children: [
@@ -97,7 +98,7 @@ class IllustPreviewerSkeleton extends StatelessWidget {
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Bone.text(), SizedBox(height: 4), Bone.text(width: 96)]),
                 ),
                 SizedBox(width: 8),
-                Bone.circle(size: FrostMetrics.controlHeight),
+                Bone.circle(size: FrostDensity.of(context).controlHeight),
               ],
             ),
           ),

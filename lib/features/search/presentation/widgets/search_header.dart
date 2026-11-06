@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_box.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/mouse_drag_scroll.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// Where the search header offers the search type.
@@ -68,12 +67,12 @@ class SearchHeader extends ConsumerWidget {
           // width back.
           SizedBox(
             width: _backSlotWidth,
-            height: FrostMetrics.compactTargetHeight,
+            height: FrostDensity.of(context).targetHeight,
             child: showLocalBack
                 ? OverflowBox(
                     alignment: AlignmentDirectional.centerEnd,
-                    minWidth: FrostCompactBackButton.width,
-                    maxWidth: FrostCompactBackButton.width,
+                    minWidth: 40.0,
+                    maxWidth: 40.0,
                     child: FrostCompactBackButton(onPressed: navigation?.goBack ?? onBack),
                   )
                 : null,
@@ -101,10 +100,9 @@ class SearchHeader extends ConsumerWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final scaler = MediaQuery.textScalerOf(context);
-          final segmented =
-              constraints.maxWidth >= SearchTypeSelector.requiredWidth(context) + scaler.scale(_segmentsQueryWidth) + FrostMetrics.compactSectionGap;
+          final segmented = constraints.maxWidth >= SearchTypeSelector.requiredWidth(context) + scaler.scale(_segmentsQueryWidth) + FrostGap.group;
           final menuWidth = SearchTypeMenuButton.labelledWidth(context);
-          final labelledMenu = constraints.maxWidth >= menuWidth + scaler.scale(_minQueryWidth) + FrostMetrics.compactGap;
+          final labelledMenu = constraints.maxWidth >= menuWidth + scaler.scale(_minQueryWidth) + FrostGap.related;
           return Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -113,7 +111,7 @@ class SearchHeader extends ConsumerWidget {
                 Row(
                   children: [
                     Expanded(child: input),
-                    SizedBox(width: segmented ? FrostMetrics.compactSectionGap : FrostMetrics.compactGap / 2),
+                    SizedBox(width: segmented ? FrostGap.group : FrostGap.related / 2),
                     if (segmented)
                       SearchTypeSelector(onChanged: onTypeChanged, fillWidth: false)
                     else if (labelledMenu)
@@ -155,7 +153,7 @@ const _minQueryWidth = 240.0;
 const _segmentsQueryWidth = 480.0;
 
 /// Layout width of the compact back button in the query row; the button
-/// itself is [FrostCompactBackButton.width] and reaches past it into the margin.
+/// itself is [40.0] and reaches past it into the margin.
 const _backSlotWidth = 31.0;
 
 const _searchTypes = [SearchType.illust, SearchType.novel, SearchType.user];
@@ -196,27 +194,22 @@ class _SearchTypeTabsState extends ConsumerState<SearchTypeTabs> with SingleTick
     return LayoutBuilder(
       builder: (context, constraints) => Padding(
         padding: EdgeInsets.symmetric(horizontal: FrostMetrics.pageTabInset(constraints.maxWidth)),
-        child: MouseDragScroll(
-          child: FrostTabBar(
-            controller: _controller,
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            dividerColor: Colors.transparent,
-            labelPadding: EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
-            tabs: [
-              Tab(text: context.t.search.type.illustManga),
-              Tab(text: context.t.search.type.novel),
-              Tab(text: context.t.search.type.user),
-            ],
-            onTap: (index) {
-              final next = _searchTypes[index];
-              // With a page-driven controller the tab bar already moves the page.
-              if (widget.controller == null) {
-                final draft = ref.read(searchDraftProvider);
-                ref.read(searchDraftProvider.notifier).setDraft(draft.copyWith(type: next));
-              }
-            },
-          ),
+        child: FrostTabBar(
+          controller: _controller,
+          scrollable: true,
+          tabs: [
+            FrostTab(label: context.t.search.type.illustManga),
+            FrostTab(label: context.t.search.type.novel),
+            FrostTab(label: context.t.search.type.user),
+          ],
+          onTap: (index) {
+            final next = _searchTypes[index];
+            // With a page-driven controller the tab bar already moves the page.
+            if (widget.controller == null) {
+              final draft = ref.read(searchDraftProvider);
+              ref.read(searchDraftProvider.notifier).setDraft(draft.copyWith(type: next));
+            }
+          },
         ),
       ),
     );
@@ -254,15 +247,19 @@ class SearchTypeMenuButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final draft = ref.watch(searchDraftProvider);
-    return FrostValueMenuButton<SearchType>(
+    return FrostPicker<SearchType>.menu(
+      label: context.t.common.type,
       value: draft.type,
-      iconOnly: iconOnly,
-      items: [
-        FrostSelectItem(value: SearchType.illust, label: context.t.search.type.illustManga, icon: FrostIconData.glyph(Icons.image_outlined)),
-        FrostSelectItem(value: SearchType.novel, label: context.t.search.type.novel, icon: FrostIconData.glyph(Icons.menu_book_outlined)),
-        FrostSelectItem(value: SearchType.user, label: context.t.search.type.user, icon: FrostIconData.glyph(Icons.person_outline)),
+      options: [
+        FrostPickerOption(
+          value: SearchType.illust,
+          label: context.t.search.type.illustManga,
+          leading: FrostGlyph.icon(FrostIconData.glyph(Icons.image_outlined)),
+        ),
+        FrostPickerOption(value: SearchType.novel, label: context.t.search.type.novel, leading: FrostGlyph.icon(FrostIconData.glyph(Icons.menu_book_outlined))),
+        FrostPickerOption(value: SearchType.user, label: context.t.search.type.user, leading: FrostGlyph.icon(FrostIconData.glyph(Icons.person_outline))),
       ],
-      onSelected: (next) {
+      onChanged: (next) {
         if (onChanged case final callback?) {
           callback(next);
         } else {
@@ -295,38 +292,34 @@ class SearchTypeSelector extends ConsumerWidget {
     }
     // Segments share the widest label's width: each adds its 12 padding on
     // both sides, the icon and the 6 gap; the track adds 3 on each side.
-    return labels.length * (widestLabel + 24 + FrostMetrics.iconSize + 6) + 6 + 1;
+    return labels.length * (widestLabel + 24 + FrostControlSize.regular.iconSize + 6) + 6 + 1;
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final draft = ref.watch(searchDraftProvider);
 
-    final button = FrostSegmentedButton<SearchType>(
-      showSelectedIcon: false,
-      segments: [
-        ButtonSegment(
+    final button = FrostPicker<SearchType>.segmented(
+      label: context.t.common.type,
+      options: [
+        FrostPickerOption(
           value: SearchType.illust,
-          icon: const Icon(Icons.image_outlined, size: FrostMetrics.iconSize),
-          label: Text(context.t.search.type.illustManga),
+          leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.image_outlined)),
+          label: context.t.search.type.illustManga,
         ),
-        ButtonSegment(
+        FrostPickerOption(
           value: SearchType.novel,
-          icon: const Icon(Icons.menu_book_outlined, size: FrostMetrics.iconSize),
-          label: Text(context.t.search.type.novel),
+          leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.menu_book_outlined)),
+          label: context.t.search.type.novel,
         ),
-        ButtonSegment(
-          value: SearchType.user,
-          icon: const Icon(Icons.person_outline, size: FrostMetrics.iconSize),
-          label: Text(context.t.search.type.user),
-        ),
+        FrostPickerOption(value: SearchType.user, leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.person_outline)), label: context.t.search.type.user),
       ],
-      selected: {draft.type},
-      onSelectionChanged: (selection) {
+      value: draft.type,
+      onChanged: (selection) {
         if (onChanged case final callback?) {
-          callback(selection.single);
+          callback(selection);
         } else {
-          ref.read(searchDraftProvider.notifier).setDraft(draft.copyWith(type: selection.single));
+          ref.read(searchDraftProvider.notifier).setDraft(draft.copyWith(type: selection));
         }
       },
     );

@@ -8,6 +8,7 @@ import 'package:freepiv/shared/widgets/loading_skeleton/illust_waterfall_skeleto
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
+import 'package:frost_data/frost_data.dart';
 
 class UserIllustGridTabBody extends ConsumerStatefulWidget {
   const UserIllustGridTabBody({required this.detail, required this.illustType, required this.physics, this.sliverHeader, super.key});
@@ -56,7 +57,7 @@ class _UserIllustGridTabBodyState extends ConsumerState<UserIllustGridTabBody> i
   @override
   Future<bool> refreshTab() {
     final source = _readSource();
-    return source.refresh(source.isEmpty);
+    return source.refresh(source.items.isEmpty);
   }
 
   void _ensureLoaded() {
@@ -107,12 +108,12 @@ class UserIllustGridBody extends StatelessWidget {
       );
     }
 
-    if (source.initialized && source.isEmpty) {
+    if (source.initialized && source.items.isEmpty) {
       return _SliverStateBody(
         physics: physics,
         sliverHeader: sliverHeader,
         leadingSlivers: leadingSlivers,
-        child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), title: emptyTitle),
+        child: FrostEmptyState(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), title: emptyTitle),
       );
     }
 

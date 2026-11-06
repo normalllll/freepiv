@@ -43,7 +43,7 @@ class IllustDetailPage extends ConsumerWidget {
           return const _IllustNotFoundPage();
         }
 
-        return FrostErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
+        return PivErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
     );
     final id = illustId ?? illust?.id;
@@ -190,11 +190,9 @@ class _IllustNotFoundPage extends StatelessWidget {
     return FrostAutoScaffold(
       builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
-          appBar: frostWindowCaptionShowsPageTitle(context, useHorizontalLayout: useHorizontalLayout)
-              ? null
-              : FrostPageHeader(title: Text(context.t.common.notFound)),
+          appBar: PivAppBar(FrostPageHeader(title: Text(context.t.common.notFound))),
           body: SafeArea(
-            child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), title: context.t.common.notFound),
+            child: FrostEmptyState(icon: FrostIconData.glyph(Icons.image_not_supported_outlined), title: context.t.common.notFound),
           ),
         );
       },

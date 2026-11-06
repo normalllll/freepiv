@@ -1,6 +1,7 @@
 import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -100,7 +101,7 @@ class _PixivisionImageState extends ConsumerState<PixivisionImage> {
               url: widget.url,
               fit: widget.fit,
               headers: pixivisionImageHeaders,
-              placeholder: (_) => const FrostImageSkeleton(),
+              placeholder: (_) => const PivImageSkeleton(),
               // A failed image keeps its slot filled, like the skeleton it
               // replaced, with a clear way to try again over the whole area.
               errorBuilder: (context) =>
@@ -116,10 +117,10 @@ class _PixivisionImageState extends ConsumerState<PixivisionImage> {
                     },
                   ),
             )
-          : const FrostImageSkeleton(),
+          : const PivImageSkeleton(),
     );
     // Every article image shares one corner radius, loaded or not.
-    final clipped = ClipRRect(borderRadius: BorderRadius.circular(FrostMetrics.controlRadius), child: content);
+    final clipped = ClipRRect(borderRadius: BorderRadius.circular(FrostRadius.lg), child: content);
     // Unknown sizes reserve the skeleton's slot, then ease once to the real
     // ratio when the image arrives.
     if ((widget.aspectRatio ?? _resolvedRatio ?? (widget.resolveAspectRatio ? widget.placeholderRatio : null)) case final ratio?) {
@@ -151,7 +152,7 @@ class _ImageLoadFailed extends StatelessWidget {
           message: context.t.common.retry,
           child: FrostClickSurface(
             feedback: FrostClickFeedback.quiet,
-            borderRadius: BorderRadius.zero,
+            shape: FrostClickShape.rounded(BorderRadius.zero),
             onTap: onRetry,
             child: Center(
               child: Column(

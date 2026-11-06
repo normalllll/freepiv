@@ -9,7 +9,6 @@ import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/app_route_pages.dart' as route_pages;
-import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/app/router/single_top_go_router.dart';
 import 'package:freepiv/app/router_shell.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
@@ -21,21 +20,18 @@ class AppRouter {
   static final rootNavigatorKey = GlobalKey<NavigatorState>();
   static final rightNavigatorKey = GlobalKey<NavigatorState>();
   static final rightNavigatorCanPop = ValueNotifier<bool>(false);
-  static final _rightNavigatorObserver = FrostNavigatorStackObserver(_refreshRightNavigatorCanPop);
   static String? _pendingProtectedTarget;
 
   static final router = SingleTopGoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoute.home.path,
     refreshListenable: pixivAccountNotifier,
-    observers: [frostRootRouteObserver],
     config: RoutingConfig(
       redirect: _redirect,
       routes: [
         GoRoute(path: AppRoute.login.path, name: AppRoute.login.name, pageBuilder: route_pages.loginPage),
         ShellRoute(
           navigatorKey: rightNavigatorKey,
-          observers: [_rightNavigatorObserver, frostContentRouteObserver],
           builder: (context, state, child) {
             WidgetsBinding.instance.addPostFrameCallback((_) => _refreshRightNavigatorCanPop());
             return RouterShell(
@@ -171,8 +167,18 @@ class AppRouter {
     _refreshRightNavigatorCanPop();
   }
 
+  /// How many pages the right navigator holds above the destination's root.
+  static int get rightNavigatorDepth {
+    for (final match in router.routerDelegate.currentConfiguration.matches) {
+      if (match is ShellRouteMatch && match.navigatorKey == rightNavigatorKey) {
+        return match.matches.length - 1;
+      }
+    }
+    return 0;
+  }
+
   static void _refreshRightNavigatorCanPop() {
-    final canPop = _rightNavigatorObserver.canPopPageRoute;
+    final canPop = rightNavigatorDepth > 0;
     if (rightNavigatorCanPop.value != canPop) {
       rightNavigatorCanPop.value = canPop;
     }

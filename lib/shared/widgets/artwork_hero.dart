@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frost_ui/frost_ui.dart' show FrostMetrics;
+import 'package:frost_ui/frost_ui.dart' show FrostRadius;
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -141,7 +141,7 @@ class _PageEdgeClipper extends CustomClipper<RRect> {
         : Offset.zero & size;
     // The radius follows the swipe as the page's own does (frost_ui's drag pose).
     final progress = (1 - (stage.route?.animation?.value ?? 1)).clamp(0.0, 1.0);
-    return RRect.fromRectAndRadius(bounds, Radius.circular(FrostMetrics.modalRadius * (progress * 4).clamp(0.0, 1.0)));
+    return RRect.fromRectAndRadius(bounds, Radius.circular(FrostRadius.xxl * (progress * 4).clamp(0.0, 1.0)));
   }
 
   @override

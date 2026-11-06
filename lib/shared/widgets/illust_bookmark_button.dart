@@ -98,7 +98,7 @@ class _IllustBookmarkButtonState extends ConsumerState<IllustBookmarkButton> wit
           child: IconButton(
             tooltip: bookmark.isBookmarked ? translations.illust.tooltip.removeBookmark : translations.illust.tooltip.addBookmark,
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(width: FrostMetrics.controlHeight, height: FrostMetrics.controlHeight),
+            constraints: BoxConstraints.tightFor(width: FrostDensity.of(context).controlHeight, height: FrostDensity.of(context).controlHeight),
             onPressed: bookmark.updating || accountId == null ? null : toggle,
             icon: glyph,
           ),
@@ -110,7 +110,7 @@ class _IllustBookmarkButtonState extends ConsumerState<IllustBookmarkButton> wit
       tooltip: bookmark.isBookmarked ? translations.illust.tooltip.removeBookmark : translations.illust.tooltip.addBookmark,
       visualDensity: VisualDensity.standard,
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints.tightFor(width: FrostMetrics.controlHeight, height: FrostMetrics.controlHeight),
+      constraints: BoxConstraints.tightFor(width: FrostDensity.of(context).controlHeight, height: FrostDensity.of(context).controlHeight),
       onPressed: bookmark.updating || accountId == null ? null : toggle,
       icon: glyph,
     );

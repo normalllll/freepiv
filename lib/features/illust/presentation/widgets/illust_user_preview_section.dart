@@ -9,6 +9,7 @@ import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
+import 'package:frost_data/frost_data.dart';
 
 class IllustUserPreviewSection extends ConsumerWidget {
   const IllustUserPreviewSection({required this.illust, required this.onIllustTap, this.showRecentWorks = true, this.showHeader = true, super.key});

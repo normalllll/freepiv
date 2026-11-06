@@ -1,3 +1,5 @@
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'login_panel.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'skeletons.dart';
@@ -97,7 +99,7 @@ class _FanboxPageState extends ConsumerState<FanboxPage> with SingleTickerProvid
       title: t.title,
       actions: session.asData?.value == null
           ? null
-          : [IconButton(tooltip: t.searchHint, onPressed: _toggleSearch, icon: Icon(_searchExpanded ? Icons.close : Icons.search))],
+          : [FrostToolbarItem.action(label: t.searchHint, onPressed: _toggleSearch, icon: _searchExpanded ? PivIcons.close : PivIcons.search)],
 
       body: session.when(
         loading: () => const FanboxHomeSkeleton(),
@@ -123,7 +125,7 @@ class _FanboxPageState extends ConsumerState<FanboxPage> with SingleTickerProvid
                       child: FrostSearchInput(
                         controller: _search,
                         focusNode: _searchFocus,
-                        hintText: t.searchHint,
+                        placeholder: t.searchHint,
                         onSubmitted: (value) {
                           if (value.trim().isNotEmpty) {
                             _select(
@@ -136,13 +138,14 @@ class _FanboxPageState extends ConsumerState<FanboxPage> with SingleTickerProvid
                         },
                         actions: [
                           FrostMenuAnchor(
-                            menuChildren: [
+                            entries: [
                               for (final (section, label) in [
                                 (FanboxSection.creatorPosts, t.creatorId),
                                 for (final section in [FanboxSection.searchCreators, FanboxSection.searchTags]) (section, fanboxSectionLabel(context, section)),
                               ])
-                                FrostMenuItem(
-                                  onPressed: () {
+                                FrostMenuAction(
+                                  label,
+                                  onSelected: () {
                                     final query = _search.text.trim();
                                     if (section == FanboxSection.creatorPosts) {
                                       if (RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(query)) openFanboxCreator(context, query);
@@ -150,7 +153,6 @@ class _FanboxPageState extends ConsumerState<FanboxPage> with SingleTickerProvid
                                       _select(section, query: query);
                                     }
                                   },
-                                  child: Text(label),
                                 ),
                             ],
                             builder: (context, focusNode, toggle) =>
@@ -167,7 +169,6 @@ class _FanboxPageState extends ConsumerState<FanboxPage> with SingleTickerProvid
                         extent: fanboxNavigationHeight(context),
                         // Tabs carry their label padding, so the row bleeds by it.
                         chrome: FrostContentColumn(
-                          bleed: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(0, 12, 0, 2),
                             child: AnimatedBuilder(
@@ -245,10 +246,10 @@ class FanboxCollectionView extends ConsumerWidget {
               else if (entries.isEmpty && !data.hasMore && data.error == null && !data.loadingMore)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: FrostEmptyContent(icon: FrostIconData.glyph(Icons.inbox_outlined), title: context.t.fanbox.empty),
+                  child: FrostEmptyState(icon: FrostIconData.glyph(Icons.inbox_outlined), title: context.t.fanbox.empty),
                 )
               else
-                FrostSliverPagedList<FanboxEntry>(
+                PivSliverPagedList<FanboxEntry>(
                   key: ValueKey(location),
                   items: entries,
                   hasMore: data.hasMore,

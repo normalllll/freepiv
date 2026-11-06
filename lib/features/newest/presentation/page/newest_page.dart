@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/shared/widgets/mouse_drag_scroll.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/newest/presentation/page/widgets/newest_audience_tab.dart';
@@ -126,14 +125,11 @@ class _NewestPageState extends ConsumerState<NewestPage> with SingleTickerProvid
               onNotification: (notification) => _captureFeedScrollable(notification.context, notification.metrics.axis),
               child: NotificationListener<ScrollNotification>(
                 onNotification: (notification) => _captureFeedScrollable(notification.context, notification.metrics.axis),
-                child: MouseDragScroll(
-                  child: TabBarView(
-                    controller: _audienceTabController,
-                    children: [
-                      for (final audience in NewestAudience.values)
-                        NewestAudienceTab(key: PageStorageKey('newest-$audience'), audience: audience, state: state),
-                    ],
-                  ),
+                child: TabBarView(
+                  controller: _audienceTabController,
+                  children: [
+                    for (final audience in NewestAudience.values) NewestAudienceTab(key: PageStorageKey('newest-$audience'), audience: audience, state: state),
+                  ],
                 ),
               ),
             );

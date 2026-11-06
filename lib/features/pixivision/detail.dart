@@ -1,6 +1,7 @@
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -12,6 +13,7 @@ import 'widgets.dart';
 import 'article_blocks.dart';
 import 'description.dart';
 import 'image.dart';
+import 'package:frost_data/frost_data.dart';
 
 class PixivisionArticlePage extends ConsumerStatefulWidget {
   const PixivisionArticlePage({required this.url, this.summary, super.key});
@@ -211,9 +213,7 @@ class _ArticleHeader extends StatelessWidget {
               if (category != null) ActionChip(label: Text(category.title), onPressed: () => onLink(category.url)),
               for (final tag in tags) ActionChip(label: Text('#${tag.name}'), onPressed: () => onLink(tag.url)),
               FrostMenuAnchor(
-                menuChildren: [
-                  for (final item in article?.translations ?? const <ArticleLink>[]) FrostMenuItem(onPressed: () => onLink(item.url), child: Text(item.title)),
-                ],
+                entries: [for (final item in article?.translations ?? const <ArticleLink>[]) FrostMenuAction(item.title, onSelected: () => onLink(item.url))],
                 builder: (context, focusNode, toggle) => ActionChip(
                   focusNode: focusNode,
                   avatar: const Icon(Icons.translate, size: 18),
@@ -229,7 +229,7 @@ class _ArticleHeader extends StatelessWidget {
             // thumbnail here resized the skeleton once, and the loaded page
             // may place or drop the banner anyway, which resized it again.
             if (loaded == null)
-              const AspectRatio(aspectRatio: pixivisionBannerRatio, child: FrostImageSkeleton())
+              AspectRatio(aspectRatio: pixivisionBannerRatio, child: PivImageSkeleton())
             else
               PixivisionImageMenu(
                 url: thumbnail,
@@ -290,21 +290,21 @@ class _ArticleBodySkeleton extends StatelessWidget {
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
               widthFactor: line == 4 ? .65 : 1,
-              child: const FrostSkeletonBlock(width: double.infinity, height: 16),
+              child: const PivSkeletonBlock(width: double.infinity, height: 16),
             ),
           ),
         const SizedBox(height: 12),
-        const FrostSkeletonBlock(width: double.infinity, height: 24),
+        const PivSkeletonBlock(width: double.infinity, height: 24),
         const SizedBox(height: 8),
-        const Row(
+        Row(
           children: [
-            ClipOval(child: SizedBox.square(dimension: 32, child: FrostImageSkeleton())),
+            ClipOval(child: SizedBox.square(dimension: 32, child: PivImageSkeleton())),
             SizedBox(width: 8),
-            Flexible(child: FrostSkeletonBlock(width: 120, height: 20)),
+            Flexible(child: PivSkeletonBlock(width: 120, height: 20)),
           ],
         ),
         const SizedBox(height: 8),
-        const AspectRatio(aspectRatio: 16 / 9, child: FrostImageSkeleton()),
+        AspectRatio(aspectRatio: 16 / 9, child: PivImageSkeleton()),
         const SizedBox(height: 12),
       ],
     ],

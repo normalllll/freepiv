@@ -175,7 +175,6 @@ class _DesktopDownloadDockState extends ConsumerState<DesktopDownloadDock>
                         // Grows out of the dock button and shrinks back into it.
                         child: FrostSpringReveal(
                           shown: _expanded,
-                          alignment: Alignment.bottomLeft,
                           child: RepaintBoundary(
                             child: TickerMode(
                               enabled: _expanded,
@@ -250,7 +249,7 @@ class _DownloadDockPanel extends StatelessWidget {
       constraints: BoxConstraints(maxHeight: maxHeight),
       child: FrostSurface(
         role: FrostSurfaceRole.overlay,
-        borderRadius: BorderRadius.circular(FrostMetrics.groupRadius + 4),
+        borderRadius: BorderRadius.circular(FrostRadius.xl + 4),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
           child: Column(

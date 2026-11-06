@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html;
@@ -142,7 +143,7 @@ class PixivisionBlock extends StatelessWidget {
         for (final embed in block.embeds)
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: FrostCard(
+            child: PivCard(
               onTap: () => openPixivisionLink(context, embed.url),
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -389,7 +390,7 @@ class _ArticleLinkState extends State<_ArticleLink> {
       position: DecorationPosition.foreground,
       // Paint focus without adding padding or shifting the article layout.
       decoration: BoxDecoration(
-        borderRadius: widget.showFeedback ? BorderRadius.circular(FrostMetrics.controlRadius) : null,
+        borderRadius: widget.showFeedback ? BorderRadius.circular(FrostRadius.lg) : null,
         border: Border.all(
           color: _focused && FocusManager.instance.highlightMode == FocusHighlightMode.traditional ? FrostThemeTokens.of(context).focus : Colors.transparent,
           width: _focused ? FrostMetrics.focusBorderWidth : 1,
@@ -401,7 +402,7 @@ class _ArticleLinkState extends State<_ArticleLink> {
         onHover: (value) => setState(() => _hovered = value),
         onFocusChange: (value) => setState(() => _focused = value),
         splashFactory: NoSplash.splashFactory,
-        borderRadius: widget.showFeedback ? BorderRadius.circular(FrostMetrics.controlRadius) : null,
+        borderRadius: widget.showFeedback ? BorderRadius.circular(FrostRadius.lg) : null,
         overlayColor: widget.showFeedback
             ? WidgetStateProperty.resolveWith((states) => frostButtonStateLayer(FrostThemeTokens.of(context), states, FrostFeedbackRole.quiet))
             : const WidgetStatePropertyAll(Colors.transparent),

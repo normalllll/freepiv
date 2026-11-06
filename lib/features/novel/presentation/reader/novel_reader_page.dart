@@ -1,7 +1,6 @@
 import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:flutter/gestures.dart';
-import 'package:frost_ui/frost_ui.dart';
 import 'dart:async';
 import 'package:flutter/scheduler.dart';
 import 'package:freepiv/core/platform/reader_volume_keys.dart';
@@ -50,7 +49,7 @@ class NovelReaderPage extends ConsumerWidget {
           return const NovelNotFoundPage();
         }
 
-        return FrostErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
+        return PivErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
       },
     );
   }
@@ -96,14 +95,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
   double _endTravel = 0;
 
   bool get _controlsEligible =>
-      mounted &&
-      _foreground &&
-      _windowFocused &&
-      !_accountChanged &&
-      !_settingsOpen &&
-      !_selectionActive &&
-      ModalRoute.of(context)?.isCurrent == true &&
-      frostRootRouteObserver.topRoute is! PopupRoute;
+      mounted && _foreground && _windowFocused && !_accountChanged && !_settingsOpen && !_selectionActive && ModalRoute.of(context)?.isCurrent == true;
 
   Novel get _novel => widget.detail.novel;
 
@@ -128,8 +120,6 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
         _handleRouteActivity();
       },
     );
-    frostRootRouteObserver.changes.addListener(_handleRouteActivity);
-    frostContentRouteObserver.changes.addListener(_handleRouteActivity);
     pixivAccountNotifier.addListener(_handleAccountChange);
     _rebuildReaderModel();
     _restoreSession();
@@ -165,8 +155,6 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
     _saveSession();
     _autoTicker.dispose();
     _volumeLease.release();
-    frostRootRouteObserver.changes.removeListener(_handleRouteActivity);
-    frostContentRouteObserver.changes.removeListener(_handleRouteActivity);
     pixivAccountNotifier.removeListener(_handleAccountChange);
     WidgetsBinding.instance.removeObserver(this);
     _disposeSegmentScrollControllers();
@@ -579,7 +567,7 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
     }
 
     if (event.logicalKey == LogicalKeyboardKey.escape) {
-      if (ModalRoute.of(context)?.isCurrent != true || _settingsOpen || frostRootRouteObserver.topRoute is PopupRoute) return KeyEventResult.ignored;
+      if (ModalRoute.of(context)?.isCurrent != true || _settingsOpen) return KeyEventResult.ignored;
       if (_selectionActive) {
         final selection = _blockKeys[_currentPageIndex]?.firstOrNull?.currentContext?.findAncestorStateOfType<SelectionAreaState>()?.selectableRegion;
         selection?.hideToolbar();
@@ -697,7 +685,6 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
     } else {
       await showModalBottomSheet<void>(
         context: context,
-        sheetAnimationStyle: frostSheetAnimationStyle(context),
         useSafeArea: true,
         isScrollControlled: true,
         backgroundColor: _ReaderPalette.resolve(context).surface,
@@ -1095,7 +1082,7 @@ class _ReaderTopChrome extends StatelessWidget {
         padding: EdgeInsets.fromLTRB(compact ? 8 : 10, compact ? 6 : 8, compact ? 8 : 10, compact ? 6 : 8),
         child: Row(
           children: [
-            if (leading != null) ...[leading, const SizedBox(width: FrostPageHeader.titleSpacingAfterBack)],
+            if (leading != null) ...[leading, SizedBox(width: 8.0)],
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1230,7 +1217,7 @@ class _ReaderBottomChrome extends StatelessWidget {
                   return width;
                 }
 
-                final neededWidth = FrostMetrics.controlHeight * 2 + 68 + textWidth(t.novel.reader.autoScroll) + textWidth(progressLabel) + 16;
+                final neededWidth = FrostDensity.of(context).controlHeight * 2 + 68 + textWidth(t.novel.reader.autoScroll) + textWidth(progressLabel) + 16;
                 if (neededWidth > constraints.maxWidth) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -1273,7 +1260,7 @@ class _ReaderAutoScrollSwitch extends StatelessWidget {
     child: MergeSemantics(
       child: FrostClickSurface(
         feedback: FrostClickFeedback.quiet,
-        borderRadius: BorderRadius.circular(8),
+        shape: FrostClickShape.rounded(BorderRadius.circular(8)),
         onTap: enabled ? onChanged : null,
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1316,8 +1303,8 @@ class _ReaderQuietIconButton extends StatelessWidget {
         style: IconButton.styleFrom(
           overlayColor: Colors.transparent,
           backgroundColor: Colors.transparent,
-          fixedSize: const Size.square(FrostMetrics.controlHeight),
-          minimumSize: const Size.square(FrostMetrics.controlHeight),
+          fixedSize: Size.square(FrostDensity.of(context).controlHeight),
+          minimumSize: Size.square(FrostDensity.of(context).controlHeight),
           padding: EdgeInsets.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1435,10 +1422,9 @@ class _ReaderSettingsPanel extends StatelessWidget {
           onIncrease: () => onSpeedChanged((scrollSpeed + 12).clamp(12, 96)),
         ),
         if (volumeSupported)
-          FrostSwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(t.novel.reader.volumeKeys),
-            subtitle: Text(t.novel.reader.volumeKeysHelp),
+          FrostListRow.toggle(
+            title: t.novel.reader.volumeKeys,
+            subtitle: FrostRowSubtitle(t.novel.reader.volumeKeysHelp),
             value: volumeEnabled,
             onChanged: onVolumeChanged,
           ),
@@ -1599,7 +1585,7 @@ class _ReaderLoadingPage extends StatelessWidget {
         return Scaffold(
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(desktop ? 36 : 22, FrostMetrics.pageInset, desktop ? 36 : 22, FrostMetrics.pageInset),
+              padding: EdgeInsets.fromLTRB(desktop ? 36 : 22, FrostGap.of(context).page, desktop ? 36 : 22, FrostGap.of(context).page),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: FrostMetrics.readingMaxWidth),

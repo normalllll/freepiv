@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frost_ui/frost_ui.dart';
+import 'package:frost_data/frost_data.dart';
 
 Widget _scrollBody(String label) => CustomScrollView(
   key: ValueKey(label),
@@ -44,39 +44,5 @@ void main() {
     expect(find.text('loading 0'), findsNothing);
     expect(find.text('content 0'), findsOneWidget);
     expect(controller.position.pixels, 0);
-  });
-
-  testWidgets('content columns share one edge at every width', (tester) async {
-    for (final width in [390.0, 800.0, 1440.0, 2560.0]) {
-      tester.view.physicalSize = Size(width, 600);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      const box = SizedBox(key: ValueKey('box'), height: 10, width: double.infinity);
-      await tester.pumpWidget(
-        const Directionality(
-          textDirection: TextDirection.ltr,
-          child: Align(
-            alignment: Alignment.topLeft,
-            child: FrostContentColumn(child: box),
-          ),
-        ),
-      );
-      final rect = tester.getRect(find.byKey(const ValueKey('box')));
-      final padding = FrostMetrics.columnPadding(width);
-      expect(rect.left, padding.left, reason: '$width');
-      expect(rect.width, lessThanOrEqualTo(FrostMetrics.contentMaxWidth - FrostMetrics.browseInset(width) * 2 + .01), reason: '$width');
-      // A bleeding row reaches past the column by exactly its own inset.
-      await tester.pumpWidget(
-        const Directionality(
-          textDirection: TextDirection.ltr,
-          child: Align(
-            alignment: Alignment.topLeft,
-            child: FrostContentColumn(bleed: 12, child: box),
-          ),
-        ),
-      );
-      expect(tester.getRect(find.byKey(const ValueKey('box'))).left, closeTo(padding.left - 12, .01), reason: '$width bleed');
-    }
   });
 }

@@ -24,6 +24,8 @@ Future<void> main() async {
   // The bundled Noto Sans CJK subsets are distributed under the SIL OFL.
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks(const ['Noto Sans SC', 'Noto Sans JP'], await rootBundle.loadString('assets/fonts/OFL-NotoSansCJK.txt'));
+    // The UI icon font is built from Lucide's sources (ISC).
+    yield LicenseEntryWithLineBreaks(const ['Lucide'], await rootBundle.loadString('assets/fonts/LICENSE-Lucide.txt'));
   });
   runApp(const FreepivApp());
 }

@@ -101,9 +101,9 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
               top: 16,
               start: 16,
               child: Builder(
-                builder: (buttonContext) => FrostSurfaceIconButton(
+                builder: (buttonContext) => FrostButton.iconFilled(
                   icon: FrostIconData.glyph(Icons.more_horiz),
-                  tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+                  label: MaterialLocalizations.of(context).showMenuTooltip,
                   onPressed: () {
                     final box = buttonContext.findRenderObject()! as RenderBox;
                     unawaited(_showContextMenu(context, box.localToGlobal(box.size.bottomRight(Offset.zero))));

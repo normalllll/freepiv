@@ -1,5 +1,4 @@
 import 'package:freepiv/app/frost_config.dart';
-import 'package:frost_ui/frost_ui.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -199,22 +198,21 @@ class DownloadTaskActions extends StatelessWidget {
             duration: FrostMotion.duration(context, FrostMotion.hover),
             child: primaryAction == null
                 ? const SizedBox.shrink()
-                : SizedBox.square(key: primaryAction.key, dimension: FrostMetrics.compactTargetHeight, child: primaryAction),
+                : SizedBox.square(key: primaryAction.key, dimension: FrostDensity.of(context).targetHeight, child: primaryAction),
           ),
         ),
         FrostMenuAnchor(
-          menuChildren: [
-            FrostMenuItem(
-              autofocus: true,
-              onPressed: () => unawaited(_runAction(() => downloadManager.deleteTask(task.id))),
-              leadingIcon: const Icon(Icons.delete_outline),
-              child: Text(t.settings.downloads.deleteTask),
+          entries: [
+            FrostMenuAction(
+              t.settings.downloads.deleteTask,
+              onSelected: () => unawaited(_runAction(() => downloadManager.deleteTask(task.id))),
+              leading: FrostGlyph.icon(const FrostIconData.glyph(Icons.delete_outline)),
             ),
             if (task.log != null && task.log!.isNotEmpty)
-              FrostMenuItem(
-                onPressed: () => showDownloadTaskLog(context, task),
-                leadingIcon: const Icon(Icons.article_outlined),
-                child: Text(t.common.viewLog),
+              FrostMenuAction(
+                t.common.viewLog,
+                onSelected: () => showDownloadTaskLog(context, task),
+                leading: FrostGlyph.icon(const FrostIconData.glyph(Icons.article_outlined)),
               ),
           ],
           builder: (context, focusNode, toggle) => IconButton(
@@ -222,7 +220,7 @@ class DownloadTaskActions extends StatelessWidget {
             tooltip: MaterialLocalizations.of(context).showMenuTooltip,
             onPressed: toggle,
             icon: const Icon(Icons.more_horiz),
-            constraints: const BoxConstraints.tightFor(width: FrostMetrics.compactTargetHeight, height: FrostMetrics.compactTargetHeight),
+            constraints: BoxConstraints.tightFor(width: FrostDensity.of(context).targetHeight, height: FrostDensity.of(context).targetHeight),
             padding: EdgeInsets.zero,
           ),
         ),
@@ -344,7 +342,7 @@ class DownloadTaskAction extends StatelessWidget {
     );
 
     final tooltip = this.tooltip;
-    final target = SizedBox.square(dimension: FrostMetrics.compactTargetHeight, child: child);
+    final target = SizedBox.square(dimension: FrostDensity.of(context).targetHeight, child: child);
     return tooltip == null ? target : Tooltip(message: tooltip, child: target);
   }
 }
@@ -366,7 +364,7 @@ class DownloadProgressIndicator extends StatelessWidget {
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
         child: value == null
-            ? FrostSkeletonBlock(key: const ValueKey<String>('indeterminate'), width: double.infinity, height: minHeight)
+            ? PivSkeletonBlock(key: const ValueKey<String>('indeterminate'), width: double.infinity, height: minHeight)
             : TweenAnimationBuilder<double>(
                 key: const ValueKey<String>('determinate'),
                 tween: Tween<double>(end: value!.clamp(0, 1).toDouble()),

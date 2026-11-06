@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -13,6 +14,7 @@ import 'package:freepiv/shared/widgets/user_follow_button.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:frost_data/frost_data.dart';
 
 /// Narrowest a user card may be: room for the name, the follow button and
 /// three thumbnails. The grid fits as many columns as allow this width and
@@ -56,7 +58,7 @@ double userCardHeight(BuildContext context, double width) {
     _avatarSize,
     _lineHeight(context, textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)) + _lineHeight(context, textTheme.bodySmall),
   );
-  final follow = math.max(FrostMetrics.controlHeight, _lineHeight(context, textTheme.labelLarge) + 16);
+  final follow = math.max(FrostDensity.of(context).controlHeight, _lineHeight(context, textTheme.labelLarge) + 16);
   final row = _stackedFollow(context, inner) ? identity + 8 + follow : math.max(identity, follow);
   return (_cardPadding * 2 + strip + _sectionGap + row).ceilToDouble();
 }
@@ -74,7 +76,7 @@ class UserPreviewer extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final works = userPreview.illusts.take(_previewSlots).toList(growable: false);
-    return FrostCard(
+    return PivCard(
       onTap: () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${user.id}'}),
       padding: const EdgeInsets.all(_cardPadding),
       child: _UserCardLayout(
@@ -114,13 +116,13 @@ class UserPreviewerSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return FrostCard(
+    return PivCard(
       padding: const EdgeInsets.all(_cardPadding),
       child: Skeletonizer.zone(
         child: _UserCardLayout(
           previews: [
             for (var index = 0; index < _previewSlots; index++)
-              Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+              Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(FrostRadius.lg)),
           ],
           empty: const SizedBox.shrink(),
           avatar: const Bone.circle(size: _avatarSize),
@@ -206,8 +208,8 @@ class SliverUserPreviewerSkeletonGrid extends StatelessWidget {
             itemCount: layout.columns * rows,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: layout.columns,
-              crossAxisSpacing: FrostMetrics.gridGap,
-              mainAxisSpacing: FrostMetrics.gridGap,
+              crossAxisSpacing: FrostGap.grid,
+              mainAxisSpacing: FrostGap.grid,
               mainAxisExtent: height,
             ),
             itemBuilder: (context, index) => const UserPreviewerSkeleton(),
@@ -286,7 +288,7 @@ class _PreviewThumb extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final radius = BorderRadius.circular(FrostMetrics.controlRadius);
+    final radius = BorderRadius.circular(FrostRadius.lg);
     // The same uncropped preview the feeds and the detail page use, cut to
     // the slot from its centre: opening the work shows the cached image at
     // once, and it flies into the stage.
@@ -301,7 +303,7 @@ class _PreviewThumb extends ConsumerWidget {
           color: Colors.transparent,
           child: FrostClickSurface(
             feedback: FrostClickFeedback.media,
-            borderRadius: radius,
+            shape: FrostClickShape.rounded(radius),
             onTap: () => openIllustDetail(context, illust, heroTag),
             child: PixivImage(url: imageUrl, fit: BoxFit.cover, borderRadius: radius),
           ),
@@ -320,7 +322,7 @@ class _NoWorksNote extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = FrostThemeTokens.of(context);
     return DecoratedBox(
-      decoration: BoxDecoration(color: tokens.surfaceInset, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+      decoration: BoxDecoration(color: tokens.surfaceInset, borderRadius: BorderRadius.circular(FrostRadius.lg)),
       child: Center(
         child: Row(
           mainAxisSize: MainAxisSize.min,

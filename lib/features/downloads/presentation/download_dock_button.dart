@@ -59,7 +59,7 @@ class DownloadDockButton extends StatelessWidget {
     final geometry = downloadDockButtonGeometry(context, size: size);
     final footprint = geometry.footprint;
     final badgeHeight = geometry.badgeHeight;
-    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(FrostMetrics.groupRadius));
+    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(FrostRadius.xl));
 
     Widget button = SizedBox(
       width: footprint.width,
@@ -81,7 +81,7 @@ class DownloadDockButton extends StatelessWidget {
               shadowColor: tokens.shadow,
               child: FrostClickSurface(
                 focusNode: focusNode,
-                customBorder: shape,
+                shape: FrostClickShape.rounded(BorderRadius.circular(FrostRadius.xl)),
                 onTap: onPressed,
                 child: Center(child: Icon(Icons.downloading_outlined, color: expanded ? tokens.selectionInk : colors.onSurfaceVariant)),
               ),

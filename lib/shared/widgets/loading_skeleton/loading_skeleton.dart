@@ -93,14 +93,14 @@ class _WorkCardSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(FrostRadius.lg)),
       child: Padding(
         padding: itemPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+              child: Bone(width: double.infinity, height: double.infinity, borderRadius: BorderRadius.circular(FrostRadius.lg)),
             ),
             const SizedBox(height: 10),
             const Bone.text(width: double.infinity),

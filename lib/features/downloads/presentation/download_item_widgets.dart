@@ -84,7 +84,7 @@ class DownloadSourceThumbnail extends StatelessWidget {
       }, color: colorScheme.onSurfaceVariant),
     );
     return ClipRRect(
-      borderRadius: BorderRadius.circular(FrostMetrics.controlRadius),
+      borderRadius: BorderRadius.circular(FrostRadius.lg),
       child: SizedBox.square(
         dimension: size,
         child: url == null || url.isEmpty
@@ -260,7 +260,7 @@ class _DownloadItemAction extends ConsumerWidget {
       ),
     };
     return SizedBox.square(
-      dimension: FrostMetrics.compactTargetHeight,
+      dimension: FrostDensity.of(context).targetHeight,
       child: AnimatedSwitcher(duration: FrostMotion.duration(context, FrostMotion.hover), child: action),
     );
   }
@@ -331,25 +331,24 @@ class DownloadItemCard extends StatelessWidget {
     final labels = t.settings.downloads;
     final savedPath = item.tasks.map((task) => task.localPath).nonNulls.where((path) => path.isNotEmpty && !path.startsWith('content:')).firstOrNull;
     final menu = FrostMenuAnchor(
-      menuChildren: [
+      entries: [
         if (_hasPage(item.source))
-          FrostMenuItem(
-            autofocus: true,
-            onPressed: () => openDownloadSource(GoRouter.of(context), item.source),
-            leadingIcon: const Icon(Icons.open_in_new_rounded),
-            child: Text(labels.openSource),
+          FrostMenuAction(
+            labels.openSource,
+            onSelected: () => openDownloadSource(GoRouter.of(context), item.source),
+            leading: FrostGlyph.icon(const FrostIconData.glyph(Icons.open_in_new_rounded)),
           ),
         if (isDesktopPlatform && savedPath != null)
-          FrostMenuItem(
-            onPressed: () => unawaited(_run(() => launchUrl(Uri.file(p.dirname(savedPath))))),
-            leadingIcon: const Icon(Icons.folder_open_outlined),
-            child: Text(labels.openFolder),
+          FrostMenuAction(
+            labels.openFolder,
+            onSelected: () => unawaited(_run(() => launchUrl(Uri.file(p.dirname(savedPath))))),
+            leading: FrostGlyph.icon(const FrostIconData.glyph(Icons.folder_open_outlined)),
           ),
         if (item.tasks.isNotEmpty)
-          FrostMenuItem(
-            onPressed: () => unawaited(_run(() => deleteDownloadItem(item))),
-            leadingIcon: const Icon(Icons.delete_outline),
-            child: Text(labels.deleteItem),
+          FrostMenuAction(
+            labels.deleteItem,
+            onSelected: () => unawaited(_run(() => deleteDownloadItem(item))),
+            leading: FrostGlyph.icon(const FrostIconData.glyph(Icons.delete_outline)),
           ),
       ],
       builder: (context, focusNode, toggle) => IconButton(
@@ -357,7 +356,7 @@ class DownloadItemCard extends StatelessWidget {
         tooltip: MaterialLocalizations.of(context).showMenuTooltip,
         onPressed: toggle,
         icon: const Icon(Icons.more_horiz),
-        constraints: const BoxConstraints.tightFor(width: FrostMetrics.compactTargetHeight, height: FrostMetrics.compactTargetHeight),
+        constraints: BoxConstraints.tightFor(width: FrostDensity.of(context).targetHeight, height: FrostDensity.of(context).targetHeight),
         padding: EdgeInsets.zero,
       ),
     );

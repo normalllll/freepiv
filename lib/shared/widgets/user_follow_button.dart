@@ -93,7 +93,7 @@ class UserFollowButtonPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Skeletonizer.zone(
-      child: Bone(width: 82, height: FrostMetrics.controlHeight, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+      child: Bone(width: 82, height: FrostDensity.of(context).controlHeight, borderRadius: BorderRadius.circular(FrostRadius.lg)),
     );
   }
 }
@@ -140,7 +140,7 @@ class FollowToggleButton extends StatelessWidget {
       child: TextButton(
         onPressed: updating ? null : onPressed,
         style: ButtonStyle(
-          minimumSize: WidgetStatePropertyAll(Size(0, dense ? (height ?? denseHeight) : FrostMetrics.controlHeight)),
+          minimumSize: WidgetStatePropertyAll(Size(0, dense ? (height ?? denseHeight) : FrostDensity.of(context).controlHeight)),
           padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 12, vertical: dense ? 4 : 8)),
           tapTargetSize: dense ? MaterialTapTargetSize.shrinkWrap : null,
           backgroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.disabled) && !updating ? tokens.surfaceInset : background),
@@ -157,7 +157,7 @@ class FollowToggleButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // The glyph swaps by shrinking out and growing in (+ → ✓), so the
-            // change reads as one button changing state (docs/MOTION_SPEC.md 7).
+            // change reads as one button changing state.
             SizedBox.square(
               dimension: glyphSize,
               child: AnimatedSwitcher(

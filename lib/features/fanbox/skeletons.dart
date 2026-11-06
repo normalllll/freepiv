@@ -18,7 +18,6 @@ class FanboxHomeSkeleton extends StatelessWidget {
             return SizedBox(
               height: fanboxNavigationHeight(context),
               child: FrostContentColumn(
-                bleed: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(0, 12, 0, 2),
                   child: Skeletonizer(

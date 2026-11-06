@@ -6,7 +6,7 @@ import 'logic.dart';
 double fanboxNavigationHeight(BuildContext context) {
   final labelSize = Theme.of(context).textTheme.labelLarge?.fontSize ?? 14;
   final textGrowth = (MediaQuery.textScalerOf(context).scale(labelSize) / labelSize - 1).clamp(0.0, double.infinity);
-  return frostCompactFilterHeight(context) + FrostMetrics.compactGap * textGrowth;
+  return 62.0 + FrostGap.related * textGrowth;
 }
 
 // Kept for existing layout checks; FANBOX now uses one navigation row at every width.
@@ -89,16 +89,13 @@ class _FanboxSectionNavigationState extends State<FanboxSectionNavigation> with 
           Expanded(
             child: FrostTabBar(
               controller: _controller,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              dividerColor: Colors.transparent,
-              labelPadding: EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
+              scrollable: true,
               tabs: [
                 // Group names differ from their sections, so the tab and the
                 // collection value beside it never repeat the same label.
-                Tab(text: context.t.fanbox.feedGroup),
-                Tab(text: context.t.common.discover),
-                Tab(text: context.t.navigation.me),
+                FrostTab(label: context.t.fanbox.feedGroup),
+                FrostTab(label: context.t.common.discover),
+                FrostTab(label: context.t.navigation.me),
               ],
               // A page-driven controller moves the pages itself; standalone, a
               // tap reports the group's first section.
@@ -113,12 +110,13 @@ class _FanboxSectionNavigationState extends State<FanboxSectionNavigation> with 
           // row limit make the label wrap instead of pushing the row over.
           ConstrainedBox(
             constraints: BoxConstraints(maxWidth: constraints.maxWidth / 2),
-            child: FrostValueMenuButton<FanboxSection>(
+            child: FrostPicker<FanboxSection>.menu(
+              label: context.t.fanbox.title,
               value: widget.section,
-              items: [
-                for (final section in {...group.sections, widget.section}) FrostSelectItem(value: section, label: fanboxSectionLabel(context, section)),
+              options: [
+                for (final section in {...group.sections, widget.section}) FrostPickerOption(value: section, label: fanboxSectionLabel(context, section)),
               ],
-              onSelected: widget.onSelected,
+              onChanged: widget.onSelected,
             ),
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,13 +35,13 @@ class IllustPreviewer extends ConsumerWidget {
     return ArtworkHeroSource(
       illust: illust,
       imageUrl: previewUrl,
-      sourceRadius: square ? BorderRadius.circular(FrostMetrics.controlRadius) : const BorderRadius.vertical(top: Radius.circular(FrostMetrics.controlRadius)),
+      sourceRadius: square ? BorderRadius.circular(FrostRadius.lg) : const BorderRadius.vertical(top: Radius.circular(FrostRadius.lg)),
       builder: (context, heroTag) {
         final image = ArtworkHero(
           tag: heroTag,
           child: _IllustPreviewImage(illust: illust, imageUrl: previewUrl, fit: fit, square: square, showBadges: !square, leadingBadge: leadingBadge),
         );
-        return FrostCard(
+        return PivCard(
           feedback: square ? FrostClickFeedback.media : FrostClickFeedback.surface,
           accentColor: accent,
           onTap: () => onOpen(heroTag),

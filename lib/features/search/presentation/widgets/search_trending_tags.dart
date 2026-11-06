@@ -37,7 +37,7 @@ class SearchTrendingTagsSliver extends ConsumerWidget {
     if (trendTags.isEmpty) {
       return SliverFillRemaining(
         hasScrollBody: false,
-        child: FrostEmptyContent(
+        child: FrostEmptyState(
           icon: FrostIconData.glyph(Icons.tag_outlined),
           title: context.t.search.emptyTrendingTitle,
           message: context.t.search.emptyTrendingMessage,
@@ -82,7 +82,7 @@ class _TrendingTagCard extends StatelessWidget {
     final translatedName = trendTag.translatedName;
     final accent = _trendAccent(context);
 
-    return FrostCard(
+    return PivCard(
       accentColor: accent,
       onTap: onTap,
       child: Stack(

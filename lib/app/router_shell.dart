@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/features/downloads/presentation/download_floating_panel.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -18,9 +17,6 @@ class RouterShell extends StatelessWidget {
   final ValueListenable<bool> canPopListenable;
   final VoidCallback onBack;
   final VoidCallback onResetRightNavigator;
-
-  /// Space between the sidebar's bottom edge and the dock button.
-  static const _dockBottomOffset = 78.0;
 
   @override
   Widget build(BuildContext context) {
@@ -49,20 +45,19 @@ class RouterShell extends StatelessWidget {
             onResetRightNavigator();
             context.go(appRouteDestinations[index].route.path);
           },
-          secondaryDestinations: [
-            for (final route in _secondaryRoutes) FrostNavDestination(icon: _secondaryIcon(route), label: appRouteNavigationLabel(translations, route)),
-          ],
-          selectedSecondaryIndex: secondaryIndex < 0 ? null : secondaryIndex,
-          onSecondarySelected: (index) {
-            final route = _secondaryRoutes[index];
-            if (path != route.path) context.push(route.path);
-          },
+          secondary: FrostShellSecondary(
+            destinations: [
+              for (final route in _secondaryRoutes) FrostNavDestination(icon: _secondaryIcon(route), label: appRouteNavigationLabel(translations, route)),
+            ],
+            selectedIndex: secondaryIndex < 0 ? null : secondaryIndex,
+            onSelected: (index) {
+              final route = _secondaryRoutes[index];
+              if (path != route.path) context.push(route.path);
+            },
+          ),
           canGoBack: canPop || _fallbackPath(path) != null,
           onBack: goBack,
           showsMobileNavigation: isMobileNavigationPath(path),
-          sidebarStyle: const FrostSidebarStyle.capsule(),
-          desktopOverlayBuilder: (context, geometry) =>
-              DesktopDownloadDock(railWidth: geometry.sidebarRight, buttonCenterX: geometry.iconAxis, bottomOffset: geometry.bottom - 8 + _dockBottomOffset),
           child: child,
         );
       },

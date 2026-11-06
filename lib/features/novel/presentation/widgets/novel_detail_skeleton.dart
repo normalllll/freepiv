@@ -23,8 +23,8 @@ class NovelDetailSkeletonPage extends StatelessWidget {
                     flexibleSpace: const FrostPinnedChromeGlass(opacity: 1),
                     automaticallyImplyLeading: false,
                     leading: FrostPageHeader.leadingFor(context),
-                    leadingWidth: FrostPageHeader.leadingWidth,
-                    titleSpacing: FrostPageHeader.titleSpacingOf(context),
+                    leadingWidth: 44.0,
+                    titleSpacing: 8.0,
                     title: const _TitleSkeleton(),
                   ),
                 const SliverToBoxAdapter(child: _HeaderSkeleton()),
@@ -58,7 +58,7 @@ class _HeaderSkeleton extends StatelessWidget {
           final desktop = FrostAutoScaffold.usesHorizontalLayoutOf(context) && constraints.maxWidth >= 720;
 
           final cover = Skeletonizer.zone(
-            child: Bone(width: desktop ? 220 : 96, height: desktop ? 308 : 136, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+            child: Bone(width: desktop ? 220 : 96, height: desktop ? 308 : 136, borderRadius: BorderRadius.circular(FrostRadius.lg)),
           );
           final info = const _InfoSkeleton(includeSupporting: false);
 
@@ -86,7 +86,7 @@ class _HeaderSkeleton extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Skeletonizer.zone(
-                        child: Bone(width: 180, height: FrostMetrics.controlHeight, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+                        child: Bone(width: 180, height: FrostDensity.of(context).controlHeight, borderRadius: BorderRadius.circular(FrostRadius.lg)),
                       ),
                       const SizedBox(height: 14),
                       const _SupportingSkeleton(),
@@ -115,7 +115,7 @@ class _InfoSkeleton extends StatelessWidget {
           const Bone.text(width: 180),
           if (includeSupporting) ...[
             const SizedBox(height: 14),
-            Bone(width: 180, height: FrostMetrics.controlHeight, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+            Bone(width: 180, height: FrostDensity.of(context).controlHeight, borderRadius: BorderRadius.circular(FrostRadius.lg)),
             const SizedBox(height: 14),
             const _SupportingSkeleton(),
           ],
@@ -140,7 +140,7 @@ class _SupportingSkeleton extends StatelessWidget {
         Wrap(
           spacing: 8,
           children: [
-            for (final width in [80.0, 100.0, 76.0]) Bone(width: width, height: 24, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+            for (final width in [80.0, 100.0, 76.0]) Bone(width: width, height: 24, borderRadius: BorderRadius.circular(FrostRadius.lg)),
           ],
         ),
         const SizedBox(height: 14),
@@ -156,7 +156,6 @@ class _BottomSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FrostContentColumn(
-      bleed: 20,
       child: Skeletonizer.zone(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 48),
@@ -177,7 +176,7 @@ class _BottomSkeleton extends StatelessWidget {
                 child: Row(
                   children: [
                     for (var index = 0; index < 4; index++) ...[
-                      Bone(width: 68, height: 96, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+                      Bone(width: 68, height: 96, borderRadius: BorderRadius.circular(FrostRadius.lg)),
                       if (index != 3) const SizedBox(width: 8),
                     ],
                   ],

@@ -43,22 +43,22 @@ class IllustDetailPanel extends StatelessWidget {
       ),
       const SizedBox(height: 6),
       _StatsStrip(illust: illust),
-      const SizedBox(height: FrostMetrics.compactSectionGap),
+      const SizedBox(height: FrostGap.group),
       IllustUserPreviewSection(illust: illust, onIllustTap: onIllustTap, showRecentWorks: false),
-      const SizedBox(height: FrostMetrics.compactSectionGap),
+      const SizedBox(height: FrostGap.group),
       _ActionRow(illust: illust, actions: actions),
-      if (illust.illustAiType == 2 || illust.xRestrict > 0) ...[const SizedBox(height: FrostMetrics.compactGap), _RestrictionBadges(illust: illust)],
+      if (illust.illustAiType == 2 || illust.xRestrict > 0) ...[const SizedBox(height: FrostGap.related), _RestrictionBadges(illust: illust)],
       if (illust.caption.trim().isNotEmpty) ...[
-        const SizedBox(height: FrostMetrics.compactSectionGap),
+        const SizedBox(height: FrostGap.group),
         IllustSectionTitle(title: translations.illust.section.caption),
-        const SizedBox(height: FrostMetrics.sectionHeadingGap),
+        const SizedBox(height: FrostGap.inline),
         _CaptionBox(caption: illust.caption),
       ],
-      const SizedBox(height: FrostMetrics.compactSectionGap),
+      const SizedBox(height: FrostGap.group),
       IllustSectionTitle(title: translations.illust.section.tags),
-      const SizedBox(height: FrostMetrics.sectionHeadingGap),
+      const SizedBox(height: FrostGap.inline),
       _TagWrap(tags: illust.tags),
-      const SizedBox(height: FrostMetrics.compactSectionGap),
+      const SizedBox(height: FrostGap.group),
       ExpansionTile(
         key: PageStorageKey<String>('illust-metadata-${illust.id}'),
         tilePadding: EdgeInsets.zero,
@@ -75,10 +75,10 @@ class IllustDetailPanel extends StatelessWidget {
       ),
       const SizedBox(height: 8),
       IllustCommentsSection(illustId: illust.id, totalComments: illust.totalComments),
-      const SizedBox(height: FrostMetrics.compactSectionGap),
+      const SizedBox(height: FrostGap.group),
       // The creator's recent works follow the work's own content.
       IllustUserPreviewSection(illust: illust, onIllustTap: onIllustTap, showHeader: false),
-      const SizedBox(height: FrostMetrics.compactSectionGap),
+      const SizedBox(height: FrostGap.group),
       if (showRelatedPreview && onShowRelatedWorks != null)
         IllustRelatedSection(illustId: illust.id, onIllustTap: onIllustTap, onShowMore: onShowRelatedWorks!),
     ];
@@ -102,10 +102,10 @@ class _ActionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = FrostThemeTokens.of(context);
     final translations = t;
-    final tonal = IconButton.styleFrom(backgroundColor: tokens.surfaceInset, fixedSize: const Size.square(FrostMetrics.controlHeight));
+    final tonal = IconButton.styleFrom(backgroundColor: tokens.surfaceInset, fixedSize: Size.square(FrostDensity.of(context).controlHeight));
     return Wrap(
-      spacing: FrostMetrics.compactGap,
-      runSpacing: FrostMetrics.compactGap,
+      spacing: FrostGap.related,
+      runSpacing: FrostGap.related,
       children: [
         DecoratedBox(
           decoration: BoxDecoration(color: tokens.surfaceInset, shape: BoxShape.circle),
@@ -170,7 +170,7 @@ class _InfoBadge extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+      decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(FrostRadius.lg)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         child: Row(
@@ -264,13 +264,13 @@ class _TagWrapState extends State<_TagWrap> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Wrap(
-            spacing: FrostMetrics.compactGap,
-            runSpacing: FrostMetrics.compactGap,
+            spacing: FrostGap.related,
+            runSpacing: FrostGap.related,
             children: [for (final tag in visibleTags) _TagChip(tag: tag)],
           ),
           if (tags.length > 5)
             Padding(
-              padding: const EdgeInsets.only(top: FrostMetrics.compactGap),
+              padding: const EdgeInsets.only(top: FrostGap.related),
               child: TextButton.icon(
                 onPressed: () => setState(() => _expanded = !_expanded),
                 style: TextButton.styleFrom(
@@ -278,7 +278,7 @@ class _TagWrapState extends State<_TagWrap> {
                   backgroundColor: tokens.surfaceInset,
                   minimumSize: const Size(0, 44),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(FrostRadius.lg)),
                 ),
                 icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more, size: 18),
                 label: Text(_expanded ? context.t.illust.tags.showLess : context.t.illust.tags.showMore(count: tags.length - 5)),
@@ -299,7 +299,7 @@ class _TagChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final tokens = FrostThemeTokens.of(context);
-    final borderRadius = BorderRadius.circular(FrostMetrics.controlRadius);
+    final borderRadius = BorderRadius.circular(FrostRadius.lg);
 
     return Tooltip(
       message: context.t.common.copy(label: tag.name),
@@ -331,7 +331,7 @@ class _CaptionBox extends StatelessWidget {
     final textStyle = theme.brightness == Brightness.dark ? theme.textTheme.bodySmall : theme.textTheme.bodyMedium;
     final tokens = FrostThemeTokens.of(context);
     return DecoratedBox(
-      decoration: BoxDecoration(color: tokens.surfaceMuted, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+      decoration: BoxDecoration(color: tokens.surfaceMuted, borderRadius: BorderRadius.circular(FrostRadius.lg)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: HtmlRichText(caption, style: textStyle?.copyWith(color: colorScheme.onSurface, height: 1.5)),
@@ -370,7 +370,7 @@ class _MetadataRow extends StatelessWidget {
                   IconButton(
                     tooltip: context.t.common.copy(label: label),
                     visualDensity: VisualDensity.compact,
-                    constraints: const BoxConstraints.tightFor(width: FrostMetrics.controlHeight, height: FrostMetrics.controlHeight),
+                    constraints: BoxConstraints.tightFor(width: FrostDensity.of(context).controlHeight, height: FrostDensity.of(context).controlHeight),
                     padding: EdgeInsets.zero,
                     icon: const Icon(Icons.content_copy_outlined, size: 16),
                     onPressed: () => unawaited(_copyTextValue(label, value)),

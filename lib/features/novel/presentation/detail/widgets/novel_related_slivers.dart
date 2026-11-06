@@ -7,6 +7,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:frost_data/frost_data.dart';
 
 class NovelRelatedSlivers {
   const NovelRelatedSlivers._();
@@ -53,7 +54,7 @@ class NovelRelatedSlivers {
       ];
     }
 
-    if (source.initialized && source.isEmpty) {
+    if (source.initialized && source.items.isEmpty) {
       return [
         ...titleSlivers,
         SliverToBoxAdapter(
@@ -96,7 +97,7 @@ class NovelRelatedTile extends StatelessWidget {
     final accent = _novelRelatedAccent(context);
 
     return NovelDetailWidthLimiter(
-      child: FrostCard(
+      child: PivCard(
         accentColor: accent,
         onTap: onTap,
         padding: const EdgeInsets.all(10),
@@ -105,7 +106,7 @@ class NovelRelatedTile extends StatelessWidget {
           children: [
             SizedBox.square(
               dimension: 92,
-              child: PixivImage(url: novel.imageUrls.squareMedium, fit: BoxFit.cover, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+              child: PixivImage(url: novel.imageUrls.squareMedium, fit: BoxFit.cover, borderRadius: BorderRadius.circular(FrostRadius.lg)),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -155,7 +156,7 @@ class SmallNovelStatPill extends StatelessWidget {
     final tokens = FrostThemeTokens.of(context);
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: tokens.surfaceRaised, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+      decoration: BoxDecoration(color: tokens.surfaceRaised, borderRadius: BorderRadius.circular(FrostRadius.lg)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
         child: Row(
@@ -188,11 +189,11 @@ class NovelRelatedListSkeleton extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 8),
           child: NovelDetailWidthLimiter(
             child: Skeletonizer.zone(
-              child: FrostCard(
+              child: PivCard(
                 padding: const EdgeInsets.all(10),
                 child: Row(
                   children: [
-                    Bone(width: 92, height: 92, borderRadius: BorderRadius.circular(FrostMetrics.controlRadius)),
+                    Bone(width: 92, height: 92, borderRadius: BorderRadius.circular(FrostRadius.lg)),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Column(

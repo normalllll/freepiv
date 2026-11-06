@@ -18,10 +18,19 @@ dependencies:
     git:
       url: https://github.com/normalllll/frost_ui.git
       path: packages/frost_ui
-      ref: main
+      ref: v0.3.0
+  frost_window:
+    git:
+      url: https://github.com/normalllll/frost_ui.git
+      path: packages/frost_window
+      ref: v0.3.0
+  frost_data:
+    git:
+      url: https://github.com/normalllll/frost_ui.git
+      path: packages/frost_data
+      ref: v0.3.0
 
   cupertino_icons: ^2.0.0
-  flutter_svg: ^2.3.0
   flutter_rust_bridge: 2.14.0-beta.2
   flutter_rust_bridge_hooks: 2.14.0-beta.2
   code_assets: ^2.1.0
@@ -78,13 +87,16 @@ flutter:
 
   assets:
     - assets/icon-512.png
-    - assets/icons/
+    - assets/fonts/LICENSE-Lucide.txt
     - assets/emojis/
     - assets/stamps/
     - assets/fonts/OFL-NotoSansCJK.txt
 
   # Subsets built by tool/subset_cjk_fonts.py; SIL OFL 1.1.
   fonts:
+    - family: FreepivIcons
+      fonts:
+        - asset: assets/fonts/FreepivIcons.ttf
     - family: Noto Sans SC
       fonts:
         - asset: assets/fonts/NotoSansSC-Subset.ttf

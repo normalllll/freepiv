@@ -101,7 +101,7 @@ class _NovelEmbeddedMedia extends StatelessWidget {
             button: true,
             child: FrostClickSurface(
               feedback: FrostClickFeedback.media,
-              borderRadius: BorderRadius.circular(12),
+              shape: FrostClickShape.rounded(BorderRadius.circular(12)),
               onTap: () => context.pushNamed(
                 AppRoute.originalImageViewer.name,
                 extra: OriginalImageViewerArgs(

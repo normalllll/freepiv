@@ -58,7 +58,7 @@ class DownloadsPage extends StatelessWidget {
   FrostPageHeader _downloadsAppBar() {
     return FrostPageHeader(
       title: Text(t.settings.downloads.tasksTitle),
-      actions: [IconButton(tooltip: t.settings.downloads.sync, icon: const Icon(Icons.sync_outlined), onPressed: () => unawaited(_syncDownloads()))],
+      actions: [FrostToolbarItem.action(label: t.settings.downloads.sync, icon: PivIcons.refreshCw, onPressed: () => unawaited(_syncDownloads()))],
     );
   }
 
@@ -164,22 +164,22 @@ class _DownloadsBodyState extends ConsumerState<_DownloadsBody> {
                               alignment: WrapAlignment.spaceBetween,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                FrostSegmentedButton<_TaskFilter>(
-                                  showSelectedIcon: false,
-                                  segments: [
+                                FrostPicker<_TaskFilter>.segmented(
+                                  label: context.t.common.filter,
+                                  options: [
                                     for (final filter in _TaskFilter.values)
-                                      ButtonSegment(
+                                      FrostPickerOption(
                                         value: filter,
-                                        label: Text(switch (filter) {
+                                        label: switch (filter) {
                                           _TaskFilter.all => labels.total,
                                           _TaskFilter.active => labels.active,
                                           _TaskFilter.failed => labels.failed,
                                           _TaskFilter.saved => labels.saved,
-                                        }),
+                                        },
                                       ),
                                   ],
-                                  selected: {_filter},
-                                  onSelectionChanged: (selection) => setState(() => _filter = selection.single),
+                                  value: _filter,
+                                  onChanged: (selection) => setState(() => _filter = selection),
                                 ),
                                 DownloadBulkActions(tasks: tasks),
                               ],

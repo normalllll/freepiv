@@ -66,7 +66,6 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
     // the sections scroll beneath it.
     return Scaffold(
       body: FrostPinnedChrome(
-        estimatedExtent: MediaQuery.paddingOf(context).top + FrostMetrics.compactTargetHeight + FrostMetrics.compactGap * 2,
         chrome: SafeArea(
           bottom: false,
           child: SearchHeader(
@@ -190,7 +189,7 @@ class _FanboxEntry extends StatelessWidget {
         child: FrostSurface(
           role: FrostSurfaceRole.glassPanel,
           child: FrostClickSurface(
-            borderRadius: BorderRadius.circular(FrostMetrics.groupRadius),
+            shape: FrostClickShape.rounded(BorderRadius.circular(FrostRadius.xl)),
             onTap: () => context.pushNamed(AppRoute.fanbox.name),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

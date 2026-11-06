@@ -1,3 +1,4 @@
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,7 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'logic.dart';
 import 'widgets.dart';
 import 'navigation.dart';
+import 'package:frost_data/frost_data.dart';
 
 final _pixivisionBrowseStorage = PageStorageBucket();
 
@@ -99,7 +101,6 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
     final query = Uri.parse(url).queryParameters['q'] ?? '';
     // Tabs carry their label padding, so the row bleeds by it.
     final chrome = FrostContentColumn(
-      bleed: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width),
       child: Padding(
         padding: const EdgeInsets.only(top: 12),
         child: LayoutBuilder(
@@ -108,15 +109,12 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
               Expanded(
                 child: FrostTabBar(
                   controller: _tabController,
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  dividerColor: Colors.transparent,
-                  labelPadding: EdgeInsets.symmetric(horizontal: FrostMetrics.tabLabelPadding(MediaQuery.sizeOf(context).width)),
+                  scrollable: true,
                   tabs: [
-                    Tab(text: t.latest),
-                    Tab(text: t.ranking),
-                    Tab(text: t.recommended),
-                    Tab(text: t.tags),
+                    FrostTab(label: t.latest),
+                    FrostTab(label: t.ranking),
+                    FrostTab(label: t.recommended),
+                    FrostTab(label: t.tags),
                   ],
                 ),
               ),
@@ -126,13 +124,14 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
               // row, like the FANBOX collection picker beside its tabs.
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: constraints.maxWidth / 2),
-                child: FrostValueMenuButton<String>(
+                child: FrostPicker<String>.menu(
+                  label: t.allCategories,
                   value: url,
-                  items: [
-                    FrostSelectItem(value: home, label: t.allCategories),
-                    for (final item in categories) FrostSelectItem(value: item.url, label: item.title),
+                  options: [
+                    FrostPickerOption(value: home, label: t.allCategories),
+                    for (final item in categories) FrostPickerOption(value: item.url, label: item.title),
                   ],
-                  onSelected: selectUrl,
+                  onChanged: selectUrl,
                 ),
               ),
             ],
@@ -189,7 +188,7 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
                             ),
                           )
                         else
-                          FrostSliverPagedList<ArticleSummary>(
+                          PivSliverPagedList<ArticleSummary>(
                             key: ValueKey((url, section)),
                             items: items,
                             hasMore: section == PixivisionSection.articles && listing?.page.nextUrl != null,
@@ -234,7 +233,7 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
               final search = FrostSearchInput(
                 controller: _search,
                 focusNode: _focus,
-                hintText: t.searchHint,
+                placeholder: t.searchHint,
                 onSubmitted: (value) {
                   final trimmed = value.trim();
                   if (trimmed.isNotEmpty) {
@@ -248,7 +247,6 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
                 },
               );
               return FrostContentColumn(
-                bleed: 12,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                   child: Column(
@@ -310,7 +308,7 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
           Expanded(
             // The tabs stay put while the sections slide beneath them.
             child: FrostPinnedChrome(
-              extent: frostCompactFilterHeight(context),
+              extent: 62.0,
               chrome: chrome,
               body: TabBarView(controller: _tabController, children: [for (final section in PixivisionSection.values) sectionPage(section)]),
             ),

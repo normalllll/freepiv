@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app_links/app_links.dart';
 import 'package:freepiv/core/core.dart';
@@ -154,7 +153,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final proxySettings = ref.watch(proxySettingsProvider);
 
     return Scaffold(
-      appBar: FrostAutoScaffold.usesHorizontalLayoutOf(context) ? null : FrostPageHeader(title: Text(translations.login.title)),
+      appBar: PivAppBar(FrostPageHeader(title: Text(translations.login.title))),
       body: SingleChildScrollView(
         child: Center(
           child: ConstrainedBox(
@@ -192,7 +191,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 : translations.login.signInAgain,
                           ),
                         ),
-                        if (_isCompletingLogin) ...[const SizedBox(height: 12), const FrostSkeletonBlock(width: double.infinity, height: 4)],
+                        if (_isCompletingLogin) ...[const SizedBox(height: 12), const PivSkeletonBlock(width: double.infinity, height: 4)],
                         if (_status != null) ...[const SizedBox(height: 16), Text(_status!, textAlign: TextAlign.center)],
                         if (_error != null) ...[
                           const SizedBox(height: 16),

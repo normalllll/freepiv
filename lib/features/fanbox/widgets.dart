@@ -1,6 +1,7 @@
 import 'package:freepiv/app/frost_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:freepiv/core/downloads/download_manager.dart';
+import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:extended_image/extended_image.dart';
@@ -85,7 +86,7 @@ class FanboxImageView extends ConsumerWidget {
     return ref
         .watch(fanboxSessionProvider)
         .when(
-          loading: () => SizedBox(height: height ?? 100, child: const FrostImageSkeleton()),
+          loading: () => SizedBox(height: height ?? 100, child: const PivImageSkeleton()),
           error: (_, _) => SizedBox(
             height: height ?? 100,
             child: Center(
@@ -105,7 +106,7 @@ class FanboxImageView extends ConsumerWidget {
             width: double.infinity,
             fit: fit,
             loadStateChanged: (state) => switch (state.extendedImageLoadState) {
-              LoadState.loading => SizedBox(height: height ?? 100, child: const FrostImageSkeleton()),
+              LoadState.loading => SizedBox(height: height ?? 100, child: const PivImageSkeleton()),
               LoadState.failed => SizedBox(
                 height: height ?? 100,
                 child: Center(

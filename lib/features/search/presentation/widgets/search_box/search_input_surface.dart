@@ -56,32 +56,11 @@ class SearchInputSurface extends StatelessWidget {
     return FrostSearchInput(
       controller: session.controller,
       focusNode: session.focusNode,
-      hintText: context.t.discover.searchHint,
+      placeholder: context.t.discover.searchHint,
       onSubmitted: onSubmitted,
       onClear: session.clearAll,
       actions: [if (showFilters && type != SearchType.user) SearchFilterButton(type: type, allowTypeSelection: false, compact: true)],
-      field: FrostHighlightTextField(
-        autofocus: autofocus,
-        controller: session.controller,
-        rules: searchHighlightRules(context),
-        focusNode: session.focusNode,
-        textInputAction: TextInputAction.search,
-        onSubmitted: onSubmitted,
-        onTapOutside: onTapOutside,
-        maxLines: 1,
-        style: Theme.of(context).textTheme.bodyMedium,
-        decoration: frostSearchInputDecoration(context, context.t.discover.searchHint),
-      ),
+      autofocus: autofocus,
     );
   }
-}
-
-List<FrostHighlightRule> searchHighlightRules(BuildContext context) {
-  final tokens = FrostThemeTokens.of(context);
-  return [
-    FrostHighlightRule(
-      pattern: RegExp(r'^\S+$'),
-      style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.w700),
-    ),
-  ];
 }

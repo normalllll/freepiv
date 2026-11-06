@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -47,10 +49,14 @@ Widget _host(_MediaTransport transport) => ProviderScope(
   key: UniqueKey(),
   overrides: [rustMediaTransportProvider.overrideWithValue(transport)],
   child: TranslationProvider(
-    child: const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: SizedBox.square(dimension: 80, child: PixivImage(url: 'https://fixture.example.test/cached.png', cache: false)),
+    child: FrostScope(
+      config: freepivFrostConfig,
+      child: MaterialApp(
+        theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en', 'US')),
+        home: const Scaffold(
+          body: Center(
+            child: SizedBox.square(dimension: 80, child: PixivImage(url: 'https://fixture.example.test/cached.png', cache: false)),
+          ),
         ),
       ),
     ),
