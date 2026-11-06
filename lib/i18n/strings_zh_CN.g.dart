@@ -1030,9 +1030,9 @@ class Translations$search$direct$zh_CN extends Translations$search$direct$en_US 
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
-	@override String illust({required Object id}) => '插画：${id}';
-	@override String user({required Object id}) => '用户：${id}';
-	@override String novel({required Object id}) => '小说：${id}';
+	@override String illust({required Object id}) => '打开插画 #${id}';
+	@override String user({required Object id}) => '打开用户 #${id}';
+	@override String novel({required Object id}) => '打开小说 #${id}';
 }
 
 // Path: search.empty
@@ -1849,9 +1849,9 @@ extension on TranslationsZhCn {
 			'search.date.pickerHelp' => '选择日期范围（最多一年）',
 			'search.bookmarks.any' => '不限',
 			'search.bookmarks.tagged' => ({required Object count}) => '${count} 收藏标签',
-			'search.direct.illust' => ({required Object id}) => '插画：${id}',
-			'search.direct.user' => ({required Object id}) => '用户：${id}',
-			'search.direct.novel' => ({required Object id}) => '小说：${id}',
+			'search.direct.illust' => ({required Object id}) => '打开插画 #${id}',
+			'search.direct.user' => ({required Object id}) => '打开用户 #${id}',
+			'search.direct.novel' => ({required Object id}) => '打开小说 #${id}',
 			'search.empty.illustrations' => '没有找到插画',
 			'search.empty.novels' => '没有找到小说',
 			'search.empty.users' => '没有找到用户',

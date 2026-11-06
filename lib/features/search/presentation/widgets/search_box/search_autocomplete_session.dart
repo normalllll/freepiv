@@ -5,6 +5,7 @@ import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_models.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_suggestion.dart';
+import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
@@ -74,9 +75,27 @@ class SearchAutocompleteSession extends ChangeNotifier {
       final id = int.tryParse(activeQuery);
       if (id != null) {
         items.addAll([
-          SearchSuggestion(kind: SearchItemKind.illust, label: 'Illust:$id', value: 'Illust:$id', id: id, icon: Icons.image_outlined),
-          SearchSuggestion(kind: SearchItemKind.user, label: 'User:$id', value: 'User:$id', id: id, icon: Icons.person_outline),
-          SearchSuggestion(kind: SearchItemKind.novel, label: 'Novel:$id', value: 'Novel:$id', id: id, icon: Icons.menu_book_outlined),
+          SearchSuggestion(
+            kind: SearchItemKind.illust,
+            label: t.search.direct.illust(id: id),
+            value: '$id',
+            id: id,
+            icon: Icons.image_outlined,
+          ),
+          SearchSuggestion(
+            kind: SearchItemKind.user,
+            label: t.search.direct.user(id: id),
+            value: '$id',
+            id: id,
+            icon: Icons.person_outline,
+          ),
+          SearchSuggestion(
+            kind: SearchItemKind.novel,
+            label: t.search.direct.novel(id: id),
+            value: '$id',
+            id: id,
+            icon: Icons.menu_book_outlined,
+          ),
         ]);
       }
     }

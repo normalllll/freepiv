@@ -466,9 +466,9 @@
       "tagged": "$count users tag"
     },
     "direct": {
-      "illust": "Illust: $id",
-      "user": "User: $id",
-      "novel": "Novel: $id"
+      "illust": "Open illustration #$id",
+      "user": "Open user #$id",
+      "novel": "Open novel #$id"
     },
     "empty": {
       "illustrations": "No illustrations found",

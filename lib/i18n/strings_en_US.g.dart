@@ -1032,9 +1032,9 @@ class Translations$search$direct$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
-	String illust({required Object id}) => 'Illust: ${id}';
-	String user({required Object id}) => 'User: ${id}';
-	String novel({required Object id}) => 'Novel: ${id}';
+	String illust({required Object id}) => 'Open illustration #${id}';
+	String user({required Object id}) => 'Open user #${id}';
+	String novel({required Object id}) => 'Open novel #${id}';
 }
 
 // Path: search.empty
@@ -1851,9 +1851,9 @@ extension on Translations {
 			'search.date.pickerHelp' => 'Select a range (up to 1 year)',
 			'search.bookmarks.any' => 'Any',
 			'search.bookmarks.tagged' => ({required Object count}) => '${count} users tag',
-			'search.direct.illust' => ({required Object id}) => 'Illust: ${id}',
-			'search.direct.user' => ({required Object id}) => 'User: ${id}',
-			'search.direct.novel' => ({required Object id}) => 'Novel: ${id}',
+			'search.direct.illust' => ({required Object id}) => 'Open illustration #${id}',
+			'search.direct.user' => ({required Object id}) => 'Open user #${id}',
+			'search.direct.novel' => ({required Object id}) => 'Open novel #${id}',
 			'search.empty.illustrations' => 'No illustrations found',
 			'search.empty.novels' => 'No novels found',
 			'search.empty.users' => 'No users found',

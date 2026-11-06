@@ -466,9 +466,9 @@
       "tagged": "$count 收藏標籤"
     },
     "direct": {
-      "illust": "插畫：$id",
-      "user": "使用者：$id",
-      "novel": "小說：$id"
+      "illust": "開啟插畫 #$id",
+      "user": "開啟使用者 #$id",
+      "novel": "開啟小說 #$id"
     },
     "empty": {
       "illustrations": "找不到插畫",

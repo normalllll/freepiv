@@ -1030,9 +1030,9 @@ class _Translations$search$direct$ja_JP extends Translations$search$direct$en_US
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
-	@override String illust({required Object id}) => 'イラスト：${id}';
-	@override String user({required Object id}) => 'ユーザー：${id}';
-	@override String novel({required Object id}) => '小説：${id}';
+	@override String illust({required Object id}) => 'イラスト #${id} を開く';
+	@override String user({required Object id}) => 'ユーザー #${id} を開く';
+	@override String novel({required Object id}) => '小説 #${id} を開く';
 }
 
 // Path: search.empty
@@ -1849,9 +1849,9 @@ extension on TranslationsJaJp {
 			'search.date.pickerHelp' => '期間を選択（最大 1 年）',
 			'search.bookmarks.any' => '指定なし',
 			'search.bookmarks.tagged' => ({required Object count}) => '${count} users入り',
-			'search.direct.illust' => ({required Object id}) => 'イラスト：${id}',
-			'search.direct.user' => ({required Object id}) => 'ユーザー：${id}',
-			'search.direct.novel' => ({required Object id}) => '小説：${id}',
+			'search.direct.illust' => ({required Object id}) => 'イラスト #${id} を開く',
+			'search.direct.user' => ({required Object id}) => 'ユーザー #${id} を開く',
+			'search.direct.novel' => ({required Object id}) => '小説 #${id} を開く',
 			'search.empty.illustrations' => 'イラストは見つかりません',
 			'search.empty.novels' => '小説は見つかりません',
 			'search.empty.users' => 'ユーザーは見つかりません',

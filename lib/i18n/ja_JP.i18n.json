@@ -466,9 +466,9 @@
       "tagged": "$count users入り"
     },
     "direct": {
-      "illust": "イラスト：$id",
-      "user": "ユーザー：$id",
-      "novel": "小説：$id"
+      "illust": "イラスト #$id を開く",
+      "user": "ユーザー #$id を開く",
+      "novel": "小説 #$id を開く"
     },
     "empty": {
       "illustrations": "イラストは見つかりません",
