@@ -39,6 +39,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsJaJp $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsJaJp(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final _Translations$signOut$ja_JP signOut = _Translations$signOut$ja_JP._(_root);
 	@override late final _Translations$appSearch$ja_JP appSearch = _Translations$appSearch$ja_JP._(_root);
 	@override late final _Translations$navigationPlacement$ja_JP navigationPlacement = _Translations$navigationPlacement$ja_JP._(_root);
 	@override late final _Translations$frost$ja_JP frost = _Translations$frost$ja_JP._(_root);
@@ -65,6 +66,18 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$richText$ja_JP richText = _Translations$richText$ja_JP._(_root);
 	@override late final _Translations$fanbox$ja_JP fanbox = _Translations$fanbox$ja_JP._(_root);
 	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
+}
+
+// Path: signOut
+class _Translations$signOut$ja_JP extends Translations$signOut$en_US {
+	_Translations$signOut$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'pixiv からログアウトしますか？';
+	@override String get message => '閲覧するには再度ログインが必要です。ダウンロードと設定はこの端末に残ります。';
+	@override String get confirm => 'ログアウト';
 }
 
 // Path: appSearch
@@ -1450,6 +1463,9 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 extension on TranslationsJaJp {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'signOut.title' => 'pixiv からログアウトしますか？',
+			'signOut.message' => '閲覧するには再度ログインが必要です。ダウンロードと設定はこの端末に残ります。',
+			'signOut.confirm' => 'ログアウト',
 			'appSearch.placeholder' => 'イラスト・小説・ユーザーを検索',
 			'appSearch.allHistory' => 'すべての履歴',
 			'appSearch.allTrendingTags' => 'すべての人気タグ',
@@ -1959,11 +1975,11 @@ extension on TranslationsJaJp {
 			'illust.toast.linkCopyFailed' => 'リンクをコピーできませんでした',
 			'illust.toast.alreadyDownloading' => 'このページはすでにダウンロード待ちです',
 			'illust.tooltip.play' => 'アニメーションを再生',
+			_ => null,
+		} ?? switch (path) {
 			'illust.tooltip.previousImage' => '前の画像',
 			'illust.tooltip.nextImage' => '次の画像',
 			'illust.tooltip.backToDetail' => '画像詳細に戻る',
-			_ => null,
-		} ?? switch (path) {
 			'illust.tooltip.removeBookmark' => 'ブックマークを解除',
 			'illust.tooltip.addBookmark' => 'ブックマークに追加',
 			'illust.section.tags' => 'タグ',

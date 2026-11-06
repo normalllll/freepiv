@@ -1,4 +1,9 @@
 {
+  "signOut": {
+    "title": "Sign out of Pixiv?",
+    "message": "You need to sign in again to browse. Downloads and settings stay on this device.",
+    "confirm": "Sign out"
+  },
   "appSearch": {
     "placeholder": "Search illustrations, novels, users",
     "allHistory": "All history",

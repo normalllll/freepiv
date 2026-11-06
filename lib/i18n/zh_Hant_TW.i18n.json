@@ -1,4 +1,9 @@
 {
+  "signOut": {
+    "title": "登出 Pixiv？",
+    "message": "需要重新登入才能瀏覽。下載紀錄與設定會保留在這台裝置上。",
+    "confirm": "登出"
+  },
   "appSearch": {
     "placeholder": "搜尋插畫、小說、使用者",
     "allHistory": "全部紀錄",

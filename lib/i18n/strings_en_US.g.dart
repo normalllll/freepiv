@@ -41,6 +41,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
+	late final Translations$signOut$en_US signOut = Translations$signOut$en_US.internal(_root);
 	late final Translations$appSearch$en_US appSearch = Translations$appSearch$en_US.internal(_root);
 	late final Translations$navigationPlacement$en_US navigationPlacement = Translations$navigationPlacement$en_US.internal(_root);
 	late final Translations$frost$en_US frost = Translations$frost$en_US.internal(_root);
@@ -67,6 +68,18 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$richText$en_US richText = Translations$richText$en_US.internal(_root);
 	late final Translations$fanbox$en_US fanbox = Translations$fanbox$en_US.internal(_root);
 	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
+}
+
+// Path: signOut
+class Translations$signOut$en_US {
+	Translations$signOut$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Sign out of Pixiv?';
+	String get message => 'You need to sign in again to browse. Downloads and settings stay on this device.';
+	String get confirm => 'Sign out';
 }
 
 // Path: appSearch
@@ -1452,6 +1465,9 @@ class Translations$novel$reader$en_US {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'signOut.title' => 'Sign out of Pixiv?',
+			'signOut.message' => 'You need to sign in again to browse. Downloads and settings stay on this device.',
+			'signOut.confirm' => 'Sign out',
 			'appSearch.placeholder' => 'Search illustrations, novels, users',
 			'appSearch.allHistory' => 'All history',
 			'appSearch.allTrendingTags' => 'All trending tags',
@@ -1961,11 +1977,11 @@ extension on Translations {
 			'illust.toast.linkCopyFailed' => 'Could not copy the link',
 			'illust.toast.alreadyDownloading' => 'This page is already in the download queue',
 			'illust.tooltip.play' => 'Play animation',
+			_ => null,
+		} ?? switch (path) {
 			'illust.tooltip.previousImage' => 'Previous image',
 			'illust.tooltip.nextImage' => 'Next image',
 			'illust.tooltip.backToDetail' => 'Back to image detail',
-			_ => null,
-		} ?? switch (path) {
 			'illust.tooltip.removeBookmark' => 'Remove bookmark',
 			'illust.tooltip.addBookmark' => 'Add bookmark',
 			'illust.section.tags' => 'Tags',

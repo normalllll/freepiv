@@ -39,6 +39,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsZhCn $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhCn(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$signOut$zh_CN signOut = Translations$signOut$zh_CN.internal(_root);
 	@override late final Translations$appSearch$zh_CN appSearch = Translations$appSearch$zh_CN.internal(_root);
 	@override late final Translations$navigationPlacement$zh_CN navigationPlacement = Translations$navigationPlacement$zh_CN.internal(_root);
 	@override late final Translations$frost$zh_CN frost = Translations$frost$zh_CN.internal(_root);
@@ -65,6 +66,18 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$richText$zh_CN richText = Translations$richText$zh_CN.internal(_root);
 	@override late final Translations$fanbox$zh_CN fanbox = Translations$fanbox$zh_CN.internal(_root);
 	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
+}
+
+// Path: signOut
+class Translations$signOut$zh_CN extends Translations$signOut$en_US {
+	Translations$signOut$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '退出 Pixiv 登录？';
+	@override String get message => '需要重新登录才能浏览。下载记录和设置会保留在这台设备上。';
+	@override String get confirm => '退出登录';
 }
 
 // Path: appSearch
@@ -1450,6 +1463,9 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 extension on TranslationsZhCn {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'signOut.title' => '退出 Pixiv 登录？',
+			'signOut.message' => '需要重新登录才能浏览。下载记录和设置会保留在这台设备上。',
+			'signOut.confirm' => '退出登录',
 			'appSearch.placeholder' => '搜索插画、小说、用户',
 			'appSearch.allHistory' => '全部历史',
 			'appSearch.allTrendingTags' => '全部热门标签',
@@ -1959,11 +1975,11 @@ extension on TranslationsZhCn {
 			'illust.toast.linkCopyFailed' => '无法复制链接',
 			'illust.toast.alreadyDownloading' => '这一页已在下载队列中',
 			'illust.tooltip.play' => '播放动画',
+			_ => null,
+		} ?? switch (path) {
 			'illust.tooltip.previousImage' => '上一张图片',
 			'illust.tooltip.nextImage' => '下一张图片',
 			'illust.tooltip.backToDetail' => '回到图片详情',
-			_ => null,
-		} ?? switch (path) {
 			'illust.tooltip.removeBookmark' => '移除收藏',
 			'illust.tooltip.addBookmark' => '添加收藏',
 			'illust.section.tags' => '标签',

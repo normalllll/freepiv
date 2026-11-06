@@ -1,5 +1,4 @@
 import 'package:freepiv/app/frost_config.dart';
-import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'package:freepiv/features/fanbox/account_settings.dart';
 import 'package:freepiv/features/settings/presentation/appearance_settings_section.dart';
@@ -11,9 +10,9 @@ import 'package:freepiv/app/theme/appearance_logic.dart';
 import 'package:freepiv/app/theme/transparency_logic.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
+import 'package:freepiv/features/settings/presentation/pixiv_sign_out.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/app/router/app_route.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -144,12 +143,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         ListTile(
           title: Text(translations.settings.account.signOut),
           leading: const Icon(Icons.logout),
-          onTap: pixivAccountNotifier.value == null
-              ? null
-              : () {
-                  setPixivAccount(null);
-                  context.go(AppRoute.login.path);
-                },
+          onTap: pixivAccountNotifier.value == null ? null : () => confirmPixivSignOut(context),
         ),
       ],
     ];

@@ -39,6 +39,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	TranslationsZhHantTw $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhHantTw(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$signOut$zh_Hant_TW signOut = Translations$signOut$zh_Hant_TW.internal(_root);
 	@override late final Translations$appSearch$zh_Hant_TW appSearch = Translations$appSearch$zh_Hant_TW.internal(_root);
 	@override late final Translations$navigationPlacement$zh_Hant_TW navigationPlacement = Translations$navigationPlacement$zh_Hant_TW.internal(_root);
 	@override late final Translations$frost$zh_Hant_TW frost = Translations$frost$zh_Hant_TW.internal(_root);
@@ -65,6 +66,18 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$richText$zh_Hant_TW richText = Translations$richText$zh_Hant_TW.internal(_root);
 	@override late final Translations$fanbox$zh_Hant_TW fanbox = Translations$fanbox$zh_Hant_TW.internal(_root);
 	@override late final Translations$pixivision$zh_Hant_TW pixivision = Translations$pixivision$zh_Hant_TW.internal(_root);
+}
+
+// Path: signOut
+class Translations$signOut$zh_Hant_TW extends Translations$signOut$en_US {
+	Translations$signOut$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '登出 Pixiv？';
+	@override String get message => '需要重新登入才能瀏覽。下載紀錄與設定會保留在這台裝置上。';
+	@override String get confirm => '登出';
 }
 
 // Path: appSearch
@@ -1450,6 +1463,9 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 extension on TranslationsZhHantTw {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'signOut.title' => '登出 Pixiv？',
+			'signOut.message' => '需要重新登入才能瀏覽。下載紀錄與設定會保留在這台裝置上。',
+			'signOut.confirm' => '登出',
 			'appSearch.placeholder' => '搜尋插畫、小說、使用者',
 			'appSearch.allHistory' => '全部紀錄',
 			'appSearch.allTrendingTags' => '全部熱門標籤',
@@ -1959,11 +1975,11 @@ extension on TranslationsZhHantTw {
 			'illust.toast.linkCopyFailed' => '無法複製連結',
 			'illust.toast.alreadyDownloading' => '這一頁已在下載佇列中',
 			'illust.tooltip.play' => '播放動畫',
+			_ => null,
+		} ?? switch (path) {
 			'illust.tooltip.previousImage' => '上一張圖片',
 			'illust.tooltip.nextImage' => '下一張圖片',
 			'illust.tooltip.backToDetail' => '回到圖片詳細資訊',
-			_ => null,
-		} ?? switch (path) {
 			'illust.tooltip.removeBookmark' => '移除收藏',
 			'illust.tooltip.addBookmark' => '加入收藏',
 			'illust.section.tags' => '標籤',
