@@ -269,6 +269,70 @@ final class DefaultDownloadManager implements DownloadManager {
   }
 
   @override
+  Future<DownloadedFile> saveGenerated({
+    required DownloadOrigin origin,
+    required DownloadSource source,
+    required Uri sourceUrl,
+    required String filename,
+    required Future<Uint8List> Function(void Function(double progress) onProgress) generate,
+    String? title,
+    String? thumbnailUrl,
+  }) async {
+    await _ensureInitialized();
+    await _activePermissionGuard.ensureReadyForDownload();
+    final job = DownloadJob.create(
+      origin: origin,
+      source: source,
+      url: sourceUrl,
+      filename: filename,
+      saveTarget: _defaultSaveTarget(),
+      title: title,
+      thumbnailUrl: thumbnailUrl,
+    );
+    if (await _activeTaskForJob(job) != null) {
+      throw const DownloadAlreadyQueued();
+    }
+
+    _jobs[job.id] = job;
+    await _activeStore.upsertJob(job);
+    await _activeStore.updateStatus(job.id, DownloadStatus.running);
+    final Uint8List bytes;
+    try {
+      bytes = await generate((progress) => unawaited(_activeStore.updateProgress(job.id, progress: progress.clamp(0, 1).toDouble())));
+      await validateDownloadedBytes(bytes, validation: job.validation);
+    } catch (error, stackTrace) {
+      await _activeStore.appendLog(
+        job.id,
+        'Generating the file failed.\n'
+        'sourceUrl=$sourceUrl\n'
+        'filename=${job.filename}\n'
+        'error=$error\n'
+        'stackTrace=$stackTrace',
+      );
+      await _activeStore.updateStatus(job.id, DownloadStatus.failed, error: error.toString());
+      rethrow;
+    }
+    await _activeStore.updateProgress(job.id, receivedBytes: bytes.lengthInBytes, totalBytes: bytes.lengthInBytes, progress: 1);
+    await _activeStore.updateStatus(job.id, DownloadStatus.downloaded);
+    await _activeStore.updateSaveState(job.id, SaveState.saving);
+    try {
+      final result = await _activeMediaSaver.saveBytes(job: job, bytes: bytes);
+      await _activeStore.updateSaveState(job.id, SaveState.saved, localPath: result.path, galleryAssetId: result.galleryAssetId);
+      return DownloadedFile(path: result.path, bytesWritten: result.bytesWritten);
+    } catch (error, stackTrace) {
+      await _activeStore.appendLog(
+        job.id,
+        'Save generated file failed.\n'
+        'filename=${job.filename}\n'
+        'error=$error\n'
+        'stackTrace=$stackTrace',
+      );
+      await _activeStore.updateSaveState(job.id, SaveState.failed, error: error.toString());
+      throw DownloadException('Failed to save generated file', error);
+    }
+  }
+
+  @override
   Future<void> pause(String jobId) async {
     await _ensureInitialized();
     await _activeEngine.pause(jobId);

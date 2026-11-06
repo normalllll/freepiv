@@ -229,18 +229,27 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
         origin: origin,
         artwork: PixivImage(url: widget.previewUrl),
       );
-      await _ensurePlaybackStartedForExport();
-      final gifBytes = await _ensureGifBytes();
-      _setPhase(_UgoiraPhase.savingGif, progress: null);
-      final zipUrl = _metadata?.zipUrls.medium;
-      final zipUri = Uri.parse(zipUrl == null || zipUrl.isEmpty ? widget.fallbackDownloadUrl : zipUrl);
-      final file = await downloadManager.saveBytes(
-        origin: ArtworkPage(illustId: widget.artwork.illustId, pageIndex: 0),
+      // The GIF is a task of the download manager from the start: it shows
+      // while the frames are fetched and composed, and fails there too. It is
+      // its own file of the work, apart from the work's pages.
+      final fallbackZip = Uri.parse(widget.fallbackDownloadUrl);
+      final file = await downloadManager.saveGenerated(
+        origin: ContentFile.of(fallbackZip.replace(path: '${fallbackZip.path}.gif')),
         source: widget.artwork,
-        bytes: gifBytes,
-        sourceUrl: zipUri,
+        sourceUrl: fallbackZip,
         filename: '${widget.artwork.illustId}.gif',
         thumbnailUrl: widget.previewUrl,
+        generate: (onProgress) async {
+          _exportProgress = onProgress;
+          try {
+            await _ensurePlaybackStartedForExport();
+            final gifBytes = await _ensureGifBytes();
+            _setPhase(_UgoiraPhase.savingGif, progress: null);
+            return gifBytes;
+          } finally {
+            _exportProgress = null;
+          }
+        },
       );
       _setReadyAfterExport();
       FrostToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
@@ -427,7 +436,11 @@ class _UgoiraPageContentState extends State<UgoiraPageContent> {
     return frame.image;
   }
 
+  /// The download task's progress while a GIF download composes.
+  void Function(double progress)? _exportProgress;
+
   void _setPhase(_UgoiraPhase phase, {double? progress}) {
+    if (progress != null) _exportProgress?.call(progress);
     if (!mounted) {
       return;
     }

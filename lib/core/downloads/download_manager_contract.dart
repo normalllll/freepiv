@@ -35,6 +35,20 @@ abstract interface class DownloadManager {
     String? thumbnailUrl,
   });
 
+  /// Records a task for a file the app makes itself (a GIF composed from an
+  /// animation's frames) and saves it like a download: the task shows as
+  /// running with the progress [generate] reports, then saved, or failed with
+  /// the error in its log.
+  Future<DownloadedFile> saveGenerated({
+    required DownloadOrigin origin,
+    required DownloadSource source,
+    required Uri sourceUrl,
+    required String filename,
+    required Future<Uint8List> Function(void Function(double progress) onProgress) generate,
+    String? title,
+    String? thumbnailUrl,
+  });
+
   Future<void> pause(String jobId);
 
   Future<void> resume(String jobId);
