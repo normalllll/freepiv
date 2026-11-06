@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "win32_window.h"
-#include "desktop_window.h"
+#include "image_clipboard.h"
 
 // A window that does nothing but host a Flutter view.
 class FlutterWindow : public Win32Window {
@@ -30,7 +30,7 @@ class FlutterWindow : public Win32Window {
   // The Flutter instance hosted by this window.
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
 
-  std::unique_ptr<DesktopWindow> desktop_window_;
+  std::unique_ptr<ImageClipboard> image_clipboard_;
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_

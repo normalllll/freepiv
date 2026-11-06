@@ -13,25 +13,35 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 import 'package:frost_ui/frost_ui.dart';
 
-import 'window/native_window.dart';
 import 'window/window_title.dart';
 
 class FreepivApp extends StatelessWidget {
-  const FreepivApp({super.key});
+  const FreepivApp({required this.windowController, super.key});
+
+  /// Created and placed at startup; the app only hosts it.
+  final FrostWindowController windowController;
 
   @override
   Widget build(BuildContext context) {
     FrostToast.systemConfirmsClipboardCopies = systemConfirmsClipboardCopies;
-    return ProviderScope(child: TranslationProvider(child: const _FreepivMaterialApp()));
+    return ProviderScope(
+      child: TranslationProvider(child: _FreepivMaterialApp(windowController: windowController)),
+    );
   }
 }
 
 class _FreepivMaterialApp extends ConsumerStatefulWidget {
-  const _FreepivMaterialApp();
+  const _FreepivMaterialApp({required this.windowController});
+
+  final FrostWindowController windowController;
 
   @override
   ConsumerState<_FreepivMaterialApp> createState() => _FreepivMaterialAppState();
 }
+
+/// The native window title; windows/runner/main.cpp finds a running
+/// instance by this exact title.
+const _windowTitle = 'freepiv';
 
 class _FreepivMaterialAppState extends ConsumerState<_FreepivMaterialApp> {
   final FrostWindowTitleRegistry _windowTitles = FrostWindowTitleRegistry();
@@ -79,22 +89,19 @@ class _FreepivMaterialAppState extends ConsumerState<_FreepivMaterialApp> {
         localizationsDelegates: const [GlobalMaterialLocalizations.delegate, GlobalWidgetsLocalizations.delegate, GlobalCupertinoLocalizations.delegate],
         routerConfig: AppRouter.router,
         builder: (context, child) {
-          final colors = Theme.of(context).colorScheme;
           return FrostWindowTitleScope(
             registry: _windowTitles,
             child: AnimatedBuilder(
               animation: _windowTitles,
               // The title bar, navigation and pages are transparent over one
               // window-wide ambient backdrop, so the window reads as one surface.
-              builder: (context, _) => FrostAmbientBackdropHost(
-                image: _backdropImage(resolveWindowArtwork(_windowTitles.location, _windowTitles)),
-                child: NativeWindowFrame(
-                  title: resolveWindowTitle(_windowTitles.location, context.t, _windowTitles),
-                  brandTitle: context.t.app.title,
-                  leading: Image.asset('assets/icon-512.png', cacheWidth: 96, cacheHeight: 96),
-                  background: Colors.transparent,
-                  foreground: colors.onSurfaceVariant,
-                  border: Colors.transparent,
+              // The window's own title stays the app name: the runner finds
+              // the running instance by it, and pages carry their titles.
+              builder: (context, _) => FrostWindowHost(
+                controller: widget.windowController,
+                title: _windowTitle,
+                child: FrostAmbientBackdropHost(
+                  image: _backdropImage(resolveWindowArtwork(_windowTitles.location, _windowTitles)),
                   child: FrostFontWarmUp(
                     samples: _fontSamples,
                     child: MobileDownloadFloatingWindow(child: child ?? const SizedBox.shrink()),

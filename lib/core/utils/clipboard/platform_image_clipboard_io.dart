@@ -47,7 +47,7 @@ String _imageExtensionFromMimeType(String mimeType) {
   }
 }
 
-const _desktopWindowChannel = MethodChannel('desktop_window');
+const _clipboardChannel = MethodChannel('freepiv/clipboard');
 
 /// Copies an image as image data, not as a file reference. The pasteboard
 /// plugin's Windows path writes CF_HDROP without owning or emptying the
@@ -62,7 +62,7 @@ Future<void> _copyWindowsImage(Uint8List bytes, {required String mimeType}) asyn
     if (rgba == null) throw StateError('The image could not be decoded.');
     final png = mimeType.toLowerCase() == 'image/png' ? bytes : (await image.toByteData(format: ui.ImageByteFormat.png))?.buffer.asUint8List();
     final dib = await compute(_buildDibV5, (TransferableTypedData.fromList([rgba.buffer.asUint8List()]), image.width, image.height));
-    await _desktopWindowChannel.invokeMethod<void>('copyImage', {'dib': dib, 'png': png});
+    await _clipboardChannel.invokeMethod<void>('copyImage', {'dib': dib, 'png': png});
   } finally {
     image.dispose();
     codec.dispose();
