@@ -41,6 +41,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
+	late final Translations$appSearch$en_US appSearch = Translations$appSearch$en_US.internal(_root);
 	late final Translations$navigationPlacement$en_US navigationPlacement = Translations$navigationPlacement$en_US.internal(_root);
 	late final Translations$frost$en_US frost = Translations$frost$en_US.internal(_root);
 	late final Translations$nativeWindow$en_US nativeWindow = Translations$nativeWindow$en_US.internal(_root);
@@ -66,6 +67,25 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$richText$en_US richText = Translations$richText$en_US.internal(_root);
 	late final Translations$fanbox$en_US fanbox = Translations$fanbox$en_US.internal(_root);
 	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
+}
+
+// Path: appSearch
+class Translations$appSearch$en_US {
+	Translations$appSearch$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get placeholder => 'Search illustrations, novels, users';
+	String get allHistory => 'All history';
+	String get allTrendingTags => 'All trending tags';
+	String searchIllust({required Object query}) => 'Search illustrations & manga for “${query}”';
+	String searchNovel({required Object query}) => 'Search novels for “${query}”';
+	String searchUser({required Object query}) => 'Search users for “${query}”';
+	String get openGroup => 'Open';
+	String get tagGroup => 'Tags';
+	String get noSuggestions => 'No suggestions';
+	String get suggestionsFailed => 'Couldn\'t load suggestions';
 }
 
 // Path: navigationPlacement
@@ -1432,6 +1452,16 @@ class Translations$novel$reader$en_US {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'appSearch.placeholder' => 'Search illustrations, novels, users',
+			'appSearch.allHistory' => 'All history',
+			'appSearch.allTrendingTags' => 'All trending tags',
+			'appSearch.searchIllust' => ({required Object query}) => 'Search illustrations & manga for “${query}”',
+			'appSearch.searchNovel' => ({required Object query}) => 'Search novels for “${query}”',
+			'appSearch.searchUser' => ({required Object query}) => 'Search users for “${query}”',
+			'appSearch.openGroup' => 'Open',
+			'appSearch.tagGroup' => 'Tags',
+			'appSearch.noSuggestions' => 'No suggestions',
+			'appSearch.suggestionsFailed' => 'Couldn\'t load suggestions',
 			'navigationPlacement.title' => 'Navigation',
 			'navigationPlacement.automatic' => 'Automatic',
 			'navigationPlacement.bottom' => 'Bottom bar',
@@ -1934,6 +1964,8 @@ extension on Translations {
 			'illust.tooltip.previousImage' => 'Previous image',
 			'illust.tooltip.nextImage' => 'Next image',
 			'illust.tooltip.backToDetail' => 'Back to image detail',
+			_ => null,
+		} ?? switch (path) {
 			'illust.tooltip.removeBookmark' => 'Remove bookmark',
 			'illust.tooltip.addBookmark' => 'Add bookmark',
 			'illust.section.tags' => 'Tags',
@@ -1944,8 +1976,6 @@ extension on Translations {
 			'illust.section.comments' => 'Comments',
 			'illust.section.commentsWithCount' => ({required Object count}) => 'Comments (${count})',
 			'illust.section.relatedWorks' => 'Related works',
-			_ => null,
-		} ?? switch (path) {
 			'illust.metadata.type' => 'Type',
 			'illust.metadata.created' => 'Created',
 			'illust.badge.aiArtwork' => 'AI Artwork',

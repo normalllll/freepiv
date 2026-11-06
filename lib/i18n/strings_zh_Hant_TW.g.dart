@@ -39,6 +39,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	TranslationsZhHantTw $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhHantTw(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$appSearch$zh_Hant_TW appSearch = Translations$appSearch$zh_Hant_TW.internal(_root);
 	@override late final Translations$navigationPlacement$zh_Hant_TW navigationPlacement = Translations$navigationPlacement$zh_Hant_TW.internal(_root);
 	@override late final Translations$frost$zh_Hant_TW frost = Translations$frost$zh_Hant_TW.internal(_root);
 	@override late final Translations$nativeWindow$zh_Hant_TW nativeWindow = Translations$nativeWindow$zh_Hant_TW.internal(_root);
@@ -64,6 +65,25 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$richText$zh_Hant_TW richText = Translations$richText$zh_Hant_TW.internal(_root);
 	@override late final Translations$fanbox$zh_Hant_TW fanbox = Translations$fanbox$zh_Hant_TW.internal(_root);
 	@override late final Translations$pixivision$zh_Hant_TW pixivision = Translations$pixivision$zh_Hant_TW.internal(_root);
+}
+
+// Path: appSearch
+class Translations$appSearch$zh_Hant_TW extends Translations$appSearch$en_US {
+	Translations$appSearch$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get placeholder => '搜尋插畫、小說、使用者';
+	@override String get allHistory => '全部紀錄';
+	@override String get allTrendingTags => '全部熱門標籤';
+	@override String searchIllust({required Object query}) => '在插畫·漫畫中搜尋「${query}」';
+	@override String searchNovel({required Object query}) => '在小說中搜尋「${query}」';
+	@override String searchUser({required Object query}) => '在使用者中搜尋「${query}」';
+	@override String get openGroup => '直接開啟';
+	@override String get tagGroup => '標籤補全';
+	@override String get noSuggestions => '沒有建議';
+	@override String get suggestionsFailed => '無法載入建議';
 }
 
 // Path: navigationPlacement
@@ -1430,6 +1450,16 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 extension on TranslationsZhHantTw {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'appSearch.placeholder' => '搜尋插畫、小說、使用者',
+			'appSearch.allHistory' => '全部紀錄',
+			'appSearch.allTrendingTags' => '全部熱門標籤',
+			'appSearch.searchIllust' => ({required Object query}) => '在插畫·漫畫中搜尋「${query}」',
+			'appSearch.searchNovel' => ({required Object query}) => '在小說中搜尋「${query}」',
+			'appSearch.searchUser' => ({required Object query}) => '在使用者中搜尋「${query}」',
+			'appSearch.openGroup' => '直接開啟',
+			'appSearch.tagGroup' => '標籤補全',
+			'appSearch.noSuggestions' => '沒有建議',
+			'appSearch.suggestionsFailed' => '無法載入建議',
 			'navigationPlacement.title' => '導覽位置',
 			'navigationPlacement.automatic' => '自動',
 			'navigationPlacement.bottom' => '底部列',
@@ -1932,6 +1962,8 @@ extension on TranslationsZhHantTw {
 			'illust.tooltip.previousImage' => '上一張圖片',
 			'illust.tooltip.nextImage' => '下一張圖片',
 			'illust.tooltip.backToDetail' => '回到圖片詳細資訊',
+			_ => null,
+		} ?? switch (path) {
 			'illust.tooltip.removeBookmark' => '移除收藏',
 			'illust.tooltip.addBookmark' => '加入收藏',
 			'illust.section.tags' => '標籤',
@@ -1942,8 +1974,6 @@ extension on TranslationsZhHantTw {
 			'illust.section.comments' => '留言',
 			'illust.section.commentsWithCount' => ({required Object count}) => '留言（${count}）',
 			'illust.section.relatedWorks' => '相似作品',
-			_ => null,
-		} ?? switch (path) {
 			'illust.metadata.type' => '類型',
 			'illust.metadata.created' => '建立時間',
 			'illust.badge.aiArtwork' => 'AI 作品',

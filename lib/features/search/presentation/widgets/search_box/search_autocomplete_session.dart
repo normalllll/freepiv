@@ -55,6 +55,9 @@ class SearchAutocompleteSession extends ChangeNotifier {
 
   bool get loading => _loading;
 
+  /// Whether a tag completion for the current word has come back.
+  bool get autocompleteCompleted => _autocompleteCompleted;
+
   bool get hasSuggestionPanelContent {
     if (query.isEmpty) {
       return false;
@@ -184,7 +187,28 @@ class SearchAutocompleteSession extends ChangeNotifier {
   void unfocus({bool appendTrailingSpace = true}) {
     _skipTrailingSpaceOnNextBlur = !appendTrailingSpace;
     focusNode.unfocus();
+    for (final node in _inputFocusNodes) {
+      node.unfocus();
+    }
   }
+
+  final List<FocusNode> _inputFocusNodes = [];
+
+  /// Another input showing this session (the page header's, while the title
+  /// row holds [focusNode]). A FocusNode belongs to one field, so each input
+  /// brings its own; the session treats their focus as its own.
+  void addInputFocus(FocusNode node) {
+    _inputFocusNodes.add(node);
+    node.addListener(_handleFocusNodeChanged);
+  }
+
+  void removeInputFocus(FocusNode node) {
+    _inputFocusNodes.remove(node);
+    node.removeListener(_handleFocusNodeChanged);
+  }
+
+  /// Whether any input of this session has focus.
+  bool get hasFocus => focusNode.hasFocus || _inputFocusNodes.any((node) => node.hasFocus);
 
   @override
   void dispose() {
@@ -198,7 +222,7 @@ class SearchAutocompleteSession extends ChangeNotifier {
   }
 
   void _handleFocusNodeChanged() {
-    if (!focusNode.hasFocus && !_skipTrailingSpaceOnNextBlur) {
+    if (!hasFocus && !_skipTrailingSpaceOnNextBlur) {
       _appendTrailingSpaceForHighlight();
     }
     _skipTrailingSpaceOnNextBlur = false;

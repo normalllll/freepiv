@@ -1,4 +1,16 @@
 {
+  "appSearch": {
+    "placeholder": "イラスト・小説・ユーザーを検索",
+    "allHistory": "すべての履歴",
+    "allTrendingTags": "すべての人気タグ",
+    "searchIllust": "「$query」をイラスト・マンガで検索",
+    "searchNovel": "「$query」を小説で検索",
+    "searchUser": "「$query」をユーザーで検索",
+    "openGroup": "開く",
+    "tagGroup": "タグ",
+    "noSuggestions": "候補はありません",
+    "suggestionsFailed": "候補を読み込めませんでした"
+  },
   "navigationPlacement": {
     "title": "ナビゲーション",
     "automatic": "自動",

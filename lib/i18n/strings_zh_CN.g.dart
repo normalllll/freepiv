@@ -39,6 +39,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsZhCn $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhCn(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$appSearch$zh_CN appSearch = Translations$appSearch$zh_CN.internal(_root);
 	@override late final Translations$navigationPlacement$zh_CN navigationPlacement = Translations$navigationPlacement$zh_CN.internal(_root);
 	@override late final Translations$frost$zh_CN frost = Translations$frost$zh_CN.internal(_root);
 	@override late final Translations$nativeWindow$zh_CN nativeWindow = Translations$nativeWindow$zh_CN.internal(_root);
@@ -64,6 +65,25 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$richText$zh_CN richText = Translations$richText$zh_CN.internal(_root);
 	@override late final Translations$fanbox$zh_CN fanbox = Translations$fanbox$zh_CN.internal(_root);
 	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
+}
+
+// Path: appSearch
+class Translations$appSearch$zh_CN extends Translations$appSearch$en_US {
+	Translations$appSearch$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get placeholder => '搜索插画、小说、用户';
+	@override String get allHistory => '全部历史';
+	@override String get allTrendingTags => '全部热门标签';
+	@override String searchIllust({required Object query}) => '在插画·漫画中搜索“${query}”';
+	@override String searchNovel({required Object query}) => '在小说中搜索“${query}”';
+	@override String searchUser({required Object query}) => '在用户中搜索“${query}”';
+	@override String get openGroup => '直接打开';
+	@override String get tagGroup => '标签补全';
+	@override String get noSuggestions => '没有建议';
+	@override String get suggestionsFailed => '无法加载建议';
 }
 
 // Path: navigationPlacement
@@ -1430,6 +1450,16 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 extension on TranslationsZhCn {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'appSearch.placeholder' => '搜索插画、小说、用户',
+			'appSearch.allHistory' => '全部历史',
+			'appSearch.allTrendingTags' => '全部热门标签',
+			'appSearch.searchIllust' => ({required Object query}) => '在插画·漫画中搜索“${query}”',
+			'appSearch.searchNovel' => ({required Object query}) => '在小说中搜索“${query}”',
+			'appSearch.searchUser' => ({required Object query}) => '在用户中搜索“${query}”',
+			'appSearch.openGroup' => '直接打开',
+			'appSearch.tagGroup' => '标签补全',
+			'appSearch.noSuggestions' => '没有建议',
+			'appSearch.suggestionsFailed' => '无法加载建议',
 			'navigationPlacement.title' => '导航位置',
 			'navigationPlacement.automatic' => '自动',
 			'navigationPlacement.bottom' => '底栏',
@@ -1932,6 +1962,8 @@ extension on TranslationsZhCn {
 			'illust.tooltip.previousImage' => '上一张图片',
 			'illust.tooltip.nextImage' => '下一张图片',
 			'illust.tooltip.backToDetail' => '回到图片详情',
+			_ => null,
+		} ?? switch (path) {
 			'illust.tooltip.removeBookmark' => '移除收藏',
 			'illust.tooltip.addBookmark' => '添加收藏',
 			'illust.section.tags' => '标签',
@@ -1942,8 +1974,6 @@ extension on TranslationsZhCn {
 			'illust.section.comments' => '评论',
 			'illust.section.commentsWithCount' => ({required Object count}) => '评论（${count}）',
 			'illust.section.relatedWorks' => '相似作品',
-			_ => null,
-		} ?? switch (path) {
 			'illust.metadata.type' => '类型',
 			'illust.metadata.created' => '创建时间',
 			'illust.badge.aiArtwork' => 'AI 作品',

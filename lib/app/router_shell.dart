@@ -6,6 +6,7 @@ import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
+import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
 
@@ -94,6 +95,10 @@ class RouterShell extends ConsumerWidget {
         icon: const _BrandIcon(),
         label: translations.app.title,
       ),
+      // Frost shows it in the title row when the sidebar layout has room; the
+      // pages that offer a search carry the same session in their header
+      // otherwise.
+      titleBarSearch: const AppTitleBarSearch(),
       routeDepth: routeDepth,
       backToFirst: FrostShellBackToFirst(label: translations.navigation.backToFirst, icon: PivIcons.home, onPressed: onBackToFirst),
       child: child,
@@ -102,13 +107,22 @@ class RouterShell extends ConsumerWidget {
     // destination's root it does nothing. It has its own intent: the Scaffolds
     // around the pages map DismissIntent to their drawers and would swallow it.
     return Shortcuts(
-      shortcuts: const {SingleActivator(LogicalKeyboardKey.escape): _PageBackIntent(), SingleActivator(LogicalKeyboardKey.f5): _PageRefreshIntent()},
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.escape): _PageBackIntent(),
+        SingleActivator(LogicalKeyboardKey.f5): _PageRefreshIntent(),
+        SingleActivator(LogicalKeyboardKey.keyK, control: true): _FocusSearchIntent(),
+        SingleActivator(LogicalKeyboardKey.keyK, meta: true): _FocusSearchIntent(),
+      },
       child: Actions(
         actions: {
           _PageBackIntent: _PageBackAction(enabled: !atDestinationRoot, onBack: onBack),
           _PageRefreshIntent: CallbackAction<_PageRefreshIntent>(onInvoke: (_) => AppRefreshScope.refreshVisible()),
+          _FocusSearchIntent: CallbackAction<_FocusSearchIntent>(onInvoke: (_) => ref.read(appSearchSessionProvider).focusNode.requestFocus()),
         },
-        child: shell,
+        // The title bar search sits outside the page navigators: when it lets
+        // go of focus, focus falls back to the nearest scope. This one keeps
+        // it inside the shortcuts, so Ctrl K works again after a search.
+        child: FocusScope(child: shell),
       ),
     );
   }
@@ -127,6 +141,10 @@ class _PageBackIntent extends Intent {
 
 class _PageRefreshIntent extends Intent {
   const _PageRefreshIntent();
+}
+
+class _FocusSearchIntent extends Intent {
+  const _FocusSearchIntent();
 }
 
 class _PageBackAction extends Action<_PageBackIntent> {

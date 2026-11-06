@@ -1,4 +1,16 @@
 {
+  "appSearch": {
+    "placeholder": "搜索插画、小说、用户",
+    "allHistory": "全部历史",
+    "allTrendingTags": "全部热门标签",
+    "searchIllust": "在插画·漫画中搜索“$query”",
+    "searchNovel": "在小说中搜索“$query”",
+    "searchUser": "在用户中搜索“$query”",
+    "openGroup": "直接打开",
+    "tagGroup": "标签补全",
+    "noSuggestions": "没有建议",
+    "suggestionsFailed": "无法加载建议"
+  },
   "navigationPlacement": {
     "title": "导航位置",
     "automatic": "自动",

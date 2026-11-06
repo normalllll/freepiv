@@ -1,4 +1,16 @@
 {
+  "appSearch": {
+    "placeholder": "搜尋插畫、小說、使用者",
+    "allHistory": "全部紀錄",
+    "allTrendingTags": "全部熱門標籤",
+    "searchIllust": "在插畫·漫畫中搜尋「$query」",
+    "searchNovel": "在小說中搜尋「$query」",
+    "searchUser": "在使用者中搜尋「$query」",
+    "openGroup": "直接開啟",
+    "tagGroup": "標籤補全",
+    "noSuggestions": "沒有建議",
+    "suggestionsFailed": "無法載入建議"
+  },
   "navigationPlacement": {
     "title": "導覽位置",
     "automatic": "自動",

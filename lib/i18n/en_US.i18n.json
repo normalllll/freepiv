@@ -1,4 +1,16 @@
 {
+  "appSearch": {
+    "placeholder": "Search illustrations, novels, users",
+    "allHistory": "All history",
+    "allTrendingTags": "All trending tags",
+    "searchIllust": "Search illustrations & manga for “$query”",
+    "searchNovel": "Search novels for “$query”",
+    "searchUser": "Search users for “$query”",
+    "openGroup": "Open",
+    "tagGroup": "Tags",
+    "noSuggestions": "No suggestions",
+    "suggestionsFailed": "Couldn't load suggestions"
+  },
   "navigationPlacement": {
     "title": "Navigation",
     "automatic": "Automatic",

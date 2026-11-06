@@ -39,6 +39,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsJaJp $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsJaJp(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final _Translations$appSearch$ja_JP appSearch = _Translations$appSearch$ja_JP._(_root);
 	@override late final _Translations$navigationPlacement$ja_JP navigationPlacement = _Translations$navigationPlacement$ja_JP._(_root);
 	@override late final _Translations$frost$ja_JP frost = _Translations$frost$ja_JP._(_root);
 	@override late final _Translations$nativeWindow$ja_JP nativeWindow = _Translations$nativeWindow$ja_JP._(_root);
@@ -64,6 +65,25 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$richText$ja_JP richText = _Translations$richText$ja_JP._(_root);
 	@override late final _Translations$fanbox$ja_JP fanbox = _Translations$fanbox$ja_JP._(_root);
 	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
+}
+
+// Path: appSearch
+class _Translations$appSearch$ja_JP extends Translations$appSearch$en_US {
+	_Translations$appSearch$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get placeholder => 'イラスト・小説・ユーザーを検索';
+	@override String get allHistory => 'すべての履歴';
+	@override String get allTrendingTags => 'すべての人気タグ';
+	@override String searchIllust({required Object query}) => '「${query}」をイラスト・マンガで検索';
+	@override String searchNovel({required Object query}) => '「${query}」を小説で検索';
+	@override String searchUser({required Object query}) => '「${query}」をユーザーで検索';
+	@override String get openGroup => '開く';
+	@override String get tagGroup => 'タグ';
+	@override String get noSuggestions => '候補はありません';
+	@override String get suggestionsFailed => '候補を読み込めませんでした';
 }
 
 // Path: navigationPlacement
@@ -1430,6 +1450,16 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 extension on TranslationsJaJp {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'appSearch.placeholder' => 'イラスト・小説・ユーザーを検索',
+			'appSearch.allHistory' => 'すべての履歴',
+			'appSearch.allTrendingTags' => 'すべての人気タグ',
+			'appSearch.searchIllust' => ({required Object query}) => '「${query}」をイラスト・マンガで検索',
+			'appSearch.searchNovel' => ({required Object query}) => '「${query}」を小説で検索',
+			'appSearch.searchUser' => ({required Object query}) => '「${query}」をユーザーで検索',
+			'appSearch.openGroup' => '開く',
+			'appSearch.tagGroup' => 'タグ',
+			'appSearch.noSuggestions' => '候補はありません',
+			'appSearch.suggestionsFailed' => '候補を読み込めませんでした',
 			'navigationPlacement.title' => 'ナビゲーション',
 			'navigationPlacement.automatic' => '自動',
 			'navigationPlacement.bottom' => '下部バー',
@@ -1932,6 +1962,8 @@ extension on TranslationsJaJp {
 			'illust.tooltip.previousImage' => '前の画像',
 			'illust.tooltip.nextImage' => '次の画像',
 			'illust.tooltip.backToDetail' => '画像詳細に戻る',
+			_ => null,
+		} ?? switch (path) {
 			'illust.tooltip.removeBookmark' => 'ブックマークを解除',
 			'illust.tooltip.addBookmark' => 'ブックマークに追加',
 			'illust.section.tags' => 'タグ',
@@ -1942,8 +1974,6 @@ extension on TranslationsJaJp {
 			'illust.section.comments' => 'コメント',
 			'illust.section.commentsWithCount' => ({required Object count}) => 'コメント（${count}）',
 			'illust.section.relatedWorks' => '関連作品',
-			_ => null,
-		} ?? switch (path) {
 			'illust.metadata.type' => '種類',
 			'illust.metadata.created' => '作成日時',
 			'illust.badge.aiArtwork' => 'AI 作品',
