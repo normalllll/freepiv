@@ -49,7 +49,7 @@ class IllustDetailPage extends ConsumerWidget {
     final id = illustId ?? illust?.id;
     if (id == null) return content;
     return FrostWindowTitleContribution(
-      path: '/illust/$id',
+      path: AppLocations.illust(id),
       page: visibleIllust == null
           ? null
           // The list tile's own image: its bytes are already cached, so the
@@ -147,14 +147,14 @@ class _IllustDetailContentState extends ConsumerState<IllustDetailContent> {
   }
 
   void _openRelatedWorks() {
-    context.pushNamed(AppRoute.illustRelated.name, pathParameters: {'id': '${widget.illust.id}'}, extra: widget.illust);
+    context.push(AppLocations.illustRelated(widget.illust.id), extra: widget.illust);
   }
 
   void _openIllustDetail(Illust illust, ArtworkHeroTag heroTag) => openIllustDetail(context, illust, heroTag);
 
   void _openOriginalImageViewer(List<IllustPageImage> imagePages, int index) {
-    context.pushNamed(
-      AppRoute.originalImageViewer.name,
+    context.push(
+      AppRoute.originalImageViewer.path,
       extra: OriginalImageViewerArgs(
         title: widget.illust.title.trim().isNotEmpty
             ? widget.illust.title

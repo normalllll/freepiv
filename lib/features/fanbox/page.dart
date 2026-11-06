@@ -14,16 +14,22 @@ import 'layout.dart';
 import 'logic.dart';
 import 'widgets.dart';
 import 'cards.dart';
+import 'package:freepiv/app/router/app_route.dart';
 
-void openFanboxPost(BuildContext context, String id, {FanboxPost? summary}) => context.push('/fanbox/post/${Uri.encodeComponent(id)}', extra: summary);
-void openFanboxCreator(BuildContext context, String id, {FanboxCreator? summary}) => context.push('/fanbox/creator/${Uri.encodeComponent(id)}', extra: summary);
+void openFanboxPost(BuildContext context, String id, {FanboxPost? summary}) => context.push(AppLocations.fanboxPost(id), extra: summary);
+void openFanboxCreator(BuildContext context, String id, {FanboxCreator? summary}) => context.push(AppLocations.fanboxCreator(id), extra: summary);
 void openFanboxTag(BuildContext context, String tag, {String creatorId = ''}) =>
-    context.push(Uri(path: '/fanbox/tag', queryParameters: {'section': 'tag', 'q': tag, if (creatorId.isNotEmpty) 'creator': creatorId}).toString());
+    context.push(AppLocations.fanboxTag(tag, creatorId: creatorId, section: FanboxSection.tag.name));
 
 GoRoute fanboxTagRoute() => GoRoute(
-  path: '/fanbox/tag',
-  builder: (context, state) =>
-      FanboxPage(location: (section: FanboxSection.tag, creatorId: state.uri.queryParameters['creator'] ?? '', query: state.uri.queryParameters['q'] ?? '')),
+  path: AppRoute.fanboxTag.path,
+  builder: (context, state) => FanboxPage(
+    location: (
+      section: FanboxSection.tag,
+      creatorId: state.uri.queryParameters[AppRouteQuery.creator] ?? '',
+      query: state.uri.queryParameters[AppRouteQuery.query] ?? '',
+    ),
+  ),
 );
 
 final _fanboxBrowseStorage = PageStorageBucket();

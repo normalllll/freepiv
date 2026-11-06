@@ -36,10 +36,7 @@ class IllustUserPreviewSection extends ConsumerWidget {
               Expanded(
                 child: IllustSectionTitle(title: translations.illust.section.recentWorks, icon: Icons.person_outline),
               ),
-              TextButton(
-                onPressed: () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${illust.user.id}'}),
-                child: Text(translations.discover.viewAll),
-              ),
+              TextButton(onPressed: () => context.push(AppLocations.user(illust.user.id)), child: Text(translations.discover.viewAll)),
             ],
           ),
           const SizedBox(height: 4),
@@ -74,7 +71,7 @@ class _UserHeader extends StatelessWidget {
     final identity = Material(
       color: Colors.transparent,
       child: FrostClickSurface(
-        onTap: () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${user.id}'}),
+        onTap: () => context.push(AppLocations.user(user.id)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
           child: Row(

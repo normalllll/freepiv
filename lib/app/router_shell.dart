@@ -29,7 +29,7 @@ class RouterShell extends StatelessWidget {
         void goBack() {
           if (canPopListenable.value) {
             onBack();
-          } else if (_fallbackPath(path) case final fallback?) {
+          } else if (fallbackPathFor(path) case final fallback?) {
             context.go(fallback);
           }
         }
@@ -55,7 +55,7 @@ class RouterShell extends StatelessWidget {
               if (path != route.path) context.push(route.path);
             },
           ),
-          canGoBack: canPop || _fallbackPath(path) != null,
+          canGoBack: canPop || fallbackPathFor(path) != null,
           onBack: goBack,
           showsMobileNavigation: isMobileNavigationPath(path),
           child: child,
@@ -67,16 +67,19 @@ class RouterShell extends StatelessWidget {
 
 /// Where Back goes from a page reached without history (a deep link): the
 /// work a sub-page belongs to, or the section's top page.
-String? _fallbackPath(String path) {
+String? fallbackPathFor(String path) {
   if (isMobileNavigationPath(path)) return null;
-  final segments = Uri(path: path).pathSegments;
-  if (segments.length >= 3 && segments.first == 'illust') return '/illust/${segments[1]}';
-  if (segments.length >= 3 && segments.first == 'novel') return '/novel/${segments[1]}';
-  if (segments.length >= 2 && segments.first == 'fanbox') return AppRoute.fanbox.path;
-  if (segments.length >= 2 && segments.first == 'pixivision') return AppRoute.pixivision.path;
-  if (segments.length >= 2 && segments.first == 'me') return AppRoute.me.path;
-  if (segments.length >= 2 && segments.first == 'search') return AppRoute.search.path;
-  return AppRoute.home.path;
+  final route = AppRoute.match(path);
+  final id = route?.parameterIn(path, AppRouteParam.id);
+  return switch (route) {
+    AppRoute.illustRelated || AppRoute.illustComments when id != null => AppLocations.illust(id),
+    AppRoute.novelReader || AppRoute.novelComments when id != null => AppLocations.novel(id),
+    AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator => AppRoute.fanbox.path,
+    AppRoute.pixivisionBrowse || AppRoute.pixivisionArticle => AppRoute.pixivision.path,
+    AppRoute.meFollowing || AppRoute.meFollowers => AppRoute.me.path,
+    AppRoute.searchIllustResult || AppRoute.searchNovelResult || AppRoute.searchUserResult || AppRoute.tagSearch => AppRoute.discover.path,
+    _ => AppRoute.home.path,
+  };
 }
 
 const _secondaryRoutes = [AppRoute.fanbox, AppRoute.pixivision, AppRoute.downloads, AppRoute.settings, AppRoute.about];

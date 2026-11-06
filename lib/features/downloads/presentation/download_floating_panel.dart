@@ -148,7 +148,7 @@ class _DesktopDownloadDockState extends ConsumerState<DesktopDownloadDock>
                       onPressed: () {
                         if (!panelFits) {
                           _closePanel(restoreFocus: false);
-                          context.pushNamed(AppRoute.downloads.name);
+                          context.push(AppRoute.downloads.path);
                         } else if (_expanded) {
                           _closePanel();
                         } else {
@@ -187,11 +187,11 @@ class _DesktopDownloadDockState extends ConsumerState<DesktopDownloadDock>
                                 onClose: _closePanel,
                                 onViewAll: () {
                                   _closePanel(restoreFocus: false);
-                                  context.pushNamed(AppRoute.downloads.name);
+                                  context.push(AppRoute.downloads.path);
                                 },
                                 onOpenItem: (item) {
                                   _closePanel(restoreFocus: false);
-                                  context.pushNamed(AppRoute.downloads.name, queryParameters: {'item': item.key});
+                                  context.push(AppLocations.downloads(item: item.key));
                                 },
                               ),
                             ),

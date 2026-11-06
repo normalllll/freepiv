@@ -73,7 +73,7 @@ class _MePageState extends State<MePage> {
                       if (account == null) ...[
                         const SizedBox(height: 12),
                         FilledButton.icon(
-                          onPressed: () => context.pushNamed(AppRoute.login.name),
+                          onPressed: () => context.push(AppRoute.login.path),
                           icon: const Icon(Icons.login),
                           label: Text(translations.login.signInToPixiv),
                         ),
@@ -86,20 +86,19 @@ class _MePageState extends State<MePage> {
                             icon: Icons.bookmarks_outlined,
                             title: translations.user.tabs.bookmarks,
                             enabled: int.tryParse(account?.user.id ?? '') != null,
-                            onTap: () =>
-                                context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': account!.user.id}, queryParameters: {'tab': 'bookmarks'}),
+                            onTap: () => context.push(AppLocations.user(account!.user.id, bookmarks: true)),
                           ),
                           _MeNavigationEntry(
                             icon: Icons.person_add_alt_1_outlined,
                             title: translations.me.following,
                             enabled: account != null,
-                            onTap: () => context.pushNamed(AppRoute.meFollowing.name),
+                            onTap: () => context.push(AppRoute.meFollowing.path),
                           ),
                           _MeNavigationEntry(
                             icon: Icons.people_outline,
                             title: translations.me.followers,
                             enabled: account != null,
-                            onTap: () => context.pushNamed(AppRoute.meFollowers.name),
+                            onTap: () => context.push(AppRoute.meFollowers.path),
                           ),
                         ],
                       ),
@@ -109,7 +108,7 @@ class _MePageState extends State<MePage> {
                             icon: Icons.download_outlined,
                             title: translations.settings.downloads.tasksTitle,
                             enabled: true,
-                            onTap: () => context.pushNamed(AppRoute.downloads.name),
+                            onTap: () => context.push(AppRoute.downloads.path),
                           ),
                           _MeNavigationEntry(icon: Icons.info_outline, title: translations.me.about, enabled: true, onTap: _openAbout),
                           _MeNavigationEntry(icon: Icons.settings_outlined, title: translations.me.settings, enabled: true, onTap: _openSettings),
@@ -127,11 +126,11 @@ class _MePageState extends State<MePage> {
   }
 
   void _openSettings() {
-    context.pushNamed(AppRoute.settings.name);
+    context.push(AppRoute.settings.path);
   }
 
   void _openAbout() {
-    context.pushNamed(AppRoute.about.name);
+    context.push(AppRoute.about.path);
   }
 }
 
@@ -204,7 +203,7 @@ class _MeUserListPageState extends State<MeUserListPage> {
                             message: translations.settings.account.signedOutSubtitle,
                           ),
                           FilledButton.icon(
-                            onPressed: () => context.pushNamed(AppRoute.login.name),
+                            onPressed: () => context.push(AppRoute.login.path),
                             icon: const Icon(Icons.login),
                             label: Text(translations.login.signInToPixiv),
                           ),
@@ -297,7 +296,7 @@ class _MeAccountCard extends StatelessWidget {
                   onTap: userId == null
                       ? null
                       : () {
-                          context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '$userId'});
+                          context.push(AppLocations.user(userId));
                         },
                 ),
                 const SizedBox(width: 14),
@@ -336,7 +335,7 @@ class _MeAccountCard extends StatelessWidget {
             Align(
               alignment: AlignmentDirectional.centerEnd,
               child: TextButton.icon(
-                onPressed: userId == null ? null : () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '$userId'}),
+                onPressed: userId == null ? null : () => context.push(AppLocations.user(userId)),
                 icon: const Icon(Icons.account_circle_outlined),
                 label: Text(translations.me.profile),
               ),

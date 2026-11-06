@@ -102,8 +102,8 @@ class _NovelEmbeddedMedia extends StatelessWidget {
             child: FrostClickSurface(
               feedback: FrostClickFeedback.media,
               shape: FrostClickShape.rounded(BorderRadius.circular(12)),
-              onTap: () => context.pushNamed(
-                AppRoute.originalImageViewer.name,
+              onTap: () => context.push(
+                AppRoute.originalImageViewer.path,
                 extra: OriginalImageViewerArgs(
                   title: t.novel.detail.images,
                   source: DownloadSourceScope.of(context),
@@ -124,7 +124,7 @@ class _NovelEmbeddedMedia extends StatelessWidget {
     final workId = isPixivWork ? int.tryParse(id.split('-').first) : null;
     if (workId != null) {
       return OutlinedButton.icon(
-        onPressed: () => context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '$workId'}),
+        onPressed: () => context.push(AppLocations.illust(workId)),
         icon: const Icon(Icons.open_in_new),
         label: Text(t.novel.reader.openEmbeddedWork),
       );

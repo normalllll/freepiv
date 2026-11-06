@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
+import 'package:freepiv/app/router/app_route.dart';
 
 class FanboxScaffold extends StatelessWidget {
   const FanboxScaffold({required this.title, required this.body, this.actions, super.key});
@@ -15,7 +16,7 @@ class FanboxScaffold extends StatelessWidget {
       body: FrostCollapsingHeader(
         header: desktop
             ? null
-            : FrostPageHeader(title: Text(title), actions: actions ?? const [], onBack: () => context.canPop() ? context.pop() : context.go('/me')),
+            : FrostPageHeader(title: Text(title), actions: actions ?? const [], onBack: () => context.canPop() ? context.pop() : context.go(AppRoute.me.path)),
         child: SafeArea(bottom: false, child: body),
       ),
     ),

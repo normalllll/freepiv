@@ -77,7 +77,7 @@ class UserPreviewer extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final works = userPreview.illusts.take(_previewSlots).toList(growable: false);
     return PivCard(
-      onTap: () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${user.id}'}),
+      onTap: () => context.push(AppLocations.user(user.id)),
       padding: const EdgeInsets.all(_cardPadding),
       child: _UserCardLayout(
         previews: [for (final illust in works) _PreviewThumb(illust: illust)],

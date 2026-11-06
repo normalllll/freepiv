@@ -13,31 +13,29 @@ Future<void> openPixivisionLink(BuildContext context, String value, {ArticleSumm
     final article = segments.length >= 3 && segments[1] == 'a' && int.tryParse(segments[2]) != null;
     final listing = segments.length == 1 || segments.length == 2 && segments[1].isEmpty || segments.length >= 2 && ['c', 's', 't'].contains(segments[1]);
     if (article || listing) {
-      await context.push(
-        Uri(path: article ? '/pixivision/article' : '/pixivision/browse', queryParameters: {'url': uri.toString()}).toString(),
-        extra: summary,
-      );
+      await context.push(article ? AppLocations.pixivisionArticle(uri.toString()) : AppLocations.pixivisionBrowse(url: uri.toString()), extra: summary);
       return;
     }
   }
   if (uri!.host == 'www.pixiv.net' || uri.host == 'pixiv.net') {
     final segments = uri.pathSegments;
-    AppRoute? route;
+    String Function(Object id)? location;
     String? id;
-    for (final (segment, destination) in [('artworks', AppRoute.illustDetail), ('users', AppRoute.userDetail)]) {
+    for (final (segment, destination) in [('artworks', AppLocations.illust), ('users', AppLocations.user)]) {
       final index = segments.indexOf(segment);
       if (index >= 0 && segments.length > index + 1) {
-        route = destination;
+        location = destination;
         id = segments[index + 1];
         break;
       }
     }
+    // A pixiv website URL, not an app route.
     if (uri.path.contains('/novel/show.php')) {
-      route = AppRoute.novelDetail;
+      location = AppLocations.novel;
       id = uri.queryParameters['id'];
     }
-    if (route != null && id != null && int.tryParse(id) != null) {
-      await context.pushNamed(route.name, pathParameters: {'id': id});
+    if (location != null && id != null && int.tryParse(id) != null) {
+      await context.push(location(id));
       return;
     }
   }

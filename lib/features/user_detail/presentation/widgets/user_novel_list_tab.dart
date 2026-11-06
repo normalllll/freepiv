@@ -153,7 +153,7 @@ class UserNovelCard extends StatelessWidget {
     return NovelPreviewer(
       novel: novel,
       onTap: () {
-        context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': '${novel.id}'}, extra: novel);
+        context.push(AppLocations.novel(novel.id), extra: novel);
       },
     );
   }

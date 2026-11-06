@@ -74,7 +74,7 @@ class PixivCommentTile extends StatelessWidget {
             child: FrostClickSurface(
               feedback: FrostClickFeedback.media,
               shape: const FrostClickShape.circle(),
-              onTap: () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${comment.user.id}'}),
+              onTap: () => context.push(AppLocations.user(comment.user.id)),
               child: Center(
                 child: SizedBox.square(
                   dimension: avatarSize,

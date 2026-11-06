@@ -5,6 +5,7 @@ import 'package:freepiv/features/pixivision/logic.dart';
 import 'package:freepiv/features/pixivision/widgets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:go_router/go_router.dart';
+import 'package:freepiv/app/router/app_route.dart';
 
 class DiscoveryPixivisionPreview extends ConsumerWidget {
   const DiscoveryPixivisionPreview({super.key});
@@ -33,7 +34,7 @@ class DiscoveryPixivisionPreview extends ConsumerWidget {
                   onPressed: () {
                     FocusManager.instance.primaryFocus?.unfocus();
                     final selection = ref.read(pixivisionBrowseSelectionProvider);
-                    context.push(Uri(path: '/pixivision/browse', queryParameters: {if (selection.url != null) 'url': selection.url!}).toString());
+                    context.push(AppLocations.pixivisionBrowse(url: selection.url));
                   },
                   child: Text(context.t.discover.viewAll),
                 ),

@@ -20,11 +20,11 @@ import 'package:url_launcher/url_launcher.dart';
 /// were recorded has none.
 void openDownloadSource(GoRouter router, DownloadSource source) {
   final opened = switch (source) {
-    ArtworkSource(:final illustId) => router.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '$illustId'}),
-    NovelSource(:final novelId) => router.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': '$novelId'}),
-    PixivisionSource(:final url) => router.push(Uri(path: '/pixivision/article', queryParameters: {'url': url}).toString()),
-    FanboxPostSource(:final postId) => router.push('/fanbox/post/${Uri.encodeComponent(postId)}'),
-    FanboxCreatorSource(:final creatorId) => router.push('/fanbox/creator/${Uri.encodeComponent(creatorId)}'),
+    ArtworkSource(:final illustId) => router.push(AppLocations.illust(illustId)),
+    NovelSource(:final novelId) => router.push(AppLocations.novel(novelId)),
+    PixivisionSource(:final url) => router.push(AppLocations.pixivisionArticle(url)),
+    FanboxPostSource(:final postId) => router.push(AppLocations.fanboxPost(postId)),
+    FanboxCreatorSource(:final creatorId) => router.push(AppLocations.fanboxCreator(creatorId)),
     StandaloneSource() => null,
   };
   if (opened != null) unawaited(opened);

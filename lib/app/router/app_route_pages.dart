@@ -1,5 +1,7 @@
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
+import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/about/presentation/about_page.dart';
@@ -40,26 +42,75 @@ Page<void> newestPage(BuildContext context, GoRouterState state) {
   return const NoTransitionPage(child: NewestPage());
 }
 
-Page<void> rankingIllustPage(BuildContext context, GoRouterState state) {
-  return const NoTransitionPage(child: RankingIllustPage());
+/// The ranking route (`?type=&mode=`): the ranking of one kind, starting on [mode] when it
+/// names one of that kind's modes.
+Page<void> rankingPage(BuildContext context, GoRouterState state) {
+  final query = state.uri.queryParameters;
+  final kind = AppRankingKind.values.where((kind) => kind.name == query[AppRouteQuery.type]).firstOrNull ?? AppRankingKind.illust;
+  return FrostDetailPage(
+    key: state.pageKey,
+    child: _RankingRoute(kind: kind, mode: query[AppRouteQuery.mode]),
+  );
 }
 
-Page<void> rankingMangaPage(BuildContext context, GoRouterState state) {
-  return const NoTransitionPage(child: RankingMangaPage());
+/// The location an old per-kind ranking path now lives at, with its mode.
+String? legacyRankingRedirect(BuildContext context, GoRouterState state) {
+  final mode = state.uri.queryParameters[AppRouteQuery.mode];
+  return switch (AppRoute.match(state.uri.path)) {
+    AppRoute.legacyRankingIllust => AppLocations.ranking(kind: AppRankingKind.illust, mode: mode),
+    AppRoute.legacyRankingManga => AppLocations.ranking(kind: AppRankingKind.manga, mode: mode),
+    AppRoute.legacyRankingNovel => AppLocations.ranking(kind: AppRankingKind.novel, mode: mode),
+    _ => null,
+  };
 }
 
-Page<void> rankingNovelPage(BuildContext context, GoRouterState state) {
-  return const NoTransitionPage(child: RankingNovelPage());
+/// One ranking page, on the route's mode when it names one of its kind's
+/// modes. The mode belongs to this page: nothing shared changes on the way in.
+class _RankingRoute extends StatelessWidget {
+  const _RankingRoute({required this.kind, required this.mode});
+
+  final AppRankingKind kind;
+  final String? mode;
+
+  static T? _named<T extends Enum>(List<T> values, String? name) => values.where((value) => value.name == name).firstOrNull;
+
+  @override
+  Widget build(BuildContext context) => switch (kind) {
+    AppRankingKind.illust => RankingIllustPage(initialMode: _named(IllustRankingMode.values, mode)),
+    AppRankingKind.manga => RankingMangaPage(initialMode: _named(MangaRankingMode.values, mode)),
+    AppRankingKind.novel => RankingNovelPage(initialMode: _named(NovelRankingMode.values, mode)),
+  };
 }
 
-Page<void> searchPage(BuildContext context, GoRouterState state) {
-  return const NoTransitionPage(child: DiscoverPage());
+/// The discover page, pushed above the destination it was opened from.
+Page<void> discoverPage(BuildContext context, GoRouterState state) {
+  return FrostDetailPage(key: state.pageKey, child: const DiscoverPage());
+}
+
+/// The tag search route (`?q=&type=`): works carrying exactly the tag.
+Page<void> tagSearchPage(BuildContext context, GoRouterState state) {
+  final query = state.uri.queryParameters;
+  final tag = query[AppRouteQuery.query] ?? '';
+  final novel = query[AppRouteQuery.type] == AppSearchKind.novel.name;
+  const exactTag = SearchFilterState(target: SearchTarget.exactMatchForTags, novelTarget: SearchNovelTarget.exactMatchForTags);
+  return FrostDetailPage(
+    key: state.pageKey,
+    child: novel
+        ? SearchNovelResultPage(
+            keyword: tag,
+            initialFilters: const SearchFiltersState(novel: exactTag),
+          )
+        : SearchIllustResultPage(
+            keyword: tag,
+            initialFilters: const SearchFiltersState(illust: exactTag),
+          ),
+  );
 }
 
 Page<void> searchIllustResultPage(BuildContext context, GoRouterState state) {
   return NoTransitionPage(
     child: SearchIllustResultPage(
-      keyword: state.uri.queryParameters['q'] ?? '',
+      keyword: state.uri.queryParameters[AppRouteQuery.query] ?? '',
       initialFilters: state.extra is SearchFiltersState ? state.extra as SearchFiltersState : null,
     ),
   );
@@ -68,7 +119,7 @@ Page<void> searchIllustResultPage(BuildContext context, GoRouterState state) {
 Page<void> searchNovelResultPage(BuildContext context, GoRouterState state) {
   return NoTransitionPage(
     child: SearchNovelResultPage(
-      keyword: state.uri.queryParameters['q'] ?? '',
+      keyword: state.uri.queryParameters[AppRouteQuery.query] ?? '',
       initialFilters: state.extra is SearchFiltersState ? state.extra as SearchFiltersState : null,
     ),
   );
@@ -77,7 +128,7 @@ Page<void> searchNovelResultPage(BuildContext context, GoRouterState state) {
 Page<void> searchUserResultPage(BuildContext context, GoRouterState state) {
   return NoTransitionPage(
     child: SearchUserResultPage(
-      keyword: state.uri.queryParameters['q'] ?? '',
+      keyword: state.uri.queryParameters[AppRouteQuery.query] ?? '',
       initialFilters: state.extra is SearchFiltersState ? state.extra as SearchFiltersState : null,
     ),
   );
@@ -112,7 +163,7 @@ Page<void> aboutPage(BuildContext context, GoRouterState state) {
 Page<void> downloadsPage(BuildContext context, GoRouterState state) {
   return FrostDetailPage(
     key: state.pageKey,
-    child: DownloadsPage(focusItem: state.uri.queryParameters['item']),
+    child: DownloadsPage(focusItem: state.uri.queryParameters[AppRouteQuery.item]),
   );
 }
 
@@ -136,7 +187,7 @@ Page<void> illustDetailPage(BuildContext context, GoRouterState state) {
     final Illust illust => (illust, null),
     _ => (null, null),
   };
-  final illustId = int.tryParse(state.pathParameters['id'] ?? '');
+  final illustId = int.tryParse(state.pathParameters[AppRouteParam.id] ?? '');
 
   if (illustId == null && illust == null) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
@@ -152,7 +203,7 @@ Page<void> illustDetailPage(BuildContext context, GoRouterState state) {
 }
 
 Page<void> illustCommentsPage(BuildContext context, GoRouterState state) {
-  final illustId = int.tryParse(state.pathParameters['id'] ?? '');
+  final illustId = int.tryParse(state.pathParameters[AppRouteParam.id] ?? '');
   if (illustId == null) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
   }
@@ -164,7 +215,7 @@ Page<void> illustCommentsPage(BuildContext context, GoRouterState state) {
 }
 
 Page<void> illustRelatedPage(BuildContext context, GoRouterState state) {
-  final illustId = int.tryParse(state.pathParameters['id'] ?? '');
+  final illustId = int.tryParse(state.pathParameters[AppRouteParam.id] ?? '');
   if (illustId == null) return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
   return FrostDetailPage(
     key: state.pageKey,
@@ -175,7 +226,7 @@ Page<void> illustRelatedPage(BuildContext context, GoRouterState state) {
 Page<void> novelDetailPage(BuildContext context, GoRouterState state) {
   final extra = state.extra;
   final novel = extra is Novel ? extra : null;
-  final novelId = int.tryParse(state.pathParameters['id'] ?? '');
+  final novelId = int.tryParse(state.pathParameters[AppRouteParam.id] ?? '');
 
   if (novelId == null && novel == null) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
@@ -190,7 +241,7 @@ Page<void> novelDetailPage(BuildContext context, GoRouterState state) {
 Page<void> novelReaderPage(BuildContext context, GoRouterState state) {
   final extra = state.extra;
   final novel = extra is Novel ? extra : null;
-  final novelId = int.tryParse(state.pathParameters['id'] ?? '');
+  final novelId = int.tryParse(state.pathParameters[AppRouteParam.id] ?? '');
 
   if (novelId == null && novel == null) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
@@ -203,7 +254,7 @@ Page<void> novelReaderPage(BuildContext context, GoRouterState state) {
 }
 
 Page<void> novelCommentsPage(BuildContext context, GoRouterState state) {
-  final novelId = int.tryParse(state.pathParameters['id'] ?? '');
+  final novelId = int.tryParse(state.pathParameters[AppRouteParam.id] ?? '');
   if (novelId == null) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
   }
@@ -222,12 +273,12 @@ Page<void> userDetailPage(BuildContext context, GoRouterState state) {
       key: state.pageKey,
       child: UserDetailPage(
         userDetail: extra,
-        initialTab: state.uri.queryParameters['tab'] == 'bookmarks' ? UserContentTabKind.bookmarks : UserContentTabKind.illust,
+        initialTab: state.uri.queryParameters[AppRouteQuery.tab] == AppRouteQuery.bookmarksTab ? UserContentTabKind.bookmarks : UserContentTabKind.illust,
       ),
     );
   }
 
-  final userId = extra is int ? extra : int.tryParse(state.pathParameters['id'] ?? '');
+  final userId = extra is int ? extra : int.tryParse(state.pathParameters[AppRouteParam.id] ?? '');
   if (userId == null) {
     return _missingRoutePage(key: state.pageKey, message: t.user.error.missingUser);
   }
@@ -236,7 +287,7 @@ Page<void> userDetailPage(BuildContext context, GoRouterState state) {
     key: state.pageKey,
     child: UserDetailPage(
       userId: userId,
-      initialTab: state.uri.queryParameters['tab'] == 'bookmarks' ? UserContentTabKind.bookmarks : UserContentTabKind.illust,
+      initialTab: state.uri.queryParameters[AppRouteQuery.tab] == AppRouteQuery.bookmarksTab ? UserContentTabKind.bookmarks : UserContentTabKind.illust,
     ),
   );
 }

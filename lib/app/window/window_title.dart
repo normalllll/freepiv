@@ -29,54 +29,47 @@ class WindowTitleRouterBridge {
 
 String resolveWindowTitle(Uri uri, Translations translations, FrostWindowTitleRegistry registry) {
   final path = uri.path;
-  final segments = uri.pathSegments;
-  if (segments.length >= 2 && (segments.first == 'illust' || segments.first == 'novel')) {
-    final isNovel = segments.first == 'novel';
-    final sourcePath = '/${segments.first}/${segments[1]}';
-    final work = registry.page(sourcePath);
-    final type = isNovel
-        ? translations.nativeWindow.novel
-        : work?.kind == 'manga'
-        ? translations.nativeWindow.manga
-        : translations.nativeWindow.illust;
-    final fallback = translations.nativeWindow.workFallback(type: type, id: segments[1]);
-    if (segments.length >= 3 && segments[2] == 'related') {
-      return translations.nativeWindow.relatedTitle(title: work?.title.isNotEmpty == true ? work!.title : fallback);
-    }
-    if (segments.length == 2 || segments[2] == 'read' || segments[2] == 'comments') {
-      return work?.title.isNotEmpty == true ? translations.nativeWindow.workTitle(type: type, id: segments[1], title: work!.title) : fallback;
-    }
+  final route = AppRoute.match(path);
+  final id = route?.parameterIn(path, AppRouteParam.id);
+  switch (route) {
+    case AppRoute.illustDetail || AppRoute.illustRelated || AppRoute.illustComments || AppRoute.novelDetail || AppRoute.novelReader || AppRoute.novelComments
+        when id != null:
+      final novel = route == AppRoute.novelDetail || route == AppRoute.novelReader || route == AppRoute.novelComments;
+      final work = registry.page(novel ? AppLocations.novel(id) : AppLocations.illust(id));
+      final type = novel
+          ? translations.nativeWindow.novel
+          : work?.kind == 'manga'
+          ? translations.nativeWindow.manga
+          : translations.nativeWindow.illust;
+      final fallback = translations.nativeWindow.workFallback(type: type, id: id);
+      if (route == AppRoute.illustRelated) {
+        return translations.nativeWindow.relatedTitle(title: work?.title.isNotEmpty == true ? work!.title : fallback);
+      }
+      return work?.title.isNotEmpty == true ? translations.nativeWindow.workTitle(type: type, id: id, title: work!.title) : fallback;
+    case AppRoute.userDetail when id != null:
+      final name = registry.page(AppLocations.user(id))?.title ?? '';
+      return name.isNotEmpty ? name : translations.nativeWindow.userFallback(id: id);
+    // The viewer contributes its already formatted "title · page/total".
+    case AppRoute.originalImageViewer:
+      final viewer = registry.page(path)?.title ?? '';
+      if (viewer.isNotEmpty) return viewer;
+    default:
   }
-  if (segments.length == 2 && segments.first == 'user') {
-    final name = registry.page('/user/${segments[1]}')?.title ?? '';
-    return name.isNotEmpty ? name : translations.nativeWindow.userFallback(id: segments[1]);
-  }
-  // The viewer contributes its already formatted "title · page/total".
-  if (path == AppRoute.originalImageViewer.path) {
-    final viewer = registry.page(path)?.title ?? '';
-    if (viewer.isNotEmpty) return viewer;
-  }
-  if (path == AppRoute.meFollowing.path) return translations.me.following;
-  if (path == AppRoute.meFollowers.path) return translations.me.followers;
-  for (final route in AppRoute.values) {
-    if (route.path == path) {
-      final label = appRouteLabel(translations, route);
-      if (label.isNotEmpty) return label;
-    }
-  }
-  if (path.startsWith('/fanbox/')) return translations.fanbox.title;
-  if (path.startsWith('/pixivision/')) return translations.pixivision.title;
-  return translations.app.title;
+  if (route == null) return translations.app.title;
+  final label = appRouteLabel(translations, route);
+  return label.isNotEmpty ? label : translations.app.title;
 }
 
 /// Artwork that tints the ambient backdrop for the visible work page.
 String? resolveWindowArtwork(Uri uri, FrostWindowTitleRegistry registry) {
-  final segments = uri.pathSegments;
-  if (segments.length < 2) return null;
-  return switch (segments.first) {
-    'illust' ||
-    'novel' when segments.length == 2 || segments[2] == 'comments' || segments[2] == 'related' => registry.page('/${segments.first}/${segments[1]}')?.imageUrl,
-    'user' when segments.length == 2 => registry.page('/user/${segments[1]}')?.imageUrl,
+  final path = uri.path;
+  final route = AppRoute.match(path);
+  final id = route?.parameterIn(path, AppRouteParam.id);
+  if (id == null) return null;
+  return switch (route) {
+    AppRoute.illustDetail || AppRoute.illustComments || AppRoute.illustRelated => registry.page(AppLocations.illust(id))?.imageUrl,
+    AppRoute.novelDetail || AppRoute.novelComments => registry.page(AppLocations.novel(id))?.imageUrl,
+    AppRoute.userDetail => registry.page(AppLocations.user(id))?.imageUrl,
     _ => null,
   };
 }

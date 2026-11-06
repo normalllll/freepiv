@@ -56,36 +56,36 @@ class AppRouter {
                   routes: [GoRoute(path: AppRoute.newest.path, name: AppRoute.newest.name, pageBuilder: route_pages.newestPage)],
                 ),
                 StatefulShellBranch(
-                  routes: [GoRoute(path: AppRoute.search.path, name: AppRoute.search.name, pageBuilder: route_pages.searchPage)],
-                ),
-                StatefulShellBranch(
                   routes: [GoRoute(path: AppRoute.me.path, name: AppRoute.me.name, pageBuilder: route_pages.mePage)],
                 ),
               ],
             ),
+            GoRoute(path: AppRoute.discover.path, name: AppRoute.discover.name, pageBuilder: route_pages.discoverPage),
             GoRoute(path: AppRoute.downloads.path, name: AppRoute.downloads.name, pageBuilder: route_pages.downloadsPage),
             GoRoute(
               path: AppRoute.pixivision.path,
               name: AppRoute.pixivision.name,
-              builder: (context, state) => PixivisionPage(url: state.uri.queryParameters['url']),
+              builder: (context, state) => PixivisionPage(url: state.uri.queryParameters[AppRouteQuery.url]),
             ),
             GoRoute(
               path: AppRoute.fanbox.path,
               name: AppRoute.fanbox.name,
               builder: (context, state) => FanboxPage(
                 location: (
-                  section: FanboxSection.values.where((e) => e.name == state.uri.queryParameters['section']).firstOrNull ?? FanboxSection.home,
-                  creatorId: state.uri.queryParameters['creator'] ?? '',
-                  query: state.uri.queryParameters['q'] ?? '',
+                  section: FanboxSection.values.where((e) => e.name == state.uri.queryParameters[AppRouteQuery.section]).firstOrNull ?? FanboxSection.home,
+                  creatorId: state.uri.queryParameters[AppRouteQuery.creator] ?? '',
+                  query: state.uri.queryParameters[AppRouteQuery.query] ?? '',
                 ),
               ),
             ),
             GoRoute(path: AppRoute.searchIllustResult.path, name: AppRoute.searchIllustResult.name, pageBuilder: route_pages.searchIllustResultPage),
             GoRoute(path: AppRoute.searchNovelResult.path, name: AppRoute.searchNovelResult.name, pageBuilder: route_pages.searchNovelResultPage),
             GoRoute(path: AppRoute.searchUserResult.path, name: AppRoute.searchUserResult.name, pageBuilder: route_pages.searchUserResultPage),
-            GoRoute(path: AppRoute.rankingIllust.path, name: AppRoute.rankingIllust.name, pageBuilder: route_pages.rankingIllustPage),
-            GoRoute(path: AppRoute.rankingManga.path, name: AppRoute.rankingManga.name, pageBuilder: route_pages.rankingMangaPage),
-            GoRoute(path: AppRoute.rankingNovel.path, name: AppRoute.rankingNovel.name, pageBuilder: route_pages.rankingNovelPage),
+            GoRoute(path: AppRoute.tagSearch.path, name: AppRoute.tagSearch.name, pageBuilder: route_pages.tagSearchPage),
+            GoRoute(path: AppRoute.ranking.path, name: AppRoute.ranking.name, pageBuilder: route_pages.rankingPage),
+            // The three ranking pages became one; their old paths still open it.
+            for (final legacy in [AppRoute.legacyRankingIllust, AppRoute.legacyRankingManga, AppRoute.legacyRankingNovel])
+              GoRoute(path: legacy.path, name: legacy.name, redirect: route_pages.legacyRankingRedirect),
             GoRoute(path: AppRoute.meFollowing.path, name: AppRoute.meFollowing.name, pageBuilder: route_pages.meFollowingPage),
             GoRoute(path: AppRoute.meFollowers.path, name: AppRoute.meFollowers.name, pageBuilder: route_pages.meFollowersPage),
             GoRoute(path: AppRoute.about.path, name: AppRoute.about.name, pageBuilder: route_pages.aboutPage),
@@ -99,37 +99,45 @@ class AppRouter {
             GoRoute(path: AppRoute.novelComments.path, name: AppRoute.novelComments.name, pageBuilder: route_pages.novelCommentsPage),
             GoRoute(path: AppRoute.userDetail.path, name: AppRoute.userDetail.name, pageBuilder: route_pages.userDetailPage),
             GoRoute(
-              path: '/pixivision/browse',
-              builder: (context, state) => PixivisionPage(url: state.uri.queryParameters['url']),
+              path: AppRoute.pixivisionBrowse.path,
+              name: AppRoute.pixivisionBrowse.name,
+              builder: (context, state) => PixivisionPage(url: state.uri.queryParameters[AppRouteQuery.url]),
             ),
             GoRoute(
-              path: '/pixivision/article',
+              path: AppRoute.pixivisionArticle.path,
+              name: AppRoute.pixivisionArticle.name,
               builder: (context, state) => PixivisionArticlePage(
-                url: validPixivisionUrl(state.uri.queryParameters['url']) ?? 'https://www.pixivision.net/en/',
+                url: validPixivisionUrl(state.uri.queryParameters[AppRouteQuery.url]) ?? 'https://www.pixivision.net/en/',
                 summary: state.extra is ArticleSummary ? state.extra as ArticleSummary : null,
               ),
             ),
             GoRoute(
-              path: '/fanbox/browse',
+              path: AppRoute.fanboxBrowse.path,
+              name: AppRoute.fanboxBrowse.name,
               builder: (context, state) => FanboxPage(
                 location: (
-                  section: FanboxSection.values.where((item) => item.name == state.uri.queryParameters['section']).firstOrNull ?? FanboxSection.home,
+                  section:
+                      FanboxSection.values.where((item) => item.name == state.uri.queryParameters[AppRouteQuery.section]).firstOrNull ?? FanboxSection.home,
                   creatorId: '',
-                  query: state.uri.queryParameters['q'] ?? '',
+                  query: state.uri.queryParameters[AppRouteQuery.query] ?? '',
                 ),
               ),
             ),
             fanboxTagRoute(),
             GoRoute(
-              path: '/fanbox/post/:postId',
-              builder: (context, state) =>
-                  FanboxPostDetailPage(postId: state.pathParameters['postId']!, summary: state.extra is FanboxPost ? state.extra as FanboxPost : null),
+              path: AppRoute.fanboxPost.path,
+              name: AppRoute.fanboxPost.name,
+              builder: (context, state) => FanboxPostDetailPage(
+                postId: state.pathParameters[AppRouteParam.postId]!,
+                summary: state.extra is FanboxPost ? state.extra as FanboxPost : null,
+              ),
             ),
             GoRoute(
-              path: '/fanbox/creator/:creatorId',
+              path: AppRoute.fanboxCreator.path,
+              name: AppRoute.fanboxCreator.name,
               builder: (context, state) => FanboxCreatorDetailPage(
-                creatorId: state.pathParameters['creatorId']!,
-                showPlans: state.uri.queryParameters['plans'] == 'true',
+                creatorId: state.pathParameters[AppRouteParam.creatorId]!,
+                showPlans: state.uri.queryParameters[AppRouteQuery.plans] == 'true',
                 summary: state.extra is FanboxCreator ? state.extra as FanboxCreator : null,
               ),
             ),

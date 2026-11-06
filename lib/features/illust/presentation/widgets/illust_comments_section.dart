@@ -150,7 +150,7 @@ class _CommentsList extends StatelessWidget {
     final openAll = Padding(
       padding: const EdgeInsets.only(top: 6),
       child: TextButton.icon(
-        onPressed: () => context.pushNamed(AppRoute.illustComments.name, pathParameters: {'id': '$illustId'}, extra: totalComments),
+        onPressed: () => context.push(AppLocations.illustComments(illustId), extra: totalComments),
         icon: const Icon(Icons.open_in_full, size: 17),
         label: Text(translations.illust.comments.open),
       ),

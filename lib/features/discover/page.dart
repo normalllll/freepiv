@@ -44,7 +44,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
   void _handlePrimaryReselection() {
     final signal = _primaryReselection?.value;
-    if (signal == null || appRouteDestinations[signal.index].route != AppRoute.search || signal.sequence == 0 || !_scrollController.hasClients) return;
+    if (signal == null || appRouteDestinations[signal.index].route != AppRoute.discover || signal.sequence == 0 || !_scrollController.hasClients) return;
     final duration = FrostMotion.duration(context, FrostMotion.navigation);
     if (duration == Duration.zero) {
       _scrollController.jumpTo(0);
@@ -134,13 +134,13 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
       return;
     }
 
-    final route = switch (submission.type) {
-      SearchType.illust => AppRoute.searchIllustResult,
-      SearchType.novel => AppRoute.searchNovelResult,
-      SearchType.user => AppRoute.searchUserResult,
+    final kind = switch (submission.type) {
+      SearchType.illust => AppSearchKind.illust,
+      SearchType.novel => AppSearchKind.novel,
+      SearchType.user => AppSearchKind.user,
     };
 
-    await context.pushNamed(route.name, queryParameters: {'q': submission.query.trim()});
+    await context.push(AppLocations.search(kind, submission.query.trim()));
     // Coming back from the results, the box starts empty again; the query
     // lives on in recent searches.
     if (!mounted) return;
@@ -155,21 +155,21 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
         if (id == null) {
           return;
         }
-        context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '$id'});
+        context.push(AppLocations.illust(id));
         return;
       case SearchItemKind.user:
         final id = selection.id;
         if (id == null) {
           return;
         }
-        context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '$id'});
+        context.push(AppLocations.user(id));
         return;
       case SearchItemKind.novel:
         final id = selection.id;
         if (id == null) {
           return;
         }
-        context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': '$id'});
+        context.push(AppLocations.novel(id));
         return;
       case SearchItemKind.tag:
         return;
@@ -190,7 +190,7 @@ class _FanboxEntry extends StatelessWidget {
           role: FrostSurfaceRole.glassPanel,
           child: FrostClickSurface(
             shape: FrostClickShape.rounded(BorderRadius.circular(FrostRadius.xl)),
-            onTap: () => context.pushNamed(AppRoute.fanbox.name),
+            onTap: () => context.push(AppRoute.fanbox.path),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(

@@ -148,7 +148,7 @@ class _HtmlTextSpanBuilder {
         text: context.t.richText.illustId(id: illustId),
         style: _knownLinkStyle(context, isStrong),
         recognizer: tapRecognizer?.call(() {
-          context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': illustId});
+          context.push(AppLocations.illust(illustId));
         }),
       );
     }
@@ -159,7 +159,7 @@ class _HtmlTextSpanBuilder {
         text: 'Novel ID: $novelId',
         style: _knownLinkStyle(context, isStrong),
         recognizer: tapRecognizer?.call(() {
-          context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': novelId});
+          context.push(AppLocations.novel(novelId));
         }),
       );
     }
@@ -170,7 +170,7 @@ class _HtmlTextSpanBuilder {
         text: context.t.richText.userId(id: userId),
         style: _knownLinkStyle(context, isStrong),
         recognizer: tapRecognizer?.call(() {
-          context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': userId});
+          context.push(AppLocations.user(userId));
         }),
       );
     }

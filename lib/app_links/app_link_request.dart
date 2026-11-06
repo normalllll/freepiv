@@ -20,7 +20,7 @@ final class AppLinkRequest {
       return null;
     }
 
-    final code = uri.queryParameters['code'];
+    final code = uri.queryParameters[pixivAuthCallbackCodeParam];
     return code == null || code.isEmpty ? null : code;
   }
 }

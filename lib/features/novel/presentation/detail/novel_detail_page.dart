@@ -46,7 +46,7 @@ class NovelDetailPage extends ConsumerWidget {
     final id = novelId ?? novel?.id;
     if (id == null) return content;
     return FrostWindowTitleContribution(
-      path: '/novel/$id',
+      path: AppLocations.novel(id),
       page: visibleNovel == null ? null : FrostPageTitle(id: id, title: visibleNovel.title, kind: 'novel', imageUrl: visibleNovel.imageUrls.squareMedium),
       child: content,
     );
@@ -142,11 +142,11 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
   }
 
   void _openNovelDetail(Novel novel) {
-    context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': '${novel.id}'}, extra: novel);
+    context.push(AppLocations.novel(novel.id), extra: novel);
   }
 
   Future<void> _openNovelReader() async {
-    await context.pushNamed(AppRoute.novelReader.name, pathParameters: {'id': '${_novel.id}'}, extra: _novel);
+    await context.push(AppLocations.novelReader(_novel.id), extra: _novel);
     if (mounted) setState(() {});
   }
 

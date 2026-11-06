@@ -70,7 +70,7 @@ class NovelCreatorHeader extends StatelessWidget {
     final identity = Material(
       color: Colors.transparent,
       child: FrostClickSurface(
-        onTap: () => context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '${user.id}'}),
+        onTap: () => context.push(AppLocations.user(user.id)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
           child: Row(

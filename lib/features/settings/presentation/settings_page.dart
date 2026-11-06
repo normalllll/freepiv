@@ -13,6 +13,7 @@ import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/app/router/app_route.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -133,7 +134,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ? null
               : () {
                   setPixivAccount(null);
-                  context.go('/login');
+                  context.go(AppRoute.login.path);
                 },
         ),
       ],

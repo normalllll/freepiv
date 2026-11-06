@@ -11,7 +11,7 @@ typedef IllustOpener = void Function(Illust illust, ArtworkHeroTag heroTag);
 /// Pushes the illustration page for [illust]. With the opening card's
 /// [heroTag] the card's image flies into the stage and back.
 void openIllustDetail(BuildContext context, Illust illust, [ArtworkHeroTag? heroTag]) {
-  context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '${illust.id}'}, extra: heroTag == null ? illust : (illust: illust, heroTag: heroTag));
+  context.push(AppLocations.illust(illust.id), extra: heroTag == null ? illust : (illust: illust, heroTag: heroTag));
 }
 
 /// Pairs one artwork card with the detail page it opens.

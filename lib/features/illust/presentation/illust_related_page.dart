@@ -67,7 +67,7 @@ class _IllustRelatedPageState extends ConsumerState<IllustRelatedPage> {
     if (context.canPop()) {
       context.pop();
     } else {
-      context.goNamed(AppRoute.illustDetail.name, pathParameters: {'id': '${widget.illustId}'});
+      context.go(AppLocations.illust(widget.illustId));
     }
   }
 

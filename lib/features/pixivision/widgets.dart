@@ -8,6 +8,7 @@ import 'image.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'navigation.dart';
+import 'package:freepiv/app/router/app_route.dart';
 
 EdgeInsets pixivisionPadding(double width) => FrostMetrics.columnPadding(width).copyWith(top: 12, bottom: 12);
 
@@ -21,7 +22,7 @@ class PixivisionScaffold extends StatelessWidget {
   Widget build(BuildContext context) => FrostAutoScaffold(
     builder: (context, layout, orientation, desktop) => Scaffold(
       body: FrostCollapsingHeader(
-        header: desktop ? null : FrostPageHeader(title: Text(title), onBack: () => context.canPop() ? context.pop() : context.go('/search')),
+        header: desktop ? null : FrostPageHeader(title: Text(title), onBack: () => context.canPop() ? context.pop() : context.go(AppRoute.discover.path)),
         child: SafeArea(bottom: false, child: child),
       ),
     ),

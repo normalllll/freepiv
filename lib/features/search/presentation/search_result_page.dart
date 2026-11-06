@@ -211,21 +211,21 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
         if (id == null) {
           return;
         }
-        context.pushNamed(AppRoute.illustDetail.name, pathParameters: {'id': '$id'});
+        context.push(AppLocations.illust(id));
         return;
       case SearchItemKind.user:
         final id = selection.id;
         if (id == null) {
           return;
         }
-        context.pushNamed(AppRoute.userDetail.name, pathParameters: {'id': '$id'});
+        context.push(AppLocations.user(id));
         return;
       case SearchItemKind.novel:
         final id = selection.id;
         if (id == null) {
           return;
         }
-        context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': '$id'});
+        context.push(AppLocations.novel(id));
         return;
       case SearchItemKind.tag:
         return;

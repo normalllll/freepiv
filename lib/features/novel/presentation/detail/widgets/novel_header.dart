@@ -93,8 +93,8 @@ class LargeNovelCoverImage extends StatelessWidget {
           child: FrostClickSurface(
             feedback: FrostClickFeedback.media,
             shape: FrostClickShape.rounded(borderRadius),
-            onTap: () => context.pushNamed(
-              AppRoute.originalImageViewer.name,
+            onTap: () => context.push(
+              AppRoute.originalImageViewer.path,
               extra: OriginalImageViewerArgs(
                 title: t.novel.detail.images,
                 source: DownloadSourceScope.of(context),

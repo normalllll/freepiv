@@ -19,6 +19,7 @@ import 'package:go_router/go_router.dart';
 import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'logic.dart';
+import 'package:freepiv/app/router/app_route.dart';
 
 Future<void> openFanboxLink(BuildContext context, String value) async {
   final uri = Uri.tryParse(value);
@@ -142,7 +143,7 @@ class FanboxErrorView extends ConsumerWidget {
               TextButton(
                 onPressed: () async {
                   await ref.read(fanboxOperationProvider('account').notifier).run(() => ref.read(fanboxSessionProvider.notifier).signOut());
-                  if (context.mounted) context.go('/fanbox');
+                  if (context.mounted) context.go(AppRoute.fanbox.path);
                 },
                 child: Text(context.t.fanbox.login),
               ),

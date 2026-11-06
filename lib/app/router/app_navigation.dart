@@ -4,28 +4,36 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 class AppRouteDestination {
-  const AppRouteDestination({required this.route, required this.icon});
+  const AppRouteDestination({required this.route, required this.icon, this.owns = const {}});
 
   final AppRoute route;
   final FrostIconData icon;
+
+  /// Routes below the destination that keep it highlighted.
+  final Set<AppRoute> owns;
 }
 
+/// The primary destinations; discover is a page pushed from search, not one
+/// of them.
 const appRouteDestinations = <AppRouteDestination>[
   AppRouteDestination(route: AppRoute.home, icon: PivIcons.home),
   AppRouteDestination(route: AppRoute.newest, icon: PivIcons.activity),
-  AppRouteDestination(route: AppRoute.search, icon: PivIcons.compass),
-  AppRouteDestination(route: AppRoute.me, icon: PivIcons.user),
+  AppRouteDestination(route: AppRoute.me, icon: PivIcons.user, owns: {AppRoute.meFollowing, AppRoute.meFollowers}),
 ];
 
-bool isMobileNavigationPath(String path) => appRouteDestinations.any((item) => item.route.path == path);
+/// Whether [path] is a destination's root page.
+bool isMobileNavigationPath(String path) {
+  final route = AppRoute.match(path);
+  return appRouteDestinations.any((item) => item.route == route);
+}
 
 int? appDestinationIndexForPath(String path) {
+  final route = AppRoute.match(path);
+  if (route == null) return null;
   for (var index = 0; index < appRouteDestinations.length; index += 1) {
-    if (_routeOwnsPath(appRouteDestinations[index].route, path)) {
-      return index;
-    }
+    final destination = appRouteDestinations[index];
+    if (destination.route == route || destination.owns.contains(route)) return index;
   }
-
   return null;
 }
 
@@ -44,23 +52,19 @@ String appRouteNavigationLabel(Translations translations, AppRoute route) {
 String appRouteLabel(Translations translations, AppRoute route) {
   return switch (route) {
     AppRoute.home => translations.navigation.home,
-    // Primary destinations share one name between navigation and titles.
-    AppRoute.search => translations.common.discover,
-    AppRoute.searchIllustResult || AppRoute.searchNovelResult || AppRoute.searchUserResult => translations.navigation.search,
+    AppRoute.discover => translations.common.discover,
+    AppRoute.searchIllustResult || AppRoute.searchNovelResult || AppRoute.searchUserResult || AppRoute.tagSearch => translations.navigation.search,
     AppRoute.newest => translations.navigation.activity,
-    AppRoute.fanbox => translations.fanbox.title,
-    AppRoute.pixivision => translations.pixivision.title,
-    // The ranking page header holds only the mode picker; the kind lives in
-    // the window and top-bar title.
-    AppRoute.rankingIllust => '${translations.navigation.ranking} · ${translations.user.tabs.illustrations}',
-    AppRoute.rankingManga => '${translations.navigation.ranking} · ${translations.user.tabs.manga}',
-    AppRoute.rankingNovel => '${translations.navigation.ranking} · ${translations.user.tabs.novels}',
+    AppRoute.fanbox || AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator => translations.fanbox.title,
+    AppRoute.pixivision || AppRoute.pixivisionBrowse || AppRoute.pixivisionArticle => translations.pixivision.title,
+    AppRoute.ranking || AppRoute.legacyRankingIllust || AppRoute.legacyRankingManga || AppRoute.legacyRankingNovel => translations.navigation.ranking,
     AppRoute.me => translations.navigation.me,
     AppRoute.about => translations.about.title,
     AppRoute.settings => translations.navigation.settings,
     AppRoute.downloads => translations.settings.downloads.tasksTitle,
     AppRoute.login => translations.login.title,
-    AppRoute.meFollowing || AppRoute.meFollowers => '',
+    AppRoute.meFollowing => translations.me.following,
+    AppRoute.meFollowers => translations.me.followers,
     AppRoute.originalImageViewer ||
     AppRoute.illustDetail ||
     AppRoute.illustRelated ||
@@ -69,15 +73,5 @@ String appRouteLabel(Translations translations, AppRoute route) {
     AppRoute.novelReader ||
     AppRoute.novelComments ||
     AppRoute.userDetail => '',
-  };
-}
-
-bool _routeOwnsPath(AppRoute route, String path) {
-  return switch (route) {
-    AppRoute.home => path == route.path,
-    AppRoute.search => path == route.path || path.startsWith('/search/'),
-    AppRoute.newest => path == route.path || path.startsWith('${route.path}/'),
-    AppRoute.me => path == route.path || path.startsWith('/me/'),
-    _ => false,
   };
 }

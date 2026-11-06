@@ -149,8 +149,8 @@ class _NovelImagePager extends StatelessWidget {
   }
 
   void _openOriginalImageViewer(BuildContext context, int index) {
-    context.pushNamed(
-      AppRoute.originalImageViewer.name,
+    context.push(
+      AppRoute.originalImageViewer.path,
       extra: OriginalImageViewerArgs(
         title: novel.title,
         source: DownloadSourceScope.of(context),

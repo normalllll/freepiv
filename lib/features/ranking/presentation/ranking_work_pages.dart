@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/ranking/logic/ranking_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_list_tab.dart';
@@ -13,7 +12,11 @@ import 'package:go_router/go_router.dart';
 import 'package:frost_data/frost_data.dart';
 
 class RankingIllustPage extends ConsumerStatefulWidget {
-  const RankingIllustPage({super.key});
+  const RankingIllustPage({this.initialMode, super.key});
+
+  /// The mode this page opens on (from the route); the last chosen one
+  /// otherwise. The page keeps its own mode from then on.
+  final IllustRankingMode? initialMode;
 
   @override
   ConsumerState<RankingIllustPage> createState() => _RankingIllustPageState();
@@ -28,14 +31,14 @@ class _RankingIllustPageState extends ConsumerState<RankingIllustPage> with Sing
 
     _tabController = TabController(
       length: IllustRankingMode.values.length,
-      initialIndex: _illustRankingModeIndex(ref.read(rankingProvider).illustMode),
+      initialIndex: _illustRankingModeIndex(widget.initialMode ?? ref.read(rankingProvider).illustMode),
       vsync: this,
     );
     _tabController.addListener(_handleTabChanged);
 
     Future.microtask(() {
       if (!mounted) return;
-      ref.read(rankingProvider.notifier).loadIllustCurrentIfNeeded();
+      ref.read(rankingProvider.notifier).loadIllustModeIfNeeded(_illustRankingModeForIndex(_tabController.index));
     });
   }
 
@@ -45,11 +48,10 @@ class _RankingIllustPageState extends ConsumerState<RankingIllustPage> with Sing
     }
 
     final mode = _illustRankingModeForIndex(_tabController.index);
-    if (ref.read(rankingProvider).illustMode == mode) {
-      return;
-    }
-
-    ref.read(rankingProvider.notifier).setIllustMode(mode);
+    // Remembered as the mode the next ranking page opens on.
+    ref.read(rankingProvider.notifier)
+      ..loadIllustModeIfNeeded(mode)
+      ..setIllustMode(mode);
   }
 
   @override
@@ -73,7 +75,7 @@ class _RankingIllustPageState extends ConsumerState<RankingIllustPage> with Sing
     });
 
     return _RankingPageScaffold(
-      route: AppRoute.rankingIllust,
+      title: '${context.t.navigation.ranking} · ${context.t.user.tabs.illustrations}',
       header: _RankingHeader(
         child: _RankingModePicker<IllustRankingMode>(
           modes: IllustRankingMode.values,
@@ -99,7 +101,11 @@ class _RankingIllustPageState extends ConsumerState<RankingIllustPage> with Sing
 }
 
 class RankingMangaPage extends ConsumerStatefulWidget {
-  const RankingMangaPage({super.key});
+  const RankingMangaPage({this.initialMode, super.key});
+
+  /// The mode this page opens on (from the route); the last chosen one
+  /// otherwise. The page keeps its own mode from then on.
+  final MangaRankingMode? initialMode;
 
   @override
   ConsumerState<RankingMangaPage> createState() => _RankingMangaPageState();
@@ -114,14 +120,14 @@ class _RankingMangaPageState extends ConsumerState<RankingMangaPage> with Single
 
     _tabController = TabController(
       length: MangaRankingMode.values.length,
-      initialIndex: _mangaRankingModeIndex(ref.read(rankingProvider).mangaMode),
+      initialIndex: _mangaRankingModeIndex(widget.initialMode ?? ref.read(rankingProvider).mangaMode),
       vsync: this,
     );
     _tabController.addListener(_handleTabChanged);
 
     Future.microtask(() {
       if (!mounted) return;
-      ref.read(rankingProvider.notifier).loadMangaCurrentIfNeeded();
+      ref.read(rankingProvider.notifier).loadMangaModeIfNeeded(_mangaRankingModeForIndex(_tabController.index));
     });
   }
 
@@ -131,11 +137,10 @@ class _RankingMangaPageState extends ConsumerState<RankingMangaPage> with Single
     }
 
     final mode = _mangaRankingModeForIndex(_tabController.index);
-    if (ref.read(rankingProvider).mangaMode == mode) {
-      return;
-    }
-
-    ref.read(rankingProvider.notifier).setMangaMode(mode);
+    // Remembered as the mode the next ranking page opens on.
+    ref.read(rankingProvider.notifier)
+      ..loadMangaModeIfNeeded(mode)
+      ..setMangaMode(mode);
   }
 
   @override
@@ -159,7 +164,7 @@ class _RankingMangaPageState extends ConsumerState<RankingMangaPage> with Single
     });
 
     return _RankingPageScaffold(
-      route: AppRoute.rankingManga,
+      title: '${context.t.navigation.ranking} · ${context.t.user.tabs.manga}',
       header: _RankingHeader(
         child: _RankingModePicker<MangaRankingMode>(
           modes: MangaRankingMode.values,
@@ -185,7 +190,11 @@ class _RankingMangaPageState extends ConsumerState<RankingMangaPage> with Single
 }
 
 class RankingNovelPage extends ConsumerStatefulWidget {
-  const RankingNovelPage({super.key});
+  const RankingNovelPage({this.initialMode, super.key});
+
+  /// The mode this page opens on (from the route); the last chosen one
+  /// otherwise. The page keeps its own mode from then on.
+  final NovelRankingMode? initialMode;
 
   @override
   ConsumerState<RankingNovelPage> createState() => _RankingNovelPageState();
@@ -200,14 +209,14 @@ class _RankingNovelPageState extends ConsumerState<RankingNovelPage> with Single
 
     _tabController = TabController(
       length: NovelRankingMode.values.length,
-      initialIndex: _novelRankingModeIndex(ref.read(rankingProvider).novelMode),
+      initialIndex: _novelRankingModeIndex(widget.initialMode ?? ref.read(rankingProvider).novelMode),
       vsync: this,
     );
     _tabController.addListener(_handleTabChanged);
 
     Future.microtask(() {
       if (!mounted) return;
-      ref.read(rankingProvider.notifier).loadNovelCurrentIfNeeded();
+      ref.read(rankingProvider.notifier).loadNovelModeIfNeeded(_novelRankingModeForIndex(_tabController.index));
     });
   }
 
@@ -217,11 +226,10 @@ class _RankingNovelPageState extends ConsumerState<RankingNovelPage> with Single
     }
 
     final mode = _novelRankingModeForIndex(_tabController.index);
-    if (ref.read(rankingProvider).novelMode == mode) {
-      return;
-    }
-
-    ref.read(rankingProvider.notifier).setNovelMode(mode);
+    // Remembered as the mode the next ranking page opens on.
+    ref.read(rankingProvider.notifier)
+      ..loadNovelModeIfNeeded(mode)
+      ..setNovelMode(mode);
   }
 
   @override
@@ -245,7 +253,7 @@ class _RankingNovelPageState extends ConsumerState<RankingNovelPage> with Single
     });
 
     return _RankingPageScaffold(
-      route: AppRoute.rankingNovel,
+      title: '${context.t.navigation.ranking} · ${context.t.user.tabs.novels}',
       header: _RankingHeader(
         // The novel list is on the content column; the picker lines up with it.
         onContentColumn: true,
@@ -273,11 +281,11 @@ class _RankingNovelPageState extends ConsumerState<RankingNovelPage> with Single
 }
 
 class _RankingPageScaffold extends StatelessWidget {
-  const _RankingPageScaffold({required this.route, required this.header, required this.body});
+  const _RankingPageScaffold({required this.title, required this.header, required this.body});
 
   /// Supplies the "Ranking · kind" title for the mobile top bar; on desktop
   /// the window title shows the same label.
-  final AppRoute route;
+  final String title;
   final Widget header;
   final Widget body;
 
@@ -287,7 +295,7 @@ class _RankingPageScaffold extends StatelessWidget {
       builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
         return Scaffold(
           body: FrostCollapsingHeader(
-            header: FrostPageHeader(title: Text(appRouteLabel(context.t, route))),
+            header: FrostPageHeader(title: Text(title)),
             // The mode picker floats over the ranking as glass.
             child: FrostPinnedChrome(chrome: header, body: body),
           ),
@@ -548,7 +556,7 @@ class _NovelRankingBody extends StatelessWidget {
                   novel: novel,
                   rank: index + 1,
                   onTap: () {
-                    context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': '${novel.id}'}, extra: novel);
+                    context.push(AppLocations.novel(novel.id), extra: novel);
                   },
                 ),
               ),

@@ -223,6 +223,14 @@ class Ranking extends _$Ranking {
     _loadNovelSourceIfNeeded(state.currentNovelSource);
   }
 
+  /// Loads one mode's ranking for a page showing it, whatever mode the
+  /// other ranking pages show.
+  void loadIllustModeIfNeeded(IllustRankingMode mode) => _loadIllustSourceIfNeeded(state.illustSourceFor(mode));
+
+  void loadMangaModeIfNeeded(MangaRankingMode mode) => _loadMangaSourceIfNeeded(state.mangaSourceFor(mode));
+
+  void loadNovelModeIfNeeded(NovelRankingMode mode) => _loadNovelSourceIfNeeded(state.novelSourceFor(mode));
+
   void _loadIllustSourceIfNeeded(RankingIllustListSource source) {
     if (!source.initialized && !source.refreshing) {
       source.refresh(true);

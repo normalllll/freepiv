@@ -202,7 +202,7 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
         onToggleExpanded: () {
           if (!panelFits) {
             _closePanel(restoreFocus: false);
-            unawaited(AppRouter.router.pushNamed(AppRoute.downloads.name));
+            unawaited(AppRouter.router.push(AppRoute.downloads.path));
           } else if (_expanded) {
             _closePanel();
           } else {
@@ -212,7 +212,7 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
         onClose: _closePanel,
         onViewAll: () {
           _closePanel(restoreFocus: false);
-          unawaited(AppRouter.router.pushNamed(AppRoute.downloads.name));
+          unawaited(AppRouter.router.push(AppRoute.downloads.path));
         },
         onOpenItem: _openItem,
         wrapButton: landingScale,
@@ -249,7 +249,7 @@ class _MobileDownloadFloatingWindowState extends ConsumerState<MobileDownloadFlo
 
   void _openItem(DownloadItem item) {
     _closePanel(restoreFocus: false);
-    unawaited(AppRouter.router.pushNamed(AppRoute.downloads.name, queryParameters: {'item': item.key}));
+    unawaited(AppRouter.router.push(AppLocations.downloads(item: item.key)));
   }
 }
 

@@ -88,7 +88,7 @@ class _NovelCommentsSectionState extends ConsumerState<NovelCommentsSection> {
   }
 
   void _openCommentsPage() {
-    context.pushNamed(AppRoute.novelComments.name, pathParameters: {'id': '${widget.novelId}'}, extra: widget.totalComments);
+    context.push(AppLocations.novelComments(widget.novelId), extra: widget.totalComments);
   }
 }
 
@@ -161,7 +161,7 @@ class _CommentsList extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: TextButton.icon(
-                onPressed: () => context.pushNamed(AppRoute.novelComments.name, pathParameters: {'id': '$novelId'}, extra: totalComments),
+                onPressed: () => context.push(AppLocations.novelComments(novelId), extra: totalComments),
                 icon: const Icon(Icons.open_in_full, size: 17),
                 label: Text(translations.illust.comments.open),
               ),

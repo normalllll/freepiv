@@ -392,7 +392,7 @@ class _NovelHomeBody extends StatelessWidget {
               child: NovelPreviewer(
                 novel: novel,
                 onTap: () {
-                  context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': '${novel.id}'}, extra: novel);
+                  context.push(AppLocations.novel(novel.id), extra: novel);
                 },
               ),
             );
@@ -611,7 +611,7 @@ class _NovelRankingPreviewSection extends StatelessWidget {
               novel: novel,
               maxWidth: width,
               onTap: () {
-                context.pushNamed(AppRoute.novelDetail.name, pathParameters: {'id': '${novel.id}'}, extra: novel);
+                context.push(AppLocations.novel(novel.id), extra: novel);
               },
             );
           },
@@ -727,10 +727,10 @@ class _NovelPreviewerSkeleton extends StatelessWidget {
 
 String _rankingRoutePath(HomeType type) {
   return switch (type) {
-    HomeType.illustrations => AppRoute.rankingIllust.path,
-    HomeType.manga => AppRoute.rankingManga.path,
-    HomeType.novels => AppRoute.rankingNovel.path,
-    HomeType.users => AppRoute.rankingIllust.path,
+    HomeType.illustrations => AppLocations.ranking(kind: AppRankingKind.illust),
+    HomeType.manga => AppLocations.ranking(kind: AppRankingKind.manga),
+    HomeType.novels => AppLocations.ranking(kind: AppRankingKind.novel),
+    HomeType.users => AppLocations.ranking(kind: AppRankingKind.illust),
   };
 }
 
