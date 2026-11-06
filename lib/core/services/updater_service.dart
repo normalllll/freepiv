@@ -1,3 +1,4 @@
+import 'dart:ffi' show Abi;
 import 'dart:convert';
 import 'dart:io';
 
@@ -58,6 +59,21 @@ class UpdaterService {
     return latest;
   }
 
+  /// The macOS build for [abi]: macos-arm64-nosigned.zip on Apple silicon,
+  /// macos-x86_64-nosigned.zip on Intel; never the other architecture's.
+  static AppReleaseAsset? selectMacosAsset(List<AppReleaseAsset> assets, Abi abi) {
+    final arch = switch (abi) {
+      Abi.macosArm64 => const ['arm64', 'aarch64'],
+      Abi.macosX64 => const ['x86_64', 'x64', 'amd64', 'intel'],
+      _ => const <String>[],
+    };
+    for (final asset in assets) {
+      final name = asset.name.toLowerCase();
+      if (name.contains('macos') && name.endsWith('.zip') && arch.any(name.contains)) return asset;
+    }
+    return null;
+  }
+
   static Future<String?> selectDownloadUrl(List<AppReleaseAsset> assets) async {
     if (assets.isEmpty) {
       return null;
@@ -87,7 +103,7 @@ class UpdaterService {
     }
 
     if (Platform.isMacOS) {
-      return (contains(['macos', 'arm64', '.zip']) ?? contains(['macos', 'x64', '.zip']) ?? contains(['macos', '.zip']))?.downloadUrl;
+      return selectMacosAsset(assets, Abi.current())?.downloadUrl;
     }
 
     if (Platform.isWindows) {
