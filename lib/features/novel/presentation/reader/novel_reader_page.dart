@@ -367,9 +367,8 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
     _pendingRestore = null;
     final saved = novelReadingPosition(context, _novel.id);
     if (saved == null) return;
+    // Only the place: text size and spacing are the persisted reader settings.
     _pendingRestore = saved;
-    _fontSize = saved.fontSize.clamp(15, 26).toDouble();
-    _lineHeight = saved.lineHeight.clamp(1.45, 2.2).toDouble();
     final matchingIndex = _segments.indexWhere((segment) => segment.endOffset > saved.textOffset);
     final segmentAtSavedIndex = saved.segmentIndex >= 0 && saved.segmentIndex < _segments.length ? _segments[saved.segmentIndex] : null;
     final index = segmentAtSavedIndex != null && segmentAtSavedIndex.startOffset <= saved.textOffset && segmentAtSavedIndex.endOffset >= saved.textOffset
@@ -396,8 +395,6 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
         segmentFraction: anchor.segmentFraction,
         blockIndex: anchor.blockIndex,
         blockFraction: anchor.blockFraction,
-        fontSize: _fontSize,
-        lineHeight: _lineHeight,
       ),
       identifier: novelReadingSessionKey(novelId ?? _novel.id, accountId: _sessionAccountId),
     );
@@ -451,8 +448,6 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
       segmentFraction: _currentScrollFraction(),
       blockIndex: blockIndex,
       blockFraction: blockFraction,
-      fontSize: _fontSize,
-      lineHeight: _lineHeight,
     );
   }
 
