@@ -41,6 +41,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
+	late final Translations$novelText$en_US novelText = Translations$novelText$en_US.internal(_root);
 	late final Translations$signOut$en_US signOut = Translations$signOut$en_US.internal(_root);
 	late final Translations$appSearch$en_US appSearch = Translations$appSearch$en_US.internal(_root);
 	late final Translations$navigationPlacement$en_US navigationPlacement = Translations$navigationPlacement$en_US.internal(_root);
@@ -68,6 +69,16 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$richText$en_US richText = Translations$richText$en_US.internal(_root);
 	late final Translations$fanbox$en_US fanbox = Translations$fanbox$en_US.internal(_root);
 	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
+}
+
+// Path: novelText
+class Translations$novelText$en_US {
+	Translations$novelText$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get loadFailed => 'The text couldn\'t load';
 }
 
 // Path: signOut
@@ -1465,6 +1476,7 @@ class Translations$novel$reader$en_US {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'novelText.loadFailed' => 'The text couldn\'t load',
 			'signOut.title' => 'Sign out of Pixiv?',
 			'signOut.message' => 'You need to sign in again to browse. Downloads and settings stay on this device.',
 			'signOut.confirm' => 'Sign out',
@@ -1976,9 +1988,9 @@ extension on Translations {
 			'illust.toast.linkCopied' => 'Link copied',
 			'illust.toast.linkCopyFailed' => 'Could not copy the link',
 			'illust.toast.alreadyDownloading' => 'This page is already in the download queue',
-			'illust.tooltip.play' => 'Play animation',
 			_ => null,
 		} ?? switch (path) {
+			'illust.tooltip.play' => 'Play animation',
 			'illust.tooltip.previousImage' => 'Previous image',
 			'illust.tooltip.nextImage' => 'Next image',
 			'illust.tooltip.backToDetail' => 'Back to image detail',

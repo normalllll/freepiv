@@ -50,11 +50,21 @@ final class NovelAccountIdProvider
 
 String _$novelAccountIdHash() => r'ec8a2e71a5e35c384f322422411239107833b061';
 
+/// The novel's details: the work passed in when it opens, or fetched. Its
+/// text loads on its own ([NovelText]), so a failed text leaves the details
+/// usable.
+
 @ProviderFor(NovelDetail)
 final novelDetailProvider = NovelDetailFamily._();
 
+/// The novel's details: the work passed in when it opens, or fetched. Its
+/// text loads on its own ([NovelText]), so a failed text leaves the details
+/// usable.
 final class NovelDetailProvider
-    extends $AsyncNotifierProvider<NovelDetail, NovelDetailData> {
+    extends $AsyncNotifierProvider<NovelDetail, Novel> {
+  /// The novel's details: the work passed in when it opens, or fetched. Its
+  /// text loads on its own ([NovelText]), so a failed text leaves the details
+  /// usable.
   NovelDetailProvider._({
     required NovelDetailFamily super.from,
     required NovelDetailArgs super.argument,
@@ -91,15 +101,19 @@ final class NovelDetailProvider
   }
 }
 
-String _$novelDetailHash() => r'dec8c545d4090eb35721b141692892bdb3786705';
+String _$novelDetailHash() => r'02d4b74229c8ba0a6375b5323bfb2c56e271ea75';
+
+/// The novel's details: the work passed in when it opens, or fetched. Its
+/// text loads on its own ([NovelText]), so a failed text leaves the details
+/// usable.
 
 final class NovelDetailFamily extends $Family
     with
         $ClassFamilyOverride<
           NovelDetail,
-          AsyncValue<NovelDetailData>,
-          NovelDetailData,
-          FutureOr<NovelDetailData>,
+          AsyncValue<Novel>,
+          Novel,
+          FutureOr<Novel>,
           NovelDetailArgs
         > {
   NovelDetailFamily._()
@@ -111,6 +125,10 @@ final class NovelDetailFamily extends $Family
         isAutoDispose: false,
       );
 
+  /// The novel's details: the work passed in when it opens, or fetched. Its
+  /// text loads on its own ([NovelText]), so a failed text leaves the details
+  /// usable.
+
   NovelDetailProvider call(NovelDetailArgs args) =>
       NovelDetailProvider._(argument: args, from: this);
 
@@ -118,20 +136,129 @@ final class NovelDetailFamily extends $Family
   String toString() => r'novelDetailProvider';
 }
 
-abstract class _$NovelDetail extends $AsyncNotifier<NovelDetailData> {
+/// The novel's details: the work passed in when it opens, or fetched. Its
+/// text loads on its own ([NovelText]), so a failed text leaves the details
+/// usable.
+
+abstract class _$NovelDetail extends $AsyncNotifier<Novel> {
   late final _$args = ref.$arg as NovelDetailArgs;
   NovelDetailArgs get args => _$args;
 
-  FutureOr<NovelDetailData> build(NovelDetailArgs args);
+  FutureOr<Novel> build(NovelDetailArgs args);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<NovelDetailData>, NovelDetailData>;
+    final ref = this.ref as $Ref<AsyncValue<Novel>, Novel>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<NovelDetailData>, NovelDetailData>,
-              AsyncValue<NovelDetailData>,
+              AnyNotifier<AsyncValue<Novel>, Novel>,
+              AsyncValue<Novel>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}
+
+/// The novel's text and the details only its web view carries (cover, images,
+/// original and AI flags), per account.
+
+@ProviderFor(NovelText)
+final novelTextProvider = NovelTextFamily._();
+
+/// The novel's text and the details only its web view carries (cover, images,
+/// original and AI flags), per account.
+final class NovelTextProvider
+    extends $AsyncNotifierProvider<NovelText, WebviewNovel> {
+  /// The novel's text and the details only its web view carries (cover, images,
+  /// original and AI flags), per account.
+  NovelTextProvider._({
+    required NovelTextFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: noRetry,
+         name: r'novelTextProvider',
+         isAutoDispose: false,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$novelTextHash();
+
+  @override
+  String toString() {
+    return r'novelTextProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  NovelText create() => NovelText();
+
+  @override
+  bool operator ==(Object other) {
+    return other is NovelTextProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$novelTextHash() => r'a2eeefa61dc7afcbfaa9188e4bc46e658c707717';
+
+/// The novel's text and the details only its web view carries (cover, images,
+/// original and AI flags), per account.
+
+final class NovelTextFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          NovelText,
+          AsyncValue<WebviewNovel>,
+          WebviewNovel,
+          FutureOr<WebviewNovel>,
+          int
+        > {
+  NovelTextFamily._()
+    : super(
+        retry: noRetry,
+        name: r'novelTextProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: false,
+      );
+
+  /// The novel's text and the details only its web view carries (cover, images,
+  /// original and AI flags), per account.
+
+  NovelTextProvider call(int novelId) =>
+      NovelTextProvider._(argument: novelId, from: this);
+
+  @override
+  String toString() => r'novelTextProvider';
+}
+
+/// The novel's text and the details only its web view carries (cover, images,
+/// original and AI flags), per account.
+
+abstract class _$NovelText extends $AsyncNotifier<WebviewNovel> {
+  late final _$args = ref.$arg as int;
+  int get novelId => _$args;
+
+  FutureOr<WebviewNovel> build(int novelId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<WebviewNovel>, WebviewNovel>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<WebviewNovel>, WebviewNovel>,
+              AsyncValue<WebviewNovel>,
               Object?,
               Object?
             >;

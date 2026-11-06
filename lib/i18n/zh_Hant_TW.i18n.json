@@ -1,4 +1,7 @@
 {
+  "novelText": {
+    "loadFailed": "正文載入失敗"
+  },
   "signOut": {
     "title": "登出 Pixiv？",
     "message": "需要重新登入才能瀏覽。下載紀錄與設定會保留在這台裝置上。",

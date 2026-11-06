@@ -19,7 +19,7 @@ class NovelImageGallery extends StatefulWidget {
   const NovelImageGallery({required this.novel, required this.webviewNovel, super.key});
 
   final Novel novel;
-  final WebviewNovel webviewNovel;
+  final WebviewNovel? webviewNovel;
 
   @override
   State<NovelImageGallery> createState() => _NovelImageGalleryState();

@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
-String novelCoverUrl(Novel novel, WebviewNovel webviewNovel) {
-  final webviewCover = webviewNovel.coverUrl.trim();
+String novelCoverUrl(Novel novel, WebviewNovel? webviewNovel) {
+  final webviewCover = webviewNovel?.coverUrl.trim() ?? '';
   if (webviewCover.isNotEmpty) {
     return webviewCover;
   }
@@ -55,7 +55,8 @@ String? _bestWorkImageUrl(Object? work) {
   return null;
 }
 
-List<String> novelExtraImageUrls(Novel novel, WebviewNovel webviewNovel) {
+List<String> novelExtraImageUrls(Novel novel, WebviewNovel? webviewNovel) {
+  if (webviewNovel == null) return const [];
   final coverUrl = novelCoverUrl(novel, webviewNovel).trim();
   final seen = <String>{coverUrl};
   final urls = <String>[];

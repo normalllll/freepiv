@@ -54,6 +54,9 @@ String? novelAccountId(Ref ref) {
   return pixivAccountNotifier.value?.user.id;
 }
 
+/// The novel's details: the work passed in when it opens, or fetched. Its
+/// text loads on its own ([NovelText]), so a failed text leaves the details
+/// usable.
 @Riverpod(keepAlive: true, retry: noRetry)
 class NovelDetail extends _$NovelDetail {
   int _requestVersion = 0;
@@ -61,7 +64,7 @@ class NovelDetail extends _$NovelDetail {
   String? _seedAccountId;
 
   @override
-  FutureOr<NovelDetailData> build(NovelDetailArgs args) async {
+  FutureOr<Novel> build(NovelDetailArgs args) async {
     final accountId = ref.watch(novelAccountIdProvider);
     _requestVersion++;
     if (!_seedAccountCaptured) {
@@ -74,24 +77,37 @@ class NovelDetail extends _$NovelDetail {
   Future<void> reload() async {
     final accountId = ref.read(novelAccountIdProvider);
     final request = ++_requestVersion;
-    state = const AsyncLoading<NovelDetailData>();
+    state = const AsyncLoading<Novel>();
     final result = await AsyncValue.guard(() => _load(args, useSeed: accountId == _seedAccountId));
     if (ref.mounted && request == _requestVersion && pixivAccountNotifier.value?.user.id == accountId) state = result;
   }
 
-  Future<NovelDetailData> _load(NovelDetailArgs args, {required bool useSeed}) async {
+  Future<Novel> _load(NovelDetailArgs args, {required bool useSeed}) async {
     final novel = useSeed ? args.novel : null;
-    final novelId = args.resolvedNovelId;
-    final webviewFuture = pixivApi.getWebviewNovel(novelId: novelId);
+    if (novel != null) return novel;
+    return (await pixivApi.getNovelDetail(novelId: args.resolvedNovelId)).novel;
+  }
+}
 
-    if (novel != null) {
-      return NovelDetailData(novel: novel, webviewNovel: await webviewFuture);
-    }
+/// The novel's text and the details only its web view carries (cover, images,
+/// original and AI flags), per account.
+@Riverpod(keepAlive: true, retry: noRetry)
+class NovelText extends _$NovelText {
+  int _requestVersion = 0;
 
-    final detailFuture = pixivApi.getNovelDetail(novelId: novelId);
-    final detail = await detailFuture;
+  @override
+  FutureOr<WebviewNovel> build(int novelId) {
+    ref.watch(novelAccountIdProvider);
+    _requestVersion++;
+    return pixivApi.getWebviewNovel(novelId: novelId);
+  }
 
-    return NovelDetailData(novel: detail.novel, webviewNovel: await webviewFuture);
+  Future<void> reload() async {
+    final accountId = ref.read(novelAccountIdProvider);
+    final request = ++_requestVersion;
+    state = const AsyncLoading<WebviewNovel>();
+    final result = await AsyncValue.guard(() => pixivApi.getWebviewNovel(novelId: novelId));
+    if (ref.mounted && request == _requestVersion && pixivAccountNotifier.value?.user.id == accountId) state = result;
   }
 }
 

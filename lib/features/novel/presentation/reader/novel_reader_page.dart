@@ -36,22 +36,27 @@ class NovelReaderPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final args = NovelDetailArgs(novelId: novelId, novel: novel);
     final provider = novelDetailProvider(args);
+    final textProvider = novelTextProvider(args.resolvedNovelId);
     final detailValue = ref.watch(provider);
-
-    return detailValue.when(
-      skipLoadingOnRefresh: false,
-      data: (detail) => DownloadSourceScope(
-        source: novelDownloadSource(detail.novel),
-        child: NovelReaderContent(key: ValueKey<String>('novel-reader-content-${detail.novel.id}'), detail: detail),
-      ),
-      loading: () => const _ReaderLoadingPage(),
-      error: (error, stackTrace) {
-        if (_isNotFoundError(error)) {
-          return const NovelNotFoundPage();
-        }
-
-        return PivErrorPage.fromError(error: error, onRetry: () => ref.read(provider.notifier).reload());
-      },
+    final textValue = ref.watch(textProvider);
+    // Reading needs both the details and the text.
+    final error = detailValue.error ?? textValue.error;
+    if (error != null && !detailValue.isLoading && !textValue.isLoading) {
+      if (_isNotFoundError(error)) return const NovelNotFoundPage();
+      return PivErrorPage.fromError(
+        error: error,
+        onRetry: () {
+          if (detailValue.hasError) ref.read(provider.notifier).reload();
+          if (textValue.hasError) ref.read(textProvider.notifier).reload();
+        },
+      );
+    }
+    final (loaded, text) = (detailValue.value, textValue.value);
+    if (loaded == null || text == null || detailValue.isLoading || textValue.isLoading) return const _ReaderLoadingPage();
+    final detail = NovelDetailData(novel: loaded, webviewNovel: text);
+    return DownloadSourceScope(
+      source: novelDownloadSource(loaded),
+      child: NovelReaderContent(key: ValueKey<String>('novel-reader-content-${loaded.id}'), detail: detail),
     );
   }
 }

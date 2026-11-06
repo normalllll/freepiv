@@ -39,6 +39,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsZhCn $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhCn(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$novelText$zh_CN novelText = Translations$novelText$zh_CN.internal(_root);
 	@override late final Translations$signOut$zh_CN signOut = Translations$signOut$zh_CN.internal(_root);
 	@override late final Translations$appSearch$zh_CN appSearch = Translations$appSearch$zh_CN.internal(_root);
 	@override late final Translations$navigationPlacement$zh_CN navigationPlacement = Translations$navigationPlacement$zh_CN.internal(_root);
@@ -66,6 +67,16 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$richText$zh_CN richText = Translations$richText$zh_CN.internal(_root);
 	@override late final Translations$fanbox$zh_CN fanbox = Translations$fanbox$zh_CN.internal(_root);
 	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
+}
+
+// Path: novelText
+class Translations$novelText$zh_CN extends Translations$novelText$en_US {
+	Translations$novelText$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get loadFailed => '正文加载失败';
 }
 
 // Path: signOut
@@ -1463,6 +1474,7 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 extension on TranslationsZhCn {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'novelText.loadFailed' => '正文加载失败',
 			'signOut.title' => '退出 Pixiv 登录？',
 			'signOut.message' => '需要重新登录才能浏览。下载记录和设置会保留在这台设备上。',
 			'signOut.confirm' => '退出登录',
@@ -1974,9 +1986,9 @@ extension on TranslationsZhCn {
 			'illust.toast.linkCopied' => '已复制链接',
 			'illust.toast.linkCopyFailed' => '无法复制链接',
 			'illust.toast.alreadyDownloading' => '这一页已在下载队列中',
-			'illust.tooltip.play' => '播放动画',
 			_ => null,
 		} ?? switch (path) {
+			'illust.tooltip.play' => '播放动画',
 			'illust.tooltip.previousImage' => '上一张图片',
 			'illust.tooltip.nextImage' => '下一张图片',
 			'illust.tooltip.backToDetail' => '回到图片详情',

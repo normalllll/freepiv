@@ -1,4 +1,7 @@
 {
+  "novelText": {
+    "loadFailed": "The text couldn't load"
+  },
   "signOut": {
     "title": "Sign out of Pixiv?",
     "message": "You need to sign in again to browse. Downloads and settings stay on this device.",

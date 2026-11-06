@@ -15,7 +15,6 @@ import 'package:freepiv/features/novel/presentation/widgets/novel_detail_skeleto
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
 
 class NovelDetailPage extends ConsumerWidget {
@@ -30,10 +29,10 @@ class NovelDetailPage extends ConsumerWidget {
     final provider = novelDetailProvider(args);
     final detailValue = ref.watch(provider);
 
-    final visibleNovel = detailValue.asData?.value.novel ?? novel;
+    final visibleNovel = detailValue.asData?.value ?? novel;
     final content = detailValue.when(
       skipLoadingOnRefresh: false,
-      data: (detail) => NovelDetailContent(key: ValueKey<String>('novel-detail-content-${detail.novel.id}'), detail: detail),
+      data: (detail) => NovelDetailContent(key: ValueKey<String>('novel-detail-content-${detail.id}'), novel: detail),
       loading: () => const NovelDetailSkeletonPage(),
       error: (error, stackTrace) {
         if (_isNotFoundError(error)) {
@@ -54,18 +53,16 @@ class NovelDetailPage extends ConsumerWidget {
 }
 
 class NovelDetailContent extends ConsumerStatefulWidget {
-  const NovelDetailContent({required this.detail, super.key});
+  const NovelDetailContent({required this.novel, super.key});
 
-  final NovelDetailData detail;
+  final Novel novel;
 
   @override
   ConsumerState<NovelDetailContent> createState() => _NovelDetailContentState();
 }
 
 class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
-  Novel get _novel => widget.detail.novel;
-
-  WebviewNovel get _webviewNovel => widget.detail.webviewNovel;
+  Novel get _novel => widget.novel;
 
   @override
   void initState() {
@@ -76,7 +73,7 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
   @override
   void didUpdateWidget(covariant NovelDetailContent oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.detail.novel.id != widget.detail.novel.id) {
+    if (oldWidget.novel.id != widget.novel.id) {
       _ensureRelatedWorksLoaded();
     }
   }
@@ -84,6 +81,9 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
   @override
   Widget build(BuildContext context) {
     final relatedSource = ref.watch(novelRelatedWorksProvider(_novel.id));
+    // The text loads apart from the details; until then (or when it fails)
+    // the header and images use what the details carry.
+    final webviewNovel = ref.watch(novelTextProvider(_novel.id)).value;
 
     return DownloadSourceScope(
       source: novelDownloadSource(_novel),
@@ -112,10 +112,10 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
                           title: Text(_novel.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                         ),
                       SliverToBoxAdapter(
-                        child: NovelHeader(novel: _novel, webviewNovel: _webviewNovel, onStartReading: _openNovelReader),
+                        child: NovelHeader(novel: _novel, webviewNovel: webviewNovel, onStartReading: _openNovelReader),
                       ),
                       SliverToBoxAdapter(
-                        child: NovelImageGallery(novel: _novel, webviewNovel: _webviewNovel),
+                        child: NovelImageGallery(novel: _novel, webviewNovel: webviewNovel),
                       ),
                       SliverToBoxAdapter(
                         child: NovelCreatorSection(novel: _novel, onNovelTap: _openNovelDetail),

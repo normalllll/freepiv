@@ -39,6 +39,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	TranslationsZhHantTw $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsZhHantTw(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final Translations$novelText$zh_Hant_TW novelText = Translations$novelText$zh_Hant_TW.internal(_root);
 	@override late final Translations$signOut$zh_Hant_TW signOut = Translations$signOut$zh_Hant_TW.internal(_root);
 	@override late final Translations$appSearch$zh_Hant_TW appSearch = Translations$appSearch$zh_Hant_TW.internal(_root);
 	@override late final Translations$navigationPlacement$zh_Hant_TW navigationPlacement = Translations$navigationPlacement$zh_Hant_TW.internal(_root);
@@ -66,6 +67,16 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$richText$zh_Hant_TW richText = Translations$richText$zh_Hant_TW.internal(_root);
 	@override late final Translations$fanbox$zh_Hant_TW fanbox = Translations$fanbox$zh_Hant_TW.internal(_root);
 	@override late final Translations$pixivision$zh_Hant_TW pixivision = Translations$pixivision$zh_Hant_TW.internal(_root);
+}
+
+// Path: novelText
+class Translations$novelText$zh_Hant_TW extends Translations$novelText$en_US {
+	Translations$novelText$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get loadFailed => '正文載入失敗';
 }
 
 // Path: signOut
@@ -1463,6 +1474,7 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 extension on TranslationsZhHantTw {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'novelText.loadFailed' => '正文載入失敗',
 			'signOut.title' => '登出 Pixiv？',
 			'signOut.message' => '需要重新登入才能瀏覽。下載紀錄與設定會保留在這台裝置上。',
 			'signOut.confirm' => '登出',
@@ -1974,9 +1986,9 @@ extension on TranslationsZhHantTw {
 			'illust.toast.linkCopied' => '已複製連結',
 			'illust.toast.linkCopyFailed' => '無法複製連結',
 			'illust.toast.alreadyDownloading' => '這一頁已在下載佇列中',
-			'illust.tooltip.play' => '播放動畫',
 			_ => null,
 		} ?? switch (path) {
+			'illust.tooltip.play' => '播放動畫',
 			'illust.tooltip.previousImage' => '上一張圖片',
 			'illust.tooltip.nextImage' => '下一張圖片',
 			'illust.tooltip.backToDetail' => '回到圖片詳細資訊',

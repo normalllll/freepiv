@@ -39,6 +39,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	TranslationsJaJp $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsJaJp(meta: meta ?? this.$meta);
 
 	// Translations
+	@override late final _Translations$novelText$ja_JP novelText = _Translations$novelText$ja_JP._(_root);
 	@override late final _Translations$signOut$ja_JP signOut = _Translations$signOut$ja_JP._(_root);
 	@override late final _Translations$appSearch$ja_JP appSearch = _Translations$appSearch$ja_JP._(_root);
 	@override late final _Translations$navigationPlacement$ja_JP navigationPlacement = _Translations$navigationPlacement$ja_JP._(_root);
@@ -66,6 +67,16 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$richText$ja_JP richText = _Translations$richText$ja_JP._(_root);
 	@override late final _Translations$fanbox$ja_JP fanbox = _Translations$fanbox$ja_JP._(_root);
 	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
+}
+
+// Path: novelText
+class _Translations$novelText$ja_JP extends Translations$novelText$en_US {
+	_Translations$novelText$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get loadFailed => '本文を読み込めませんでした';
 }
 
 // Path: signOut
@@ -1463,6 +1474,7 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 extension on TranslationsJaJp {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
+			'novelText.loadFailed' => '本文を読み込めませんでした',
 			'signOut.title' => 'pixiv からログアウトしますか？',
 			'signOut.message' => '閲覧するには再度ログインが必要です。ダウンロードと設定はこの端末に残ります。',
 			'signOut.confirm' => 'ログアウト',
@@ -1974,9 +1986,9 @@ extension on TranslationsJaJp {
 			'illust.toast.linkCopied' => 'リンクをコピーしました',
 			'illust.toast.linkCopyFailed' => 'リンクをコピーできませんでした',
 			'illust.toast.alreadyDownloading' => 'このページはすでにダウンロード待ちです',
-			'illust.tooltip.play' => 'アニメーションを再生',
 			_ => null,
 		} ?? switch (path) {
+			'illust.tooltip.play' => 'アニメーションを再生',
 			'illust.tooltip.previousImage' => '前の画像',
 			'illust.tooltip.nextImage' => '次の画像',
 			'illust.tooltip.backToDetail' => '画像詳細に戻る',

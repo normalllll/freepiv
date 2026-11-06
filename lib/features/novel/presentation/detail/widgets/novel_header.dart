@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/features/downloads/presentation/content_image_menu.dart';
 import 'package:go_router/go_router.dart';
@@ -19,7 +21,7 @@ class NovelHeader extends StatelessWidget {
   const NovelHeader({required this.novel, required this.webviewNovel, required this.onStartReading, super.key});
 
   final Novel novel;
-  final WebviewNovel webviewNovel;
+  final WebviewNovel? webviewNovel;
   final VoidCallback onStartReading;
 
   @override
@@ -117,14 +119,15 @@ class NovelHeaderInfo extends StatelessWidget {
   const NovelHeaderInfo({required this.novel, required this.webviewNovel, required this.onStartReading, this.supportingOnly = false, super.key});
 
   final Novel novel;
-  final WebviewNovel webviewNovel;
+  final WebviewNovel? webviewNovel;
   final VoidCallback onStartReading;
   final bool supportingOnly;
 
   @override
   Widget build(BuildContext context) {
     final translations = t;
-    final caption = webviewNovel.caption.trim().isNotEmpty ? webviewNovel.caption : novel.caption;
+    final webCaption = webviewNovel?.caption ?? '';
+    final caption = webCaption.trim().isNotEmpty ? webCaption : novel.caption;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,29 +192,51 @@ class _NovelTitleGroup extends StatelessWidget {
   );
 }
 
-class _NovelReadButton extends StatelessWidget {
+/// Start or continue reading, once the text is in. A failed text leaves the
+/// rest of the page usable and offers to load it again here.
+class _NovelReadButton extends ConsumerWidget {
   const _NovelReadButton({required this.novel, required this.webviewNovel, required this.onStartReading});
 
   final Novel novel;
-  final WebviewNovel webviewNovel;
+  final WebviewNovel? webviewNovel;
   final VoidCallback onStartReading;
 
   @override
-  Widget build(BuildContext context) => Align(
-    alignment: AlignmentDirectional.centerStart,
-    child: FilledButton.icon(
-      onPressed: webviewNovel.text.trim().isEmpty ? null : onStartReading,
-      icon: const Icon(Icons.menu_book_outlined),
-      label: Text(novelReadingPosition(context, novel.id) == null ? t.novel.detail.startReading : t.novel.detail.continueReading),
-    ),
-  );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final text = ref.watch(novelTextProvider(novel.id));
+    final readable = text.value?.text.trim().isNotEmpty ?? false;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FilledButton.icon(
+          onPressed: readable ? onStartReading : null,
+          icon: const Icon(Icons.menu_book_outlined),
+          label: Text(novelReadingPosition(context, novel.id) == null ? t.novel.detail.startReading : t.novel.detail.continueReading),
+        ),
+        if (text.hasError && !text.isLoading)
+          Padding(
+            padding: const EdgeInsets.only(top: FrostGap.related),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: FrostText(t.novelText.loadFailed, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
+                ),
+                FrostButton.quiet(label: t.common.retry, onPressed: () => ref.read(novelTextProvider(novel.id).notifier).reload()),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 class NovelStatsStrip extends StatelessWidget {
   const NovelStatsStrip({required this.novel, required this.webviewNovel, super.key});
 
   final Novel novel;
-  final WebviewNovel webviewNovel;
+  final WebviewNovel? webviewNovel;
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +249,11 @@ class NovelStatsStrip extends StatelessWidget {
           label: t.user.meta.novelChars(count: novel.textLength),
           value: formatCount(novel.textLength),
         ),
-        NovelStatPill(icon: Icons.visibility_outlined, label: t.illust.stats.views, value: formatCount(math.max(novel.totalView, webviewNovel.rating.view))),
+        NovelStatPill(
+          icon: Icons.visibility_outlined,
+          label: t.illust.stats.views,
+          value: formatCount(math.max(novel.totalView, webviewNovel?.rating.view ?? 0)),
+        ),
         NovelStatPill(icon: Icons.favorite_border, label: t.illust.stats.bookmarks, value: formatCount(novel.totalBookmarks)),
         NovelStatPill(
           icon: Icons.menu_book_outlined,
@@ -265,14 +294,14 @@ class NovelRestrictionBadges extends StatelessWidget {
   const NovelRestrictionBadges({required this.novel, required this.webviewNovel, super.key});
 
   final Novel novel;
-  final WebviewNovel webviewNovel;
+  final WebviewNovel? webviewNovel;
 
   @override
   Widget build(BuildContext context) {
     final badges = <Widget>[
-      if (novel.novelAiType != 0 || webviewNovel.aiType > 0) NovelInfoBadge(label: context.t.illust.badge.aiArtwork, icon: Icons.auto_awesome_outlined),
+      if (novel.novelAiType != 0 || (webviewNovel?.aiType ?? 0) > 0) NovelInfoBadge(label: context.t.illust.badge.aiArtwork, icon: Icons.auto_awesome_outlined),
       if (novel.xRestrict > 0 || novel.isXRestricted) const NovelInfoBadge(label: 'R-18', icon: Icons.explicit_outlined),
-      if (novel.isOriginal || webviewNovel.isOriginal) NovelInfoBadge(label: context.t.illust.badge.original, icon: Icons.edit_note_outlined),
+      if (novel.isOriginal || webviewNovel?.isOriginal == true) NovelInfoBadge(label: context.t.illust.badge.original, icon: Icons.edit_note_outlined),
     ];
 
     if (badges.isEmpty) {
