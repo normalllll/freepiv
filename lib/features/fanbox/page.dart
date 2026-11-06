@@ -287,6 +287,7 @@ class FanboxCollectionView extends ConsumerWidget {
                         onTap: () => openFanboxPost(context, post.id, summary: post),
                         onCreator: () => openFanboxCreator(context, post.creatorId),
                       ),
+                      FanboxBookmarkEntry(:final postId) => FanboxBookmarkRow(postId: postId),
                       FanboxCreatorEntry(:final creator) => FanboxCreatorCard(
                         creator,
                         onTap: () => openFanboxCreator(context, creator.creatorId, summary: creator),
@@ -323,5 +324,31 @@ class _RetainedHeaderState extends State<_RetainedHeader> with AutomaticKeepAliv
   Widget build(BuildContext context) {
     super.build(context);
     return widget.child;
+  }
+}
+
+/// One local bookmark: a skeleton card while its post first loads, the post
+/// (also while it reloads), or a failed row that retries just this post.
+class FanboxBookmarkRow extends ConsumerWidget {
+  const FanboxBookmarkRow({required this.postId, super.key});
+
+  final String postId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final post = ref.watch(fanboxPostProvider(postId));
+    return switch (post) {
+      AsyncError(:final error, isLoading: false) => FrostCompactMessage.error(
+        error: error,
+        actionLabel: context.t.fanbox.retry,
+        onAction: () => ref.invalidate(fanboxPostProvider(postId)),
+      ),
+      AsyncValue(:final value?) => FanboxPostCard(
+        post: value,
+        onTap: () => openFanboxPost(context, value.id, summary: value),
+        onCreator: () => openFanboxCreator(context, value.creatorId),
+      ),
+      _ => const FanboxCollectionSkeleton(section: FanboxSection.bookmarks, itemCount: 1),
+    };
   }
 }

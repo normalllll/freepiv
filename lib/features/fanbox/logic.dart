@@ -117,6 +117,12 @@ class FanboxPostEntry extends FanboxEntry {
   final FanboxPost post;
 }
 
+/// A post saved in the local bookmarks, loaded on its own when shown.
+class FanboxBookmarkEntry extends FanboxEntry {
+  const FanboxBookmarkEntry(this.postId);
+  final String postId;
+}
+
 class FanboxCreatorEntry extends FanboxEntry {
   const FanboxCreatorEntry(this.creator);
   final FanboxCreator creator;
@@ -166,15 +172,13 @@ class FanboxBrowse extends _$FanboxBrowse {
     ref.onDispose(() => expiry?.cancel());
 
     ++_revision;
-    final api = await ref.watch(fanboxApiProvider.future);
     if (location.section == FanboxSection.bookmarks) {
+      // Each bookmark loads in its own row (fanboxPostProvider), so a slow or
+      // removed post holds up or fails only that row.
       final ids = await ref.watch(fanboxBookmarksProvider.future);
-      final posts = <FanboxEntry>[];
-      for (final id in ids) {
-        posts.add(FanboxPostEntry(await api.getPost(postId: id)));
-      }
-      return FanboxCollection(List.unmodifiable(posts));
+      return FanboxCollection(List.unmodifiable([for (final id in ids) FanboxBookmarkEntry(id)]));
     }
+    final api = await ref.watch(fanboxApiProvider.future);
     return _fetch(api, location, null, 1);
   }
 
@@ -205,6 +209,7 @@ class FanboxBrowse extends _$FanboxBrowse {
 
   String _key(FanboxEntry entry) => switch (entry) {
     FanboxPostEntry(:final post) => 'post:${post.id}',
+    FanboxBookmarkEntry(:final postId) => 'post:$postId',
     FanboxCreatorEntry(:final creator) => 'creator:${creator.creatorId}',
     FanboxPlanEntry(:final plan) => 'plan:${plan.id}',
     FanboxTagEntry(:final tag) => 'tag:${tag.name}',
@@ -255,8 +260,24 @@ class FanboxBrowse extends _$FanboxBrowse {
   }
 }
 
+/// A loaded post stays for ten minutes after nothing shows it, like the
+/// collections, so a bookmark row scrolled back into view is not fetched again.
+/// A failed load is dropped as soon as nothing shows it.
 @riverpod
-Future<FanboxPost> fanboxPost(Ref ref, String id) async => (await ref.watch(fanboxApiProvider.future)).getPost(postId: id);
+Future<FanboxPost> fanboxPost(Ref ref, String id) async {
+  final retention = ref.keepAlive();
+  Timer? expiry;
+  ref.onCancel(() => expiry = Timer(const Duration(minutes: 10), retention.close));
+  ref.onResume(() => expiry?.cancel());
+  ref.onDispose(() => expiry?.cancel());
+  try {
+    return await (await ref.watch(fanboxApiProvider.future)).getPost(postId: id);
+  } catch (_) {
+    retention.close();
+    rethrow;
+  }
+}
+
 @riverpod
 Future<FanboxCreator> fanboxCreator(Ref ref, String id) async => (await ref.watch(fanboxApiProvider.future)).getCreator(creatorId: id);
 @riverpod
