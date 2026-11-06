@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/app/theme/appearance_logic.dart';
@@ -15,15 +16,19 @@ import 'package:frost_ui/frost_ui.dart';
 import 'window/window_title.dart';
 
 class FreepivApp extends StatelessWidget {
-  const FreepivApp({required this.windowController, super.key});
+  const FreepivApp({required this.windowController, this.overrides = const [], super.key});
 
   /// Created and placed at startup; the app only hosts it.
   final FrostWindowController windowController;
+
+  /// Provider overrides, for the sample-data entrypoint.
+  final List<Override> overrides;
 
   @override
   Widget build(BuildContext context) {
     FrostToast.systemConfirmsClipboardCopies = systemConfirmsClipboardCopies;
     return ProviderScope(
+      overrides: overrides,
       child: TranslationProvider(child: _FreepivMaterialApp(windowController: windowController)),
     );
   }
