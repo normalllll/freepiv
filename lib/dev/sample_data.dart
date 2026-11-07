@@ -198,6 +198,9 @@ final sampleOverrideMap = <Object, Override>{
   novelCommentsProvider: novelCommentsProvider.overrideWith2((_) => _SampleNovelComments()),
   novelUserWorksProvider: novelUserWorksProvider.overrideWith2((_) => _SampleNovelUserWorks()),
   novelRelatedWorksProvider: novelRelatedWorksProvider.overrideWith2((_) => _SampleNovelRelated()),
+  commentRepliesSourceFactoryProvider: commentRepliesSourceFactoryProvider.overrideWithValue(
+    (workType, parentCommentId) => _SampleReplies(workType: workType, parentCommentId: parentCommentId),
+  ),
   workCommentsSourceProvider: workCommentsSourceProvider.overrideWith((ref, work) {
     final source = _SampleWorkComments(workType: work.$1, workId: work.$2);
     ref.onDispose(source.dispose);
@@ -318,8 +321,9 @@ List<Comment> sampleComments({int count = 6}) => [
           : ['Beautiful colours (heart)', 'I love the light in this one', '', 'The composition is so calm. Thank you for sharing!'][index % 4],
       date: '2026-11-0${1 + index % 6}T1$index:30:00+09:00',
       user: sampleUserPreviews(count: count)[index].user,
-      hasReplies: false,
-      stamp: index == 2 ? const Stamp(stampId: 301, stampUrl: '') : null,
+      // The first comment has replies, behind Load replies.
+      hasReplies: index == 0,
+      stamp: index == 2 ? Stamp(stampId: 301, stampUrl: sampleImageUrl(70, width: 96, height: 96)) : null,
     ),
 ];
 
@@ -527,6 +531,30 @@ class _SampleWorkComments extends WorkCommentsListSource {
 
   @override
   Future<CommentPageResult> loadNextPage(String nextUrl) async => const CommentPageResult(comments: []);
+}
+
+class _SampleReplies extends CommentRepliesListSource {
+  _SampleReplies({required super.workType, required super.parentCommentId});
+
+  @override
+  Future<CommentPageResult> loadFirstPage() async => CommentPageResult(
+    comments: [
+      for (final (index, comment) in sampleComments(count: 4).skip(1).indexed)
+        Comment(
+          id: 81000 + index,
+          comment: ['Thank you!', 'Same here, the evening light is lovely', 'Waiting for the next one'][index],
+          date: comment.date,
+          user: comment.user,
+          hasReplies: false,
+        ),
+    ],
+  );
+
+  @override
+  Future<CommentPageResult> loadNextPage(String nextUrl) async => const CommentPageResult(comments: []);
+
+  @override
+  Future<void> deleteOnServer(Comment comment) async {}
 }
 
 /// Every search request the sample app is asked for, newest last.
