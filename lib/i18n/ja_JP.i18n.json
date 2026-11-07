@@ -920,5 +920,11 @@
   },
   "commentsPage": {
     "empty": "まだコメントはありません。最初のコメントを書きましょう"
+  },
+  "searchPage": {
+    "minWidth": "最小の幅",
+    "minHeight": "最小の高さ",
+    "clearFilters": "絞り込みを解除",
+    "noUserFilters": "ユーザー検索には絞り込みがありません"
   }
 }

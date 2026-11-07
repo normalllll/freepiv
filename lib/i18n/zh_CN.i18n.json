@@ -920,5 +920,11 @@
   },
   "commentsPage": {
     "empty": "还没有评论，来写第一条"
+  },
+  "searchPage": {
+    "minWidth": "最小宽度",
+    "minHeight": "最小高度",
+    "clearFilters": "清除筛选",
+    "noUserFilters": "用户搜索没有筛选条件"
   }
 }

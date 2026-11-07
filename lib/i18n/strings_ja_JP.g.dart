@@ -74,6 +74,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$userPage$ja_JP userPage = _Translations$userPage$ja_JP._(_root);
 	@override late final _Translations$novelDetail$ja_JP novelDetail = _Translations$novelDetail$ja_JP._(_root);
 	@override late final _Translations$commentsPage$ja_JP commentsPage = _Translations$commentsPage$ja_JP._(_root);
+	@override late final _Translations$searchPage$ja_JP searchPage = _Translations$searchPage$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -820,6 +821,19 @@ class _Translations$commentsPage$ja_JP extends Translations$commentsPage$en_US {
 
 	// Translations
 	@override String get empty => 'まだコメントはありません。最初のコメントを書きましょう';
+}
+
+// Path: searchPage
+class _Translations$searchPage$ja_JP extends Translations$searchPage$en_US {
+	_Translations$searchPage$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get minWidth => '最小の幅';
+	@override String get minHeight => '最小の高さ';
+	@override String get clearFilters => '絞り込みを解除';
+	@override String get noUserFilters => 'ユーザー検索には絞り込みがありません';
 }
 
 // Path: settings.theme
@@ -2375,6 +2389,10 @@ extension on TranslationsJaJp {
 			'novelDetail.noRelated' => '関連小説はありません',
 			'novelDetail.authorNovels' => '作者のほかの小説',
 			'commentsPage.empty' => 'まだコメントはありません。最初のコメントを書きましょう',
+			'searchPage.minWidth' => '最小の幅',
+			'searchPage.minHeight' => '最小の高さ',
+			'searchPage.clearFilters' => '絞り込みを解除',
+			'searchPage.noUserFilters' => 'ユーザー検索には絞り込みがありません',
 			_ => null,
 		};
 	}

@@ -74,6 +74,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$userPage$zh_Hant_TW userPage = Translations$userPage$zh_Hant_TW.internal(_root);
 	@override late final Translations$novelDetail$zh_Hant_TW novelDetail = Translations$novelDetail$zh_Hant_TW.internal(_root);
 	@override late final Translations$commentsPage$zh_Hant_TW commentsPage = Translations$commentsPage$zh_Hant_TW.internal(_root);
+	@override late final Translations$searchPage$zh_Hant_TW searchPage = Translations$searchPage$zh_Hant_TW.internal(_root);
 }
 
 // Path: downloadEntry
@@ -820,6 +821,19 @@ class Translations$commentsPage$zh_Hant_TW extends Translations$commentsPage$en_
 
 	// Translations
 	@override String get empty => '還沒有留言，來寫第一則';
+}
+
+// Path: searchPage
+class Translations$searchPage$zh_Hant_TW extends Translations$searchPage$en_US {
+	Translations$searchPage$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get minWidth => '最小寬度';
+	@override String get minHeight => '最小高度';
+	@override String get clearFilters => '清除篩選';
+	@override String get noUserFilters => '使用者搜尋沒有篩選條件';
 }
 
 // Path: settings.theme
@@ -2375,6 +2389,10 @@ extension on TranslationsZhHantTw {
 			'novelDetail.noRelated' => '暫無相關小說',
 			'novelDetail.authorNovels' => '作者的其他小說',
 			'commentsPage.empty' => '還沒有留言，來寫第一則',
+			'searchPage.minWidth' => '最小寬度',
+			'searchPage.minHeight' => '最小高度',
+			'searchPage.clearFilters' => '清除篩選',
+			'searchPage.noUserFilters' => '使用者搜尋沒有篩選條件',
 			_ => null,
 		};
 	}

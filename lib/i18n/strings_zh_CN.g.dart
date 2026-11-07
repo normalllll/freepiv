@@ -74,6 +74,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$userPage$zh_CN userPage = Translations$userPage$zh_CN.internal(_root);
 	@override late final Translations$novelDetail$zh_CN novelDetail = Translations$novelDetail$zh_CN.internal(_root);
 	@override late final Translations$commentsPage$zh_CN commentsPage = Translations$commentsPage$zh_CN.internal(_root);
+	@override late final Translations$searchPage$zh_CN searchPage = Translations$searchPage$zh_CN.internal(_root);
 }
 
 // Path: downloadEntry
@@ -820,6 +821,19 @@ class Translations$commentsPage$zh_CN extends Translations$commentsPage$en_US {
 
 	// Translations
 	@override String get empty => '还没有评论，来写第一条';
+}
+
+// Path: searchPage
+class Translations$searchPage$zh_CN extends Translations$searchPage$en_US {
+	Translations$searchPage$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get minWidth => '最小宽度';
+	@override String get minHeight => '最小高度';
+	@override String get clearFilters => '清除筛选';
+	@override String get noUserFilters => '用户搜索没有筛选条件';
 }
 
 // Path: settings.theme
@@ -2375,6 +2389,10 @@ extension on TranslationsZhCn {
 			'novelDetail.noRelated' => '暂无相关小说',
 			'novelDetail.authorNovels' => '作者的其他小说',
 			'commentsPage.empty' => '还没有评论，来写第一条',
+			'searchPage.minWidth' => '最小宽度',
+			'searchPage.minHeight' => '最小高度',
+			'searchPage.clearFilters' => '清除筛选',
+			'searchPage.noUserFilters' => '用户搜索没有筛选条件',
 			_ => null,
 		};
 	}

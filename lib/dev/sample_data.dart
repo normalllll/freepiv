@@ -14,6 +14,7 @@ import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
+import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -191,6 +192,23 @@ final sampleOverrideMap = <Object, Override>{
   novelRelatedWorksProvider: novelRelatedWorksProvider.overrideWith2((_) => _SampleNovelRelated()),
   workCommentsSourceProvider: workCommentsSourceProvider.overrideWith((ref, work) {
     final source = _SampleWorkComments(workType: work.$1, workId: work.$2);
+    ref.onDispose(source.dispose);
+    return source;
+  }),
+  searchIllustResultSourceProvider: searchIllustResultSourceProvider.overrideWith((ref, request) {
+    sampleSearchRequests.add(request);
+    final source = SampleSearchIllusts(request: request);
+    ref.onDispose(source.dispose);
+    return source;
+  }),
+  searchNovelResultSourceProvider: searchNovelResultSourceProvider.overrideWith((ref, request) {
+    sampleSearchRequests.add(request);
+    final source = _SampleSearchNovels(request: request);
+    ref.onDispose(source.dispose);
+    return source;
+  }),
+  searchUserResultSourceProvider: searchUserResultSourceProvider.overrideWith((ref, keyword) {
+    final source = _SampleSearchUsers(keyword: keyword);
     ref.onDispose(source.dispose);
     return source;
   }),
@@ -495,4 +513,37 @@ class _SampleWorkComments extends WorkCommentsListSource {
 
   @override
   Future<CommentPageResult> loadNextPage(String nextUrl) async => const CommentPageResult(comments: []);
+}
+
+/// Every search request the sample app is asked for, newest last.
+final sampleSearchRequests = <SearchResultRequest>[];
+
+class SampleSearchIllusts extends SearchIllustListSource {
+  SampleSearchIllusts({required super.request});
+
+  @override
+  Future<SearchIllustPageResult> loadFirstPage() async => SearchIllustPageResult(illusts: sampleIllusts(count: 18), searchSpanLimit: 0);
+
+  @override
+  Future<SearchIllustPageResult> loadNextPage(String nextUrl) async => const SearchIllustPageResult(illusts: [], searchSpanLimit: 0);
+}
+
+class _SampleSearchNovels extends SearchNovelListSource {
+  _SampleSearchNovels({required super.request});
+
+  @override
+  Future<SearchNovelPageResult> loadFirstPage() async => SearchNovelPageResult(novels: sampleNovels(count: 8), searchSpanLimit: 0);
+
+  @override
+  Future<SearchNovelPageResult> loadNextPage(String nextUrl) async => const SearchNovelPageResult(novels: [], searchSpanLimit: 0);
+}
+
+class _SampleSearchUsers extends SearchUserListSource {
+  _SampleSearchUsers({required super.keyword});
+
+  @override
+  Future<UserPageResult> loadFirstPage() async => UserPageResult(userPreviews: sampleUserPreviews(count: 6));
+
+  @override
+  Future<UserPageResult> loadNextPage(String nextUrl) async => const UserPageResult(userPreviews: []);
 }

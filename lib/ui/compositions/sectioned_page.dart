@@ -16,6 +16,7 @@ class AppSectionedPage extends StatefulWidget {
     this.onRefresh,
     this.trailing,
     this.scrollControllers,
+    this.sectionKey,
     super.key,
   });
 
@@ -34,6 +35,10 @@ class AppSectionedPage extends StatefulWidget {
 
   /// One per section, to scroll a section back to its top.
   final List<ScrollController>? scrollControllers;
+
+  /// What a section shows; when it changes the section starts afresh at
+  /// its top, as a new search does.
+  final Object? Function(int section)? sectionKey;
 
   @override
   State<AppSectionedPage> createState() => _AppSectionedPageState();
@@ -60,6 +65,7 @@ class _AppSectionedPageState extends State<AppSectionedPage> {
             children: [
               for (var section = 0; section < widget.tabs.length; section++)
                 FrostKeepAlive(
+                  key: ValueKey((section, widget.sectionKey?.call(section))),
                   child: FrostChromeActiveBody(
                     active: widget.controller.index == section,
                     child: Builder(

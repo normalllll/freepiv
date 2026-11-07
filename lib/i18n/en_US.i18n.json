@@ -920,5 +920,11 @@
   },
   "commentsPage": {
     "empty": "No comments yet. Write the first one"
+  },
+  "searchPage": {
+    "minWidth": "Minimum width",
+    "minHeight": "Minimum height",
+    "clearFilters": "Clear filters",
+    "noUserFilters": "User search has no filters"
   }
 }

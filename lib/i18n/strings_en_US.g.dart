@@ -76,6 +76,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$userPage$en_US userPage = Translations$userPage$en_US.internal(_root);
 	late final Translations$novelDetail$en_US novelDetail = Translations$novelDetail$en_US.internal(_root);
 	late final Translations$commentsPage$en_US commentsPage = Translations$commentsPage$en_US.internal(_root);
+	late final Translations$searchPage$en_US searchPage = Translations$searchPage$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -822,6 +823,19 @@ class Translations$commentsPage$en_US {
 
 	// Translations
 	String get empty => 'No comments yet. Write the first one';
+}
+
+// Path: searchPage
+class Translations$searchPage$en_US {
+	Translations$searchPage$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get minWidth => 'Minimum width';
+	String get minHeight => 'Minimum height';
+	String get clearFilters => 'Clear filters';
+	String get noUserFilters => 'User search has no filters';
 }
 
 // Path: settings.theme
@@ -2377,6 +2391,10 @@ extension on Translations {
 			'novelDetail.noRelated' => 'No related novels',
 			'novelDetail.authorNovels' => 'More by the author',
 			'commentsPage.empty' => 'No comments yet. Write the first one',
+			'searchPage.minWidth' => 'Minimum width',
+			'searchPage.minHeight' => 'Minimum height',
+			'searchPage.clearFilters' => 'Clear filters',
+			'searchPage.noUserFilters' => 'User search has no filters',
 			_ => null,
 		};
 	}
