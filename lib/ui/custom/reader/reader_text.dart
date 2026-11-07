@@ -68,25 +68,17 @@ class ReaderChapterTitle extends StatelessWidget {
   );
 }
 
-/// The body's text can be selected across paragraphs; Ctrl+C copies it.
-/// Frost's selection handles and menu are not open to App text yet
-/// (freepiv-20261107-selection-area-for-app-text), so there are none.
+/// The body's text can be selected across paragraphs with Frost's handles,
+/// highlight and copy menu; Ctrl+C copies, Escape clears.
 class ReaderSelectableText extends StatelessWidget {
-  const ReaderSelectableText({required this.child, required this.focusNode, this.onSelectionChanged, this.regionKey, super.key});
+  const ReaderSelectableText({required this.child, this.onSelectionChanged, this.areaKey, super.key});
 
   final Widget child;
-  final FocusNode focusNode;
   final ValueChanged<SelectedContent?>? onSelectionChanged;
 
-  /// Reaches the region to clear its selection.
-  final GlobalKey<SelectableRegionState>? regionKey;
+  /// Reaches the area to clear its selection.
+  final GlobalKey<FrostSelectionAreaState>? areaKey;
 
   @override
-  Widget build(BuildContext context) => SelectableRegion(
-    key: regionKey,
-    focusNode: focusNode,
-    selectionControls: emptyTextSelectionControls,
-    onSelectionChanged: onSelectionChanged,
-    child: child,
-  );
+  Widget build(BuildContext context) => FrostSelectionArea(key: areaKey, onSelectionChanged: onSelectionChanged, child: child);
 }

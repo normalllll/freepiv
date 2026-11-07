@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
@@ -235,6 +236,45 @@ void main() {
     await settlePilot(tester);
     expect(_reader(tester).chromeVisible, !shown, reason: 'the text toggles them');
   });
+
+  testWidgets('selecting text with the mouse pauses auto scroll; Escape clears the selection before it leaves', (tester) async {
+    await _mount(tester);
+    await tester.tap(find.byKey(const ValueKey('reader-auto-scroll')));
+    await settlePilot(tester, frames: 4);
+    expect(_reader(tester).autoScrolling, isTrue);
+
+    final paragraph = find.textContaining('1.2').first;
+    final from = tester.getTopLeft(paragraph) + const Offset(2, 8);
+    final gesture = await tester.startGesture(from, kind: PointerDeviceKind.mouse);
+    await tester.pump();
+    await gesture.moveTo(from + const Offset(220, 0));
+    await tester.pump();
+    await gesture.up();
+    await settlePilot(tester, frames: 3);
+    expect(_reader(tester).autoScrolling, isFalse, reason: 'a selection pauses auto scroll');
+    final paused = _position(tester).pixels;
+    await tester.pump(const Duration(seconds: 1));
+    expect(_position(tester).pixels, paused);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settlePilot(tester);
+    expect(openedLocations, isEmpty, reason: 'the first Escape only clears the selection');
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settlePilot(tester);
+    expect(openedLocations.last, AppLocations.novel(70000));
+  });
+
+  testWidgets('touch selection has handles and a copy menu, and pauses auto scroll', (tester) async {
+    await _mount(tester, size: phoneSize);
+    await tester.tap(find.byKey(const ValueKey('reader-auto-scroll')));
+    await settlePilot(tester, frames: 4);
+    expect(_reader(tester).autoScrolling, isTrue);
+    await tester.longPress(find.textContaining('1.2').first);
+    await settlePilot(tester, frames: 4);
+    expect(_reader(tester).autoScrolling, isFalse);
+    expect(find.byWidgetPredicate((widget) => widget is CustomPaint && widget.painter.runtimeType.toString() == '_SelectionHandlePainter'), findsNWidgets(2));
+    expect(find.widgetWithText(FrostButton, 'Copy'), findsOneWidget);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
   testWidgets('Escape leaves the reader for the novel', (tester) async {
     await _mount(tester);

@@ -106,8 +106,7 @@ class NovelReaderContent extends ConsumerStatefulWidget {
 class NovelReaderContentState extends ConsumerState<NovelReaderContent> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   final _scroll = ScrollController();
   final _keyboard = FocusNode(debugLabel: 'novel-reader-shortcuts');
-  final _selectionFocus = FocusNode(debugLabel: 'novel-reader-selection');
-  final _region = GlobalKey<SelectableRegionState>();
+  final _region = GlobalKey<FrostSelectionAreaState>();
   final _topBar = GlobalKey();
   final _blockKeys = <int, GlobalKey>{};
   late ReaderModel _model;
@@ -220,7 +219,6 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     WidgetsBinding.instance.removeObserver(this);
     _scroll.dispose();
     _keyboard.dispose();
-    _selectionFocus.dispose();
     super.dispose();
   }
 
@@ -552,8 +550,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
               return false;
             },
             child: ReaderSelectableText(
-              regionKey: _region,
-              focusNode: _selectionFocus,
+              areaKey: _region,
               onSelectionChanged: _selectionChanged,
               child: _TapToToggle(
                 onTap: () {
