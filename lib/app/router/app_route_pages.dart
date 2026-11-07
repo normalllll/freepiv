@@ -25,7 +25,6 @@ import 'package:freepiv/features/search/presentation/search_user_result_page.dar
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/artwork_hero.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -185,9 +184,11 @@ Page<void> originalImageViewerPage(BuildContext context, GoRouterState state) {
 
 Page<void> illustDetailPage(BuildContext context, GoRouterState state) {
   // A card opening the work passes its own hero tag with it, so exactly that
-  // card's image flies into the stage (see ArtworkHeroTag).
-  final (Illust? illust, ArtworkHeroTag? heroTag) = switch (state.extra) {
-    (illust: final Illust illust, heroTag: final ArtworkHeroTag heroTag) => (illust, heroTag),
+  // card's image flies into the stage.
+  final (Illust? illust, FrostMediaHeroTag? heroTag) = switch (state.extra) {
+    (illust: final Illust illust, heroTag: final FrostMediaHeroTag heroTag) => (illust, heroTag),
+    // Cards of the pages rebuilt in step 3 still pass their old tag.
+    (illust: final Illust illust, heroTag: _) => (illust, null),
     final Illust illust => (illust, null),
     _ => (null, null),
   };
@@ -197,12 +198,9 @@ Page<void> illustDetailPage(BuildContext context, GoRouterState state) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
   }
 
-  return FrostDetailPage(
+  return FrostDetailPage.media(
     key: state.pageKey,
-    child: ArtworkHeroScope(
-      tag: heroTag,
-      child: IllustDetailPage(illustId: illustId, illust: illust),
-    ),
+    child: IllustDetailPage(illustId: illustId, illust: illust, heroTag: heroTag),
   );
 }
 

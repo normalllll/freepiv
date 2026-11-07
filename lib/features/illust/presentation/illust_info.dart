@@ -1,0 +1,477 @@
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
+import 'package:freepiv/features/comments/presentation/comment_thread_item.dart';
+import 'package:freepiv/features/downloads/presentation/download_flight.dart';
+import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
+import 'package:freepiv/features/illust/logic/ugoira_playback.dart';
+import 'package:freepiv/features/illust/presentation/artwork_actions.dart';
+import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/ui/compositions/artwork_card.dart';
+import 'package:freepiv/ui/compositions/content_rows.dart';
+import 'package:freepiv/ui/compositions/work_actions.dart';
+import 'package:frost_ui/frost_ui.dart';
+import 'package:frost_ui/social.dart';
+import 'package:go_router/go_router.dart';
+
+/// What the info column acts on: the work, its pages and the page on stage.
+@immutable
+class IllustInfoContext {
+  const IllustInfoContext({required this.illust, required this.pages, required this.page, this.playback});
+
+  final Illust illust;
+  final List<ArtworkPageImage> pages;
+  final int page;
+  final UgoiraPlayback? playback;
+
+  bool get ugoira => playback != null;
+}
+
+/// The heading of the info column: title, author line, the action bar and
+/// the meta line.
+class IllustInfoHeading extends StatelessWidget {
+  const IllustInfoHeading({required this.info, super.key});
+
+  final IllustInfoContext info;
+
+  @override
+  Widget build(BuildContext context) {
+    final illust = info.illust;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: FrostGap.group,
+      children: [
+        FrostText(illust.title, content: true, role: FrostTextRole.title2, selectable: true),
+        IllustAuthorLine(user: illust.user),
+        IllustActionBar(info: info),
+        IllustMetaLine(illust: illust),
+      ],
+    );
+  }
+}
+
+/// Avatar, name (opening the author's page) and Follow.
+class IllustAuthorLine extends StatelessWidget {
+  const IllustAuthorLine({required this.user, super.key});
+
+  final User user;
+
+  @override
+  Widget build(BuildContext context) {
+    void open() => unawaited(GoRouter.of(context).push(AppLocations.user(user.id)));
+    return LayoutBuilder(
+      builder: (context, constraints) => Row(
+        spacing: FrostGap.related,
+        children: [
+          Semantics(
+            button: true,
+            label: user.name,
+            excludeSemantics: true,
+            child: FrostClickSurface(
+              shape: const FrostClickShape.circle(),
+              onTap: open,
+              child: AppUserAvatar(user: user),
+            ),
+          ),
+          Expanded(
+            child: FrostClickSurface(
+              onTap: open,
+              child: FrostText(user.name, content: true, role: FrostTextRole.headline, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ),
+          ),
+          // At large text Follow takes at most half the line, never more.
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth / 2),
+            child: AppFollowButton(user: user, prominent: false),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bookmark as the page's one solid button, then download, copy link and
+/// More.
+class IllustActionBar extends ConsumerWidget {
+  const IllustActionBar({required this.info, super.key});
+
+  final IllustInfoContext info;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.t;
+    final illust = info.illust;
+    final page = info.pages[info.page.clamp(0, info.pages.length - 1)];
+    return Wrap(
+      spacing: FrostGap.related,
+      runSpacing: FrostGap.related,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        AppBookmarkBuilder(
+          workId: illust.id,
+          initiallyBookmarked: illust.isBookmarked,
+          builder: (context, bookmarked, toggle) {
+            final count = illust.totalBookmarks + (bookmarked && !illust.isBookmarked ? 1 : 0) - (!bookmarked && illust.isBookmarked ? 1 : 0);
+            return FrostButton.prominent(
+              label: t.illustDetail.bookmarkCount(count: formatCount(count)),
+              icon: bookmarked ? PivIcons.heartFilled : PivIcons.heart,
+              tooltip: bookmarked ? t.illust.tooltip.removeBookmark : t.illust.tooltip.addBookmark,
+              onPressed: toggle,
+            );
+          },
+        ),
+        Builder(
+          builder: (buttonContext) => FrostButton.icon(
+            icon: PivIcons.download,
+            label: info.ugoira ? t.illustDetail.downloadGif : t.illust.contextMenu.download,
+            onPressed: () {
+              final origin = DownloadFlight.originOf(buttonContext);
+              if (info.playback case final playback?) {
+                unawaited(downloadUgoiraGif(playback, illust, page: page, origin: origin));
+              } else {
+                unawaited(downloadArtworkPage(illust, info.page, page, origin: origin));
+              }
+            },
+          ),
+        ),
+        FrostButton.icon(icon: PivIcons.link, label: t.illust.contextMenu.copyLink, onPressed: () => unawaited(copyArtworkLink(illust.id))),
+        FrostMenuAnchor(
+          entries: illustMoreMenu(context, info),
+          builder: (context, focusNode, toggle) => FrostButton.icon(icon: PivIcons.more, label: FrostScope.labelsOf(context).more, onPressed: toggle),
+        ),
+      ],
+    );
+  }
+}
+
+/// More: download every page, copy the picture (desktop), open on Pixiv,
+/// copy the ID; for an animation, the GIF instead of the pages.
+List<FrostMenuEntry> illustMoreMenu(BuildContext context, IllustInfoContext info) {
+  final t = context.t;
+  final illust = info.illust;
+  final page = info.pages[info.page.clamp(0, info.pages.length - 1)];
+  return [
+    if (info.playback case final playback?) ...[
+      FrostMenuAction(
+        t.illustDetail.downloadGif,
+        leading: const FrostGlyph.icon(PivIcons.download),
+        onSelected: () => unawaited(downloadUgoiraGif(playback, illust, page: page, origin: DownloadFlight.originOf(context))),
+      ),
+      if (isDesktopPlatform)
+        FrostMenuAction(t.illustDetail.copyGif, leading: const FrostGlyph.icon(PivIcons.copy), onSelected: () => unawaited(copyUgoiraGif(playback))),
+    ] else ...[
+      if (info.pages.length > 1)
+        FrostMenuAction(
+          t.illust.contextMenu.downloadAll,
+          leading: const FrostGlyph.icon(PivIcons.images),
+          onSelected: () => unawaited(downloadArtworkPages(illust, info.pages, origin: DownloadFlight.originOf(context))),
+        ),
+      if (isDesktopPlatform)
+        FrostMenuAction(t.illust.contextMenu.copyImage, leading: const FrostGlyph.icon(PivIcons.copy), onSelected: () => unawaited(copyArtworkImage(page))),
+    ],
+    FrostMenuAction(
+      t.illust.contextMenu.openOriginal,
+      leading: const FrostGlyph.icon(PivIcons.externalLink),
+      onSelected: () => unawaited(openArtworkOnPixiv(illust.id)),
+    ),
+    FrostMenuAction(t.illustDetail.copyId, leading: const FrostGlyph.icon(PivIcons.copy), onSelected: () => unawaited(copyArtworkId(illust.id))),
+  ];
+}
+
+/// Views · date · size · pages, and the AI / R-18 marks.
+class IllustMetaLine extends StatelessWidget {
+  const IllustMetaLine({required this.illust, super.key});
+
+  final Illust illust;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final badges = [
+      if (illust.illustAiType == 2) FrostBadge(label: t.illust.badge.aiArtwork, tone: FrostBadgeTone.info),
+      if (illust.xRestrict == 1) const FrostBadge(label: 'R-18', tone: FrostBadgeTone.negative),
+      if (illust.xRestrict >= 2) const FrostBadge(label: 'R-18G', tone: FrostBadgeTone.negative),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: FrostGap.related,
+      children: [
+        FrostMetaLine(
+          items: [
+            t.illustDetail.views(count: formatCount(illust.totalView)),
+            formatPixivDate(illust.createDate),
+            '${illust.width} × ${illust.height}',
+            if (illust.pageCount > 1) t.illustDetail.pages(count: illust.pageCount),
+          ],
+        ),
+        if (badges.isNotEmpty) Wrap(spacing: FrostGap.inline, children: badges),
+      ],
+    );
+  }
+}
+
+/// The caption, tags and the work's details.
+class IllustAbout extends StatefulWidget {
+  const IllustAbout({required this.illust, super.key});
+
+  final Illust illust;
+
+  /// Tags shown before the rest are expanded.
+  static const shownTags = 5;
+
+  @override
+  State<IllustAbout> createState() => _IllustAboutState();
+}
+
+class _IllustAboutState extends State<IllustAbout> {
+  bool _allTags = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final illust = widget.illust;
+    final caption = plainTextFromHtml(illust.caption).trim();
+    final tags = _allTags ? illust.tags : illust.tags.take(IllustAbout.shownTags).toList();
+    final hidden = illust.tags.length - IllustAbout.shownTags;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: FrostGap.group,
+      children: [
+        if (caption.isNotEmpty) FrostExpandableText(text: caption),
+        if (illust.tags.isNotEmpty)
+          FrostWrap(
+            children: [
+              for (final tag in tags)
+                FrostTag(
+                  label: '#${tag.name}',
+                  detail: tag.translatedName,
+                  style: FrostTagStyle.topic,
+                  onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.tagSearch(tag.name))),
+                  contextMenu: [
+                    FrostMenuAction(
+                      t.illustDetail.copyTag,
+                      leading: const FrostGlyph.icon(PivIcons.copy),
+                      onSelected: () => unawaited(_copy(t.illust.tags.tag, tag.name)),
+                    ),
+                  ],
+                ),
+              if (hidden > 0)
+                FrostButton.quiet(
+                  label: _allTags ? t.illust.tags.showLess : t.illust.tags.showMore(count: hidden),
+                  onPressed: () => setState(() => _allTags = !_allTags),
+                ),
+            ],
+          ),
+        FrostDisclosure(
+          title: t.illust.section.details,
+          child: FrostKeyValueList(
+            entries: [
+              FrostKeyValue.copyable(label: t.common.id, value: '${illust.id}'),
+              FrostKeyValue(label: t.illust.metadata.type, value: illust.kind),
+              FrostKeyValue(label: t.illust.stats.size, value: '${illust.width} × ${illust.height}'),
+              FrostKeyValue(label: t.illust.metadata.created, value: formatPixivDate(illust.createDate)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _copy(String label, String value) async {
+    try {
+      await copyTextToClipboard(value);
+      FrostToast.copied(t.illust.toast.copiedValue(label: label, value: value));
+    } catch (error) {
+      toastErrorWithCause(t.illust.toast.copyFailed(label: label), error);
+    }
+  }
+}
+
+/// A part of the info column that loads on its own: its title, then its
+/// content, a skeleton, or its own retry.
+class _Section<T> extends StatelessWidget {
+  const _Section({required this.title, required this.value, required this.onRetry, required this.failed, required this.builder, this.skeleton, this.action});
+
+  final String title;
+  final AsyncValue<T> value;
+  final VoidCallback onRetry;
+  final String failed;
+  final Widget Function(T data) builder;
+  final Widget? skeleton;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    spacing: FrostGap.related,
+    children: [
+      FrostSectionHeader(title: title, trailing: [?action]),
+      value.when(
+        data: builder,
+        loading: () => skeleton ?? const AppRowsSkeleton(count: 2),
+        error: (error, _) => Row(
+          children: [
+            Expanded(
+              child: FrostText(failed, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
+            ),
+            FrostButton.quiet(label: context.t.common.retry, onPressed: onRetry),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+/// The first comments and the way to all of them.
+class IllustCommentsPreview extends ConsumerWidget {
+  const IllustCommentsPreview({required this.illust, super.key});
+
+  final Illust illust;
+
+  /// Comments the preview shows.
+  static const shown = 3;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.t;
+    final provider = illustCommentsProvider(illust.id);
+    final total = illust.totalComments;
+    return _Section(
+      title: total == null ? t.illust.section.comments : t.illust.section.commentsWithCount(count: total),
+      value: ref.watch(provider),
+      onRetry: () => unawaited(ref.read(provider.notifier).reload()),
+      failed: t.illust.comments.failed,
+      builder: (page) {
+        if (page.comments.isEmpty) return FrostText(t.illust.comments.empty, role: FrostTextRole.footnote, tone: FrostTextTone.secondary);
+        return FutureBuilder(
+          future: pixivCommentAssets,
+          builder: (context, assets) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final comment in page.comments.take(shown))
+                FrostThread(item: appCommentItem(context, comment, assets: assets.data ?? PixivCommentAssets.empty)),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: FrostButton.quiet(
+                  label: total == null ? t.illust.comments.open : t.illustDetail.allComments(count: total),
+                  onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.illustComments(illust.id), extra: total)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// The author's other works on a shelf, with the way to their page.
+class IllustAuthorWorks extends ConsumerWidget {
+  const IllustAuthorWorks({required this.illust, super.key});
+
+  final Illust illust;
+
+  static const tileExtent = 120.0;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.t;
+    final provider = illustUserWorksProvider(illust.user.id);
+    return ref
+        .watch(provider)
+        .when(
+          data: (page) {
+            final works = page.illusts.where((work) => work.id != illust.id).toList();
+            if (works.isEmpty) return const SizedBox.shrink();
+            return FrostShelf(
+              title: t.illust.section.recentWorks,
+              inset: 0,
+              action: FrostButton.quiet(label: t.home.seeMore, onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.user(illust.user.id)))),
+              itemCount: works.length,
+              itemExtent: tileExtent,
+              height: tileExtent,
+              itemBuilder: (context, index) => AppArtworkCard.tile(illust: works[index]),
+            );
+          },
+          loading: () =>
+              _Section(title: t.illust.section.recentWorks, value: const AsyncLoading<void>(), onRetry: () {}, failed: '', builder: (_) => const SizedBox()),
+          error: (error, _) => _Section(
+            title: t.illust.section.recentWorks,
+            value: AsyncError<void>(error, StackTrace.empty),
+            onRetry: () => unawaited(ref.read(provider.notifier).reload()),
+            failed: t.illust.works.failed,
+            builder: (_) => const SizedBox(),
+          ),
+        );
+  }
+}
+
+/// Eight related works and the way to all of them.
+class IllustRelatedPreview extends ConsumerStatefulWidget {
+  const IllustRelatedPreview({required this.illust, super.key});
+
+  final Illust illust;
+
+  static const shown = 8;
+
+  @override
+  ConsumerState<IllustRelatedPreview> createState() => _IllustRelatedPreviewState();
+}
+
+class _IllustRelatedPreviewState extends ConsumerState<IllustRelatedPreview> {
+  @override
+  void initState() {
+    super.initState();
+    final source = ref.read(illustRelatedWorksProvider(widget.illust.id));
+    if (!source.initialized && !source.busy) unawaited(source.refresh(true));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final source = ref.watch(illustRelatedWorksProvider(widget.illust.id));
+    return StreamBuilder(
+      stream: source.rebuild,
+      builder: (context, _) {
+        final works = source.items.take(IllustRelatedPreview.shown).toList();
+        final Widget body = switch (source.phase) {
+          _ when works.isNotEmpty => FrostWaterfallGrid<Illust>(
+            items: works,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemBuilder: (context, work, index) => AppArtworkCard(illust: work),
+          ),
+          _ when source.lastError != null => Row(
+            children: [
+              Expanded(
+                child: FrostText(t.illust.related.failed, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
+              ),
+              FrostButton.quiet(label: t.common.retry, onPressed: () => unawaited(source.refresh(true))),
+            ],
+          ),
+          _ when source.initialized => FrostText(t.illust.related.empty, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
+          _ => const AppArtworkWaterfallSkeleton(count: 4),
+        };
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: FrostGap.related,
+          children: [
+            FrostSectionHeader(
+              title: t.illust.section.relatedWorks,
+              actionLabel: works.isEmpty ? null : t.illustDetail.moreRelated,
+              onAction: works.isEmpty ? null : () => unawaited(GoRouter.of(context).push(AppLocations.illustRelated(widget.illust.id), extra: widget.illust)),
+            ),
+            body,
+          ],
+        );
+      },
+    );
+  }
+}

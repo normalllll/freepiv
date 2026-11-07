@@ -69,6 +69,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$fanbox$zh_CN fanbox = Translations$fanbox$zh_CN.internal(_root);
 	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
 	@override late final Translations$artworkCard$zh_CN artworkCard = Translations$artworkCard$zh_CN.internal(_root);
+	@override late final Translations$illustDetail$zh_CN illustDetail = Translations$illustDetail$zh_CN.internal(_root);
 }
 
 // Path: downloadEntry
@@ -740,6 +741,28 @@ class Translations$artworkCard$zh_CN extends Translations$artworkCard$en_US {
 	@override String semantics({required Object title, required Object author}) => '${title}，作者 ${author}';
 	@override String menuHeader({required Object title, required Object author}) => '${title} · ${author}';
 	@override String get openAuthor => '打开作者';
+}
+
+// Path: illustDetail
+class Translations$illustDetail$zh_CN extends Translations$illustDetail$en_US {
+	Translations$illustDetail$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get downloadGif => '下载 GIF';
+	@override String get copyGif => '复制 GIF';
+	@override String get pause => '暂停';
+	@override late final Translations$illustDetail$ugoira$zh_CN ugoira = Translations$illustDetail$ugoira$zh_CN.internal(_root);
+	@override String bookmarkCount({required Object count}) => '收藏 ${count}';
+	@override String get copyId => '复制 ID';
+	@override String views({required Object count}) => '${count} 次浏览';
+	@override String pages({required Object count}) => '${count} 页';
+	@override String get copyTag => '复制标签';
+	@override String allComments({required Object count}) => '查看全部 ${count} 条评论';
+	@override String get moreRelated => '查看更多';
+	@override late final Translations$illustDetail$tabs$zh_CN tabs = Translations$illustDetail$tabs$zh_CN.internal(_root);
+	@override String get missing => '作品不存在或无权查看';
 }
 
 // Path: settings.theme
@@ -1497,6 +1520,32 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 	@override String scrollSpeedValue({required Object speed}) => '${speed} 像素/秒';
 }
 
+// Path: illustDetail.ugoira
+class Translations$illustDetail$ugoira$zh_CN extends Translations$illustDetail$ugoira$en_US {
+	Translations$illustDetail$ugoira$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get metadata => '正在读取动图信息';
+	@override String get frames => '正在下载帧';
+	@override String get extracting => '正在解压帧';
+	@override String get preparing => '正在准备播放';
+	@override String get composing => '正在合成 GIF';
+	@override String get saving => '正在保存 GIF';
+}
+
+// Path: illustDetail.tabs
+class Translations$illustDetail$tabs$zh_CN extends Translations$illustDetail$tabs$en_US {
+	Translations$illustDetail$tabs$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get about => '简介';
+	@override String get comments => '评论';
+}
+
 /// The flat map containing all translations for locale <zh-CN>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -2233,6 +2282,25 @@ extension on TranslationsZhCn {
 			'artworkCard.semantics' => ({required Object title, required Object author}) => '${title}，作者 ${author}',
 			'artworkCard.menuHeader' => ({required Object title, required Object author}) => '${title} · ${author}',
 			'artworkCard.openAuthor' => '打开作者',
+			'illustDetail.downloadGif' => '下载 GIF',
+			'illustDetail.copyGif' => '复制 GIF',
+			'illustDetail.pause' => '暂停',
+			'illustDetail.ugoira.metadata' => '正在读取动图信息',
+			'illustDetail.ugoira.frames' => '正在下载帧',
+			'illustDetail.ugoira.extracting' => '正在解压帧',
+			'illustDetail.ugoira.preparing' => '正在准备播放',
+			'illustDetail.ugoira.composing' => '正在合成 GIF',
+			'illustDetail.ugoira.saving' => '正在保存 GIF',
+			'illustDetail.bookmarkCount' => ({required Object count}) => '收藏 ${count}',
+			'illustDetail.copyId' => '复制 ID',
+			'illustDetail.views' => ({required Object count}) => '${count} 次浏览',
+			'illustDetail.pages' => ({required Object count}) => '${count} 页',
+			'illustDetail.copyTag' => '复制标签',
+			'illustDetail.allComments' => ({required Object count}) => '查看全部 ${count} 条评论',
+			'illustDetail.moreRelated' => '查看更多',
+			'illustDetail.tabs.about' => '简介',
+			'illustDetail.tabs.comments' => '评论',
+			'illustDetail.missing' => '作品不存在或无权查看',
 			_ => null,
 		};
 	}

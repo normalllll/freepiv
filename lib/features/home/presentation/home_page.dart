@@ -11,6 +11,7 @@ import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
+import 'package:freepiv/ui/compositions/work_actions.dart' show AppCardBookmarkButton;
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/ui/compositions/sectioned_page.dart';
@@ -182,7 +183,7 @@ List<Widget> _artworkSlivers(BuildContext context, HomeIllustListSource source, 
                     ),
                     itemCount: ranking.length,
                     itemExtent: extent,
-                    height: extent,
+                    height: extent + AppArtworkCardFooter.extentOf(context),
                     itemBuilder: (context, index) => AppArtworkCard(illust: ranking[index], rank: index + 1, square: true),
                   );
                 },
@@ -221,7 +222,7 @@ List<Widget> _novelSlivers(BuildContext context, HomeNovelListSource source) {
                 ),
                 itemCount: ranking.length,
                 itemExtent: AppNovelRow.coverWidth * 1.5,
-                height: AppNovelRow.coverWidth * 1.5 * 1.414,
+                height: AppNovelRow.coverWidth * 1.5 * 1.414 + AppArtworkCardFooter.extentOf(context),
                 itemBuilder: (context, index) => _NovelCover(novel: ranking[index], rank: index + 1),
               ),
             ),
@@ -254,7 +255,8 @@ List<Widget> _userSlivers(BuildContext context, HomeUserListSource source) => [
   ),
 ];
 
-/// A ranked novel in the ranking shelf: its cover with the rank.
+/// A ranked novel in the ranking shelf: its cover with the rank, then its
+/// title and author with the bookmark button.
 class _NovelCover extends StatelessWidget {
   const _NovelCover({required this.novel, required this.rank});
 
@@ -266,6 +268,11 @@ class _NovelCover extends StatelessWidget {
     media: AppPixivImage(url: novel.imageUrls.medium, aspectRatio: 1 / 1.414, radius: 0),
     aspectRatio: 1 / 1.414,
     topStart: FrostBadge(label: '$rank', tone: FrostBadgeTone.onMedia),
+    footer: AppArtworkCardFooter(
+      title: novel.title,
+      author: novel.user.name,
+      bookmark: AppCardBookmarkButton(workId: novel.id, initiallyBookmarked: novel.isBookmarked, novel: true),
+    ),
     semanticLabel: context.t.artworkCard.semantics(title: novel.title, author: novel.user.name),
     onPressed: () => GoRouter.of(context).push(AppLocations.novel(novel.id), extra: novel),
   );

@@ -870,5 +870,30 @@
     "semantics": "$title（$author）",
     "menuHeader": "$title · $author",
     "openAuthor": "作者を開く"
+  },
+  "illustDetail": {
+    "downloadGif": "GIF をダウンロード",
+    "copyGif": "GIF をコピー",
+    "pause": "一時停止",
+    "ugoira": {
+      "metadata": "うごイラの情報を読み込み中",
+      "frames": "フレームをダウンロード中",
+      "extracting": "フレームを展開中",
+      "preparing": "再生を準備中",
+      "composing": "GIF を作成中",
+      "saving": "GIF を保存中"
+    },
+    "bookmarkCount": "ブックマーク $count",
+    "copyId": "ID をコピー",
+    "views": "閲覧 $count",
+    "pages": "$count ページ",
+    "copyTag": "タグをコピー",
+    "allComments": "コメント $count 件をすべて見る",
+    "moreRelated": "もっと見る",
+    "tabs": {
+      "about": "概要",
+      "comments": "コメント"
+    },
+    "missing": "作品が存在しないか、閲覧できません"
   }
 }

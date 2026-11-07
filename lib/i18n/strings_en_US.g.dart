@@ -71,6 +71,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$fanbox$en_US fanbox = Translations$fanbox$en_US.internal(_root);
 	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
 	late final Translations$artworkCard$en_US artworkCard = Translations$artworkCard$en_US.internal(_root);
+	late final Translations$illustDetail$en_US illustDetail = Translations$illustDetail$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -742,6 +743,28 @@ class Translations$artworkCard$en_US {
 	String semantics({required Object title, required Object author}) => '${title} by ${author}';
 	String menuHeader({required Object title, required Object author}) => '${title} · ${author}';
 	String get openAuthor => 'Open author';
+}
+
+// Path: illustDetail
+class Translations$illustDetail$en_US {
+	Translations$illustDetail$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get downloadGif => 'Download GIF';
+	String get copyGif => 'Copy GIF';
+	String get pause => 'Pause';
+	late final Translations$illustDetail$ugoira$en_US ugoira = Translations$illustDetail$ugoira$en_US.internal(_root);
+	String bookmarkCount({required Object count}) => 'Bookmark ${count}';
+	String get copyId => 'Copy ID';
+	String views({required Object count}) => '${count} views';
+	String pages({required Object count}) => '${count} pages';
+	String get copyTag => 'Copy tag';
+	String allComments({required Object count}) => 'View all ${count} comments';
+	String get moreRelated => 'View more';
+	late final Translations$illustDetail$tabs$en_US tabs = Translations$illustDetail$tabs$en_US.internal(_root);
+	String get missing => 'This work does not exist or is not visible to you';
 }
 
 // Path: settings.theme
@@ -1499,6 +1522,32 @@ class Translations$novel$reader$en_US {
 	String scrollSpeedValue({required Object speed}) => '${speed} px/s';
 }
 
+// Path: illustDetail.ugoira
+class Translations$illustDetail$ugoira$en_US {
+	Translations$illustDetail$ugoira$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get metadata => 'Loading the animation';
+	String get frames => 'Downloading frames';
+	String get extracting => 'Extracting frames';
+	String get preparing => 'Preparing playback';
+	String get composing => 'Composing the GIF';
+	String get saving => 'Saving the GIF';
+}
+
+// Path: illustDetail.tabs
+class Translations$illustDetail$tabs$en_US {
+	Translations$illustDetail$tabs$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get about => 'About';
+	String get comments => 'Comments';
+}
+
 /// The flat map containing all translations for locale <en-US>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -2235,6 +2284,25 @@ extension on Translations {
 			'artworkCard.semantics' => ({required Object title, required Object author}) => '${title} by ${author}',
 			'artworkCard.menuHeader' => ({required Object title, required Object author}) => '${title} · ${author}',
 			'artworkCard.openAuthor' => 'Open author',
+			'illustDetail.downloadGif' => 'Download GIF',
+			'illustDetail.copyGif' => 'Copy GIF',
+			'illustDetail.pause' => 'Pause',
+			'illustDetail.ugoira.metadata' => 'Loading the animation',
+			'illustDetail.ugoira.frames' => 'Downloading frames',
+			'illustDetail.ugoira.extracting' => 'Extracting frames',
+			'illustDetail.ugoira.preparing' => 'Preparing playback',
+			'illustDetail.ugoira.composing' => 'Composing the GIF',
+			'illustDetail.ugoira.saving' => 'Saving the GIF',
+			'illustDetail.bookmarkCount' => ({required Object count}) => 'Bookmark ${count}',
+			'illustDetail.copyId' => 'Copy ID',
+			'illustDetail.views' => ({required Object count}) => '${count} views',
+			'illustDetail.pages' => ({required Object count}) => '${count} pages',
+			'illustDetail.copyTag' => 'Copy tag',
+			'illustDetail.allComments' => ({required Object count}) => 'View all ${count} comments',
+			'illustDetail.moreRelated' => 'View more',
+			'illustDetail.tabs.about' => 'About',
+			'illustDetail.tabs.comments' => 'Comments',
+			'illustDetail.missing' => 'This work does not exist or is not visible to you',
 			_ => null,
 		};
 	}

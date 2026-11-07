@@ -870,5 +870,30 @@
     "semantics": "$title，作者 $author",
     "menuHeader": "$title · $author",
     "openAuthor": "打开作者"
+  },
+  "illustDetail": {
+    "downloadGif": "下载 GIF",
+    "copyGif": "复制 GIF",
+    "pause": "暂停",
+    "ugoira": {
+      "metadata": "正在读取动图信息",
+      "frames": "正在下载帧",
+      "extracting": "正在解压帧",
+      "preparing": "正在准备播放",
+      "composing": "正在合成 GIF",
+      "saving": "正在保存 GIF"
+    },
+    "bookmarkCount": "收藏 $count",
+    "copyId": "复制 ID",
+    "views": "$count 次浏览",
+    "pages": "$count 页",
+    "copyTag": "复制标签",
+    "allComments": "查看全部 $count 条评论",
+    "moreRelated": "查看更多",
+    "tabs": {
+      "about": "简介",
+      "comments": "评论"
+    },
+    "missing": "作品不存在或无权查看"
   }
 }

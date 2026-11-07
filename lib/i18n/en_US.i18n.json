@@ -870,5 +870,30 @@
     "semantics": "$title by $author",
     "menuHeader": "$title · $author",
     "openAuthor": "Open author"
+  },
+  "illustDetail": {
+    "downloadGif": "Download GIF",
+    "copyGif": "Copy GIF",
+    "pause": "Pause",
+    "ugoira": {
+      "metadata": "Loading the animation",
+      "frames": "Downloading frames",
+      "extracting": "Extracting frames",
+      "preparing": "Preparing playback",
+      "composing": "Composing the GIF",
+      "saving": "Saving the GIF"
+    },
+    "bookmarkCount": "Bookmark $count",
+    "copyId": "Copy ID",
+    "views": "$count views",
+    "pages": "$count pages",
+    "copyTag": "Copy tag",
+    "allComments": "View all $count comments",
+    "moreRelated": "View more",
+    "tabs": {
+      "about": "About",
+      "comments": "Comments"
+    },
+    "missing": "This work does not exist or is not visible to you"
   }
 }

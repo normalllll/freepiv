@@ -5,7 +5,9 @@ import 'package:flutter/widgets.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
+import 'package:freepiv/features/illust/logic/ugoira_playback.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/src/rust/api/download.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -158,4 +160,76 @@ Future<void> downloadArtworkPages(Illust illust, List<ArtworkPageImage> pages, {
 Future<void> downloadArtwork(Illust illust, {required ViewerImageQuality quality, required PreviewImageQuality previewQuality, Rect? origin}) {
   final pages = artworkPages(illust, quality, previewQuality);
   return pages.length == 1 ? downloadArtworkPage(illust, 0, pages.single, origin: origin) : downloadArtworkPages(illust, pages, origin: origin);
+}
+
+/// Downloads an animation as a GIF through the download manager: the task
+/// shows while the frames are fetched and composed, and fails there too.
+Future<void> downloadUgoiraGif(UgoiraPlayback playback, Illust illust, {required ArtworkPageImage page, Rect? origin}) {
+  final previewUrl = page.previewUrl;
+  return _downloadUgoiraGif(playback, illust, previewUrl: previewUrl, sourceUrl: page.originalUrl, origin: origin);
+}
+
+Future<void> _downloadUgoiraGif(UgoiraPlayback playback, Illust illust, {required String previewUrl, required String sourceUrl, Rect? origin}) async {
+  try {
+    await downloadManager.ensureReadyForDownloads();
+    DownloadFlight.launch(
+      origin: origin,
+      artwork: AppPixivImage(url: previewUrl),
+    );
+    final filename = '${illust.id}.gif';
+    final file = await downloadManager.saveGenerated(
+      origin: ContentFile(generatedDownloadAddress('ugoira', filename)),
+      source: artworkSourceOf(illust),
+      sourceUrl: Uri.parse(sourceUrl),
+      filename: filename,
+      thumbnailUrl: previewUrl,
+      generate: (onProgress) async {
+        playback.exportProgress = onProgress;
+        try {
+          final bytes = await playback.gif();
+          playback.saving();
+          return bytes;
+        } finally {
+          playback.exportProgress = null;
+        }
+      },
+    );
+    playback.exported();
+    FrostToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
+  } catch (error) {
+    playback.failed();
+    toastErrorWithCause(t.illust.toast.downloadFailed, error);
+  }
+}
+
+/// Copies an animation's GIF (desktop).
+Future<void> copyUgoiraGif(UgoiraPlayback playback) async {
+  const label = 'GIF';
+  FrostToast.info(t.illust.toast.copying(label: label));
+  try {
+    final bytes = await playback.gif();
+    await copyImageBytesToClipboard(bytes, mimeType: 'image/gif');
+    playback.exported();
+    FrostToast.copied(t.illust.toast.copied(label: label));
+  } catch (error) {
+    playback.failed();
+    toastErrorWithCause(t.illust.toast.copyFailed(label: label), error);
+  }
+}
+
+/// Copies a page's picture at viewing quality (desktop).
+Future<void> copyArtworkImage(ArtworkPageImage page) async {
+  final label = t.illust.imageLabels.image;
+  FrostToast.info(t.illust.toast.copying(label: label));
+  try {
+    Uint8List? bytes;
+    await for (final event in downloadToMemory(url: page.viewUrl, proxy: AppSettings.proxySettings.activeUrl)) {
+      if (event case FrbDownloadBytesEvent_Done(bytes: final done)) bytes = done;
+    }
+    if (bytes == null) throw StateError('The image arrived without data.');
+    await copyImageBytesToClipboard(bytes, mimeType: imageMimeTypeFromUrl(page.viewUrl));
+    FrostToast.copied(t.illust.toast.copied(label: label));
+  } catch (error) {
+    toastErrorWithCause(t.illust.toast.copyFailed(label: label), error);
+  }
 }

@@ -37,6 +37,7 @@ class AppPixivImage extends ConsumerStatefulWidget {
     this.fit = BoxFit.cover,
     this.headers,
     this.semanticLabel,
+    this.placeholderUrl,
     super.key,
   });
 
@@ -48,6 +49,10 @@ class AppPixivImage extends ConsumerStatefulWidget {
   final BoxFit fit;
   final Map<String, String>? headers;
   final String? semanticLabel;
+
+  /// A smaller picture already cached (the card's preview), shown until
+  /// [url] arrives.
+  final String? placeholderUrl;
 
   @override
   ConsumerState<AppPixivImage> createState() => _AppPixivImageState();
@@ -67,6 +72,14 @@ class _AppPixivImageState extends ConsumerState<AppPixivImage> {
       radius: widget.radius,
       fit: widget.fit,
       semanticLabel: widget.semanticLabel,
+      placeholderBuilder: switch (widget.placeholderUrl) {
+        final placeholder? when placeholder.isNotEmpty && placeholder != widget.url => (context, _) => Image(
+          image: pixivImageProvider(ref, placeholder, headers: widget.headers),
+          fit: widget.fit,
+          excludeFromSemantics: true,
+        ),
+        _ => null,
+      },
       errorBuilder: (context, error) => Center(
         child: FrostButton.iconOnMedia(icon: PivIcons.refreshCw, label: context.t.common.retry, onPressed: () => setState(() => _revision++)),
       ),

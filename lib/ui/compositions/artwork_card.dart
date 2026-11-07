@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,11 +38,15 @@ List<Widget> artworkRestrictionBadges(BuildContext context, Illust illust) {
   ];
 }
 
-/// A work in a feed, a shelf or a grid: only the image,
-/// its corner marks and the always-shown bookmark button. The title and the
-/// author live in the card's menu and on the detail page.
+/// A work in a feed, a shelf or a grid: the image with its
+/// corner marks, then the title and the author with the bookmark button at
+/// the end of that text.
 class AppArtworkCard extends ConsumerWidget {
-  const AppArtworkCard({required this.illust, this.rank, this.square = false, super.key});
+  const AppArtworkCard({required this.illust, this.rank, this.square = false, super.key}) : tile = false;
+
+  /// A small square of the work in a strip (a work's "Recent works"): the
+  /// image with its corner marks, without the title, author and bookmark.
+  const AppArtworkCard.tile({required this.illust, super.key}) : rank = null, square = true, tile = true;
 
   final Illust illust;
 
@@ -50,6 +55,9 @@ class AppArtworkCard extends ConsumerWidget {
 
   /// Square tiles (the ranking shelf) cut the same preview from its centre.
   final bool square;
+
+  /// The image alone, see [AppArtworkCard.tile].
+  final bool tile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -70,7 +78,7 @@ class AppArtworkCard extends ConsumerWidget {
               : illust.pageCount > 1
               ? FrostBadge(label: '${illust.pageCount}', icon: PivIcons.images, tone: FrostBadgeTone.onMedia)
               : null,
-          bottomEnd: AppCardBookmarkButton(workId: illust.id, initiallyBookmarked: illust.isBookmarked),
+          footer: tile ? null : AppArtworkCardFooter(title: illust.title, author: illust.user.name, bookmark: AppCardBookmarkButton(workId: illust.id, initiallyBookmarked: illust.isBookmarked)),
           semanticLabel: t.artworkCard.semantics(title: illust.title, author: illust.user.name),
           onPressed: () => openArtwork(cardContext, illust, tag),
           contextMenu: artworkMenu(cardContext, ref, illust),
@@ -86,6 +94,62 @@ class AppArtworkCard extends ConsumerWidget {
       builder: (context, tag) => card(tag),
     );
   }
+}
+
+/// The text under a work's card: its title on one line and its author below
+/// it, with [bookmark] at the end.
+class AppArtworkCardFooter extends StatelessWidget {
+  const AppArtworkCardFooter({required this.title, required this.author, required this.bookmark, super.key});
+
+  final String title;
+  final String author;
+  final Widget bookmark;
+
+  /// How much a card's footer adds below its image, for rows of cards that
+  /// need a fixed height (shelves).
+  static double extentOf(BuildContext context) =>
+      // Frost puts eight pixels between the image and the footer.
+      8 + _height(context);
+
+  /// One line of [role] at the current text scale. Fixed line boxes keep
+  /// every card the same height whatever a font rounds its metrics to.
+  static double _line(BuildContext context, FrostTextRole role) {
+    final style = FrostTypography.of(context).style(role);
+    return MediaQuery.textScalerOf(context).scale(style.fontSize!) * style.height!;
+  }
+
+  static double _height(BuildContext context) =>
+      math.max(_line(context, FrostTextRole.subheadline) + _gap + _line(context, FrostTextRole.footnote), FrostControlSize.compact.height(context));
+
+  static const _gap = 2.0;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: _height(context),
+    child: Row(
+      spacing: FrostGap.inline,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: _gap,
+            children: [
+              SizedBox(
+                height: _line(context, FrostTextRole.subheadline),
+                child: FrostText(title, role: FrostTextRole.subheadline, content: true, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+              SizedBox(
+                height: _line(context, FrostTextRole.footnote),
+                child: FrostText(author, role: FrostTextRole.footnote, tone: FrostTextTone.secondary, content: true, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ],
+          ),
+        ),
+        bookmark,
+      ],
+    ),
+  );
 }
 
 /// A work as a small square in a row (a user's works): the feeds' preview
@@ -158,6 +222,32 @@ List<FrostMenuEntry> artworkMenu(BuildContext context, WidgetRef ref, Illust ill
   ];
 }
 
+/// A work's card while it loads, the height and shape of the loaded one: the
+/// frame of its image, then its title, author and bookmark as bones.
+class AppArtworkCardSkeleton extends StatelessWidget {
+  const AppArtworkCardSkeleton({required this.aspectRatio, super.key});
+
+  final double aspectRatio;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: FrostScope.labelsOf(context).loading,
+    excludeSemantics: true,
+    child: IgnorePointer(
+      child: FrostMediaCard(
+        aspectRatio: aspectRatio,
+        // Frost records the shading inside the media clip this way.
+        media: FrostMediaFrame.skeleton(aspectRatio: null),
+        footer: AppArtworkCardFooter(
+          title: 'A work title',
+          author: 'Sample artist',
+          bookmark: FrostButton.icon(icon: PivIcons.heart, label: context.t.illust.tooltip.addBookmark, size: FrostControlSize.compact, onPressed: () {}),
+        ).frostSkeleton(true),
+      ),
+    ),
+  );
+}
+
 /// First-load placeholders the size of a feed's cards.
 class AppArtworkWaterfallSkeleton extends StatelessWidget {
   const AppArtworkWaterfallSkeleton({this.count = 12, super.key});
@@ -171,6 +261,6 @@ class AppArtworkWaterfallSkeleton extends StatelessWidget {
     items: List.generate(count, (index) => index),
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
-    itemBuilder: (context, _, index) => FrostMediaCard.skeleton(aspectRatio: _ratios[index % _ratios.length], footer: null),
+    itemBuilder: (context, _, index) => AppArtworkCardSkeleton(aspectRatio: _ratios[index % _ratios.length]),
   );
 }

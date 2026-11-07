@@ -7,6 +7,7 @@ import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/features/downloads/presentation/download_entry.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
+import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
@@ -172,6 +173,9 @@ final sampleOverrideMap = <Object, Override>{
     ref.onDispose(source.dispose);
     return source;
   }),
+  illustCommentsProvider: illustCommentsProvider.overrideWith2((_) => _SampleIllustComments()),
+  illustUserWorksProvider: illustUserWorksProvider.overrideWith2((_) => _SampleUserWorks()),
+  illustRelatedWorksProvider: illustRelatedWorksProvider.overrideWith2((_) => _SampleRelatedWorks()),
   searchTrendingTagsProvider: searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
   downloadTasksProvider: downloadTasksProvider.overrideWith((ref) => Stream.value(sampleDownloadTasks)),
   fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
@@ -252,4 +256,48 @@ class SampleUserSource extends HomeUserListSource {
 
   @override
   Future<UserPageResult> loadNextPage(String nextUrl) async => const UserPageResult(userPreviews: []);
+}
+
+/// Comments on a sample work: text with emoji, a stamp and a reply thread.
+List<Comment> sampleComments({int count = 6}) => [
+  for (var index = 0; index < count; index++)
+    Comment(
+      id: 80000 + index,
+      comment: index == 2
+          ? ''
+          : ['Beautiful colours (heart)', 'I love the light in this one', '', 'The composition is so calm. Thank you for sharing!'][index % 4],
+      date: '2026-11-0${1 + index % 6}T1$index:30:00+09:00',
+      user: sampleUserPreviews(count: count)[index].user,
+      hasReplies: index == 1,
+      stamp: index == 2 ? const Stamp(stampId: 301, stampUrl: '') : null,
+    ),
+];
+
+class _SampleIllustComments extends IllustComments {
+  @override
+  Future<CommentPageResult> build(int illustId) async => CommentPageResult(comments: sampleComments());
+}
+
+class _SampleUserWorks extends IllustUserWorks {
+  @override
+  Future<IllustPageResult> build(int userId) async => IllustPageResult(illusts: sampleIllusts(count: 10), rankingIllusts: const []);
+}
+
+class _SampleRelatedSource extends IllustRelatedListSource {
+  _SampleRelatedSource({required super.illustId});
+
+  @override
+  Future<IllustPageResult> loadFirstPage() async => IllustPageResult(illusts: sampleIllusts(count: 20).reversed.toList(), rankingIllusts: const []);
+
+  @override
+  Future<IllustPageResult> loadNextPage(String nextUrl) async => const IllustPageResult(illusts: [], rankingIllusts: []);
+}
+
+class _SampleRelatedWorks extends IllustRelatedWorks {
+  @override
+  IllustRelatedListSource build(int illustId) {
+    final source = _SampleRelatedSource(illustId: illustId);
+    ref.onDispose(source.dispose);
+    return source;
+  }
 }

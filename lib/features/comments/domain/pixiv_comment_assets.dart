@@ -114,7 +114,7 @@ List<InlineSpan> buildPixivEmojiInlineSpans(
   final spans = <InlineSpan>[];
   var index = 0;
 
-  for (final match in _emojiTokenPattern.allMatches(text)) {
+  for (final match in pixivEmojiTokenPattern.allMatches(text)) {
     final name = match.group(1);
     final emoji = name == null ? null : emojiByName[name];
     if (emoji == null) {
@@ -150,4 +150,4 @@ List<InlineSpan> buildPixivEmojiInlineSpans(
   return spans;
 }
 
-final _emojiTokenPattern = RegExp(r'\(([A-Za-z0-9_]+)\)');
+final pixivEmojiTokenPattern = RegExp(r'\(([A-Za-z0-9_]+)\)');

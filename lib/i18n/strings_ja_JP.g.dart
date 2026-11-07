@@ -69,6 +69,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$fanbox$ja_JP fanbox = _Translations$fanbox$ja_JP._(_root);
 	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
 	@override late final _Translations$artworkCard$ja_JP artworkCard = _Translations$artworkCard$ja_JP._(_root);
+	@override late final _Translations$illustDetail$ja_JP illustDetail = _Translations$illustDetail$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -740,6 +741,28 @@ class _Translations$artworkCard$ja_JP extends Translations$artworkCard$en_US {
 	@override String semantics({required Object title, required Object author}) => '${title}（${author}）';
 	@override String menuHeader({required Object title, required Object author}) => '${title} · ${author}';
 	@override String get openAuthor => '作者を開く';
+}
+
+// Path: illustDetail
+class _Translations$illustDetail$ja_JP extends Translations$illustDetail$en_US {
+	_Translations$illustDetail$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get downloadGif => 'GIF をダウンロード';
+	@override String get copyGif => 'GIF をコピー';
+	@override String get pause => '一時停止';
+	@override late final _Translations$illustDetail$ugoira$ja_JP ugoira = _Translations$illustDetail$ugoira$ja_JP._(_root);
+	@override String bookmarkCount({required Object count}) => 'ブックマーク ${count}';
+	@override String get copyId => 'ID をコピー';
+	@override String views({required Object count}) => '閲覧 ${count}';
+	@override String pages({required Object count}) => '${count} ページ';
+	@override String get copyTag => 'タグをコピー';
+	@override String allComments({required Object count}) => 'コメント ${count} 件をすべて見る';
+	@override String get moreRelated => 'もっと見る';
+	@override late final _Translations$illustDetail$tabs$ja_JP tabs = _Translations$illustDetail$tabs$ja_JP._(_root);
+	@override String get missing => '作品が存在しないか、閲覧できません';
 }
 
 // Path: settings.theme
@@ -1497,6 +1520,32 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 	@override String scrollSpeedValue({required Object speed}) => '${speed} px/秒';
 }
 
+// Path: illustDetail.ugoira
+class _Translations$illustDetail$ugoira$ja_JP extends Translations$illustDetail$ugoira$en_US {
+	_Translations$illustDetail$ugoira$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get metadata => 'うごイラの情報を読み込み中';
+	@override String get frames => 'フレームをダウンロード中';
+	@override String get extracting => 'フレームを展開中';
+	@override String get preparing => '再生を準備中';
+	@override String get composing => 'GIF を作成中';
+	@override String get saving => 'GIF を保存中';
+}
+
+// Path: illustDetail.tabs
+class _Translations$illustDetail$tabs$ja_JP extends Translations$illustDetail$tabs$en_US {
+	_Translations$illustDetail$tabs$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get about => '概要';
+	@override String get comments => 'コメント';
+}
+
 /// The flat map containing all translations for locale <ja-JP>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -2233,6 +2282,25 @@ extension on TranslationsJaJp {
 			'artworkCard.semantics' => ({required Object title, required Object author}) => '${title}（${author}）',
 			'artworkCard.menuHeader' => ({required Object title, required Object author}) => '${title} · ${author}',
 			'artworkCard.openAuthor' => '作者を開く',
+			'illustDetail.downloadGif' => 'GIF をダウンロード',
+			'illustDetail.copyGif' => 'GIF をコピー',
+			'illustDetail.pause' => '一時停止',
+			'illustDetail.ugoira.metadata' => 'うごイラの情報を読み込み中',
+			'illustDetail.ugoira.frames' => 'フレームをダウンロード中',
+			'illustDetail.ugoira.extracting' => 'フレームを展開中',
+			'illustDetail.ugoira.preparing' => '再生を準備中',
+			'illustDetail.ugoira.composing' => 'GIF を作成中',
+			'illustDetail.ugoira.saving' => 'GIF を保存中',
+			'illustDetail.bookmarkCount' => ({required Object count}) => 'ブックマーク ${count}',
+			'illustDetail.copyId' => 'ID をコピー',
+			'illustDetail.views' => ({required Object count}) => '閲覧 ${count}',
+			'illustDetail.pages' => ({required Object count}) => '${count} ページ',
+			'illustDetail.copyTag' => 'タグをコピー',
+			'illustDetail.allComments' => ({required Object count}) => 'コメント ${count} 件をすべて見る',
+			'illustDetail.moreRelated' => 'もっと見る',
+			'illustDetail.tabs.about' => '概要',
+			'illustDetail.tabs.comments' => 'コメント',
+			'illustDetail.missing' => '作品が存在しないか、閲覧できません',
 			_ => null,
 		};
 	}

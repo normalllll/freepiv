@@ -43,7 +43,7 @@ class AppBookmarkBuilder extends ConsumerWidget {
   }
 }
 
-/// The bookmark button over a work's card, always shown, filled once
+/// The bookmark button at the end of a work card's text, filled once
 /// bookmarked.
 class AppCardBookmarkButton extends StatelessWidget {
   const AppCardBookmarkButton({required this.workId, required this.initiallyBookmarked, this.novel = false, super.key});
@@ -57,9 +57,10 @@ class AppCardBookmarkButton extends StatelessWidget {
     workId: workId,
     initiallyBookmarked: initiallyBookmarked,
     novel: novel,
-    builder: (context, bookmarked, toggle) => FrostButton.iconOnMedia(
+    builder: (context, bookmarked, toggle) => FrostButton.icon(
       icon: bookmarked ? PivIcons.heartFilled : PivIcons.heart,
       label: bookmarked ? context.t.illust.tooltip.removeBookmark : context.t.illust.tooltip.addBookmark,
+      size: FrostControlSize.compact,
       selected: bookmarked,
       onPressed: toggle,
     ),
