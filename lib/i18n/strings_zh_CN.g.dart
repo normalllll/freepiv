@@ -70,6 +70,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
 	@override late final Translations$artworkCard$zh_CN artworkCard = Translations$artworkCard$zh_CN.internal(_root);
 	@override late final Translations$illustDetail$zh_CN illustDetail = Translations$illustDetail$zh_CN.internal(_root);
+	@override late final Translations$viewer$zh_CN viewer = Translations$viewer$zh_CN.internal(_root);
 }
 
 // Path: downloadEntry
@@ -763,6 +764,17 @@ class Translations$illustDetail$zh_CN extends Translations$illustDetail$en_US {
 	@override String get moreRelated => '查看更多';
 	@override late final Translations$illustDetail$tabs$zh_CN tabs = Translations$illustDetail$tabs$zh_CN.internal(_root);
 	@override String get missing => '作品不存在或无权查看';
+}
+
+// Path: viewer
+class Translations$viewer$zh_CN extends Translations$viewer$en_US {
+	Translations$viewer$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String position({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}';
+	@override String get loading => '正在加载原图';
 }
 
 // Path: settings.theme
@@ -2301,6 +2313,8 @@ extension on TranslationsZhCn {
 			'illustDetail.tabs.about' => '简介',
 			'illustDetail.tabs.comments' => '评论',
 			'illustDetail.missing' => '作品不存在或无权查看',
+			'viewer.position' => ({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}',
+			'viewer.loading' => '正在加载原图',
 			_ => null,
 		};
 	}

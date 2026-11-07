@@ -895,5 +895,9 @@
       "comments": "留言"
     },
     "missing": "作品不存在或無權查看"
+  },
+  "viewer": {
+    "position": "$title · $page / $total",
+    "loading": "正在載入原圖"
   }
 }

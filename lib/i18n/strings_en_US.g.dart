@@ -72,6 +72,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
 	late final Translations$artworkCard$en_US artworkCard = Translations$artworkCard$en_US.internal(_root);
 	late final Translations$illustDetail$en_US illustDetail = Translations$illustDetail$en_US.internal(_root);
+	late final Translations$viewer$en_US viewer = Translations$viewer$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -765,6 +766,17 @@ class Translations$illustDetail$en_US {
 	String get moreRelated => 'View more';
 	late final Translations$illustDetail$tabs$en_US tabs = Translations$illustDetail$tabs$en_US.internal(_root);
 	String get missing => 'This work does not exist or is not visible to you';
+}
+
+// Path: viewer
+class Translations$viewer$en_US {
+	Translations$viewer$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String position({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}';
+	String get loading => 'Loading the original image';
 }
 
 // Path: settings.theme
@@ -2303,6 +2315,8 @@ extension on Translations {
 			'illustDetail.tabs.about' => 'About',
 			'illustDetail.tabs.comments' => 'Comments',
 			'illustDetail.missing' => 'This work does not exist or is not visible to you',
+			'viewer.position' => ({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}',
+			'viewer.loading' => 'Loading the original image',
 			_ => null,
 		};
 	}

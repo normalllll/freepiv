@@ -1,27 +1,21 @@
 import 'dart:async';
 
-import 'package:freepiv/app/frost_config.dart';
-import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/features/downloads/presentation/download_flight.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/core/media/logic.dart';
-import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
-
-import 'dart:math' as math;
-
-import 'package:extended_image/extended_image.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/ui/compositions/pixiv_image.dart';
+import 'package:frost_ui/frost_ui.dart';
+import 'package:frost_ui/media.dart';
+import 'package:path/path.dart' as p;
 
 class OriginalImageViewerArgs {
-  const OriginalImageViewerArgs({required this.title, required this.source, required this.pages, required this.initialIndex});
+  const OriginalImageViewerArgs({required this.title, required this.source, required this.pages, this.initialIndex = 0});
 
-  /// What the viewer shows, for the window title and download tasks.
+  /// What the viewer shows, for its title row and download tasks.
   final String title;
 
   /// What the pages are part of, which their downloads are filed under.
@@ -42,6 +36,12 @@ class OriginalImagePage {
   final double? aspectRatio;
 }
 
+/// The original image viewer: black, over the content
+/// area only; zoom, pan, double tap and pull down to close; pages turn by
+/// swipe, the edge buttons or the arrow keys, but not while zoomed. The top
+/// row closes and names the work and the page, the bottom row copies
+/// (desktop) and downloads once the original has loaded. Escape and Back
+/// close it.
 class OriginalImageViewerPage extends StatefulWidget {
   const OriginalImageViewerPage({required this.args, super.key});
 
@@ -52,598 +52,291 @@ class OriginalImageViewerPage extends StatefulWidget {
 }
 
 class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
-  late final PageController _pageController;
-  late int _pageIndex;
-  final _loadedImages = <int, _LoadedOriginalImageData>{};
-  final _zoomedPages = <int, bool>{};
-  bool _downloading = false;
-  bool _copying = false;
+  late final _pages = PageController(initialPage: widget.args.initialIndex);
+  late int _index = widget.args.initialIndex;
+  final _loaded = <int, Uint8List?>{};
+  bool _zoomed = false;
+  bool _busy = false;
 
-  List<OriginalImagePage> get _pages => widget.args.pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageIndex = widget.args.initialIndex.clamp(0, _pages.length - 1).toInt();
-    _pageController = PageController(initialPage: _pageIndex);
-  }
+  List<OriginalImagePage> get _all => widget.args.pages;
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _pages.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final pageCount = _pages.length;
-    final currentLoaded = _loadedImages.containsKey(_pageIndex);
-    final canDownload = currentLoaded && !_downloading;
-    final canCopy = currentLoaded && !_copying;
-
-    final appTheme = Theme.of(context);
-    final appTokens = FrostThemeTokens.of(context);
-    // The viewer is always a dark neutral stage with dark chrome, whatever
-    // the app theme, so artwork is judged against the same surround.
-    final viewerTheme = FrostTheme.build(
-      config: freepivFrostConfig,
-      brightness: Brightness.dark,
-      platform: appTheme.platform,
-      locale: Localizations.localeOf(context),
-      accent: appTokens.accent,
-    );
-    return FrostWindowTitleContribution(
-      path: AppRoute.originalImageViewer.path,
-      page: FrostPageTitle(
-        id: widget.args,
-        kind: 'viewer',
-        title: t.nativeWindow.viewerTitle(title: widget.args.title, page: '${_pageIndex + 1}', total: '$pageCount'),
-      ),
-      child: Theme(data: viewerTheme, child: _buildViewer(pageCount, canDownload, canCopy)),
-    );
-  }
-
-  Widget _buildViewer(int pageCount, bool canDownload, bool canCopy) {
-    return FrostAutoScaffold(
-      builder: (context, layout, orientation, useHorizontalLayout) {
-        final colorScheme = Theme.of(context).colorScheme;
-        const backgroundColor = Color(0xFF111214);
-
-        return Scaffold(
-          backgroundColor: backgroundColor,
-          appBar: (useHorizontalLayout)
-              ? null
-              : AppBar(
-                  automaticallyImplyLeading: !useHorizontalLayout,
-                  backgroundColor: colorScheme.surface,
-                  foregroundColor: colorScheme.onSurface,
-                  title: Text('${_pageIndex + 1}/$pageCount'),
-                  actions: [
-                    IconButton(tooltip: t.illust.contextMenu.copyImage, onPressed: canCopy ? _copyCurrentImage : null, icon: const FrostIcon(PivIcons.copy)),
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(end: 8),
-                      child: Builder(
-                        builder: (buttonContext) => IconButton(
-                          tooltip: t.illust.contextMenu.download,
-                          onPressed: canDownload ? () => _downloadCurrentImage(origin: DownloadFlight.originOf(buttonContext)) : null,
-                          icon: const Icon(Icons.download_outlined),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-          body: Focus(
-            autofocus: true,
-            onKeyEvent: _handleKey,
-            child: SafeArea(
-              top: false,
-              child: ColoredBox(
-                color: backgroundColor,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    PageView.builder(
-                      controller: _pageController,
-                      physics: _zoomedPages[_pageIndex] == true ? const NeverScrollableScrollPhysics() : null,
-                      itemCount: pageCount,
-                      onPageChanged: (index) => setState(() => _pageIndex = index),
-                      itemBuilder: (context, index) {
-                        final page = _pages[index];
-                        return _OriginalImageZoomPage(
-                          key: ValueKey<String>('original-image-${page.url}'),
-                          page: page,
-                          onMenu: (position) => unawaited(_showImageMenu(index, position)),
-                          onZoomChanged: (zoomed) {
-                            if (_zoomedPages[index] != zoomed && mounted) setState(() => _zoomedPages[index] = zoomed);
-                          },
-                          onLoaded: (data) {
-                            if (!mounted) {
-                              return;
-                            }
-
-                            setState(() => _loadedImages[index] = data);
-                          },
-                        );
-                      },
-                    ),
-                    if (useHorizontalLayout)
-                      PositionedDirectional(
-                        top: 12,
-                        end: 12,
-                        child: FrostSurface(
-                          role: FrostSurfaceRole.chrome,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text('${_pageIndex + 1}/$pageCount'),
-                                const SizedBox(width: 16),
-                                IconButton(
-                                  tooltip: t.illust.contextMenu.copyImage,
-                                  onPressed: canCopy ? _copyCurrentImage : null,
-                                  icon: const FrostIcon(PivIcons.copy),
-                                ),
-                                Builder(
-                                  builder: (buttonContext) => IconButton(
-                                    tooltip: t.illust.contextMenu.download,
-                                    onPressed: canDownload ? () => _downloadCurrentImage(origin: DownloadFlight.originOf(buttonContext)) : null,
-                                    icon: const Icon(Icons.download_outlined),
-                                  ),
-                                ),
-                                IconButton(
-                                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                                  onPressed: () => Navigator.of(context).maybePop(),
-                                  icon: const FrostIcon(PivIcons.close),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (useHorizontalLayout && pageCount > 1) ...[
-                      PositionedDirectional(
-                        start: 24,
-                        top: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: FrostButton.iconFilled(
-                            icon: FrostIconData.glyph(Icons.chevron_left),
-                            label: context.t.illust.tooltip.previousImage,
-                            onPressed: _pageIndex == 0 ? null : () => _animateToPage(_pageIndex - 1),
-                          ),
-                        ),
-                      ),
-                      PositionedDirectional(
-                        end: 24,
-                        top: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: FrostButton.iconFilled(
-                            icon: FrostIconData.glyph(Icons.chevron_right),
-                            label: context.t.illust.tooltip.nextImage,
-                            onPressed: _pageIndex >= pageCount - 1 ? null : () => _animateToPage(_pageIndex + 1),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _animateToPage(int index) {
-    if (MediaQuery.disableAnimationsOf(context)) {
-      _pageController.jumpToPage(index);
-      return;
+  void _turn(int by) {
+    final next = _index + by;
+    if (_zoomed || next < 0 || next >= _all.length) return;
+    final duration = FrostMotion.duration(context, FrostMotion.navigation);
+    if (duration == Duration.zero) {
+      _pages.jumpToPage(next);
+    } else {
+      unawaited(_pages.animateToPage(next, duration: duration, curve: Curves.easeOutCubic));
     }
-    _pageController.animateToPage(index, duration: FrostMotion.exit, curve: Curves.easeOutCubic);
   }
 
-  KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
+  void _close() => unawaited(Navigator.of(context).maybePop());
+
+  KeyEventResult _key(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.escape) {
-      Navigator.of(context).maybePop();
-      return KeyEventResult.handled;
+    // Arrow keys belong to a focused text field.
+    if (FocusManager.instance.primaryFocus?.context?.findAncestorWidgetOfExactType<EditableText>() != null) return KeyEventResult.ignored;
+    switch (event.logicalKey) {
+      case LogicalKeyboardKey.arrowLeft:
+        _turn(-1);
+      case LogicalKeyboardKey.arrowRight:
+        _turn(1);
+      case LogicalKeyboardKey.escape:
+        _close();
+      default:
+        return KeyEventResult.ignored;
     }
-    final editing = FocusManager.instance.primaryFocus?.context?.findAncestorWidgetOfExactType<EditableText>() != null;
-    if (editing || _zoomedPages[_pageIndex] == true) return KeyEventResult.ignored;
-    if ((key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.arrowRight) && _pages.length > 1) {
-      final direction = key == LogicalKeyboardKey.arrowRight ? 1 : -1;
-      final next = _pageIndex + direction;
-      if (next >= 0 && next < _pages.length) _animateToPage(next);
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
+    return KeyEventResult.handled;
   }
 
-  /// Right click or long press on a page: the same download / copy actions as
-  /// the toolbar, at the pointer. They wait for the original to finish loading,
-  /// like the toolbar buttons.
-  Future<void> _showImageMenu(int index, Offset position) async {
-    final overlay = Navigator.of(context).overlay?.context.findRenderObject() as RenderBox?;
-    if (overlay == null) return;
-    final local = overlay.globalToLocal(position);
-    final anchor = Offset(local.dx.clamp(8.0, math.max(8.0, overlay.size.width - 8)), local.dy.clamp(8.0, math.max(8.0, overlay.size.height - 8)));
-    final menu = t.illust.contextMenu;
-    final loaded = _loadedImages.containsKey(index);
-    final action = await showMenu<_ViewerImageAction>(
-      context: context,
-      clipBehavior: Clip.antiAlias,
-      position: RelativeRect.fromRect(Rect.fromPoints(anchor, anchor), Offset.zero & overlay.size),
-      items: [
-        PopupMenuItem(
-          value: _ViewerImageAction.download,
-          enabled: loaded && !_downloading,
-          child: ListTile(leading: const Icon(Icons.download_outlined), title: Text(menu.download), contentPadding: EdgeInsets.zero),
-        ),
-        if (isDesktopPlatform)
-          PopupMenuItem(
-            value: _ViewerImageAction.copy,
-            enabled: loaded && !_copying,
-            child: ListTile(leading: const Icon(Icons.content_copy_outlined), title: Text(menu.copyImage), contentPadding: EdgeInsets.zero),
-          ),
-      ],
-    );
-    if (!mounted) return;
-    switch (action) {
-      case _ViewerImageAction.download:
-        unawaited(_downloadCurrentImage(origin: Rect.fromCenter(center: position, width: 48, height: 48)));
-      case _ViewerImageAction.copy:
-        unawaited(_copyCurrentImage());
-      case null:
-        break;
-    }
-  }
-
-  Future<void> _copyCurrentImage() async {
-    final image = _loadedImages[_pageIndex];
-    if (image == null || _copying) return;
-    setState(() => _copying = true);
-    try {
-      await copyImageBytesToClipboard(image.bytes, mimeType: image.mimeType);
-      FrostToast.copied(t.illust.toast.copied(label: t.illust.imageLabels.original));
-    } catch (error) {
-      toastErrorWithCause(t.illust.toast.copyFailed(label: t.illust.imageLabels.original), error);
-    } finally {
-      if (mounted) setState(() => _copying = false);
-    }
-  }
-
-  /// [origin] is the tapped button, for the flight to the download badge.
-  Future<void> _downloadCurrentImage({Rect? origin}) async {
-    final loadedImage = _loadedImages[_pageIndex];
-    if (loadedImage == null || _downloading) {
-      return;
-    }
-
-    setState(() => _downloading = true);
+  Future<void> _download(Rect? origin) async {
+    final bytes = _loaded[_index];
+    if (bytes == null || _busy) return;
+    setState(() => _busy = true);
     try {
       await downloadManager.ensureReadyForDownloads();
-      final page = _pages[_pageIndex];
+      final page = _all[_index];
       DownloadFlight.launch(
         origin: origin,
-        artwork: PixivImage(url: page.previewUrl),
+        artwork: AppPixivImage(url: page.previewUrl),
       );
       final file = await downloadManager.saveBytes(
         origin: page.downloadOrigin,
         source: widget.args.source,
-        bytes: loadedImage.bytes,
+        bytes: bytes,
         sourceUrl: Uri.parse(page.url),
-        title: widget.args.title,
         thumbnailUrl: page.previewUrl,
       );
       FrostToast.success(t.illust.toast.downloadComplete(name: p.basename(file.path)));
     } catch (error) {
       toastErrorWithCause(t.illust.toast.downloadFailed, error);
     } finally {
-      if (mounted) {
-        setState(() => _downloading = false);
-      }
+      if (mounted) setState(() => _busy = false);
     }
   }
-}
 
-enum _ViewerImageAction { download, copy }
-
-class _OriginalImageZoomPage extends ConsumerStatefulWidget {
-  const _OriginalImageZoomPage({required this.page, required this.onMenu, required this.onLoaded, required this.onZoomChanged, super.key});
-
-  final OriginalImagePage page;
-  final ValueChanged<Offset> onMenu;
-  final ValueChanged<_LoadedOriginalImageData> onLoaded;
-  final ValueChanged<bool> onZoomChanged;
-
-  @override
-  ConsumerState<_OriginalImageZoomPage> createState() => _OriginalImageZoomPageState();
-}
-
-class _OriginalImageZoomPageState extends ConsumerState<_OriginalImageZoomPage> {
-  bool _notifiedLoaded = false;
-  final TransformationController _transform = TransformationController();
-
-  @override
-  void initState() {
-    super.initState();
-    _transform.addListener(_notifyZoom);
-  }
-
-  static const _holdSlop = 24.0;
-
-  Timer? _holdTimer;
-  int? _holdPointer;
-  Offset _holdOrigin = Offset.zero;
-
-  void _pointerDown(PointerDownEvent event) {
-    if (event.kind == PointerDeviceKind.mouse) {
-      if (event.buttons == kSecondaryMouseButton) widget.onMenu(event.position);
-      return;
-    }
-    // A second finger is a pinch, not a hold.
-    if (_holdPointer != null) {
-      _cancelHold();
-      return;
-    }
-    _holdPointer = event.pointer;
-    _holdOrigin = event.position;
-    _holdTimer = Timer(kLongPressTimeout, () {
-      _cancelHold();
-      widget.onMenu(_holdOrigin);
-    });
-  }
-
-  void _pointerMove(PointerMoveEvent event) {
-    if (event.pointer == _holdPointer && (event.position - _holdOrigin).distance > _holdSlop) _cancelHold();
-  }
-
-  void _cancelHold() {
-    _holdTimer?.cancel();
-    _holdTimer = null;
-    _holdPointer = null;
-  }
-
-  void _notifyZoom() => widget.onZoomChanged(_transform.value.getMaxScaleOnAxis() > 1.01);
-
-  @override
-  void dispose() {
-    _holdTimer?.cancel();
-    _transform.removeListener(_notifyZoom);
-    _transform.dispose();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(covariant _OriginalImageZoomPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.page.url != widget.page.url) {
-      _notifiedLoaded = false;
-      _transform.value = Matrix4.identity();
+  Future<void> _copy() async {
+    final bytes = _loaded[_index];
+    if (bytes == null || _busy) return;
+    setState(() => _busy = true);
+    final label = t.illust.imageLabels.original;
+    try {
+      await copyImageBytesToClipboard(bytes, mimeType: imageMimeTypeFromUrl(_all[_index].url));
+      FrostToast.copied(t.illust.toast.copied(label: label));
+    } catch (error) {
+      toastErrorWithCause(t.illust.toast.copyFailed(label: label), error);
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = FrostThemeTokens.of(context).surfaceInset;
-
-    // Raw pointer events rather than gesture recognizers: once zoomed, the
-    // viewer's pan wins the gesture arena at the first bit of drift, so a
-    // long press would never be recognized.
-    return Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerDown: _pointerDown,
-      onPointerMove: _pointerMove,
-      onPointerUp: (_) => _cancelHold(),
-      onPointerCancel: (_) => _cancelHold(),
-      child: ClipRect(
-        child: ColoredBox(
-          color: backgroundColor,
-          child: InteractiveViewer(
-            transformationController: _transform,
-            minScale: 1,
-            maxScale: 6,
-            boundaryMargin: const EdgeInsets.all(96),
-            child: SizedBox.expand(
-              child: ExtendedImage(
-                image: RustExtendedNetworkImageProvider(
-                  request: MediaRequest(url: widget.page.url),
-                  cacheRawData: true,
-                  mediaStream: ref.watch(rustMediaTransportProvider).stream,
-                ),
-                fit: BoxFit.contain,
-                handleLoadingProgress: true,
-                loadStateChanged: (state) {
-                  return switch (state.extendedImageLoadState) {
-                    LoadState.loading => _OriginalImageLoadingPlaceholder(page: widget.page, progress: _imageLoadProgress(state.loadingProgress)),
-                    LoadState.failed => _OriginalImageLoadError(page: widget.page, onRetry: state.reLoadImage),
-                    LoadState.completed => _rememberLoadedImageData(state),
-                  };
-                },
-              ),
+    final t = context.t;
+    final ready = _loaded[_index] != null && !_busy;
+    Widget chrome(BuildContext context) => FrostMediaChrome(
+      top: Row(
+        spacing: FrostGap.related,
+        children: [
+          FrostButton.iconOnMedia(icon: PivIcons.close, label: FrostScope.labelsOf(context).close, onPressed: _close),
+          Expanded(
+            child: FrostText(
+              t.viewer.position(title: widget.args.title, page: _index + 1, total: _all.length),
+              content: true,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+          ),
+        ],
+      ),
+      bottom: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        spacing: FrostGap.related,
+        children: [
+          if (isDesktopPlatform) FrostButton.iconOnMedia(icon: PivIcons.copy, label: t.illust.contextMenu.copyImage, onPressed: ready ? _copy : null),
+          Builder(
+            builder: (buttonContext) => FrostButton.iconOnMedia(
+              icon: PivIcons.download,
+              label: t.illust.contextMenu.download,
+              onPressed: ready ? () => unawaited(_download(DownloadFlight.originOf(buttonContext))) : null,
+            ),
+          ),
+        ],
+      ),
+      start: _index > 0 && !_zoomed
+          ? FrostButton.iconOnMedia(icon: FrostIconSet.of(context).chevronLeft, label: t.illust.tooltip.previousImage, onPressed: () => _turn(-1))
+          : null,
+      end: _index < _all.length - 1 && !_zoomed
+          ? FrostButton.iconOnMedia(icon: FrostIconSet.of(context).chevronRight, label: t.illust.tooltip.nextImage, onPressed: () => _turn(1))
+          : null,
+    );
+    return Focus(
+      autofocus: true,
+      onKeyEvent: _key,
+      child: FrostMediaSystemChrome(
+        child: PageView.builder(
+          controller: _pages,
+          physics: _zoomed ? const NeverScrollableScrollPhysics() : null,
+          itemCount: _all.length,
+          onPageChanged: (index) => setState(() {
+            _index = index;
+            _zoomed = false;
+          }),
+          itemBuilder: (context, index) => _ViewerPage(
+            page: _all[index],
+            overlay: chrome(context),
+            onDismiss: _close,
+            onZoomChanged: (zoomed) {
+              if (index == _index && zoomed != _zoomed) setState(() => _zoomed = zoomed);
+            },
+            onLoaded: (bytes) {
+              if (_loaded[index] == null) setState(() => _loaded[index] = bytes);
+            },
+            menu: [
+              FrostMenuAction(
+                t.illust.contextMenu.download,
+                leading: const FrostGlyph.icon(PivIcons.download),
+                enabled: ready,
+                onSelected: () => unawaited(_download(null)),
+              ),
+              if (isDesktopPlatform)
+                FrostMenuAction(
+                  t.illust.contextMenu.copyImage,
+                  leading: const FrostGlyph.icon(PivIcons.copy),
+                  enabled: ready,
+                  onSelected: () => unawaited(_copy()),
+                ),
+            ],
           ),
         ),
       ),
     );
   }
-
-  Widget? _rememberLoadedImageData(ExtendedImageState state) {
-    if (_notifiedLoaded) {
-      return null;
-    }
-
-    final bytes = _rawImageDataFrom(state);
-    if (bytes == null) {
-      return null;
-    }
-
-    _notifiedLoaded = true;
-    final data = _LoadedOriginalImageData(bytes: bytes, mimeType: _imageMimeTypeFromUrl(widget.page.url));
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        widget.onLoaded(data);
-      }
-    });
-
-    return null;
-  }
 }
 
-class _LoadedOriginalImageData {
-  const _LoadedOriginalImageData({required this.bytes, required this.mimeType});
-
-  final Uint8List bytes;
-  final String mimeType;
-}
-
-class _OriginalImageLoadingPlaceholder extends StatelessWidget {
-  const _OriginalImageLoadingPlaceholder({required this.page, this.progress});
+/// One page: the original over its preview, zoomable, with its own retry.
+class _ViewerPage extends ConsumerStatefulWidget {
+  const _ViewerPage({
+    required this.page,
+    required this.overlay,
+    required this.onDismiss,
+    required this.onZoomChanged,
+    required this.onLoaded,
+    required this.menu,
+  });
 
   final OriginalImagePage page;
-  final double? progress;
+  final Widget overlay;
+  final VoidCallback onDismiss;
+  final ValueChanged<bool> onZoomChanged;
+
+  /// The encoded original once it has loaded; null where the file is not
+  /// kept (sample pictures), which leaves copy and download unavailable.
+  final ValueChanged<Uint8List?> onLoaded;
+  final List<FrostMenuEntry> menu;
+
+  @override
+  ConsumerState<_ViewerPage> createState() => _ViewerPageState();
+}
+
+class _ViewerPageState extends ConsumerState<_ViewerPage> {
+  final _viewport = FrostMediaViewportController();
+  ImageStream? _stream;
+  ImageStreamListener? _listener;
+  int _revision = 0;
+  Object? _error;
+
+  /// Zoomed past this the page no longer turns.
+  static const _zoomedScale = 1.01;
+
+  @override
+  void dispose() {
+    _unlisten();
+    super.dispose();
+  }
+
+  void _unlisten() {
+    if (_listener case final listener?) _stream?.removeListener(listener);
+    _stream = null;
+    _listener = null;
+  }
+
+  void _watch(ImageProvider image) {
+    final stream = image.resolve(createLocalImageConfiguration(context));
+    if (stream.key == _stream?.key) return;
+    _unlisten();
+    final listener = ImageStreamListener(
+      // A cached image reports while this page builds.
+      (info, _) => WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onLoaded(pixivImageBytes(image));
+      }),
+      onError: (error, _) => WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _error = error);
+      }),
+    );
+    _stream = stream..addListener(listener);
+    _listener = listener;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (page.previewUrl != page.url)
-          PixivImage(url: page.previewUrl, fit: BoxFit.contain)
-        else
-          ColoredBox(color: FrostThemeTokens.of(context).surfaceInset),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final imageRect = _containedImageRect(constraints: constraints, aspectRatio: page.aspectRatio);
-            final progressWidth = _progressWidth(constraints: constraints, imageRect: imageRect);
-            final topPadding = math.max(14.0, imageRect.top + 14.0);
-
-            return Padding(
-              padding: EdgeInsets.only(top: topPadding, left: 20, right: 20),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface.withValues(alpha: 0.84),
-                    borderRadius: BorderRadius.circular(FrostRadius.lg),
-                    boxShadow: [BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.12), blurRadius: 12, offset: const Offset(0, 4))],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(3),
-                    child: SizedBox(
-                      width: progressWidth,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(FrostRadius.lg),
-                        child: LinearProgressIndicator(value: progress, minHeight: 4),
+    final page = widget.page;
+    final image = pixivImageProvider(ref, page.url, keepBytes: true, revision: _revision);
+    _watch(image);
+    return FrostContextMenuRegion(
+      entries: widget.menu,
+      child: FrostMediaViewport(
+        controller: _viewport,
+        onDismiss: widget.onDismiss,
+        onScaleChanged: (scale) => widget.onZoomChanged(scale > _zoomedScale),
+        // The media scrim at full strength: the viewer's black ground.
+        background: ColoredBox(color: FrostThemeTokens.of(context).onMediaScrim.withValues(alpha: 1), child: const SizedBox.expand()),
+        overlay: widget.overlay,
+        child: _error != null
+            ? Center(
+                child: FrostButton.iconOnMedia(
+                  icon: PivIcons.refreshCw,
+                  label: context.t.common.retry,
+                  onPressed: () => setState(() {
+                    _error = null;
+                    _revision++;
+                  }),
+                ),
+              )
+            : Image(
+                image: image,
+                fit: BoxFit.contain,
+                semanticLabel: page.url,
+                loadingBuilder: (context, child, progress) => progress == null
+                    ? child
+                    : Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          AppPixivImage(url: page.previewUrl, radius: 0, fit: BoxFit.contain),
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: FrostProgressBar(
+                              value: switch (progress.expectedTotalBytes) {
+                                final total? when total > 0 => progress.cumulativeBytesLoaded / total,
+                                _ => 0,
+                              },
+                              semanticLabel: context.t.viewer.loading,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
+                errorBuilder: (context, error, _) => Center(
+                  child: FrostButton.iconOnMedia(icon: PivIcons.refreshCw, label: context.t.common.retry, onPressed: () => setState(() => _revision++)),
                 ),
               ),
-            );
-          },
-        ),
-      ],
+      ),
     );
   }
-}
-
-class _OriginalImageLoadError extends StatelessWidget {
-  const _OriginalImageLoadError({required this.page, required this.onRetry});
-
-  final OriginalImagePage page;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (page.previewUrl != page.url)
-          PixivImage(url: page.previewUrl, fit: BoxFit.contain)
-        else
-          ColoredBox(color: FrostThemeTokens.of(context).surfaceInset),
-        Center(
-          child: Material(
-            color: colorScheme.surface.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(FrostRadius.lg),
-            child: IconButton(tooltip: context.t.common.retry, color: colorScheme.onSurface, icon: const Icon(Icons.refresh_outlined), onPressed: onRetry),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-double? _imageLoadProgress(ImageChunkEvent? event) {
-  if (event == null) {
-    return null;
-  }
-
-  final total = event.expectedTotalBytes;
-  if (total == null || total <= 0) {
-    return null;
-  }
-
-  return (event.cumulativeBytesLoaded / total).clamp(0.0, 1.0);
-}
-
-Rect _containedImageRect({required BoxConstraints constraints, required double? aspectRatio}) {
-  final width = constraints.maxWidth;
-  final height = constraints.maxHeight;
-  if (!width.isFinite || !height.isFinite || width <= 0 || height <= 0 || aspectRatio == null || aspectRatio <= 0) {
-    return Rect.fromLTWH(0, 0, width.isFinite ? math.max(0, width) : 0, 0);
-  }
-
-  final viewportAspectRatio = width / height;
-  if (viewportAspectRatio > aspectRatio) {
-    final imageWidth = height * aspectRatio;
-    return Rect.fromLTWH((width - imageWidth) / 2, 0, imageWidth, height);
-  }
-
-  final imageHeight = width / aspectRatio;
-  return Rect.fromLTWH(0, (height - imageHeight) / 2, width, imageHeight);
-}
-
-double _progressWidth({required BoxConstraints constraints, required Rect imageRect}) {
-  final availableWidth = constraints.maxWidth.isFinite ? math.max(0.0, constraints.maxWidth - 40) : 360.0;
-  final imageWidth = imageRect.width > 0 ? imageRect.width : availableWidth;
-  return math.min(520.0, math.max(180.0, math.min(availableWidth, imageWidth * 0.72)));
-}
-
-Uint8List? _rawImageDataFrom(ExtendedImageState state) {
-  try {
-    final imageProvider = state.imageWidget.image;
-    if (imageProvider is! ExtendedImageProvider<dynamic>) {
-      return null;
-    }
-
-    return (imageProvider as ExtendedImageProvider<dynamic>).rawImageData;
-  } catch (_) {
-    return null;
-  }
-}
-
-String _imageMimeTypeFromUrl(String imageUrl) {
-  final uri = Uri.tryParse(imageUrl);
-  final path = (uri?.path ?? imageUrl).toLowerCase();
-  if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-    return 'image/jpeg';
-  }
-  if (path.endsWith('.gif')) {
-    return 'image/gif';
-  }
-  if (path.endsWith('.webp')) {
-    return 'image/webp';
-  }
-
-  return 'image/png';
 }

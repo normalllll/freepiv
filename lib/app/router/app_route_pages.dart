@@ -176,8 +176,10 @@ Page<void> originalImageViewerPage(BuildContext context, GoRouterState state) {
     return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
   }
 
+  // Over the content area only; the page below shows as it is pulled down.
   return FrostDetailPage(
     key: state.pageKey,
+    opaque: false,
     child: OriginalImageViewerPage(args: extra),
   );
 }

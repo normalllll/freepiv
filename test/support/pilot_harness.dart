@@ -9,6 +9,8 @@ import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
+import 'package:freepiv/dev/sample_images.dart';
+import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -48,6 +50,8 @@ Future<void> mountPilotPage(
     pixivAccountNotifier.value = sampleAccount;
     addTearDown(() => pixivAccountNotifier.value = null);
   }
+  pixivImageOverride = sampleImageProvider;
+  addTearDown(() => pixivImageOverride = null);
   openedLocations.clear();
   final uri = Uri.parse(location);
   final router = GoRouter(

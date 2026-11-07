@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
@@ -14,8 +15,9 @@ const pixivRefererHeaders = {'Referer': 'https://www.pixiv.net/'};
 ImageProvider? Function(String url)? pixivImageOverride;
 
 /// The image at [url] through the app's media transport, cached on disk.
-/// A higher [revision] asks for it again after a failure.
-ImageProvider pixivImageProvider(WidgetRef ref, String url, {Map<String, String>? headers, int revision = 0}) {
+/// A higher [revision] asks for it again after a failure; [keepBytes] keeps
+/// the encoded file for copying and saving ([pixivImageBytes]).
+ImageProvider pixivImageProvider(WidgetRef ref, String url, {Map<String, String>? headers, int revision = 0, bool keepBytes = false}) {
   if (pixivImageOverride?.call(url) case final image?) return image;
   final transport = ref.watch(rustMediaTransportProvider);
   return RustExtendedNetworkImageProvider(
@@ -23,8 +25,12 @@ ImageProvider pixivImageProvider(WidgetRef ref, String url, {Map<String, String>
     mediaStream: transport.stream,
     mediaStreamCacheIdentity: transport.imageCacheIdentity,
     reloadRevision: revision,
+    cacheRawData: keepBytes,
   );
 }
+
+/// The encoded file of a loaded image asked for with `keepBytes`.
+Uint8List? pixivImageBytes(ImageProvider image) => image is RustExtendedNetworkImageProvider ? image.rawImageData : null;
 
 /// A Pixiv image in a Frost media frame: Frost's placeholder while it loads
 /// and fades it in; a failed image offers a retry in its place. Works without

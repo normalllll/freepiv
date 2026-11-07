@@ -895,5 +895,9 @@
       "comments": "Comments"
     },
     "missing": "This work does not exist or is not visible to you"
+  },
+  "viewer": {
+    "position": "$title · $page / $total",
+    "loading": "Loading the original image"
   }
 }

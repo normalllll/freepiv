@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freepiv/ui/compositions/pixiv_image.dart' show pixivImageOverride;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -67,6 +68,7 @@ class _FreepivMaterialAppState extends ConsumerState<_FreepivMaterialApp> {
   /// The visible work's thumbnail, decoded at the backdrop's sample width.
   ImageProvider? _backdropImage(String? url) {
     if (url == null) return null;
+    if (pixivImageOverride?.call(url) case final image?) return image;
     final transport = ref.read(rustMediaTransportProvider);
     return RustExtendedNetworkImageProvider(
       request: MediaRequest(url: url, headers: const {'Referer': 'https://www.pixiv.net/'}),

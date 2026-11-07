@@ -70,6 +70,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
 	@override late final _Translations$artworkCard$ja_JP artworkCard = _Translations$artworkCard$ja_JP._(_root);
 	@override late final _Translations$illustDetail$ja_JP illustDetail = _Translations$illustDetail$ja_JP._(_root);
+	@override late final _Translations$viewer$ja_JP viewer = _Translations$viewer$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -763,6 +764,17 @@ class _Translations$illustDetail$ja_JP extends Translations$illustDetail$en_US {
 	@override String get moreRelated => 'もっと見る';
 	@override late final _Translations$illustDetail$tabs$ja_JP tabs = _Translations$illustDetail$tabs$ja_JP._(_root);
 	@override String get missing => '作品が存在しないか、閲覧できません';
+}
+
+// Path: viewer
+class _Translations$viewer$ja_JP extends Translations$viewer$en_US {
+	_Translations$viewer$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String position({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}';
+	@override String get loading => '元画像を読み込み中';
 }
 
 // Path: settings.theme
@@ -2301,6 +2313,8 @@ extension on TranslationsJaJp {
 			'illustDetail.tabs.about' => '概要',
 			'illustDetail.tabs.comments' => 'コメント',
 			'illustDetail.missing' => '作品が存在しないか、閲覧できません',
+			'viewer.position' => ({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}',
+			'viewer.loading' => '元画像を読み込み中',
 			_ => null,
 		};
 	}
