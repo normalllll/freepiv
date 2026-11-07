@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/services/app_settings.dart';

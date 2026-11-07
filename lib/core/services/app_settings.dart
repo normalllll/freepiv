@@ -5,7 +5,7 @@ import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 enum PreviewImageQuality { medium, large }
 

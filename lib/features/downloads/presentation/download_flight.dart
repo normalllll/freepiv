@@ -1,8 +1,9 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/physics.dart';
 import 'package:freepiv/app/router/app_router.dart';
+import 'package:freepiv/ui/custom/download_flight_token.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// A download entry (the sidebar dock or the phone's floating button) that
@@ -147,7 +148,7 @@ class _FlightState extends State<_Flight> with SingleTickerProviderStateMixin {
               child: IgnorePointer(
                 child: Opacity(
                   opacity: opacity,
-                  child: _Token(artwork: widget.artwork),
+                  child: DownloadFlightToken(artwork: widget.artwork),
                 ),
               ),
             ),
@@ -160,43 +161,6 @@ class _FlightState extends State<_Flight> with SingleTickerProviderStateMixin {
   static Offset _quadratic(Offset a, Offset b, Offset c, double t) {
     final u = 1 - t;
     return a * (u * u) + b * (2 * u * t) + c * (t * t);
-  }
-}
-
-class _Token extends StatelessWidget {
-  const _Token({required this.artwork});
-
-  final Widget? artwork;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = FrostThemeTokens.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: tokens.actionFill,
-        border: Border.all(color: tokens.surfaceRaised, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: tokens.isDark ? .36 : .18),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: ClipOval(
-        child: artwork == null
-            ? Center(
-                child: FittedBox(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Icon(Icons.download_rounded, color: tokens.onAction),
-                  ),
-                ),
-              )
-            : SizedBox.expand(child: artwork),
-      ),
-    );
   }
 }
 
