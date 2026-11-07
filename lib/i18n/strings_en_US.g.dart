@@ -75,6 +75,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$viewer$en_US viewer = Translations$viewer$en_US.internal(_root);
 	late final Translations$userPage$en_US userPage = Translations$userPage$en_US.internal(_root);
 	late final Translations$novelDetail$en_US novelDetail = Translations$novelDetail$en_US.internal(_root);
+	late final Translations$commentsPage$en_US commentsPage = Translations$commentsPage$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -811,6 +812,16 @@ class Translations$novelDetail$en_US {
 	String get related => 'Related novels';
 	String get noRelated => 'No related novels';
 	String get authorNovels => 'More by the author';
+}
+
+// Path: commentsPage
+class Translations$commentsPage$en_US {
+	Translations$commentsPage$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get empty => 'No comments yet. Write the first one';
 }
 
 // Path: settings.theme
@@ -2365,6 +2376,7 @@ extension on Translations {
 			'novelDetail.related' => 'Related novels',
 			'novelDetail.noRelated' => 'No related novels',
 			'novelDetail.authorNovels' => 'More by the author',
+			'commentsPage.empty' => 'No comments yet. Write the first one',
 			_ => null,
 		};
 	}

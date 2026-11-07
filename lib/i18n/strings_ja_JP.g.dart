@@ -73,6 +73,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$viewer$ja_JP viewer = _Translations$viewer$ja_JP._(_root);
 	@override late final _Translations$userPage$ja_JP userPage = _Translations$userPage$ja_JP._(_root);
 	@override late final _Translations$novelDetail$ja_JP novelDetail = _Translations$novelDetail$ja_JP._(_root);
+	@override late final _Translations$commentsPage$ja_JP commentsPage = _Translations$commentsPage$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -809,6 +810,16 @@ class _Translations$novelDetail$ja_JP extends Translations$novelDetail$en_US {
 	@override String get related => '関連小説';
 	@override String get noRelated => '関連小説はありません';
 	@override String get authorNovels => '作者のほかの小説';
+}
+
+// Path: commentsPage
+class _Translations$commentsPage$ja_JP extends Translations$commentsPage$en_US {
+	_Translations$commentsPage$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get empty => 'まだコメントはありません。最初のコメントを書きましょう';
 }
 
 // Path: settings.theme
@@ -2363,6 +2374,7 @@ extension on TranslationsJaJp {
 			'novelDetail.related' => '関連小説',
 			'novelDetail.noRelated' => '関連小説はありません',
 			'novelDetail.authorNovels' => '作者のほかの小説',
+			'commentsPage.empty' => 'まだコメントはありません。最初のコメントを書きましょう',
 			_ => null,
 		};
 	}

@@ -68,6 +68,7 @@ abstract final class FreepivIcons {
   static const zoomIn = IconData(0xE93E, fontFamily: 'FreepivIcons');
   static const zoomOut = IconData(0xE93F, fontFamily: 'FreepivIcons');
   static const tags = IconData(0xE940, fontFamily: 'FreepivIcons');
+  static const smile = IconData(0xE941, fontFamily: 'FreepivIcons');
 
   static const all = <IconData>[
     clock,
@@ -135,6 +136,7 @@ abstract final class FreepivIcons {
     zoomIn,
     zoomOut,
     tags,
+    smile,
   ];
   static const names = <String>[
     'clock',
@@ -202,5 +204,6 @@ abstract final class FreepivIcons {
     'zoom-in',
     'zoom-out',
     'tags',
+    'smile',
   ];
 }

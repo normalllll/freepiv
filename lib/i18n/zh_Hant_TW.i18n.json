@@ -917,5 +917,8 @@
     "related": "相關小說",
     "noRelated": "暫無相關小說",
     "authorNovels": "作者的其他小說"
+  },
+  "commentsPage": {
+    "empty": "還沒有留言，來寫第一則"
   }
 }

@@ -917,5 +917,8 @@
     "related": "関連小説",
     "noRelated": "関連小説はありません",
     "authorNovels": "作者のほかの小説"
+  },
+  "commentsPage": {
+    "empty": "まだコメントはありません。最初のコメントを書きましょう"
   }
 }

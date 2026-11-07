@@ -917,5 +917,8 @@
     "related": "相关小说",
     "noRelated": "暂无相关小说",
     "authorNovels": "作者的其他小说"
+  },
+  "commentsPage": {
+    "empty": "还没有评论，来写第一条"
   }
 }

@@ -4,6 +4,8 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'dart:collection';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart' show visibleForOverriding;
 import 'package:frost_data/frost_data.dart';
 
 enum CommentWorkType { illust, novel }
@@ -11,6 +13,19 @@ enum CommentWorkType { illust, novel }
 extension CommentWorkTypeX on CommentWorkType {
   bool get supportsPosting => true;
 }
+
+/// The comments page's list for a work, kept while the page is open.
+final workCommentsSourceProvider = Provider.autoDispose.family<WorkCommentsListSource, (CommentWorkType, int)>((ref, work) {
+  final source = WorkCommentsListSource(workType: work.$1, workId: work.$2);
+  ref.onDispose(source.dispose);
+  return source;
+});
+
+/// Makes the list of one comment's replies; the comments page owns each one.
+final commentRepliesSourceFactoryProvider = Provider<CommentRepliesListSource Function(CommentWorkType workType, int parentCommentId)>(
+  (ref) =>
+      (workType, parentCommentId) => CommentRepliesListSource(workType: workType, parentCommentId: parentCommentId),
+);
 
 class WorkCommentsListSource extends FrostCursorListSource<Comment, CommentPageResult> with _LocalCommentEdits {
   WorkCommentsListSource({required this.workType, required this.workId});
@@ -105,13 +120,16 @@ class CommentRepliesListSource extends FrostCursorListSource<Comment, CommentPag
   }
 
   Future<void> deleteComment(Comment comment) async {
-    await switch (workType) {
-      CommentWorkType.illust => pixivApi.postIllustCommentDelete(commentId: comment.id),
-      CommentWorkType.novel => pixivApi.postNovelCommentDelete(commentId: comment.id),
-    };
-
+    await deleteOnServer(comment);
     _remove(comment);
   }
+
+  /// Deletes the reply on Pixiv; the list drops it afterwards.
+  @visibleForOverriding
+  Future<void> deleteOnServer(Comment comment) => switch (workType) {
+    CommentWorkType.illust => pixivApi.postIllustCommentDelete(commentId: comment.id),
+    CommentWorkType.novel => pixivApi.postNovelCommentDelete(commentId: comment.id),
+  };
 }
 
 /// Comments posted or deleted here, shown over the loaded pages until the next

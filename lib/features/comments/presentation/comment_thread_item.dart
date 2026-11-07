@@ -23,7 +23,7 @@ final pixivCommentAssets = PixivCommentAssets.load();
 /// (opening their page), the text with its emoji or the stamp, and a footer
 /// of the time and Reply. The signed-in user's own comment has Delete in its
 /// menu.
-FrostThreadItem appCommentItem(BuildContext context, Comment comment, {required PixivCommentAssets assets, VoidCallback? onReply, VoidCallback? onDelete}) {
+FrostThreadItem appCommentItem(BuildContext context, Comment comment, {required PixivCommentAssets assets, VoidCallback? onReply, VoidCallback? onDelete, Widget? actions}) {
   final t = context.t;
   return FrostThreadItem(
     avatar: AppUserAvatar(user: comment.user, size: FrostAvatarSize.small),
@@ -31,6 +31,7 @@ FrostThreadItem appCommentItem(BuildContext context, Comment comment, {required 
     body: AppCommentBody(comment: comment, assets: assets),
     time: formatPixivDate(comment.date),
     reply: onReply == null ? null : FrostThreadAction(icon: PivIcons.messageCircle, label: t.illust.comments.reply, onPressed: onReply),
+    actions: actions,
     onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.user(comment.user.id))),
     contextMenu: [
       if (onDelete != null)

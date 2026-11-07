@@ -917,5 +917,8 @@
     "related": "Related novels",
     "noRelated": "No related novels",
     "authorNovels": "More by the author"
+  },
+  "commentsPage": {
+    "empty": "No comments yet. Write the first one"
   }
 }

@@ -10,6 +10,7 @@ import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/features/downloads/presentation/download_entry.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
+import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
@@ -188,6 +189,11 @@ final sampleOverrideMap = <Object, Override>{
   novelCommentsProvider: novelCommentsProvider.overrideWith2((_) => _SampleNovelComments()),
   novelUserWorksProvider: novelUserWorksProvider.overrideWith2((_) => _SampleNovelUserWorks()),
   novelRelatedWorksProvider: novelRelatedWorksProvider.overrideWith2((_) => _SampleNovelRelated()),
+  workCommentsSourceProvider: workCommentsSourceProvider.overrideWith((ref, work) {
+    final source = _SampleWorkComments(workType: work.$1, workId: work.$2);
+    ref.onDispose(source.dispose);
+    return source;
+  }),
   searchTrendingTagsProvider: searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
   downloadTasksProvider: downloadTasksProvider.overrideWith((ref) => Stream.value(sampleDownloadTasks)),
   fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
@@ -280,7 +286,7 @@ List<Comment> sampleComments({int count = 6}) => [
           : ['Beautiful colours (heart)', 'I love the light in this one', '', 'The composition is so calm. Thank you for sharing!'][index % 4],
       date: '2026-11-0${1 + index % 6}T1$index:30:00+09:00',
       user: sampleUserPreviews(count: count)[index].user,
-      hasReplies: index == 1,
+      hasReplies: false,
       stamp: index == 2 ? const Stamp(stampId: 301, stampUrl: '') : null,
     ),
 ];
@@ -479,4 +485,14 @@ class _SampleNovelRelated extends NovelRelatedWorks {
     ref.onDispose(source.dispose);
     return source;
   }
+}
+
+class _SampleWorkComments extends WorkCommentsListSource {
+  _SampleWorkComments({required super.workType, required super.workId});
+
+  @override
+  Future<CommentPageResult> loadFirstPage() async => CommentPageResult(comments: sampleComments(count: 10));
+
+  @override
+  Future<CommentPageResult> loadNextPage(String nextUrl) async => const CommentPageResult(comments: []);
 }

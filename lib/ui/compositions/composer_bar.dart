@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:flutter/material.dart' show Icons;
 import 'package:flutter/widgets.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -16,9 +15,9 @@ class AppComposerBar extends StatelessWidget {
     required this.onSend,
     this.focusNode,
     this.emojiLabel,
-    this.onEmoji,
+    this.emojiPanel,
     this.stampLabel,
-    this.onStamp,
+    this.stampPanel,
     this.replyLabel,
     this.cancelReplyLabel,
     this.onCancelReply,
@@ -34,9 +33,14 @@ class AppComposerBar extends StatelessWidget {
   /// Null while there is nothing to send.
   final VoidCallback? onSend;
   final String? emojiLabel;
-  final VoidCallback? onEmoji;
+
+  /// The emoji picker, anchored to its button (a sheet on narrow windows);
+  /// [close] closes it.
+  final Widget Function(BuildContext context, VoidCallback close)? emojiPanel;
   final String? stampLabel;
-  final VoidCallback? onStamp;
+
+  /// The stamp picker, like [emojiPanel].
+  final Widget Function(BuildContext context, VoidCallback close)? stampPanel;
 
   /// "Replying to …" while replying, with [onCancelReply] closing it.
   final String? replyLabel;
@@ -45,10 +49,6 @@ class AppComposerBar extends StatelessWidget {
   final bool sending;
 
   static const maxLines = 5;
-
-  // No emoji glyph in the app's Lucide set yet; the Material one stands in
-  // until the rebuild adds it with the comment pages.
-  static const emojiIcon = FrostIconData.glyph(Icons.emoji_emotions_outlined);
 
   @override
   Widget build(BuildContext context) {
@@ -81,8 +81,8 @@ class AppComposerBar extends StatelessWidget {
                 textInputAction: TextInputAction.newline,
               ),
             ),
-            if (onEmoji != null) FrostButton.icon(icon: emojiIcon, label: emojiLabel ?? '', onPressed: onEmoji),
-            if (onStamp != null) FrostButton.icon(icon: icons.image, label: stampLabel ?? '', onPressed: onStamp),
+            if (emojiPanel case final panel?) _panelButton(icon: PivIcons.smile, label: emojiLabel ?? '', panel: panel),
+            if (stampPanel case final panel?) _panelButton(icon: icons.image, label: stampLabel ?? '', panel: panel),
             FrostButton.icon(
               icon: PivIcons.send,
               label: sendLabel,
@@ -94,4 +94,13 @@ class AppComposerBar extends StatelessWidget {
       ],
     );
   }
+
+  Widget _panelButton({required FrostIconData icon, required String label, required Widget Function(BuildContext, VoidCallback) panel}) => FrostPopover(
+    title: label,
+    builder: (context, focusNode, toggle) => Focus(
+      focusNode: focusNode,
+      child: FrostButton.icon(icon: icon, label: label, onPressed: sending ? null : toggle),
+    ),
+    contentBuilder: panel,
+  );
 }

@@ -1,22 +1,28 @@
 import 'dart:async';
+import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
-import 'package:freepiv/features/comments/presentation/widgets/comment_input_bar.dart';
-import 'package:freepiv/features/comments/presentation/widgets/comment_tile.dart';
-import 'package:freepiv/features/comments/presentation/widgets/comment_timeline_lines.dart';
-import 'package:freepiv/features/comments/presentation/widgets/comments_skeleton.dart';
+import 'package:freepiv/features/comments/presentation/comment_thread_item.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/ui/compositions/composer_bar.dart';
+import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:frost_data/frost_data.dart';
+import 'package:frost_ui/frost_ui.dart';
+import 'package:frost_ui/social.dart';
 
+/// A work's comments in a centred reading column:
+/// threads with their replies in a light block, the signed-in user's own
+/// comments deletable from their menu, and the input bar at the bottom.
+/// Leaving with a draft asks whether to keep editing or discard it.
 class WorkCommentsPage extends ConsumerStatefulWidget {
   const WorkCommentsPage({required this.workType, required this.workId, this.totalComments, super.key});
 
@@ -29,407 +35,310 @@ class WorkCommentsPage extends ConsumerStatefulWidget {
 }
 
 class _WorkCommentsPageState extends ConsumerState<WorkCommentsPage> {
-  late final WorkCommentsListSource _source = WorkCommentsListSource(workType: widget.workType, workId: widget.workId);
-  late final Future<PixivCommentAssets> _assetsFuture = PixivCommentAssets.load();
-
-  final Map<int, CommentRepliesListSource> _replySources = {};
-  final Set<int> _deletingCommentIds = {};
-  final Set<int> _localReplyParentIds = {};
+  late final _keep = ref.listenManual(workCommentsSourceProvider((widget.workType, widget.workId)), (_, _) {});
+  WorkCommentsListSource get _source => _keep.read();
+  final _replies = <int, CommentRepliesListSource>{};
+  final _draft = TextEditingController();
+  final _input = FocusNode();
   Comment? _replyingTo;
-  bool _hasDraft = false;
+  bool _sending = false;
   bool _allowPop = false;
-  bool _confirmingDiscard = false;
 
   @override
   void initState() {
     super.initState();
-    _source.refresh(true);
+    _keep;
+    _draft.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
-    _source.dispose();
-    for (final source in _replySources.values) {
+    _keep.close();
+    for (final source in _replies.values) {
       source.dispose();
     }
+    _draft.dispose();
+    _input.dispose();
     super.dispose();
+  }
+
+  bool get _hasDraft => _draft.text.trim().isNotEmpty;
+
+  CommentRepliesListSource _repliesOf(Comment comment) =>
+      _replies.putIfAbsent(comment.id, () => ref.read(commentRepliesSourceFactoryProvider)(widget.workType, comment.id));
+
+  /// The detail page's comment preview shows the change.
+  void _syncDetail() => switch (widget.workType) {
+    CommentWorkType.illust => ref.invalidate(illustCommentsProvider(widget.workId)),
+    CommentWorkType.novel => ref.invalidate(novelCommentsProvider(widget.workId)),
+  };
+
+  Future<void> _confirmDiscard() async {
+    final t = context.t;
+    final discard = await showFrostConfirm(
+      context: context,
+      title: t.illust.comments.discardDraftTitle,
+      message: t.illust.comments.discardDraftMessage,
+      confirmLabel: t.illust.comments.discardDraft,
+      cancelLabel: t.illust.comments.continueEditing,
+    );
+    if (!mounted || !discard) return;
+    setState(() => _allowPop = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(Navigator.of(context).maybePop());
+    });
+  }
+
+  Future<void> _send({String? text, int? stampId}) async {
+    if (_sending) return;
+    final parent = _replyingTo;
+    setState(() => _sending = true);
+    try {
+      final added = await _source.addComment(comment: text ?? '', stampId: stampId, parentCommentId: parent?.id);
+      if (!mounted) return;
+      if (parent != null) {
+        final replies = _repliesOf(parent);
+        if (replies.initialized) {
+          replies.prependReply(added);
+        } else {
+          unawaited(replies.refresh(true));
+        }
+      }
+      if (stampId == null) _draft.clear();
+      _syncDetail();
+      setState(() => _replyingTo = null);
+    } catch (error) {
+      // The draft stays for another try.
+      toastErrorWithCause(t.illust.comments.sendFailed, error);
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  Future<void> _delete(Comment comment, CommentRepliesListSource? replies) async {
+    final t = context.t;
+    final confirmed = await showFrostConfirm(context: context, title: t.illust.comments.deleteConfirm, confirmLabel: t.illust.comments.delete);
+    if (!mounted || !confirmed) return;
+    try {
+      await (replies == null ? _source.deleteComment(comment) : replies.deleteComment(comment));
+      if (!mounted) return;
+      _syncDetail();
+      if (_replyingTo?.id == comment.id) setState(() => _replyingTo = null);
+    } catch (error) {
+      toastErrorWithCause(t.illust.comments.deleteFailed, error);
+    }
+  }
+
+  /// Reloads the comments; every thread's replies load afresh after it.
+  Future<bool> _refresh() async {
+    final stale = [..._replies.values];
+    _replies.clear();
+    setState(() {});
+    // The old sources go once no thread is built from them any more.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final source in stale) {
+        source.dispose();
+      }
+    });
+    return _source.refresh(false);
+  }
+
+  void _reply(Comment comment) {
+    setState(() => _replyingTo = comment);
+    _input.requestFocus();
+  }
+
+  void _insertEmoji(PixivCommentAsset asset) {
+    final token = '(${asset.name})';
+    final value = _draft.value;
+    final selection = value.selection;
+    final start = selection.isValid ? math.min(selection.start, selection.end) : value.text.length;
+    final end = selection.isValid ? math.max(selection.start, selection.end) : value.text.length;
+    _draft.value = value.copyWith(
+      text: value.text.replaceRange(start, end, token),
+      selection: TextSelection.collapsed(offset: start + token.length),
+      composing: TextRange.empty,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
+    final total = widget.totalComments;
+    final me = int.tryParse(pixivAccountNotifier.value?.user.id ?? '');
+    final canPost = widget.workType.supportsPosting;
     return PopScope(
       canPop: !_hasDraft || _allowPop,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && _hasDraft) _confirmDiscard();
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _hasDraft) unawaited(_confirmDiscard());
       },
-      child: FrostAutoScaffold(
-        builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
-          final canPost = widget.workType.supportsPosting;
-          final currentUserId = int.tryParse(pixivAccountNotifier.value?.user.id ?? '');
-          final title = _title(context);
-
-          return FutureBuilder<PixivCommentAssets>(
-            future: _assetsFuture,
-            builder: (context, snapshot) {
-              final assets = snapshot.data ?? PixivCommentAssets.empty;
-              final commentsView = _CommentsRefreshView(
-                source: _source,
+      child: FutureBuilder(
+        future: pixivCommentAssets,
+        builder: (context, snapshot) {
+          final assets = snapshot.data ?? PixivCommentAssets.empty;
+          FrostThread thread(Comment comment, {CommentRepliesListSource? parentReplies}) {
+            final replies = comment.hasReplies && parentReplies == null ? _repliesOf(comment) : null;
+            return FrostThread(
+              item: appCommentItem(
+                context,
+                comment,
                 assets: assets,
-                workType: widget.workType,
-                repliesSourceBuilder: _replySourceFor,
-                onRefresh: () => _source.refresh(_source.items.isEmpty),
-                onReply: canPost ? _setReplyingTo : null,
-                onDelete: _deleteComment,
-                currentUserId: currentUserId,
-                isDeletingComment: _isDeletingComment,
-                hasLocalReply: (comment) => _localReplyParentIds.contains(comment.id),
-              );
-              final inputBar = canPost
-                  ? CommentInputBar(
-                      assets: assets,
-                      replyingTo: _replyingTo,
-                      onCancelReply: _clearReplyingTo,
-                      onDraftChanged: (hasDraft) {
-                        if (mounted && hasDraft != _hasDraft) setState(() => _hasDraft = hasDraft);
-                      },
-                      onSubmit: _submitComment,
-                    )
-                  : null;
+                onReply: canPost && parentReplies == null ? () => _reply(comment) : null,
+                onDelete: comment.user.id == me ? () => unawaited(_delete(comment, parentReplies)) : null,
+                // Loading the replies sits in the comment's footer, on its text column.
+                actions: replies == null ? null : _RepliesFooter.of(context, replies),
+              ),
+              replies: [
+                if (replies != null && replies.initialized)
+                  for (final reply in replies.items) thread(reply, parentReplies: replies),
+              ],
+            );
+          }
 
-              if (useHorizontalLayout) {
-                return _DesktopCommentsScaffold(title: title, inputBar: inputBar, child: commentsView);
-              }
-
-              return Scaffold(
-                body: FrostCollapsingHeader(
-                  header: FrostPageHeader(title: Text(title)),
-                  child: commentsView,
+          return AppRefreshScope(
+            onRefresh: _refresh,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: FrostPinnedChrome(
+                    chrome: FrostPageHeader(
+                      title: FrostText(total == null ? t.illust.section.comments : t.illust.section.commentsWithCount(count: formatCount(total))),
+                    ),
+                    body: FrostRefreshView(
+                      onRefresh: _refresh,
+                      builder: (context, physics, locators) => FrostLoadingScrollView(
+                        physics: physics,
+                        slivers: [
+                          const FrostChromeSpacer(),
+                          ?locators.sliverHeader,
+                          FrostSliverContentColumn(
+                            maxWidth: FrostMetrics.readingMaxWidth,
+                            sliver: FrostSliverDataList<Comment>(
+                              source: _source,
+                              firstLoadSkeleton: const AppRowsSkeleton(),
+                              empty: FrostEmptyState(icon: PivIcons.messageCircle, title: t.commentsPage.empty),
+                              itemBuilder: (context, comment, index) {
+                                if (!comment.hasReplies) return thread(comment);
+                                // The thread follows its replies as they load and change.
+                                final replies = _repliesOf(comment);
+                                return StreamBuilder(
+                                  stream: replies.rebuild,
+                                  builder: (context, _) => thread(comment),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                bottomNavigationBar: inputBar,
-              );
-            },
+                if (canPost)
+                  SafeArea(
+                    top: false,
+                    child: FrostContentColumn(
+                      maxWidth: FrostMetrics.readingMaxWidth,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
+                        child: AppComposerBar(
+                          controller: _draft,
+                          focusNode: _input,
+                          placeholder: switch (_replyingTo) {
+                            final parent? => t.illust.comments.replyInputHint(name: parent.user.name),
+                            null => t.illust.comments.inputHint,
+                          },
+                          sendLabel: t.common.send,
+                          sending: _sending,
+                          onSend: _hasDraft && !_sending ? () => unawaited(_send(text: _draft.text.trim())) : null,
+                          replyLabel: switch (_replyingTo) {
+                            final parent? => t.illust.comments.replyingTo(name: parent.user.name),
+                            null => null,
+                          },
+                          onCancelReply: () => setState(() => _replyingTo = null),
+                          emojiLabel: t.illust.comments.emoji,
+                          emojiPanel: assets.emojis.isEmpty
+                              ? null
+                              : (context, close) => _AssetGrid(assets: assets.emojis, extent: _AssetGrid.emojiExtent, onSelected: _insertEmoji),
+                          stampLabel: t.illust.comments.stamp,
+                          stampPanel: assets.stamps.isEmpty
+                              ? null
+                              : (context, close) => _AssetGrid(
+                                  assets: assets.stamps,
+                                  extent: _AssetGrid.stampExtent,
+                                  onSelected: (asset) {
+                                    close();
+                                    if (int.tryParse(asset.name) case final id?) unawaited(_send(stampId: id));
+                                  },
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           );
         },
       ),
     );
   }
-
-  Future<void> _confirmDiscard() async {
-    if (_confirmingDiscard) return;
-    _confirmingDiscard = true;
-    final discard = await showFrostDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(dialogContext.t.illust.comments.discardDraftTitle),
-        content: Text(dialogContext.t.illust.comments.discardDraftMessage),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(dialogContext.t.illust.comments.continueEditing)),
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text(dialogContext.t.illust.comments.discardDraft)),
-        ],
-      ),
-    );
-    _confirmingDiscard = false;
-    if (!mounted || discard != true) return;
-    setState(() => _allowPop = true);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) Navigator.of(context).maybePop();
-    });
-  }
-
-  void _syncDetailComments() {
-    switch (widget.workType) {
-      case CommentWorkType.illust:
-        ref.invalidate(illustCommentsProvider(widget.workId));
-      case CommentWorkType.novel:
-        ref.invalidate(novelCommentsProvider(widget.workId));
-    }
-  }
-
-  String _title(BuildContext context) {
-    final totalComments = widget.totalComments;
-    if (totalComments == null) {
-      return context.t.illust.section.comments;
-    }
-
-    return context.t.illust.section.commentsWithCount(count: formatCount(totalComments));
-  }
-
-  CommentRepliesListSource _replySourceFor(Comment comment) {
-    return _replySources.putIfAbsent(comment.id, () => CommentRepliesListSource(workType: widget.workType, parentCommentId: comment.id));
-  }
-
-  void _setReplyingTo(Comment comment) {
-    setState(() => _replyingTo = comment);
-  }
-
-  void _clearReplyingTo() {
-    setState(() => _replyingTo = null);
-  }
-
-  Future<bool> _submitComment({required String text, int? stampId}) async {
-    final parentComment = _replyingTo;
-
-    try {
-      final added = await _source.addComment(comment: text, stampId: stampId, parentCommentId: parentComment?.id);
-      if (!mounted) return true;
-      if (parentComment != null) {
-        final repliesSource = _replySourceFor(parentComment);
-        if (repliesSource.initialized) {
-          repliesSource.prependReply(added);
-        } else {
-          unawaited(repliesSource.refresh(true));
-        }
-      }
-      _syncDetailComments();
-
-      setState(() {
-        _replyingTo = null;
-        if (parentComment != null) _localReplyParentIds.add(parentComment.id);
-      });
-
-      return true;
-    } catch (error) {
-      toastErrorWithCause(t.illust.comments.sendFailed, error);
-      return false;
-    }
-  }
-
-  bool _isDeletingComment(Comment comment) {
-    return _deletingCommentIds.contains(comment.id);
-  }
-
-  Future<void> _deleteComment(Comment comment, CommentRepliesListSource? repliesSource) async {
-    if (_deletingCommentIds.contains(comment.id)) {
-      return;
-    }
-
-    final confirmed = await showFrostDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(dialogContext.t.illust.comments.delete),
-        content: Text(dialogContext.t.illust.comments.deleteConfirm),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(dialogContext.t.common.cancel)),
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text(dialogContext.t.illust.comments.delete)),
-        ],
-      ),
-    );
-    if (!mounted || confirmed != true) return;
-
-    setState(() => _deletingCommentIds.add(comment.id));
-    try {
-      if (repliesSource == null) {
-        await _source.deleteComment(comment);
-      } else {
-        await repliesSource.deleteComment(comment);
-      }
-      if (!mounted) return;
-      _syncDetailComments();
-
-      if (mounted && _replyingTo?.id == comment.id) {
-        setState(() => _replyingTo = null);
-      }
-    } catch (error) {
-      toastErrorWithCause(t.illust.comments.deleteFailed, error);
-    } finally {
-      if (mounted) {
-        setState(() => _deletingCommentIds.remove(comment.id));
-      }
-    }
-  }
 }
 
-class _DesktopCommentsScaffold extends StatelessWidget {
-  const _DesktopCommentsScaffold({required this.title, required this.child, required this.inputBar});
-
-  final String title;
-  final Widget child;
-  final Widget? inputBar;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            FrostContentColumn(child: _DesktopCommentsHeader(title: title)),
-            Expanded(child: child),
-            ?inputBar,
-          ],
-        ),
-      ),
+/// Loads a comment's replies into its thread, then more of them: a compact
+/// action in the comment's footer, so it lines up with the comment's text.
+abstract final class _RepliesFooter {
+  /// The footer action for [source], or null once every reply is shown.
+  static Widget? of(BuildContext context, CommentRepliesListSource source) {
+    final t = context.t;
+    final String label;
+    if (source.lastError != null) {
+      label = t.common.retry;
+    } else if (!source.initialized) {
+      label = t.illust.comments.loadReplies;
+    } else if (source.hasMore) {
+      label = t.illust.comments.loadMoreReplies;
+    } else {
+      return null;
+    }
+    return FrostButton.quiet(
+      key: const ValueKey('comment-replies-action'),
+      label: label,
+      size: FrostControlSize.compact,
+      state: source.busy ? const FrostActionState.running() : FrostActionState.idle,
+      onPressed: source.busy ? null : () => unawaited(source.initialized ? source.loadMore() : source.refresh(true)),
     );
   }
 }
 
-class _DesktopCommentsHeader extends StatelessWidget {
-  const _DesktopCommentsHeader({required this.title});
+/// The emoji or stamp picker.
+class _AssetGrid extends StatelessWidget {
+  const _AssetGrid({required this.assets, required this.extent, required this.onSelected});
 
-  final String title;
+  final List<PixivCommentAsset> assets;
+  final double extent;
+  final ValueChanged<PixivCommentAsset> onSelected;
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 18, 0, 14),
-      child: Text(
-        title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-      ),
-    );
-  }
-}
-
-class _CommentsRefreshView extends StatelessWidget {
-  const _CommentsRefreshView({
-    required this.source,
-    required this.assets,
-    required this.workType,
-    required this.repliesSourceBuilder,
-    required this.onRefresh,
-    required this.onReply,
-    required this.onDelete,
-    required this.currentUserId,
-    required this.isDeletingComment,
-    required this.hasLocalReply,
-  });
-
-  final WorkCommentsListSource source;
-  final PixivCommentAssets assets;
-  final CommentWorkType workType;
-  final CommentRepliesSourceBuilder repliesSourceBuilder;
-  final FrostRefreshAction onRefresh;
-  final ValueChanged<Comment>? onReply;
-  final CommentDeleteCallback onDelete;
-  final int? currentUserId;
-  final bool Function(Comment comment) isDeletingComment;
-  final bool Function(Comment comment) hasLocalReply;
+  static const emojiExtent = 32.0;
+  static const stampExtent = 64.0;
 
   @override
-  Widget build(BuildContext context) {
-    return FrostRefreshView(
-      onRefresh: onRefresh,
-      builder: (context, physics, locators) {
-        return AnimatedBuilder(
-          animation: source,
-          builder: (context, child) {
-            return _CommentsBody(
-              source: source,
-              assets: assets,
-              workType: workType,
-              physics: physics,
-              locators: locators,
-              repliesSourceBuilder: repliesSourceBuilder,
-              onReply: onReply,
-              onDelete: onDelete,
-              currentUserId: currentUserId,
-              isDeletingComment: isDeletingComment,
-              hasLocalReply: hasLocalReply,
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-class _CommentsBody extends StatelessWidget {
-  const _CommentsBody({
-    required this.source,
-    required this.assets,
-    required this.workType,
-    required this.physics,
-    required this.locators,
-    required this.repliesSourceBuilder,
-    required this.onReply,
-    required this.onDelete,
-    required this.currentUserId,
-    required this.isDeletingComment,
-    required this.hasLocalReply,
-  });
-
-  final WorkCommentsListSource source;
-  final PixivCommentAssets assets;
-  final CommentWorkType workType;
-  final ScrollPhysics? physics;
-  final FrostRefreshLocators locators;
-  final CommentRepliesSourceBuilder repliesSourceBuilder;
-  final ValueChanged<Comment>? onReply;
-  final CommentDeleteCallback onDelete;
-  final int? currentUserId;
-  final bool Function(Comment comment) isDeletingComment;
-  final bool Function(Comment comment) hasLocalReply;
-
-  @override
-  Widget build(BuildContext context) => FrostLoadStateSwitcher(phase: source.phase, child: _buildPhase(context));
-
-  Widget _buildPhase(BuildContext context) {
-    final lastError = source.lastError;
-
-    if (source.phase == FrostLoadPhase.loading) {
-      return FrostLoadingScrollView(
-        physics: physics,
-        slivers: [
-          ?locators.sliverHeader,
-          SliverPadding(
-            // Same insets as the loaded list below.
-            padding: const EdgeInsets.only(top: 12, bottom: 24),
-            sliver: SliverToBoxAdapter(child: FrostContentColumn(child: CommentsLoadingSkeleton(itemCount: 6, showActions: true))),
+  Widget build(BuildContext context) => Wrap(
+    spacing: FrostGap.inline,
+    runSpacing: FrostGap.inline,
+    children: [
+      for (final asset in assets)
+        Semantics(
+          button: true,
+          label: asset.name,
+          excludeSemantics: true,
+          child: FrostClickSurface(
+            onTap: () => onSelected(asset),
+            child: Padding(
+              padding: const EdgeInsets.all(FrostGap.inline),
+              child: Image.asset(asset.path, width: extent, height: extent, filterQuality: FilterQuality.medium),
+            ),
           ),
-        ],
-      );
-    }
-
-    if (!source.initialized && lastError != null) {
-      return FrostSliverFillBody(
-        physics: physics,
-        sliverHeader: locators.sliverHeader,
-        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
-      );
-    }
-
-    if (source.initialized && source.items.isEmpty) {
-      return FrostSliverFillBody(
-        physics: physics,
-        sliverHeader: locators.sliverHeader,
-        child: FrostEmptyState(icon: FrostIconData.glyph(Icons.chat_bubble_outline), title: context.t.illust.comments.empty),
-      );
-    }
-
-    return FrostLoadingScrollView(
-      physics: physics,
-      slivers: [
-        ?locators.sliverHeader,
-        FrostSliverDataList<Comment>(
-          firstLoadSkeleton: const FullScreenLoadingSkeleton(),
-          source: source,
-          padding: const EdgeInsets.only(top: 12, bottom: 24),
-          itemBuilder: (context, comment, index) {
-            return FrostContentColumn(
-              child: Column(
-                children: [
-                  PixivCommentTile(
-                    comment: comment,
-                    assets: assets,
-                    workType: workType,
-                    repliesSourceBuilder: repliesSourceBuilder,
-                    onReply: onReply,
-                    onDelete: onDelete,
-                    currentUserId: currentUserId,
-                    isDeletingComment: isDeletingComment,
-                    hasLocalReply: hasLocalReply(comment),
-                  ),
-                  if (index < source.items.length - 1) const CommentSeparator(),
-                ],
-              ),
-            );
-          },
         ),
-      ],
-    );
-  }
+    ],
+  );
 }
