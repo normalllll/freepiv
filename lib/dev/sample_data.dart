@@ -133,7 +133,12 @@ DownloadTaskSnapshot _task(int index, DownloadStatus status, SaveState saveState
   return DownloadTaskSnapshot(
     id: 'illust_${90000 + index}_page_0',
     origin: ArtworkPage(illustId: 90000 + index, pageIndex: 0),
-    source: ArtworkSource(illustId: 90000 + index, title: 'Sample work ${index + 1}', subtitle: _artist.name),
+    source: ArtworkSource(
+      illustId: 90000 + index,
+      title: 'Sample work ${index + 1}',
+      subtitle: _artist.name,
+      thumbnailUrl: sampleImageUrl(index, width: 360, height: 360),
+    ),
     title: 'Sample work ${index + 1}',
     filename: '${90000 + index}_p0.png',
     status: status,
