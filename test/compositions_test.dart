@@ -105,7 +105,7 @@ void main() {
 
   group('identity header', () {
     Widget header() => AppIdentityHeader(
-      avatar: const FrostAvatar.person(name: 'Mika', size: FrostAvatarSize.xlarge),
+      avatar: const FrostAvatar.person(name: 'Mika', size: FrostAvatarSize.xxlarge),
       name: 'Mika with a rather long display name',
       subtitle: '@mika',
       stats: const [

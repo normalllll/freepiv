@@ -309,7 +309,7 @@ class _UserIdentity extends StatelessWidget {
         spacing: FrostGap.group,
         children: [
           AppIdentityHeader(
-            avatar: AppUserAvatar(user: user, size: FrostAvatarSize.xlarge),
+            avatar: AppUserAvatar(user: user, size: FrostAvatarSize.xxlarge),
             name: user.name,
             subtitle: '@${user.account}',
             stats: [
@@ -409,7 +409,7 @@ class _UserDetailSkeleton extends StatelessWidget {
           maxWidth: double.infinity,
           sliver: SliverToBoxAdapter(
             child: const AppIdentityHeader(
-              avatar: FrostAvatar(semanticLabel: '', size: FrostAvatarSize.xlarge),
+              avatar: FrostAvatar(semanticLabel: '', size: FrostAvatarSize.xxlarge),
               name: 'Sample author',
               subtitle: '@sample_author',
               statsLoading: true,

@@ -90,6 +90,15 @@ void main() {
     expectNoLayoutErrors(tester);
   });
 
+  testWidgets('the identity avatar is 72 across, loaded and loading', (tester) async {
+    await _mount(tester, detail: sampleUserDetail);
+    final header = find.byType(AppIdentityHeader);
+    expect(tester.getSize(find.descendant(of: header, matching: find.byType(FrostAvatar)).first), const Size(72, 72));
+    final never = Completer<UserDetailResult>();
+    await _mount(tester, id: 2000, load: () => never.future);
+    expect(tester.getSize(find.descendant(of: find.byType(AppIdentityHeader), matching: find.byType(FrostAvatar)).first), const Size(72, 72));
+  });
+
   testWidgets('loading: an author known only by id shows the header and feed at their size', (tester) async {
     final never = Completer<UserDetailResult>();
     await _mount(tester, id: 2000, load: () => never.future);
@@ -151,7 +160,35 @@ void main() {
     await tester.tap(_tab(t.user.tabs.profile));
     await settlePilot(tester);
     expect(outer.offset, collapsed);
-  }, skip: true); // FrostTabBar ensureVisible scrolls the outer view: freepiv-20261107-tab-bar-ensure-visible
+  });
+
+  for (final textScale in [1.0, 2.0]) {
+    testWidgets('the tabs stay pinned under the page header while the works scroll, and the works stay below them (text ×$textScale)', (tester) async {
+      await _mount(tester, detail: sampleUserDetail, textScale: textScale);
+      final bar = find.byType(FrostTabBar);
+      final header = tester.getRect(find.byType(FrostPageHeader)).bottom;
+      final outer = tester.state<NestedScrollViewState>(find.byType(NestedScrollView)).outerController;
+      final identity = tester.getSize(find.byType(AppIdentityHeader)).height;
+      expect(tester.getTopLeft(bar).dy, greaterThan(header + identity - 1), reason: 'below the identity at first');
+      expect(outer.position.maxScrollExtent, lessThan(tester.getBottomLeft(bar).dy), reason: 'the outer view scrolls the identity away, not the tabs');
+      // Past the identity, however tall the text makes it.
+      while (outer.offset < outer.position.maxScrollExtent) {
+        await tester.dragFrom(const Offset(500, 650), const Offset(0, -300));
+        await settlePilot(tester);
+      }
+      for (var step = 0; step < 4; step++) {
+        await tester.dragFrom(const Offset(500, 650), const Offset(0, -300));
+        await settlePilot(tester);
+        expect(outer.offset, outer.position.maxScrollExtent, reason: 'the works scroll, the identity stays away');
+        final pinned = tester.getRect(bar);
+        expect(pinned.top, closeTo(header, 2), reason: 'the tabs sit right under the page header (drag ${step + 1})');
+        final cards = find.byType(AppArtworkCard).hitTestable();
+        expect(cards, findsWidgets);
+        expect(tester.getRect(cards.first).bottom, greaterThan(pinned.bottom), reason: 'works scroll under the tabs, not over them');
+      }
+      expectNoLayoutErrors(tester);
+    });
+  }
 
   test('the author page strings exist in all four languages', () => expectLocalesComplete(['user', 'userPage']));
 }

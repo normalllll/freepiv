@@ -32,8 +32,7 @@ class AppIdentityHeader extends StatelessWidget {
   /// Narrower content than this stacks the header.
   static const stackBelow = 600.0;
 
-  /// Usually a FrostAvatar; Frost's largest size (56) stands in for the 72
-  /// the design asks for (freepiv-20261107-identity-avatar-size).
+  /// Usually a FrostAvatar at [FrostAvatarSize.xxlarge] (72).
   final Widget avatar;
   final String name;
   final String? subtitle;

@@ -193,7 +193,7 @@ class _Identity extends ConsumerWidget {
         children: [
           Builder(
             builder: (headerContext) => AppIdentityHeader(
-              avatar: AppFanboxAvatar(user: creator.user, size: FrostAvatarSize.xlarge),
+              avatar: AppFanboxAvatar(user: creator.user, size: FrostAvatarSize.xxlarge),
               name: creator.user.name,
               subtitle: '@${creator.creatorId}',
               primary: FanboxFollowButton(creatorId: creator.creatorId),
@@ -232,7 +232,7 @@ class _IdentitySkeleton extends StatelessWidget {
   Widget build(BuildContext context) => const Padding(
     padding: EdgeInsets.symmetric(vertical: FrostGap.group),
     child: AppIdentityHeader(
-      avatar: FrostAvatar(semanticLabel: '', size: FrostAvatarSize.xlarge),
+      avatar: FrostAvatar(semanticLabel: '', size: FrostAvatarSize.xxlarge),
       name: 'Sample creator',
       subtitle: '@sample_creator',
     ),

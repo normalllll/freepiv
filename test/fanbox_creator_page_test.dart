@@ -43,6 +43,27 @@ Future<void> _showTab(WidgetTester tester, String label) async {
 }
 
 void main() {
+  testWidgets('the identity avatar is 72 across', (tester) async {
+    await _mount(tester);
+    expect(tester.getSize(find.descendant(of: find.byType(AppIdentityHeader), matching: find.byType(FrostAvatar)).first), const Size(72, 72));
+  });
+
+  testWidgets('the tabs stay pinned under the page header while the posts scroll', (tester) async {
+    await _mount(tester);
+    final bar = find.byType(FrostTabBar);
+    final header = tester.getRect(find.byType(FrostPageHeader)).bottom;
+    final outer = tester.state<NestedScrollViewState>(find.byType(NestedScrollView)).outerController;
+    while (outer.offset < outer.position.maxScrollExtent) {
+      await tester.dragFrom(const Offset(500, 650), const Offset(0, -300));
+      await settlePilot(tester);
+    }
+    for (var step = 0; step < 3; step++) {
+      await tester.dragFrom(const Offset(500, 650), const Offset(0, -300));
+      await settlePilot(tester);
+      expect(tester.getRect(bar).top, closeTo(header, 2), reason: 'pinned after drag ${step + 1}');
+    }
+  });
+
   testWidgets('the identity with Follow and More heads Posts, Plans and Profile', (tester) async {
     await _mount(tester);
     final creator = sampleFanboxCreator('sample_creator');
