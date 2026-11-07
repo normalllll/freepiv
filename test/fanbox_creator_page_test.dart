@@ -68,12 +68,19 @@ void main() {
     await _mount(tester, plans: true);
     final plan = sampleFanboxPlans('sample_creator').first;
     final row = tester.widget<FrostListRow>(find.ancestor(of: find.text(plan.title), matching: find.byType(FrostListRow)));
-    expect(row.subtitle!.text, plan.description.split('\n').first);
+    expect(row.subtitle!.text, plan.description, reason: 'the whole description, cut by lines');
+    final subtitle = find.descendant(
+      of: find.ancestor(of: find.text(plan.title), matching: find.byType(FrostListRow)),
+      matching: find.byWidgetPredicate((widget) => widget is RichText && widget.text.toPlainText() == plan.description),
+    );
+    expect(tester.widget<RichText>(subtitle).maxLines, 2);
+    final line = tester.getSize(find.text(plan.title)).height;
+    expect(tester.getSize(subtitle).height, greaterThan(line * 1.5), reason: 'both lines of the description show');
     await tester.tap(find.text(plan.title));
     await settlePilot(tester);
     expect(openedLocations, isEmpty, reason: 'no second creator page');
     expect(tester.widget<FrostDialog>(find.byType(FrostDialog)).actions.single.label, t.fanbox.supportOnWebsite);
-    expect(find.text(plan.description), findsOneWidget);
+    expect(find.descendant(of: find.byType(FrostDialog), matching: find.text(plan.description)), findsOneWidget);
   });
 
   testWidgets('a profile picture opens in the image viewer at that picture', (tester) async {

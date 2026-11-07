@@ -333,7 +333,7 @@ class FanboxEntryView extends ConsumerWidget {
       FanboxCreatorEntry(:final creator) => FrostListRow(
         title: creator.user.name,
         contentTitle: true,
-        subtitle: FrostRowSubtitle(creator.description.split('\n').first.trim(), content: true),
+        subtitle: FrostRowSubtitle(creator.description.trim(), content: true, maxLines: 2),
         leading: FrostLeading.custom(AppFanboxAvatar(user: creator.user)),
         value: creator.isSupported ? t.fanbox.readable : null,
         accessory: FrostRowAccessory.chevron,

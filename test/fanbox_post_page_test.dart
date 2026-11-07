@@ -151,12 +151,12 @@ void main() {
     final plan = sampleFanboxPlans(restricted.creatorId).last;
     await _scrollTo(tester, find.text(plan.title));
     final row = tester.widget<FrostListRow>(find.ancestor(of: find.text(plan.title), matching: find.byType(FrostListRow)));
-    expect(row.subtitle!.text, plan.description.split('\n').first, reason: 'what the plan includes, not the creator');
+    expect(row.subtitle!.text, plan.description, reason: 'what the plan includes, not the creator');
     await tester.tap(find.text(plan.title));
     await settlePilot(tester);
     final dialog = tester.widget<FrostDialog>(find.byType(FrostDialog));
     expect(dialog.title, plan.title);
-    expect(find.text(plan.description), findsOneWidget, reason: 'the whole description');
+    expect(find.descendant(of: find.byType(FrostDialog), matching: find.text(plan.description)), findsOneWidget, reason: 'the whole description');
     expect(dialog.actions.single.label, t.fanbox.supportOnWebsite);
     expect(fanboxPlanUrl(plan), Uri.parse('https://www.fanbox.cc/@${plan.creatorId}/plans/${plan.id}'));
   });

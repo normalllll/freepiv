@@ -11,7 +11,7 @@ import 'fanbox_actions.dart' show openFanboxLink;
 /// The plan's page on FANBOX, where the reader supports the creator.
 Uri fanboxPlanUrl(FanboxPlan plan) => Uri.https('www.fanbox.cc', '/@${plan.creatorId}/plans/${plan.id}');
 
-/// A creator's plan: its title, the start of its description and its fee;
+/// A creator's plan: its title, two lines of its description and its fee;
 /// it opens the whole description with the way to support it on FANBOX.
 /// [showsCreator] adds the creator's avatar, for lists of several creators.
 class FanboxPlanRow extends StatelessWidget {
@@ -26,8 +26,7 @@ class FanboxPlanRow extends StatelessWidget {
     return FrostListRow(
       title: plan.title,
       contentTitle: true,
-      // Rows take no line limit: the description's first line stands for it.
-      subtitle: description.isEmpty ? null : FrostRowSubtitle(description.split('\n').first.trim(), content: true),
+      subtitle: description.isEmpty ? null : FrostRowSubtitle(description, content: true, maxLines: 2),
       leading: showsCreator ? FrostLeading.custom(AppFanboxAvatar(user: plan.user)) : null,
       value: context.t.fanbox.monthlyFee(fee: plan.fee),
       accessory: FrostRowAccessory.chevron,
