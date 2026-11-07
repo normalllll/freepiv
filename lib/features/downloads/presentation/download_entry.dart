@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -63,9 +63,13 @@ final downloadActivityProvider = Provider<DownloadActivity>((ref) {
 });
 
 /// The shell's download entry ([FrostShell.taskEntry]): the sidebar's last
-/// row or the phone layout's floating button, where downloads land.
+/// row or the phone layout's floating button, where downloads land. Both
+/// layouts open [DownloadEntryPanel] through the entry's panel: anchored to
+/// the sidebar row, or growing from the floating button.
 FrostShellTaskEntry appDownloadTaskEntry(DownloadActivity activity, {required bool revealed}) => FrostShellTaskEntry(
   builder: (context, placement) => DownloadEntryButton(placement: placement),
+  // The shell rebuilds this entry when the language changes.
+  panel: FrostShellTaskPanel(title: t.navigation.downloads, builder: (context) => const DownloadEntryPanel()),
   visible: activity.visible || revealed,
   initialFloatingPosition: AppSettings.downloadEntryPosition,
   onFloatingPositionChanged: (position) => AppSettings.downloadEntryPosition = position,
@@ -113,7 +117,8 @@ class _DownloadEntryButtonState extends ConsumerState<DownloadEntryButton> with 
     unawaited(_landing.forward(from: 0));
   }
 
-  Widget _button({required VoidCallback onPressed}) {
+  @override
+  Widget build(BuildContext context) {
     final activity = ref.watch(downloadActivityProvider);
     return ScaleTransition(
       scale: TweenSequence([
@@ -122,47 +127,32 @@ class _DownloadEntryButtonState extends ConsumerState<DownloadEntryButton> with 
       ]).animate(CurvedAnimation(parent: _landing, curve: Curves.easeOut)),
       child: KeyedSubtree(
         key: _buttonKey,
+        // No action of its own: the shell opens the entry's panel.
         child: FrostShellTaskButton(
           icon: PivIcons.download,
           label: context.t.navigation.downloads,
           badge: activity.badge,
           badgeTone: activity.badgeTone,
           progress: activity.progress,
-          onPressed: onPressed,
+          onPressed: null,
         ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.placement == FrostShellTaskEntryPlacement.sidebar) {
-      return FrostPopover(
-        title: context.t.navigation.downloads,
-        builder: (context, focusNode, toggle) => _button(onPressed: toggle),
-        contentBuilder: (context, close) => DownloadEntryPanel(onClose: close),
-      );
-    }
-    // The floating panel the phone layout should open is not in Frost yet
-    // (freepiv-20261107-floating-task-panel); a sheet shows the same panel.
-    return _button(
-      onPressed: () => showFrostSheet<void>(
-        context: context,
-        title: context.t.navigation.downloads,
-        builder: (sheetContext) => DownloadEntryPanel(onClose: () => Navigator.of(sheetContext).pop()),
       ),
     );
   }
 }
 
+/// Closes the entry's panel, in whichever form it takes, then opens
+/// [location] from the entry.
+void _openFromPanel(BuildContext context, String location) {
+  unawaited(closeFrostPanelThen(context, (origin) => GoRouter.of(origin).push(location)));
+}
+
 /// The entry's panel: a summary, bulk actions, the first items needing
 /// attention and the way to the downloads page. Closing it never cancels.
 class DownloadEntryPanel extends ConsumerWidget {
-  const DownloadEntryPanel({required this.onClose, super.key});
+  const DownloadEntryPanel({super.key});
 
   static const shownItems = 4;
-
-  final VoidCallback onClose;
 
   /// Collecting, active and failed items first, then the rest, newest first.
   static List<DownloadItem> ordered(List<DownloadItem> items) {
@@ -183,29 +173,38 @@ class DownloadEntryPanel extends ConsumerWidget {
     final t = context.t;
     final activity = ref.watch(downloadActivityProvider);
     final items = ordered(activity.items);
-    void open(String location) {
-      onClose();
-      GoRouter.of(context).push(location);
-    }
+    void open(String location) => _openFromPanel(context, location);
+
+    Widget summary({bool shrink = false}) => FrostText(
+      t.downloadEntry.summary(active: activity.active, failed: activity.failed),
+      role: FrostTextRole.footnote,
+      tone: FrostTextTone.secondary,
+      maxLines: shrink ? 1 : 2,
+      overflow: TextOverflow.ellipsis,
+    );
+    final bulk = [
+      if (activity.failed > 0) FrostButton.quiet(label: t.downloadEntry.retryFailed, onPressed: () => unawaited(downloadManager.retryFailed())),
+      if (items.any((item) => item.state == DownloadItemState.completed))
+        FrostButton.quiet(label: t.downloadEntry.clearCompleted, onPressed: () => unawaited(downloadManager.clearCompleted())),
+    ];
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: FrostText(
-                t.downloadEntry.summary(active: activity.active, failed: activity.failed),
-                role: FrostTextRole.footnote,
-                tone: FrostTextTone.secondary,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+        // One line in the sidebar's popover; the floating panel is narrower,
+        // so there the bulk actions go under the summary.
+        FrostFit(
+          candidates: [
+            (context) => Row(mainAxisSize: MainAxisSize.min, spacing: FrostGap.related, children: [summary(shrink: true), ...bulk]),
+            (context) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                summary(),
+                if (bulk.isNotEmpty) Wrap(spacing: FrostGap.related, children: bulk),
+              ],
             ),
-            if (activity.failed > 0) FrostButton.quiet(label: t.downloadEntry.retryFailed, onPressed: () => unawaited(downloadManager.retryFailed())),
-            if (items.any((item) => item.state == DownloadItemState.completed))
-              FrostButton.quiet(label: t.downloadEntry.clearCompleted, onPressed: () => unawaited(downloadManager.clearCompleted())),
           ],
         ),
         for (final item in items.take(shownItems))

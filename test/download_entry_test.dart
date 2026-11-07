@@ -146,7 +146,7 @@ void main() {
       await tester.tap(find.byType(FrostShellTaskButton));
       await tester.pumpAndSettle();
       expect(find.byType(DownloadEntryPanel), findsOneWidget);
-      expect(find.text('1 in progress · 0 failed'), findsOneWidget);
+      expect(find.text('1 in progress · 0 failed').hitTestable(), findsOneWidget);
       await tester.tap(find.text('Summer sketches'));
       await tester.pumpAndSettle();
       expect(find.byType(DownloadEntryPanel), findsNothing);

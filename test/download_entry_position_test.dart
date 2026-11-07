@@ -81,4 +81,34 @@ void main() {
     expect(_entry(tester).initialFloatingPosition.edge, FrostFloatingEntryEdge.start);
     expect(tester.getCenter(find.byType(FrostShellTaskButton)).dx, lessThan(195), reason: 'it comes back where it was left');
   });
+
+  testWidgets('in the phone layout the button opens the floating panel, which moves by its title and rests the button where it was left', (tester) async {
+    final store = SampleSettingsStore({
+      ...sampleSettings,
+      _key: {'edge': 'end', 'fraction': .5},
+    });
+    await _mountPhone(tester, store);
+    await tester.tap(find.byType(FrostShellTaskButton));
+    for (var frame = 0; frame < 8; frame++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byType(DownloadEntryPanel), findsOneWidget);
+    final panel = tester.getRect(find.byType(DownloadEntryPanel));
+    expect(panel.width, lessThan(390), reason: 'a floating panel, not a full-width sheet');
+
+    // Frost's title bar of the floating panel moves it.
+    await tester.drag(find.byKey(const ValueKey('frost-shell-task-panel-title')), const Offset(-200, 0));
+    for (var frame = 0; frame < 8; frame++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(tester.getRect(find.byType(DownloadEntryPanel)).left, lessThan(panel.left));
+
+    // Outside it closes; the button rests by the nearer edge and that is saved.
+    await tester.tapAt(const Offset(370, 200));
+    for (var frame = 0; frame < 8; frame++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byType(DownloadEntryPanel), findsNothing);
+    expect((store.values[_key] as Map)['edge'], 'start');
+  });
 }
