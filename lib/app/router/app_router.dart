@@ -7,6 +7,7 @@ import 'package:freepiv/features/fanbox/browse_page.dart';
 import 'package:freepiv/features/fanbox/page.dart';
 import 'package:freepiv/features/fanbox/detail.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
+import 'package:freepiv/features/fanbox/login_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -156,6 +157,12 @@ class AppRouter {
                 showPlans: state.uri.queryParameters[AppRouteQuery.plans] == 'true',
                 summary: state.extra is FanboxCreator ? state.extra as FanboxCreator : null,
               ),
+            ),
+            // FANBOX's own sign-in page where the platform has a web view.
+            GoRoute(
+              path: AppRoute.fanboxWebLogin.path,
+              name: AppRoute.fanboxWebLogin.name,
+              pageBuilder: (context, state) => FrostDetailPage<bool>(key: state.pageKey, child: const FanboxWebLoginPage()),
             ),
           ],
         ),

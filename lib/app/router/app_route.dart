@@ -20,6 +20,7 @@ enum AppRoute {
   fanboxTag('/fanbox/tag'),
   fanboxPost('/fanbox/post/:${AppRouteParam.postId}'),
   fanboxCreator('/fanbox/creator/:${AppRouteParam.creatorId}'),
+  fanboxWebLogin('/fanbox/sign-in'),
   pixivision('/pixivision'),
   pixivisionBrowse('/pixivision/browse'),
   pixivisionArticle('/pixivision/article'),

@@ -55,7 +55,7 @@ String appRouteLabel(Translations translations, AppRoute route) {
     AppRoute.discover => translations.common.discover,
     AppRoute.searchIllustResult || AppRoute.searchNovelResult || AppRoute.searchUserResult || AppRoute.tagSearch => translations.navigation.search,
     AppRoute.newest => translations.navigation.activity,
-    AppRoute.fanbox || AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator => translations.fanbox.title,
+    AppRoute.fanbox || AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator || AppRoute.fanboxWebLogin => translations.fanbox.title,
     AppRoute.pixivision || AppRoute.pixivisionBrowse || AppRoute.pixivisionArticle => translations.pixivision.title,
     AppRoute.ranking || AppRoute.legacyRankingIllust || AppRoute.legacyRankingManga || AppRoute.legacyRankingNovel => translations.navigation.ranking,
     AppRoute.me => translations.navigation.me,

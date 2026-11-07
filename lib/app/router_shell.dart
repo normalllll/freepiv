@@ -19,7 +19,7 @@ const appSecondaryRoutes = [AppRoute.downloads, AppRoute.fanbox, AppRoute.settin
 /// The secondary destination a location belongs to.
 int? appSecondaryIndexForPath(String path) => switch (AppRoute.match(path)) {
   AppRoute.downloads => 0,
-  AppRoute.fanbox || AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator => 1,
+  AppRoute.fanbox || AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator || AppRoute.fanboxWebLogin => 1,
   AppRoute.settings => 2,
   _ => null,
 };
@@ -193,7 +193,7 @@ String? fallbackPathFor(String path) {
   return switch (route) {
     AppRoute.illustRelated || AppRoute.illustComments when id != null => AppLocations.illust(id),
     AppRoute.novelReader || AppRoute.novelComments when id != null => AppLocations.novel(id),
-    AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator => AppRoute.fanbox.path,
+    AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator || AppRoute.fanboxWebLogin => AppRoute.fanbox.path,
     AppRoute.pixivisionBrowse || AppRoute.pixivisionArticle => AppRoute.pixivision.path,
     AppRoute.meFollowing || AppRoute.meFollowers => AppRoute.me.path,
     AppRoute.searchIllustResult || AppRoute.searchNovelResult || AppRoute.searchUserResult || AppRoute.tagSearch => AppRoute.discover.path,

@@ -1,7 +1,6 @@
-import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -168,60 +167,65 @@ class _FanboxWebLoginPageState extends ConsumerState<FanboxWebLoginPage> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) unawaited(_back());
       },
-      child: Scaffold(
-        appBar: PivAppBar(
-          FrostPageHeader(
-            title: Text(t.login),
-            onBack: _back,
-            actions: [FrostToolbarItem.action(label: t.cancel, icon: PivIcons.close, onPressed: () => _close(false))],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SafeArea(
+            bottom: false,
+            child: FrostPageHeader(
+              title: FrostText(t.login),
+              onBack: _back,
+              actions: [FrostToolbarItem.action(label: t.cancel, icon: PivIcons.close, onPressed: () => _close(false))],
+            ),
           ),
-        ),
-        body: SafeArea(
-          top: false,
-          child: Column(
-            children: [
-              SizedBox(
-                height: 64,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      SizedBox(width: 32, child: _loading || checking ? const FrostRefreshDots() : null),
-                      Expanded(child: Text(error == null ? t.browserHelp : fanboxLoginError(context.t, error), maxLines: 2, overflow: TextOverflow.ellipsis)),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: 136,
-                        child: TextButton(
-                          onPressed: checking || _closing || _expired
-                              ? null
-                              : () {
-                                  if (_pageError != null) {
-                                    setState(() => _pageError = null);
-                                    if (_web == null) {
-                                      unawaited(_initialize());
-                                    } else {
-                                      unawaited(_web!.reload());
-                                    }
-                                  } else {
-                                    unawaited(_check(force: true));
-                                  }
-                                },
-                          child: Text(_pageError == null ? t.browserCheck : t.retry),
-                        ),
-                      ),
-                    ],
+          FrostContentColumn(
+            maxWidth: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
+              child: Row(
+                spacing: FrostGap.related,
+                children: [
+                  if (_loading || checking) FrostActivityIndicator(semanticLabel: t.browserCheck),
+                  Expanded(
+                    child: FrostText(
+                      error == null ? t.browserHelp : fanboxLoginError(context.t, error),
+                      role: FrostTextRole.footnote,
+                      tone: error == null ? FrostTextTone.secondary : FrostTextTone.negative,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
+                  FrostButton.quiet(
+                    label: _pageError == null ? t.browserCheck : t.retry,
+                    onPressed: checking || _closing || _expired
+                        ? null
+                        : () {
+                            if (_pageError != null) {
+                              setState(() => _pageError = null);
+                              if (_web == null) {
+                                unawaited(_initialize());
+                              } else {
+                                unawaited(_web!.reload());
+                              }
+                            } else {
+                              unawaited(_check(force: true));
+                            }
+                          },
+                  ),
+                ],
               ),
-              Expanded(
-                child: switch (_web) {
-                  final web? => WebViewWidget(controller: web),
-                  null => const SizedBox.expand(),
-                },
-              ),
-            ],
+            ),
           ),
-        ),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: switch (_web) {
+                final web? => WebViewWidget(controller: web),
+                null => const SizedBox.expand(),
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
