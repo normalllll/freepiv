@@ -70,7 +70,9 @@ Future<void> mountPilotPage(
   );
   addTearDown(router.dispose);
   await tester.pumpWidget(
+    // A new container for every mount, so its overrides apply.
     ProviderScope(
+      key: UniqueKey(),
       overrides: [
         ...{...sampleOverrideMap, ...overrides}.values,
       ],

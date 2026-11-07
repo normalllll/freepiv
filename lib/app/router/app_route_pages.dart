@@ -13,6 +13,7 @@ import 'package:freepiv/features/home/presentation/home_page.dart';
 import 'package:freepiv/features/illust/presentation/illust_detail_page.dart';
 import 'package:freepiv/features/illust/presentation/illust_related_page.dart';
 import 'package:freepiv/features/login/presentation/login_page.dart';
+import 'package:freepiv/features/me/presentation/following_page.dart';
 import 'package:freepiv/features/me/presentation/me_page.dart';
 import 'package:freepiv/features/newest/presentation/page/newest_page.dart';
 import 'package:freepiv/features/novel/presentation/detail/novel_detail_page.dart';
@@ -142,10 +143,7 @@ Page<void> mePage(BuildContext context, GoRouterState state) {
 }
 
 Page<void> meFollowingPage(BuildContext context, GoRouterState state) {
-  return FrostDetailPage(
-    key: state.pageKey,
-    child: const MeUserListPage(kind: MeUserListKind.following),
-  );
+  return FrostDetailPage(key: state.pageKey, child: const FollowingPage());
 }
 
 Page<void> meFollowersPage(BuildContext context, GoRouterState state) {
