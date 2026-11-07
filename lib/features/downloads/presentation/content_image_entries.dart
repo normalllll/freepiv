@@ -15,9 +15,9 @@ import 'package:frost_ui/frost_ui.dart';
 /// The menu of an image inside content (novel covers and illustrations,
 /// FANBOX and Pixivision images): download it under the page's source, and
 /// copy it on desktop.
-List<FrostMenuEntry> contentImageMenu(BuildContext context, RustMediaTransport transport, {required String url, String? title}) {
+List<FrostMenuEntry> contentImageMenu(BuildContext context, RustMediaTransport transport, {required String url, String? title, Map<String, String> headers = pixivRefererHeaders}) {
   final t = context.t;
-  final actions = ContentImageActions.pixivHosted(url: url, headers: pixivRefererHeaders, title: title);
+  final actions = ContentImageActions.pixivHosted(url: url, headers: headers, title: title);
   final source = DownloadSourceScope.of(context);
   return [
     FrostMenuAction(
@@ -26,15 +26,15 @@ List<FrostMenuEntry> contentImageMenu(BuildContext context, RustMediaTransport t
       onSelected: () => unawaited(actions.download(source, DownloadFlight.originOf(context) ?? Rect.zero)),
     ),
     if (isDesktopPlatform)
-      FrostMenuAction(t.illust.contextMenu.copyImage, leading: const FrostGlyph.icon(PivIcons.copy), onSelected: () => unawaited(_copy(transport, url))),
+      FrostMenuAction(t.illust.contextMenu.copyImage, leading: const FrostGlyph.icon(PivIcons.copy), onSelected: () => unawaited(_copy(transport, url, headers))),
   ];
 }
 
-Future<void> _copy(RustMediaTransport transport, String url) async {
+Future<void> _copy(RustMediaTransport transport, String url, Map<String, String> headers) async {
   final label = t.illust.imageLabels.image;
   try {
     final bytes = BytesBuilder(copy: false);
-    await for (final chunk in transport.stream(url, pixivRefererHeaders)) {
+    await for (final chunk in transport.stream(url, headers)) {
       bytes.add(chunk.bytes);
     }
     await copyImageBytesToClipboard(bytes.takeBytes(), mimeType: imageMimeTypeFromUrl(url));

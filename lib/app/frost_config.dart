@@ -203,6 +203,8 @@ abstract final class PivIcons {
   static const smile = FrostIconData.glyph(FreepivIcons.smile);
   static const bookOpen = FrostIconData.glyph(FreepivIcons.bookOpen);
   static const history = FrostIconData.glyph(FreepivIcons.history);
+  static const chevronLeft = FrostIconData.glyph(FreepivIcons.chevronLeft);
+  static const chevronRight = FrostIconData.glyph(FreepivIcons.chevronRight);
   static const image = FrostIconData.glyph(FreepivIcons.image);
 }
 

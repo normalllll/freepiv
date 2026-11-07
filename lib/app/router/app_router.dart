@@ -1,7 +1,7 @@
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart' show ArticleSummary;
 import 'package:freepiv/features/pixivision/navigation.dart';
 import 'package:freepiv/features/pixivision/page.dart';
-import 'package:freepiv/features/pixivision/detail.dart';
+import 'package:freepiv/features/pixivision/article_page.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/features/fanbox/browse_page.dart';
 import 'package:freepiv/features/fanbox/page.dart';
@@ -119,9 +119,12 @@ class AppRouter {
             GoRoute(
               path: AppRoute.pixivisionArticle.path,
               name: AppRoute.pixivisionArticle.name,
-              builder: (context, state) => PixivisionArticlePage(
-                url: validPixivisionUrl(state.uri.queryParameters[AppRouteQuery.url]) ?? 'https://www.pixivision.net/en/',
-                summary: state.extra is ArticleSummary ? state.extra as ArticleSummary : null,
+              pageBuilder: (context, state) => FrostDetailPage(
+                key: state.pageKey,
+                child: PixivisionArticlePage(
+                  url: validPixivisionUrl(state.uri.queryParameters[AppRouteQuery.url]) ?? 'https://www.pixivision.net/en/',
+                  summary: state.extra is ArticleSummary ? state.extra as ArticleSummary : null,
+                ),
               ),
             ),
             GoRoute(

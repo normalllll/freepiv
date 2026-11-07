@@ -234,6 +234,7 @@ final sampleOverrideMap = <Object, Override>{
   pixivisionBrowseProvider: pixivisionBrowseProvider.overrideWith2((_) => _SamplePixivision()),
   pixivisionPageLoaderProvider: pixivisionPageLoaderProvider.overrideWithValue(samplePixivisionPage),
   pixivisionTagsProvider: pixivisionTagsProvider.overrideWith((ref, language) async => samplePixivisionTags),
+  pixivisionArticleProvider: pixivisionArticleProvider.overrideWith((ref, url) async => samplePixivisionDocument(url)),
   illustDetailProvider: illustDetailProvider.overrideWith2((_) => _SampleIllustDetail()),
   novelDetailProvider: novelDetailProvider.overrideWith2((_) => _SampleNovelDetail()),
   searchTrendingTagsProvider: searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
@@ -812,3 +813,78 @@ const samplePixivisionTags = TagDirectory(
     ),
   ],
 );
+
+/// A Pixivision article with every kind of block the page shows.
+Article samplePixivisionArticle(String url) => Article(
+  id: 9000,
+  url: url,
+  language: Language.english,
+  title: 'Quiet harbour towns in illustration',
+  description: 'Twelve artists draw the light over small harbours.',
+  thumbnail: sampleImageUrl(150, width: 1200, height: 630),
+  publishDate: '2026-11-01',
+  category: const ArticleLink(title: 'Illustration', url: 'https://www.pixivision.net/en/c/illustration'),
+  tags: const [PixivisionTag(id: 1, name: 'Landscape', url: 'https://www.pixivision.net/en/t/1')],
+  translations: const [ArticleLink(title: '日本語', url: 'https://www.pixivision.net/ja/a/9000')],
+  blocks: [
+    const ArticleBlock(
+      kind: BlockKind.paragraph,
+      html: '<p>Harbours wake early. See <a href="#works">the works</a> or the <a href="https://www.pixiv.net/artworks/90001">first work on pixiv</a>.</p>',
+      text: 'Harbours wake early. See the works or the first work on pixiv.',
+      images: [],
+      links: [],
+      works: [],
+      embeds: [],
+    ),
+    const ArticleBlock(kind: BlockKind.heading, anchor: 'works', headingLevel: 2, html: '<h2>The works</h2>', text: 'The works', images: [], links: [], works: [], embeds: []),
+    for (var index = 0; index < 3; index++)
+      ArticleBlock(
+        kind: BlockKind.pixivWork,
+        html: '<a href="https://www.pixiv.net/users/2000">Sample artist</a>',
+        text: '',
+        images: const [],
+        links: const [],
+        works: [
+          FeaturedWork(
+            id: 90000 + index,
+            kind: FeaturedWorkKind.illustration,
+            title: 'Morning at the pier ${index + 1}',
+            url: 'https://www.pixiv.net/artworks/${90000 + index}',
+            userId: 2000,
+            userName: 'Sample artist',
+            preview: sampleImageUrl(10 + index, width: 1200, height: 800),
+          ),
+        ],
+        embeds: const [],
+      ),
+    const ArticleBlock(
+      kind: BlockKind.table,
+      html: '<table><tr><th>Work</th><th>Artist</th></tr><tr><td>Morning at the pier</td><td>Sample artist</td></tr></table>',
+      text: 'Work Artist Morning at the pier Sample artist',
+      images: [],
+      links: [],
+      works: [],
+      embeds: [],
+    ),
+    const ArticleBlock(kind: BlockKind.unknown, html: '<custom></custom>', text: '', images: [], links: [], works: [], embeds: []),
+  ],
+  related: [ArticleSection(title: 'Related articles', articles: sampleArticles(count: 3))],
+  monthlyRanking: const [],
+  recommended: const [],
+  previousUrl: 'https://www.pixivision.net/en/a/8999',
+  nextUrl: 'https://www.pixivision.net/en/a/9001',
+);
+
+/// [samplePixivisionArticle] with the shapes of its images known, as the
+/// article's own metadata gives them.
+PixivisionDocument samplePixivisionDocument(String url) {
+  final article = samplePixivisionArticle(url);
+  return PixivisionDocument(
+    article: article,
+    imageRatios: {
+      for (final block in article.blocks)
+        for (final work in block.works)
+          ?work.preview: 1200 / 800,
+    },
+  );
+}

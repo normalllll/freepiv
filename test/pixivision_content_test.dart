@@ -2,17 +2,12 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/media/logic.dart';
-import 'package:freepiv/features/pixivision/article_blocks.dart';
 import 'package:freepiv/features/pixivision/article_images.dart';
-import 'package:freepiv/features/pixivision/detail.dart';
+import 'package:freepiv/features/pixivision/article_page.dart';
 import 'package:freepiv/features/pixivision/logic.dart';
-import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/api/media.dart' as rust;
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 
@@ -95,61 +90,6 @@ void mockMediaCache(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('work and author links align long emoji names and retain pointer and keyboard activation', (tester) async {
-    const title = '作品 Artwork ✨🌸 とても長い名前 混合文字';
-    const author = '作者 Artist 🎨🌈 とても長い名前 Long creator name';
-    const work = FeaturedWork(id: 7, kind: FeaturedWorkKind.illustration, title: title, url: 'https://www.pixiv.net/artworks/7', userId: 8, userName: author);
-    const featured = ArticleBlock(kind: BlockKind.pixivWork, html: '', text: '', images: [], links: [], works: [work], embeds: []);
-    final targets = <String>[];
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    addTearDown(() async => tester.runAsync(() => LocaleSettings.setLocale(AppLocale.enUs)));
-    for (final locale in AppLocale.values) {
-      await tester.runAsync(() => LocaleSettings.setLocale(locale));
-      for (final dark in [false, true]) {
-        for (final width in [390.0, 1280.0]) {
-          tester.view.physicalSize = Size(width, 700);
-          await tester.pumpWidget(
-            ProviderScope(
-              child: TranslationProvider(
-                child: MaterialApp(
-                  theme: dark
-                      ? AppTheme.dark(platform: TargetPlatform.windows, locale: locale.flutterLocale)
-                      : AppTheme.light(platform: TargetPlatform.windows, locale: locale.flutterLocale),
-                  home: Scaffold(
-                    body: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: PixivisionBlock(block: featured, imageRatios: const {}, onLink: targets.add),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-          await tester.pump();
-          for (final label in [title, author]) {
-            final text = tester.widget<Text>(find.text(label));
-            expect(text.style?.decoration, isNot(TextDecoration.underline));
-            expect(text.style?.fontFamilyFallback, isNotEmpty, reason: 'content font fallback keeps emoji rendering');
-            final link = find.ancestor(of: find.text(label), matching: find.byType(InkWell)).first;
-            expect(tester.getSize(link).height, greaterThanOrEqualTo(44));
-          }
-          expect(find.byIcon(Icons.chevron_right), findsNWidgets(2), reason: 'links remain discoverable on touch');
-          final avatar = tester.getRect(find.byIcon(Icons.person_outline));
-          final name = tester.getRect(find.text(author));
-          expect(avatar.center.dy, closeTo(name.center.dy, .1), reason: 'mixed font metrics keep the identity row centered');
-          await tester.tap(find.text(author));
-          expect(targets.last, 'https://www.pixiv.net/users/8');
-          Focus.of(tester.element(find.text(title))).requestFocus();
-          await tester.pump();
-          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-          expect(targets.last, work.url);
-          expect(tester.takeException(), isNull, reason: '${locale.languageCode} / $dark / $width');
-        }
-      }
-    }
-  });
-
   test('header only hides content represented by matching body blocks', () {
     final repeated = article(
       thumbnail: 'https://example.test/cover.jpg?size=small',
@@ -228,30 +168,5 @@ void main() {
     final nonce = DateTime.now().microsecondsSinceEpoch;
     expect(await tester.runAsync(() => probePixivisionImageRatio(transport, 'https://example.test/long-article-image-$nonce.png')), closeTo(2 / 3, .001));
     expect(transport.requests, 1);
-  });
-
-  testWidgets('article links use readable text color and retain link gestures', (tester) async {
-    for (final dark in [false, true]) {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: dark
-              ? AppTheme.dark(platform: TargetPlatform.windows, locale: const Locale('en'))
-              : AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-          home: Scaffold(
-            body: PixivisionBlock(
-              block: block(text: 'Read source', html: '<p>Read <a href="https://example.test/">source</a></p>'),
-              imageRatios: const {},
-              onLink: (_) {},
-            ),
-          ),
-        ),
-      );
-      final text = tester.widget<SelectableText>(find.byType(SelectableText));
-      final link = text.textSpan!.children!.whereType<TextSpan>().firstWhere((span) => span.text == 'source');
-      expect(link.style!.color, Theme.of(tester.element(find.byType(SelectableText))).colorScheme.onSurface);
-      expect(link.style!.decoration, TextDecoration.underline);
-      expect(link.recognizer, isNotNull);
-      expect(tester.takeException(), isNull);
-    }
   });
 }

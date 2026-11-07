@@ -25,7 +25,7 @@ class OriginalImageViewerArgs {
 }
 
 class OriginalImagePage {
-  const OriginalImagePage({required this.url, required this.previewUrl, required this.downloadOrigin, this.aspectRatio});
+  const OriginalImagePage({required this.url, required this.previewUrl, required this.downloadOrigin, this.aspectRatio, this.headers});
 
   final String url;
   final String previewUrl;
@@ -34,6 +34,9 @@ class OriginalImagePage {
   /// content such as a novel.
   final DownloadOrigin downloadOrigin;
   final double? aspectRatio;
+
+  /// The request headers the image host wants; Pixiv's referer when null.
+  final Map<String, String>? headers;
 }
 
 /// The original image viewer: black, over the content
@@ -105,7 +108,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
       final page = _all[_index];
       DownloadFlight.launch(
         origin: origin,
-        artwork: AppPixivImage(url: page.previewUrl),
+        artwork: AppPixivImage(url: page.previewUrl, headers: page.headers),
       );
       final file = await downloadManager.saveBytes(
         origin: page.downloadOrigin,
@@ -288,7 +291,7 @@ class _ViewerPageState extends ConsumerState<_ViewerPage> {
   @override
   Widget build(BuildContext context) {
     final page = widget.page;
-    final image = pixivImageProvider(ref, page.url, keepBytes: true, revision: _revision);
+    final image = pixivImageProvider(ref, page.url, headers: page.headers, keepBytes: true, revision: _revision);
     _watch(image);
     return FrostContextMenuRegion(
       entries: widget.menu,
@@ -319,7 +322,7 @@ class _ViewerPageState extends ConsumerState<_ViewerPage> {
                     : Stack(
                         fit: StackFit.expand,
                         children: [
-                          AppPixivImage(url: page.previewUrl, radius: 0, fit: BoxFit.contain),
+                          AppPixivImage(url: page.previewUrl, headers: page.headers, radius: 0, fit: BoxFit.contain),
                           Align(
                             alignment: Alignment.bottomCenter,
                             child: FrostProgressBar(
