@@ -1,15 +1,9 @@
-import 'dart:async';
-import 'dart:math' as math;
-import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/core.dart';
-import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
-import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:path/path.dart' as p;
@@ -69,73 +63,3 @@ Future<void> _downloadThroughManager({
   }
 }
 
-/// Right click (pointer) or long press (touch) on [child] opens the same
-/// image menu as an artwork page: download, and on desktop copy image.
-class ContentImageMenuRegion extends ConsumerWidget {
-  const ContentImageMenuRegion({required this.actions, required this.child, this.onTap, super.key});
-
-  final ContentImageActions actions;
-  final Widget child;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    void open(Offset position) => unawaited(_showMenu(context, ref.read(rustMediaTransportProvider), position));
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      onSecondaryTapDown: (details) => open(details.globalPosition),
-      onLongPressStart: (details) => open(details.globalPosition),
-      child: child,
-    );
-  }
-
-  Future<void> _showMenu(BuildContext context, RustMediaTransport transport, Offset position) async {
-    final overlay = Navigator.of(context).overlay?.context.findRenderObject() as RenderBox?;
-    if (overlay == null) return;
-    final local = overlay.globalToLocal(position);
-    final anchor = Offset(local.dx.clamp(8.0, math.max(8.0, overlay.size.width - 8)), local.dy.clamp(8.0, math.max(8.0, overlay.size.height - 8)));
-    final menu = context.t.illust.contextMenu;
-    final source = DownloadSourceScope.of(context);
-    final action = await showMenu<_ContentImageAction>(
-      context: context,
-      clipBehavior: Clip.antiAlias,
-      position: RelativeRect.fromRect(Rect.fromPoints(anchor, anchor), Offset.zero & overlay.size),
-      items: [
-        PopupMenuItem(
-          value: _ContentImageAction.download,
-          child: ListTile(leading: const Icon(Icons.download_outlined), title: Text(menu.download), contentPadding: EdgeInsets.zero),
-        ),
-        if (isDesktopPlatform)
-          PopupMenuItem(
-            value: _ContentImageAction.copy,
-            child: ListTile(leading: const Icon(Icons.content_copy_outlined), title: Text(menu.copyImage), contentPadding: EdgeInsets.zero),
-          ),
-      ],
-    );
-    switch (action) {
-      case _ContentImageAction.download:
-        unawaited(actions.download(source, Rect.fromCenter(center: position, width: 48, height: 48)));
-      case _ContentImageAction.copy:
-        unawaited(_copy(transport));
-      case null:
-        break;
-    }
-  }
-
-  Future<void> _copy(RustMediaTransport transport) async {
-    final label = t.illust.imageLabels.image;
-    try {
-      final bytes = BytesBuilder(copy: false);
-      await for (final chunk in transport.stream(actions.url, actions.headers)) {
-        bytes.add(chunk.bytes);
-      }
-      await copyImageBytesToClipboard(bytes.takeBytes(), mimeType: imageMimeTypeFromUrl(actions.url));
-      FrostToast.copied(t.illust.toast.copied(label: label));
-    } catch (error) {
-      toastErrorWithCause(t.illust.toast.copyFailed(label: label), error);
-    }
-  }
-}
-
-enum _ContentImageAction { download, copy }

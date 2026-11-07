@@ -1661,7 +1661,7 @@ class Translations$novel$reader$en_US {
 	String get decrease => 'Decrease';
 	String get increase => 'Increase';
 	String get shortcutsTitle => 'Shortcuts';
-	String get shortcutsHelp => 'Left/Right or A/D turn pages; Up/Down or W/S scroll';
+	String get shortcutsHelp => 'Left/Right or A/D: previous/next chapter. Up/Down or W/S: scroll. Esc: clear the selection, then close.';
 	String get volumeKeys => 'Use volume keys';
 	String get volumeKeysHelp => 'Volume down reads forward; volume up reads back.';
 	String get autoScroll => 'Auto scroll';
@@ -1669,6 +1669,11 @@ class Translations$novel$reader$en_US {
 	String get pauseAutoScroll => 'Pause auto scroll';
 	String get autoScrollSpeed => 'Scroll speed';
 	String scrollSpeedValue({required Object speed}) => '${speed} px/s';
+	String chapterPosition({required Object current, required Object total}) => 'Chapter ${current} of ${total}';
+	String chapterNumber({required Object number}) => 'Chapter ${number}';
+	String get previousChapter => 'Previous chapter';
+	String get nextChapter => 'Next chapter';
+	String progressValue({required Object percent}) => '${percent}%';
 }
 
 // Path: illustDetail.ugoira
@@ -2314,7 +2319,7 @@ extension on Translations {
 			'novel.reader.decrease' => 'Decrease',
 			'novel.reader.increase' => 'Increase',
 			'novel.reader.shortcutsTitle' => 'Shortcuts',
-			'novel.reader.shortcutsHelp' => 'Left/Right or A/D turn pages; Up/Down or W/S scroll',
+			'novel.reader.shortcutsHelp' => 'Left/Right or A/D: previous/next chapter. Up/Down or W/S: scroll. Esc: clear the selection, then close.',
 			'novel.reader.volumeKeys' => 'Use volume keys',
 			'novel.reader.volumeKeysHelp' => 'Volume down reads forward; volume up reads back.',
 			'novel.reader.autoScroll' => 'Auto scroll',
@@ -2322,6 +2327,11 @@ extension on Translations {
 			'novel.reader.pauseAutoScroll' => 'Pause auto scroll',
 			'novel.reader.autoScrollSpeed' => 'Scroll speed',
 			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} px/s',
+			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => 'Chapter ${current} of ${total}',
+			'novel.reader.chapterNumber' => ({required Object number}) => 'Chapter ${number}',
+			'novel.reader.previousChapter' => 'Previous chapter',
+			'novel.reader.nextChapter' => 'Next chapter',
+			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',
 			'follow.tooltipFollow' => 'Follow user',
 			'follow.tooltipUnfollow' => 'Unfollow',
 			'follow.followed' => 'Following',

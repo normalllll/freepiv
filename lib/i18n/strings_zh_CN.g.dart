@@ -1659,7 +1659,7 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 	@override String get decrease => '减小';
 	@override String get increase => '增大';
 	@override String get shortcutsTitle => '快捷键';
-	@override String get shortcutsHelp => '左右键或 A/D 翻页，上下键或 W/S 滚动';
+	@override String get shortcutsHelp => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：滚动。Esc：先清除选择，再退出。';
 	@override String get volumeKeys => '音量键翻读';
 	@override String get volumeKeysHelp => '音量减向后翻读，音量加向前翻读。';
 	@override String get autoScroll => '自动滚动';
@@ -1667,6 +1667,11 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 	@override String get pauseAutoScroll => '暂停自动滚动';
 	@override String get autoScrollSpeed => '滚动速度';
 	@override String scrollSpeedValue({required Object speed}) => '${speed} 像素/秒';
+	@override String chapterPosition({required Object current, required Object total}) => '第 ${current} / ${total} 章';
+	@override String chapterNumber({required Object number}) => '第 ${number} 章';
+	@override String get previousChapter => '上一章';
+	@override String get nextChapter => '下一章';
+	@override String progressValue({required Object percent}) => '${percent}%';
 }
 
 // Path: illustDetail.ugoira
@@ -2312,7 +2317,7 @@ extension on TranslationsZhCn {
 			'novel.reader.decrease' => '减小',
 			'novel.reader.increase' => '增大',
 			'novel.reader.shortcutsTitle' => '快捷键',
-			'novel.reader.shortcutsHelp' => '左右键或 A/D 翻页，上下键或 W/S 滚动',
+			'novel.reader.shortcutsHelp' => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：滚动。Esc：先清除选择，再退出。',
 			'novel.reader.volumeKeys' => '音量键翻读',
 			'novel.reader.volumeKeysHelp' => '音量减向后翻读，音量加向前翻读。',
 			'novel.reader.autoScroll' => '自动滚动',
@@ -2320,6 +2325,11 @@ extension on TranslationsZhCn {
 			'novel.reader.pauseAutoScroll' => '暂停自动滚动',
 			'novel.reader.autoScrollSpeed' => '滚动速度',
 			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} 像素/秒',
+			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => '第 ${current} / ${total} 章',
+			'novel.reader.chapterNumber' => ({required Object number}) => '第 ${number} 章',
+			'novel.reader.previousChapter' => '上一章',
+			'novel.reader.nextChapter' => '下一章',
+			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',
 			'follow.tooltipFollow' => '关注用户',
 			'follow.tooltipUnfollow' => '取消关注',
 			'follow.followed' => '已关注',

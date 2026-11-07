@@ -212,9 +212,13 @@ class _CustomAccentEditorState extends ConsumerState<_CustomAccentEditor> {
             (labels.saturation, _hsv.saturation, 1.0, (double value) => _hsv.withSaturation(value)),
             (labels.value, _hsv.value, 1.0, (double value) => _hsv.withValue(value)),
           ])
-            FrostFormRow(
-              label: FrostText(label),
-              control: FrostSlider(value: value, max: max, semanticLabel: label, onChanged: _saving ? null : (value) => _setHsv(change(value))),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: FrostGap.inline,
+              children: [
+                FrostText(label),
+                FrostSlider(value: value, max: max, semanticLabel: label, onChanged: _saving ? null : (value) => _setHsv(change(value))),
+              ],
             ),
           FrostTextField(
             controller: _hex,

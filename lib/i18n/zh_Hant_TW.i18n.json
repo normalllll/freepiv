@@ -742,14 +742,19 @@
       "decrease": "減小",
       "increase": "增大",
       "shortcutsTitle": "快捷鍵",
-      "shortcutsHelp": "左右鍵或 A/D 翻頁，上下鍵或 W/S 捲動",
+      "shortcutsHelp": "←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：捲動。Esc：先清除選取，再離開。",
       "volumeKeys": "音量鍵翻讀",
       "volumeKeysHelp": "音量減向後翻讀，音量加向前翻讀。",
       "autoScroll": "自動捲動",
       "startAutoScroll": "開始自動捲動",
       "pauseAutoScroll": "暫停自動捲動",
       "autoScrollSpeed": "捲動速度",
-      "scrollSpeedValue": "$speed 像素/秒"
+      "scrollSpeedValue": "$speed 像素/秒",
+      "chapterPosition": "第 $current / $total 章",
+      "chapterNumber": "第 $number 章",
+      "previousChapter": "上一章",
+      "nextChapter": "下一章",
+      "progressValue": "$percent%"
     }
   },
   "follow": {

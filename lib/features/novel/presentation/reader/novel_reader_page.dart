@@ -1,33 +1,43 @@
-import 'package:freepiv/app/router/route_activity.dart';
-import 'package:freepiv/ui/compositions/page_error.dart';
-import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
-import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
-import 'package:flutter/gestures.dart';
 import 'dart:async';
-import 'package:flutter/scheduler.dart';
-import 'package:freepiv/core/platform/reader_volume_keys.dart';
-import 'package:freepiv/core/services/app_settings_providers.dart';
-import 'package:freepiv/core/services/pixiv_service.dart';
-import 'package:freepiv/features/novel/presentation/reader/reader_scroll_clock.dart';
 import 'dart:math' as math;
-import 'package:skeletonizer/skeletonizer.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart' show GestureBinding, kTouchSlop;
 import 'package:flutter/rendering.dart';
-import 'package:freepiv/features/novel/domain/novel_text_parser.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/app/router/route_activity.dart';
+import 'package:freepiv/core/core.dart';
+import 'package:freepiv/core/media/logic.dart';
+import 'package:freepiv/core/platform/reader_volume_keys.dart';
+import 'package:freepiv/features/downloads/presentation/content_image_entries.dart';
+import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
+import 'package:freepiv/features/novel/domain/novel_text_parser.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_not_found_page.dart';
-import 'package:freepiv/features/novel/presentation/detail/widgets/novel_reader_slivers.dart';
+import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
 import 'package:freepiv/features/novel/presentation/reader/novel_reading_session.dart';
+import 'package:freepiv/features/novel/presentation/reader/reader_model.dart';
+import 'package:freepiv/features/novel/presentation/reader/reader_scroll_clock.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/shared.dart';
+import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
+import 'package:freepiv/ui/compositions/page_error.dart';
+import 'package:freepiv/ui/compositions/pixiv_image.dart';
+import 'package:freepiv/ui/custom/reader/reader_text.dart';
+import 'package:frost_ui/frost_ui.dart';
+import 'package:go_router/go_router.dart';
 
+/// The novel reader: the whole text read top to bottom,
+/// chapter titles dividing it, on the reading surface. A tap on the text
+/// shows or hides the bars over it, and scrolling hides them: the top one
+/// with Back, the title, the chapter menu and the settings, the bottom one
+/// with the previous and next chapter, the progress and auto scroll.
 class NovelReaderPage extends ConsumerWidget {
   const NovelReaderPage({this.novelId, this.novel, super.key}) : assert(novelId != null || novel != null);
 
@@ -39,69 +49,100 @@ class NovelReaderPage extends ConsumerWidget {
     final args = NovelDetailArgs(novelId: novelId, novel: novel);
     final provider = novelDetailProvider(args);
     final textProvider = novelTextProvider(args.resolvedNovelId);
-    final detailValue = ref.watch(provider);
-    final textValue = ref.watch(textProvider);
+    final detail = ref.watch(provider);
+    final text = ref.watch(textProvider);
     // Reading needs both the details and the text.
-    final error = detailValue.error ?? textValue.error;
-    if (error != null && !detailValue.isLoading && !textValue.isLoading) {
-      if (_isNotFoundError(error)) return const NovelNotFoundPage();
+    final error = detail.error ?? text.error;
+    if (error != null && !detail.isLoading && !text.isLoading) {
+      if (error is PixivError && error.status == 404) return const NovelNotFoundPage();
       return AppPageError.fromError(
         error: error,
         onRetry: () {
-          if (detailValue.hasError) ref.read(provider.notifier).reload();
-          if (textValue.hasError) ref.read(textProvider.notifier).reload();
+          if (detail.hasError) ref.read(provider.notifier).reload();
+          if (text.hasError) ref.read(textProvider.notifier).reload();
         },
       );
     }
-    final (loaded, text) = (detailValue.value, textValue.value);
-    if (loaded == null || text == null || detailValue.isLoading || textValue.isLoading) return const _ReaderLoadingPage();
-    final detail = NovelDetailData(novel: loaded, webviewNovel: text);
+    final (loaded, webview) = (detail.value, text.value);
+    if (loaded == null || webview == null || detail.isLoading || text.isLoading) return const _ReaderSkeleton();
     return DownloadSourceScope(
       source: novelDownloadSource(loaded),
-      child: NovelReaderContent(key: ValueKey<String>('novel-reader-content-${loaded.id}'), detail: detail),
+      child: NovelReaderContent(
+        key: ValueKey('novel-reader-content-${loaded.id}'),
+        detail: NovelDetailData(novel: loaded, webviewNovel: webview),
+      ),
     );
   }
 }
 
-class NovelReaderContent extends StatefulWidget {
+/// Keys of the reader's keyboard.
+final _previousChapterKeys = {LogicalKeyboardKey.arrowLeft, LogicalKeyboardKey.keyA};
+final _nextChapterKeys = {LogicalKeyboardKey.arrowRight, LogicalKeyboardKey.keyD};
+final _scrollUpKeys = {LogicalKeyboardKey.arrowUp, LogicalKeyboardKey.keyW};
+final _scrollDownKeys = {LogicalKeyboardKey.arrowDown, LogicalKeyboardKey.keyS};
+
+/// How far a key scrolls.
+const _keyboardScrollExtent = 320.0;
+
+/// What a volume key leaves of the screen it turns, for context.
+const _turnOverlap = 120.0;
+
+/// Ranges of the reader settings.
+const readerFontSizes = (min: 15.0, max: 26.0);
+const readerLineHeights = (min: 1.45, max: 2.2);
+const readerScrollSpeeds = (min: 12.0, max: 96.0);
+
+class NovelReaderContent extends ConsumerStatefulWidget {
   const NovelReaderContent({required this.detail, this.volumeKeys, super.key});
 
   final NovelDetailData detail;
   final ReaderVolumeKeys? volumeKeys;
 
   @override
-  State<NovelReaderContent> createState() => _NovelReaderContentState();
+  ConsumerState<NovelReaderContent> createState() => NovelReaderContentState();
 }
 
-class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
-  late final PageController _pageController;
-  final FocusNode _shortcutFocusNode = FocusNode(debugLabel: 'novel-reader-shortcuts');
-  final Map<int, ScrollController> _segmentScrollControllers = {};
-  final Map<int, List<GlobalKey>> _blockKeys = {};
+/// Public for tests: the reading place and what pauses auto scroll.
+class NovelReaderContentState extends ConsumerState<NovelReaderContent> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  final _scroll = ScrollController();
+  final _keyboard = FocusNode(debugLabel: 'novel-reader-shortcuts');
+  final _selectionFocus = FocusNode(debugLabel: 'novel-reader-selection');
+  final _region = GlobalKey<SelectableRegionState>();
+  final _topBar = GlobalKey();
+  final _blockKeys = <int, GlobalKey>{};
+  late ReaderModel _model;
 
-  late List<NovelTextSegment> _segments;
-  late int _totalTextCharacters;
-
-  int _pageIndex = 0;
   late double _fontSize;
   late double _lineHeight;
-  bool _chromeVisible = true;
-  NovelReadingPosition? _pendingRestore;
-  late final ReaderVolumeKeyLease _volumeLease;
-  late final ReaderSettingsNotifier _readerSettings;
-  late final Ticker _autoTicker;
-  final _scrollClock = ReaderScrollClock();
+  late double _speed;
   late bool _volumeEnabled;
-  bool _windowFocused = true;
-  bool _foreground = true;
+  late final ReaderVolumeKeyLease _volumeLease;
+  late final Ticker _ticker;
+  final _clock = ReaderScrollClock();
+  late final String? _sessionAccount;
+
+  bool _chromeVisible = true;
+  bool _autoScrolling = false;
   bool _settingsOpen = false;
   bool _selectionActive = false;
   bool _accountChanged = false;
-  late final String? _sessionAccountId;
-  bool _autoScrolling = false;
-  bool _advancingSegment = false;
-  late double _scrollSpeed;
-  double _endTravel = 0;
+  bool _windowFocused = true;
+  bool _foreground = true;
+  int _block = 0;
+
+  /// Where to put the text once it is laid out: on opening, and after a
+  /// change of size, spacing or window.
+  NovelReadingPosition? _pending;
+
+  Novel get _novel => widget.detail.novel;
+
+  /// The block at the top of the screen.
+  int get currentBlock => _block;
+
+  /// The chapter being read.
+  ReaderChapter get currentChapter => _model.chapterOf(_block);
+
+  bool get autoScrolling => _autoScrolling;
 
   bool get _controlsEligible =>
       mounted &&
@@ -114,134 +155,88 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
       // A dialog of the root navigator covers the reader from outside its route.
       !appRootRouteActivity.popupOnTop;
 
-  Novel get _novel => widget.detail.novel;
-
-  WebviewNovel get _webviewNovel => widget.detail.webviewNovel;
-
-  int get _currentPageIndex => _clampPageIndex(_pageIndex);
-
   @override
   void initState() {
     super.initState();
-    _readerSettings = ProviderScope.containerOf(context, listen: false).read(readerSettingsProvider.notifier);
-    final saved = ProviderScope.containerOf(context, listen: false).read(readerSettingsProvider);
+    final saved = ref.read(readerSettingsProvider);
     _fontSize = saved.fontSize;
     _lineHeight = saved.lineHeight;
-    _scrollSpeed = saved.autoScrollSpeed;
+    _speed = saved.autoScrollSpeed;
     _volumeEnabled = saved.volumeKeys;
-    WidgetsBinding.instance.addObserver(this);
-    _sessionAccountId = pixivAccountNotifier.value?.user.id;
+    _sessionAccount = pixivAccountNotifier.value?.user.id;
     _foreground = WidgetsBinding.instance.lifecycleState == null || WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
-    _autoTicker = createTicker(_tickAutoScroll);
+    _ticker = createTicker(_tick);
     _volumeLease = (widget.volumeKeys ?? ReaderVolumeKeys.instance).claim(
-      onTurn: _turnReadingScreen,
+      onTurn: _turn,
       onError: () {
         if (mounted) setState(() => _volumeEnabled = false);
       },
       onFocusChanged: (focused) {
         _windowFocused = focused;
-        _handleRouteActivity();
+        _activityChanged();
       },
     );
-    pixivAccountNotifier.addListener(_handleAccountChange);
-    appRootRouteActivity.addListener(_handleRouteActivity);
-    _rebuildReaderModel();
-    _restoreSession();
-    _pageController = PageController(initialPage: _pageIndex);
+    WidgetsBinding.instance.addObserver(this);
+    pixivAccountNotifier.addListener(_accountChangedListener);
+    appRootRouteActivity.addListener(_activityChanged);
+    _scroll.addListener(_scrolled);
+    _model = _buildModel();
+    _pending = novelReadingPosition(context, _novel.id);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _shortcutFocusNode.requestFocus();
-        _restoreScrollPosition();
-      }
+      if (!mounted) return;
+      _keyboard.requestFocus();
+      _restore();
     });
   }
 
+  ReaderModel _buildModel() {
+    final webview = widget.detail.webviewNovel;
+    return ReaderModel(parseNovelText(webview.text, imageUrls: novelEmbeddedImageUrls(webview)));
+  }
+
+  /// False while the reader is out of the tree (its route being removed
+  /// under another page), when route changes must not reach it.
+  bool _active = true;
+
   @override
-  void didUpdateWidget(covariant NovelReaderContent oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.detail.novel.id != widget.detail.novel.id || oldWidget.detail.webviewNovel.text != widget.detail.webviewNovel.text) {
-      _pauseAutomaticScroll();
-      _saveSession(novelId: oldWidget.detail.novel.id);
-      _disposeSegmentScrollControllers();
-      _blockKeys.clear();
-      _rebuildReaderModel();
-      _restoreSession();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _jumpControllerToPage(_pageIndex);
-        _restoreScrollPosition();
-      });
-    }
+  void deactivate() {
+    _active = false;
+    super.deactivate();
+  }
+
+  @override
+  void activate() {
+    super.activate();
+    _active = true;
   }
 
   @override
   void dispose() {
-    _saveSession();
-    _autoTicker.dispose();
+    _save();
+    _ticker.dispose();
     _volumeLease.release();
-    pixivAccountNotifier.removeListener(_handleAccountChange);
-    appRootRouteActivity.removeListener(_handleRouteActivity);
+    pixivAccountNotifier.removeListener(_accountChangedListener);
+    appRootRouteActivity.removeListener(_activityChanged);
     WidgetsBinding.instance.removeObserver(this);
-    _disposeSegmentScrollControllers();
-    _shortcutFocusNode.dispose();
-    _pageController.dispose();
+    _scroll.dispose();
+    _keyboard.dispose();
+    _selectionFocus.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final palette = _ReaderPalette.resolve(context);
-
-    // Subscribe to the local route's current state, including a covering page.
-    ModalRoute.isCurrentOf(context);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _handleRouteActivity();
-    });
-    return FrostAutoScaffold(
-      builder: (context, layout, orientation, useHorizontalLayout) => Focus(
-        focusNode: _shortcutFocusNode,
-        autofocus: true,
-        onKeyEvent: _handleShortcutKeyEvent,
-        child: _NovelReaderLayout(
-          novel: _novel,
-          segments: _segments,
-          totalTextCharacters: _totalTextCharacters,
-          pageController: _pageController,
-          pageIndex: _currentPageIndex,
-          fontSize: _fontSize,
-          lineHeight: _lineHeight,
-          palette: palette,
-          scrollControllerForSegment: _scrollControllerForSegment,
-          blockKeysForSegment: _blockKeysForSegment,
-          desktop: useHorizontalLayout,
-          chromeVisible: _chromeVisible,
-          autoScrolling: _autoScrolling,
-          onAutomaticScroll: _toggleAutomaticScroll,
-          onBack: _closeReader,
-          onToggleChrome: _toggleChrome,
-          canToggleChrome: () => _controlsEligible,
-          onUserInteraction: _pauseAutomaticScroll,
-          onUserScroll: _handleUserScroll,
-          onSelectionChanged: _handleSelectionChanged,
-          onPageChanged: _handlePageChanged,
-          onPageRequested: _goToPage,
-          onProgressChanged: _jumpToProgress,
-          onShowSettings: _showSettingsSheet,
-        ),
-      ),
-    );
-  }
-
-  void _handleAccountChange() {
+  void _accountChangedListener() {
     _accountChanged = true;
-    _handleRouteActivity();
+    _activityChanged();
+    if (mounted) setState(() {});
   }
 
-  void _handleRouteActivity() {
-    if (!mounted) return;
+  /// Volume keys and auto scroll belong to the reader only while it is the
+  /// page in front with nothing over it.
+  void _activityChanged() {
+    if (!mounted || !_active) return;
     _volumeLease.setEnabled(_volumeEnabled && _controlsEligible);
     if (!_controlsEligible && _autoScrolling) {
-      _pauseAutomaticScroll(rebuild: false);
+      _pause(rebuild: false);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) setState(() {});
       });
@@ -251,1447 +246,722 @@ class _NovelReaderContentState extends State<NovelReaderContent> with WidgetsBin
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _foreground = state == AppLifecycleState.resumed;
-    _handleRouteActivity();
+    _activityChanged();
   }
 
-  void _handleSelectionChanged(SelectedContent? content) {
-    _selectionActive = content != null && content.plainText.isNotEmpty;
-    if (_selectionActive) _pauseAutomaticScroll();
-    _handleRouteActivity();
+  @override
+  void didChangeMetrics() {
+    if (_model.isEmpty) return;
+    _pause();
+    _pending ??= _position();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _restore();
+    });
   }
 
-  void _handleUserScroll() {
-    _pauseAutomaticScroll();
-    if (_chromeVisible) setState(() => _chromeVisible = false);
+  // ---- The reading place.
+
+  /// The top of the text, under the top bar.
+  double get _textTop => (_topBar.currentContext?.size?.height ?? 0) + FrostGap.group;
+
+  RenderBox? _box(int block) {
+    final object = _blockKeys[block]?.currentContext?.findRenderObject();
+    return object is RenderBox && object.attached && object.hasSize ? object : null;
   }
 
-  void _pauseAutomaticScroll({bool rebuild = true}) {
-    _autoTicker.stop();
-    _scrollClock.reset();
-    _endTravel = 0;
+  double? _offsetOf(RenderBox box) => RenderAbstractViewport.of(box).getOffsetToReveal(box, 0).offset;
+
+  void _scrolled() {
+    if (!_scroll.hasClients) return;
+    final top = _scroll.offset + _textTop;
+    var block = _block;
+    var best = double.negativeInfinity;
+    for (final index in _blockKeys.keys) {
+      final box = _box(index);
+      if (box == null) continue;
+      final offset = _offsetOf(box)!;
+      if (offset <= top + 1 && offset > best) {
+        best = offset;
+        block = index;
+      }
+    }
+    final measured = _measureProgress();
+    if (block != _block || (measured - _progress).abs() > .001) {
+      setState(() {
+        _block = block;
+        _progress = measured;
+      });
+    }
+    if (_pending == null) _save();
+  }
+
+  NovelReadingPosition _position() {
+    final box = _box(_block);
+    final offset = box == null ? null : _offsetOf(box);
+    final fraction = box == null || offset == null || box.size.height <= 0 ? 0.0 : ((_scroll.offset + _textTop - offset) / box.size.height).clamp(0.0, 1.0);
+    final characters = novelTextBlockCharacterCount(_model.blocks.isEmpty ? const NovelTextPageBreak() : _model.blocks[_block]);
+    return NovelReadingPosition(
+      segmentIndex: currentChapter.index,
+      textOffset: _model.offsetOf(_block) + (characters * fraction).round(),
+      segmentFraction: progress,
+      blockIndex: _block,
+      blockFraction: fraction,
+    );
+  }
+
+  /// How far through the text the reader is, 0 to 1, by the characters
+  /// before the top of the screen; the end of the text is 1.
+  double get progress => _progress;
+  double _progress = 0;
+
+  double _measureProgress() {
+    if (_model.totalCharacters == 0) return 0;
+    if (_scroll.hasClients && _scroll.position.hasContentDimensions && _scroll.offset >= _scroll.position.maxScrollExtent - .5) return 1;
+    final box = _box(_block);
+    final offset = box == null ? null : _offsetOf(box);
+    final fraction = box == null || offset == null || box.size.height <= 0 || !_scroll.hasClients
+        ? 0.0
+        : ((_scroll.offset + _textTop - offset) / box.size.height).clamp(0.0, 1.0);
+    final characters = novelTextBlockCharacterCount(_model.blocks[_block]);
+    return ((_model.offsetOf(_block) + characters * fraction) / _model.totalCharacters).clamp(0.0, 1.0);
+  }
+
+  void _save() {
+    if (_model.isEmpty) return;
+    final position = _pending ?? _position();
+    novelReadingSessions.writeState(context, position, identifier: novelReadingSessionKey(_novel.id, accountId: _sessionAccount));
+  }
+
+  void _restore() {
+    final saved = _pending;
+    if (saved == null) return;
+    final block = saved.blockIndex >= 0 && saved.blockIndex < _model.blocks.length ? saved.blockIndex : _model.blockAtOffset(saved.textOffset);
+    _jumpToBlock(block, fraction: saved.blockFraction, then: () => _pending = null);
+  }
+
+  /// Puts [block] (and [fraction] of it) at the top of the text. A block not
+  /// built yet is first reached by its share of the text, then exactly.
+  void _jumpToBlock(int block, {double fraction = 0, VoidCallback? then, int attempts = 4}) {
+    if (!_scroll.hasClients) return;
+    final position = _scroll.position;
+    final box = _box(block);
+    if (box != null) {
+      final target = _offsetOf(box)! + box.size.height * fraction - _textTop;
+      _scroll.jumpTo(target.clamp(position.minScrollExtent, position.maxScrollExtent));
+      setState(() => _block = block);
+      then?.call();
+      _save();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scrolled();
+      });
+      return;
+    }
+    if (attempts == 0) {
+      then?.call();
+      return;
+    }
+    final share = _model.totalCharacters == 0 ? block / math.max(1, _model.blocks.length) : _model.offsetOf(block) / _model.totalCharacters;
+    _scroll.jumpTo((position.maxScrollExtent * share).clamp(position.minScrollExtent, position.maxScrollExtent));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _jumpToBlock(block, fraction: fraction, then: then, attempts: attempts - 1);
+    });
+  }
+
+  void goToChapter(int index) {
+    if (_model.chapters.isEmpty) return;
+    _pause();
+    final chapter = _model.chapters[index.clamp(0, _model.chapters.length - 1)];
+    _jumpToBlock(chapter.firstBlock);
+  }
+
+  /// Moves to the place [value] of the way through the text.
+  void _jumpToProgress(double value) {
+    _pause();
+    final target = value * _model.totalCharacters;
+    final block = _model.blockAtOffset(target.floor());
+    final characters = novelTextBlockCharacterCount(_model.blocks[block]);
+    final fraction = characters == 0 ? 0.0 : ((target - _model.offsetOf(block)) / characters).clamp(0.0, 1.0);
+    _jumpToBlock(block, fraction: fraction);
+  }
+
+  /// Whether the bars are shown.
+  bool get chromeVisible => _chromeVisible;
+
+  void _scrollBy(double delta) {
+    _userScrolled();
+    if (!_scroll.hasClients) return;
+    final position = _scroll.position;
+    final target = (position.pixels + delta).clamp(position.minScrollExtent, position.maxScrollExtent);
+    final duration = FrostMotion.duration(context, FrostMotion.reveal);
+    if (duration == Duration.zero) {
+      _scroll.jumpTo(target);
+    } else {
+      unawaited(_scroll.animateTo(target, duration: duration, curve: Curves.easeOutCubic));
+    }
+  }
+
+  /// A volume key: a screen on or back, keeping a little of the last one.
+  void _turn(int direction) {
+    if (!_volumeEnabled || !_controlsEligible || !_scroll.hasClients) return;
+    _pause();
+    _scrollBy(direction * math.max(1, _scroll.position.viewportDimension - _turnOverlap));
+  }
+
+  // ---- Auto scroll.
+
+  void _pause({bool rebuild = true}) {
+    _ticker.stop();
+    _clock.reset();
     if (!_autoScrolling) return;
     _autoScrolling = false;
     if (rebuild && mounted) setState(() {});
   }
 
-  void _toggleAutomaticScroll() {
+  void _toggleAutoScroll() {
     if (_autoScrolling) {
-      _pauseAutomaticScroll();
-    } else if (_controlsEligible && _segments.isNotEmpty) {
-      _scrollClock.reset();
-      _endTravel = 0;
+      _pause();
+    } else if (_controlsEligible && !_model.isEmpty) {
+      _clock.reset();
       setState(() => _autoScrolling = true);
-      _autoTicker.start();
+      _ticker.start();
     }
   }
 
-  void _tickAutoScroll(Duration elapsed) {
-    if (!_controlsEligible || _segments.isEmpty) {
-      _pauseAutomaticScroll();
+  /// Auto scroll runs on through the chapters and stops at the end.
+  void _tick(Duration elapsed) {
+    if (!_controlsEligible || !_scroll.hasClients || !_scroll.position.hasContentDimensions) {
+      _pause();
       return;
     }
-    if (_advancingSegment || _pendingRestore != null) {
-      _scrollClock.reset();
+    if (_pending != null) {
+      _clock.reset();
       return;
     }
-    final controller = _segmentScrollControllers[_currentPageIndex];
-    if (controller == null || !controller.hasClients || !controller.position.hasContentDimensions) {
-      _scrollClock.reset();
+    final position = _scroll.position;
+    final distance = _clock.advance(elapsed, _speed);
+    if (position.pixels >= position.maxScrollExtent - .5) {
+      _pause();
       return;
     }
-    final position = controller.position;
-    final distance = _scrollClock.advance(elapsed, _scrollSpeed);
-    if (position.pixels < position.maxScrollExtent - 0.5) {
-      _endTravel = 0;
-      controller.jumpTo(math.min(position.maxScrollExtent, position.pixels + distance));
-      return;
+    _scroll.jumpTo(math.min(position.maxScrollExtent, position.pixels + distance));
+  }
+
+  void _userScrolled() {
+    _pause();
+    if (_chromeVisible) setState(() => _chromeVisible = false);
+  }
+
+  // ---- Settings.
+
+  /// A new size or spacing keeps the reader's place.
+  void _applySettings(ReaderSettings next) {
+    final reflow = next.fontSize != _fontSize || next.lineHeight != _lineHeight;
+    if (reflow) {
+      _pause();
+      _pending ??= _position();
     }
-    if (_currentPageIndex == _segments.length - 1) {
-      _pauseAutomaticScroll();
-      return;
-    }
-    // A short, already fully visible section needs reading time. Scrollable
-    // sections continue immediately when their bottom is reached.
-    if (position.maxScrollExtent <= position.minScrollExtent) {
-      _endTravel += distance;
-      if (_endTravel < position.viewportDimension) return;
-    }
-    _endTravel = 0;
-    _advancingSegment = true;
-    _scrollClock.reset();
-    final next = _currentPageIndex + 1;
-    _saveSession();
-    setState(() => _pageIndex = next);
-    _jumpControllerToPage(next);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final nextController = _segmentScrollControllers[next];
-      if (nextController != null && nextController.hasClients) nextController.jumpTo(nextController.position.minScrollExtent);
-      _advancingSegment = false;
+    setState(() {
+      _fontSize = next.fontSize.clamp(readerFontSizes.min, readerFontSizes.max);
+      _lineHeight = next.lineHeight.clamp(readerLineHeights.min, readerLineHeights.max);
+      _speed = next.autoScrollSpeed;
+      _volumeEnabled = next.volumeKeys;
     });
-  }
-
-  void _turnReadingScreen(int direction) {
-    if (!_volumeEnabled || !_controlsEligible) return;
-    _pauseAutomaticScroll();
-    final controller = _segmentScrollControllers[_currentPageIndex];
-    if (controller == null || !controller.hasClients) return;
-    final position = controller.position;
-    final canScroll = direction > 0 ? position.pixels < position.maxScrollExtent - 1 : position.pixels > position.minScrollExtent + 1;
-    if (canScroll) {
-      // Leave context at the screen edge; chrome is an overlay, not a viewport.
-      _scrollCurrentPage(direction * math.max(1, position.viewportDimension - 120));
-    } else {
-      final next = _clampPageIndex(_currentPageIndex + direction);
-      if (next == _currentPageIndex) return;
-      _goToPage(next);
+    _activityChanged();
+    if (reflow) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final nextController = _segmentScrollControllers[next];
-        if (nextController != null && nextController.hasClients) {
-          nextController.jumpTo(direction > 0 ? nextController.position.minScrollExtent : nextController.position.maxScrollExtent);
-        }
+        if (mounted) _restore();
       });
     }
   }
 
-  void _rebuildReaderModel() {
-    final blocks = parseNovelText(_webviewNovel.text, imageUrls: novelEmbeddedImageUrls(_webviewNovel));
-    _segments = segmentNovelTextBlocks(blocks);
-    _totalTextCharacters = _segments.isEmpty ? 0 : _segments.last.endOffset;
-    _pageIndex = _clampPageIndex(_pageIndex);
+  void _settingsShown(bool open) {
+    _settingsOpen = open;
+    if (open) _pause();
+    _activityChanged();
+    if (!open && mounted) _keyboard.requestFocus();
   }
 
-  void _restoreSession() {
-    _pageIndex = 0;
-    _pendingRestore = null;
-    final saved = novelReadingPosition(context, _novel.id);
-    if (saved == null) return;
-    // Only the place: text size and spacing are the persisted reader settings.
-    _pendingRestore = saved;
-    final matchingIndex = _segments.indexWhere((segment) => segment.endOffset > saved.textOffset);
-    final segmentAtSavedIndex = saved.segmentIndex >= 0 && saved.segmentIndex < _segments.length ? _segments[saved.segmentIndex] : null;
-    final index = segmentAtSavedIndex != null && segmentAtSavedIndex.startOffset <= saved.textOffset && segmentAtSavedIndex.endOffset >= saved.textOffset
-        ? saved.segmentIndex
-        : matchingIndex;
-    _pageIndex = _clampPageIndex(index < 0 ? _segments.length - 1 : index);
-  }
+  // ---- Leaving and the keyboard.
 
-  double _currentScrollFraction() {
-    final controller = _segmentScrollControllers[_currentPageIndex];
-    if (controller == null || !controller.hasClients || controller.position.maxScrollExtent <= 0) return 0;
-    return (controller.offset / controller.position.maxScrollExtent).clamp(0, 1).toDouble();
-  }
-
-  void _saveSession({int? novelId}) {
-    if (_segments.isEmpty) return;
-    final segment = _segments[_currentPageIndex];
-    final anchor = _pendingRestore ?? _currentReadingPosition();
-    novelReadingSessions.writeState(
-      context,
-      NovelReadingPosition(
-        segmentIndex: _currentPageIndex,
-        textOffset: anchor.textOffset.clamp(segment.startOffset, segment.endOffset),
-        segmentFraction: anchor.segmentFraction,
-        blockIndex: anchor.blockIndex,
-        blockFraction: anchor.blockFraction,
-      ),
-      identifier: novelReadingSessionKey(novelId ?? _novel.id, accountId: _sessionAccountId),
-    );
-  }
-
-  void _restoreScrollPosition() {
-    final saved = _pendingRestore;
-    if (saved == null) return;
-    final controller = _segmentScrollControllers[_currentPageIndex];
-    if (controller == null || !controller.hasClients) return;
-    final segment = _segments[_currentPageIndex];
-    final blockIndex = saved.segmentIndex == _currentPageIndex
-        ? saved.blockIndex.clamp(0, segment.blocks.length - 1)
-        : _blockIndexAtTextOffset(segment, saved.textOffset);
-    final blockOffset = _blockScrollOffset(_currentPageIndex, blockIndex);
-    final blockExtent = _blockExtent(_currentPageIndex, blockIndex);
-    final target = blockOffset == null || blockExtent == null
-        ? controller.position.maxScrollExtent * saved.segmentFraction.clamp(0, 1)
-        : blockOffset + blockExtent * saved.blockFraction.clamp(0, 1);
-    controller.jumpTo(target.clamp(controller.position.minScrollExtent, controller.position.maxScrollExtent));
-    _pendingRestore = null;
-  }
-
-  void _rememberCurrentPosition() {
-    if (_pendingRestore != null || _segments.isEmpty) return;
-    _pendingRestore = _currentReadingPosition();
-  }
-
-  NovelReadingPosition _currentReadingPosition() {
-    final segment = _segments[_currentPageIndex];
-    final controller = _segmentScrollControllers[_currentPageIndex];
-    final scrollOffset = controller != null && controller.hasClients ? controller.offset : 0.0;
-    var blockIndex = 0;
-    var blockOffset = 0.0;
-    for (var index = 0; index < segment.blocks.length; index++) {
-      final offset = _blockScrollOffset(_currentPageIndex, index);
-      if (offset == null || offset > scrollOffset + 1) break;
-      blockIndex = index;
-      blockOffset = offset;
-    }
-    final blockExtent = _blockExtent(_currentPageIndex, blockIndex);
-    final blockFraction = blockExtent == null || blockExtent <= 0 ? 0.0 : ((scrollOffset - blockOffset) / blockExtent).clamp(0, 1).toDouble();
-    var textOffset = segment.startOffset;
-    for (var index = 0; index < blockIndex; index++) {
-      textOffset += novelTextBlockCharacterCount(segment.blocks[index]);
-    }
-    textOffset += (novelTextBlockCharacterCount(segment.blocks[blockIndex]) * blockFraction).round();
-    return NovelReadingPosition(
-      segmentIndex: _currentPageIndex,
-      textOffset: textOffset,
-      segmentFraction: _currentScrollFraction(),
-      blockIndex: blockIndex,
-      blockFraction: blockFraction,
-    );
-  }
-
-  int _blockIndexAtTextOffset(NovelTextSegment segment, int textOffset) {
-    var cursor = segment.startOffset;
-    for (var index = 0; index < segment.blocks.length; index++) {
-      cursor += novelTextBlockCharacterCount(segment.blocks[index]);
-      if (cursor > textOffset) return index;
-    }
-    return segment.blocks.length - 1;
-  }
-
-  List<GlobalKey> _blockKeysForSegment(int index) =>
-      _blockKeys.putIfAbsent(index, () => List<GlobalKey>.generate(_segments[index].blocks.length, (_) => GlobalKey()));
-
-  double? _blockScrollOffset(int segmentIndex, int blockIndex) {
-    final keys = _blockKeys[segmentIndex];
-    if (keys == null || blockIndex < 0 || blockIndex >= keys.length) return null;
-    final renderObject = keys[blockIndex].currentContext?.findRenderObject();
-    if (renderObject == null || !renderObject.attached) return null;
-    return RenderAbstractViewport.of(renderObject).getOffsetToReveal(renderObject, 0).offset;
-  }
-
-  double? _blockExtent(int segmentIndex, int blockIndex) {
-    final keys = _blockKeys[segmentIndex];
-    if (keys == null || blockIndex < 0 || blockIndex >= keys.length) return null;
-    final renderObject = keys[blockIndex].currentContext?.findRenderObject();
-    return renderObject is RenderBox && renderObject.hasSize ? renderObject.size.height : null;
-  }
-
-  @override
-  void didChangeMetrics() {
-    if (!mounted || _segments.isEmpty) return;
-    _pauseAutomaticScroll();
-    _rememberCurrentPosition();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _restoreScrollPosition();
-    });
-  }
-
-  void _reflowAtCurrentPosition(VoidCallback change) {
-    _pauseAutomaticScroll();
-    _rememberCurrentPosition();
-    setState(change);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _restoreScrollPosition();
-    });
-  }
-
-  int _clampPageIndex(int value) {
-    if (_segments.isEmpty) {
-      return 0;
-    }
-
-    return value.clamp(0, _segments.length - 1);
-  }
-
-  void _handlePageChanged(int pageIndex) {
-    if (_pageIndex == pageIndex) {
-      return;
-    }
-
-    setState(() {
-      _pageIndex = pageIndex;
-    });
-    _saveSession();
-  }
-
-  void _goToPage(int pageIndex) {
-    _pauseAutomaticScroll();
-    final nextPage = _clampPageIndex(pageIndex);
-    _saveSession();
-    setState(() {
-      _pageIndex = nextPage;
-    });
-    _saveSession();
-
-    if (_pageController.hasClients) {
-      if (MediaQuery.disableAnimationsOf(context)) {
-        _pageController.jumpToPage(nextPage);
-      } else {
-        _pageController.animateToPage(nextPage, duration: const Duration(milliseconds: 220), curve: Curves.easeOutCubic);
-      }
+  void _close() {
+    _pause();
+    final router = GoRouter.of(context);
+    if (router.canPop()) {
+      router.pop();
     } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _jumpControllerToPage(nextPage));
+      router.go(AppLocations.novel(_novel.id));
     }
   }
 
-  void _jumpToProgress(double value) {
-    _pauseAutomaticScroll();
-    final nextPage = _clampPageIndex(value.round());
-    setState(() {
-      _pageIndex = nextPage;
-    });
-    _saveSession();
-    _jumpControllerToPage(nextPage);
-  }
-
-  void _jumpControllerToPage(int pageIndex) {
-    if (!_pageController.hasClients || _segments.isEmpty) {
-      return;
-    }
-
-    _pageController.jumpToPage(_clampPageIndex(pageIndex));
-  }
-
-  void _setFontSize(double value) {
-    _reflowAtCurrentPosition(() {
-      _fontSize = value.clamp(15, 26).toDouble();
-    });
-    _readerSettings.setFontSize(_fontSize);
-  }
-
-  void _setLineHeight(double value) {
-    _reflowAtCurrentPosition(() {
-      _lineHeight = value.clamp(1.45, 2.2).toDouble();
-    });
-    _readerSettings.setLineHeight(_lineHeight);
-  }
-
-  void _toggleChrome() {
-    if (_selectionActive) return;
-    _shortcutFocusNode.requestFocus();
-    setState(() {
-      _chromeVisible = !_chromeVisible;
-    });
-  }
-
-  void _closeReader() {
-    _pauseAutomaticScroll();
-    if (ModalRoute.of(context)?.isCurrent == true && Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
-  }
-
-  KeyEventResult _handleShortcutKeyEvent(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-
+  KeyEventResult _key(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
     if (event.logicalKey == LogicalKeyboardKey.escape) {
       if (ModalRoute.of(context)?.isCurrent != true || appRootRouteActivity.popupOnTop || _settingsOpen) return KeyEventResult.ignored;
       if (_selectionActive) {
-        final selection = _blockKeys[_currentPageIndex]?.firstOrNull?.currentContext?.findAncestorStateOfType<SelectionAreaState>()?.selectableRegion;
-        selection?.hideToolbar();
-        selection?.clearSelection();
+        _region.currentState?.clearSelection();
+        _selectionActive = false;
+        _activityChanged();
         return KeyEventResult.handled;
       }
-      _closeReader();
+      _close();
       return KeyEventResult.handled;
     }
-
-    if (FocusManager.instance.primaryFocus != _shortcutFocusNode) return KeyEventResult.ignored;
-
-    if (FocusManager.instance.primaryFocus?.context?.findAncestorWidgetOfExactType<EditableText>() != null ||
-        HardwareKeyboard.instance.isControlPressed ||
-        HardwareKeyboard.instance.isMetaPressed ||
-        HardwareKeyboard.instance.isAltPressed) {
+    if (HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed || HardwareKeyboard.instance.isAltPressed) {
       return KeyEventResult.ignored;
     }
     final key = event.logicalKey;
-    if (_previousPageKeys.contains(key)) {
-      _goToPage(_currentPageIndex - 1);
-      return KeyEventResult.handled;
-    } else if (_nextPageKeys.contains(key)) {
-      _goToPage(_currentPageIndex + 1);
-      return KeyEventResult.handled;
+    if (_previousChapterKeys.contains(key) || _nextChapterKeys.contains(key)) {
+      // An empty text has no chapters to move between.
+      if (_model.chapters.isEmpty) return KeyEventResult.ignored;
+      goToChapter(currentChapter.index + (_previousChapterKeys.contains(key) ? -1 : 1));
     } else if (_scrollUpKeys.contains(key)) {
-      _scrollCurrentPage(-_keyboardScrollExtent);
-      return KeyEventResult.handled;
+      _scrollBy(-_keyboardScrollExtent);
     } else if (_scrollDownKeys.contains(key)) {
-      _scrollCurrentPage(_keyboardScrollExtent);
-      return KeyEventResult.handled;
-    }
-
-    return KeyEventResult.ignored;
-  }
-
-  ScrollController _scrollControllerForSegment(int index) {
-    return _segmentScrollControllers.putIfAbsent(index, () {
-      final controller = ScrollController();
-      controller.addListener(() {
-        if (index == _currentPageIndex && _pendingRestore == null) _saveSession();
-      });
-      return controller;
-    });
-  }
-
-  void _scrollCurrentPage(double delta) {
-    _handleUserScroll();
-    final controller = _segmentScrollControllers[_currentPageIndex];
-    if (controller == null || !controller.hasClients) {
-      return;
-    }
-
-    final position = controller.position;
-    final target = (position.pixels + delta).clamp(position.minScrollExtent, position.maxScrollExtent).toDouble();
-    if (MediaQuery.disableAnimationsOf(context)) {
-      controller.jumpTo(target);
+      _scrollBy(_keyboardScrollExtent);
     } else {
-      controller.animateTo(target, duration: const Duration(milliseconds: 160), curve: Curves.easeOutCubic);
+      return KeyEventResult.ignored;
     }
+    return KeyEventResult.handled;
   }
 
-  void _disposeSegmentScrollControllers() {
-    for (final controller in _segmentScrollControllers.values) {
-      controller.dispose();
-    }
-    _segmentScrollControllers.clear();
+  void _selectionChanged(SelectedContent? content) {
+    _selectionActive = content != null && content.plainText.isNotEmpty;
+    if (_selectionActive) _pause();
+    _activityChanged();
   }
-
-  Future<void> _showSettingsSheet() async {
-    _pauseAutomaticScroll();
-    _settingsOpen = true;
-    _handleRouteActivity();
-    Widget settings(BuildContext context) {
-      return StatefulBuilder(
-        builder: (context, modalSetState) {
-          final palette = _ReaderPalette.resolve(context);
-
-          void updateSheet(VoidCallback action) {
-            action();
-            modalSetState(() {});
-          }
-
-          return _ReaderSheetSurface(
-            palette: palette,
-            title: t.novel.reader.settings,
-            child: _ReaderSettingsPanel(
-              fontSize: _fontSize,
-              lineHeight: _lineHeight,
-              palette: palette,
-              onFontSizeChanged: (value) => updateSheet(() => _setFontSize(value)),
-              onLineHeightChanged: (value) => updateSheet(() => _setLineHeight(value)),
-              volumeSupported: (widget.volumeKeys ?? ReaderVolumeKeys.instance).supported,
-              volumeEnabled: _volumeEnabled,
-              onVolumeChanged: (enabled) => updateSheet(() {
-                setState(() => _volumeEnabled = enabled);
-                _readerSettings.setVolumeKeys(enabled);
-                _handleRouteActivity();
-              }),
-              scrollSpeed: _scrollSpeed,
-              onSpeedChanged: (speed) => updateSheet(() {
-                setState(() => _scrollSpeed = speed);
-                _readerSettings.setAutoScrollSpeed(speed);
-              }),
-            ),
-          );
-        },
-      );
-    }
-
-    if (FrostAutoScaffold.usesHorizontalLayoutOf(context)) {
-      await showFrostDialog<void>(
-        context: context,
-        builder: (context) => Dialog(
-          backgroundColor: _ReaderPalette.resolve(context).surface,
-          child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 480), child: settings(context)),
-        ),
-      );
-    } else {
-      await showModalBottomSheet<void>(
-        context: context,
-        useSafeArea: true,
-        isScrollControlled: true,
-        backgroundColor: _ReaderPalette.resolve(context).surface,
-        builder: settings,
-      );
-    }
-    if (!mounted) return;
-    _settingsOpen = false;
-    _handleRouteActivity();
-    _shortcutFocusNode.requestFocus();
-  }
-}
-
-class _NovelReaderLayout extends StatelessWidget {
-  const _NovelReaderLayout({
-    required this.novel,
-    required this.segments,
-    required this.totalTextCharacters,
-    required this.pageController,
-    required this.pageIndex,
-    required this.fontSize,
-    required this.lineHeight,
-    required this.palette,
-    required this.scrollControllerForSegment,
-    required this.blockKeysForSegment,
-    required this.desktop,
-    required this.autoScrolling,
-    required this.onAutomaticScroll,
-    required this.onUserInteraction,
-    required this.onUserScroll,
-    required this.onSelectionChanged,
-    required this.chromeVisible,
-    required this.onBack,
-    required this.onToggleChrome,
-    required this.canToggleChrome,
-    required this.onPageChanged,
-    required this.onPageRequested,
-    required this.onProgressChanged,
-    required this.onShowSettings,
-  });
-
-  final Novel novel;
-  final List<NovelTextSegment> segments;
-  final int totalTextCharacters;
-  final PageController pageController;
-  final int pageIndex;
-  final double fontSize;
-  final double lineHeight;
-  final _ReaderPalette palette;
-  final ScrollController Function(int index) scrollControllerForSegment;
-  final List<GlobalKey> Function(int index) blockKeysForSegment;
-  final bool desktop;
-  final bool autoScrolling;
-  final VoidCallback onAutomaticScroll;
-  final VoidCallback onUserInteraction;
-  final VoidCallback onUserScroll;
-  final ValueChanged<SelectedContent?> onSelectionChanged;
-  final bool chromeVisible;
-  final VoidCallback onBack;
-  final VoidCallback onToggleChrome;
-  final bool Function() canToggleChrome;
-  final ValueChanged<int> onPageChanged;
-  final ValueChanged<int> onPageRequested;
-  final ValueChanged<double> onProgressChanged;
-  final VoidCallback onShowSettings;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: palette.background,
-      body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned.fill(
-              child: _ReaderStage(
-                segments: segments,
-                pageController: pageController,
-                pageIndex: pageIndex,
-                pageCount: segments.length,
-                fontSize: fontSize,
-                lineHeight: lineHeight,
-                palette: palette,
-                scrollControllerForSegment: scrollControllerForSegment,
-                blockKeysForSegment: blockKeysForSegment,
-                desktop: desktop,
-                onUserInteraction: onUserInteraction,
-                onUserScroll: onUserScroll,
-                onSelectionChanged: onSelectionChanged,
-                onTap: onToggleChrome,
-                canToggleChrome: canToggleChrome,
-                onPageChanged: onPageChanged,
-              ),
-            ),
-
-            Align(
-              alignment: Alignment.topCenter,
-              child: _ReaderChromeVisibility(
-                visible: chromeVisible,
-                slideOffset: const Offset(0, -0.08),
-                child: _ReaderTopChrome(novel: novel, palette: palette, compact: !desktop, onBack: onBack, onShowSettings: onShowSettings),
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: _ReaderChromeVisibility(
-                visible: chromeVisible,
-                slideOffset: const Offset(0, 0.08),
-                child: _ReaderBottomChrome(
-                  segments: segments,
-                  totalTextCharacters: totalTextCharacters,
-                  pageIndex: pageIndex,
-                  palette: palette,
-                  compact: !desktop,
-                  autoScrolling: autoScrolling,
-                  onAutomaticScroll: onAutomaticScroll,
-                  onPageRequested: onPageRequested,
-                  onProgressChanged: onProgressChanged,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ReaderStage extends StatelessWidget {
-  const _ReaderStage({
-    required this.segments,
-    required this.pageController,
-    required this.pageIndex,
-    required this.pageCount,
-    required this.fontSize,
-    required this.lineHeight,
-    required this.palette,
-    required this.scrollControllerForSegment,
-    required this.blockKeysForSegment,
-    required this.desktop,
-    required this.onTap,
-    required this.canToggleChrome,
-    required this.onPageChanged,
-    required this.onUserInteraction,
-    required this.onUserScroll,
-    required this.onSelectionChanged,
-  });
-
-  final List<NovelTextSegment> segments;
-  final PageController pageController;
-  final int pageIndex;
-  final int pageCount;
-  final double fontSize;
-  final double lineHeight;
-  final _ReaderPalette palette;
-  final ScrollController Function(int index) scrollControllerForSegment;
-  final List<GlobalKey> Function(int index) blockKeysForSegment;
-  final bool desktop;
-  final VoidCallback? onTap;
-  final bool Function() canToggleChrome;
-  final ValueChanged<int> onPageChanged;
-  final VoidCallback onUserInteraction;
-  final VoidCallback onUserScroll;
-  final ValueChanged<SelectedContent?> onSelectionChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    if (segments.isEmpty) {
-      return _ReaderTapListener(
-        onTap: onTap,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: FrostCompactMessage(icon: FrostIconData.glyph(Icons.menu_book_outlined), message: t.novel.reader.emptyBody),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Listener(
-      onPointerDown: (_) => onUserInteraction(),
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          if (notification is ScrollStartNotification && notification.dragDetails != null ||
-              notification is UserScrollNotification && notification.direction != ScrollDirection.idle) {
-            onUserScroll();
-          }
-          return false;
-        },
-        child: _ReaderTapListener(
-          onTap: onTap,
-          child: PageView.builder(
-            controller: pageController,
-            itemCount: segments.length,
-            onPageChanged: onPageChanged,
-            itemBuilder: (context, index) {
-              return _ReaderSegmentView(
-                segment: segments[index],
-                pageCount: pageCount,
-                fontSize: fontSize,
-                lineHeight: lineHeight,
-                palette: palette,
-                scrollController: scrollControllerForSegment(index),
-                blockKeys: blockKeysForSegment(index),
-                desktop: desktop,
-                onSelectionChanged: onSelectionChanged,
-                onTap: onTap,
-                canToggleChrome: canToggleChrome,
-              );
+    final t = context.t;
+    ref.listen(readerSettingsProvider, (_, next) => _applySettings(next));
+    // Follow the route being covered by another page.
+    ModalRoute.isCurrentOf(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _activityChanged());
+    final typesetting = ReaderTypesetting.of(context, size: _fontSize, spacing: _lineHeight);
+    final padding = MediaQuery.paddingOf(context);
+    final enabled = !_accountChanged;
+    final chapters = _model.chapters;
+    final chapter = chapters.isEmpty ? null : currentChapter;
+    final body = _model.isEmpty
+        ? Center(
+            child: FrostEmptyState(icon: PivIcons.bookOpen, title: t.novel.reader.emptyBody),
+          )
+        : NotificationListener<UserScrollNotification>(
+            onNotification: (notification) {
+              if (notification.direction != ScrollDirection.idle) _userScrolled();
+              return false;
             },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ReaderTapListener extends StatelessWidget {
-  const _ReaderTapListener({required this.child, required this.onTap});
-
-  final Widget child;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    if (onTap == null) return child;
-    return GestureDetector(behavior: HitTestBehavior.opaque, onTap: onTap, child: child);
-  }
-}
-
-/// Text selection owns its gesture arena. Observe only a completed plain tap
-/// and defer until the double-tap window closes, so selecting a word, dragging,
-/// long pressing or clearing an existing selection never toggles reader chrome.
-class _ReaderTextTapRegion extends StatefulWidget {
-  const _ReaderTextTapRegion({required this.onTap, required this.canToggle, required this.child});
-  final VoidCallback? onTap;
-  final bool Function() canToggle;
-  final Widget child;
-  @override
-  State<_ReaderTextTapRegion> createState() => _ReaderTextTapRegionState();
-}
-
-class _ReaderTextTapRegionState extends State<_ReaderTextTapRegion> {
-  Timer? _tapTimer;
-  PointerDownEvent? _down;
-
-  @override
-  void dispose() {
-    _tapTimer?.cancel();
-    super.dispose();
-  }
-
-  void _pointerDown(PointerDownEvent event) {
-    _tapTimer?.cancel();
-    _down = _down == null && event.buttons == kPrimaryButton && widget.canToggle() ? event : null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.onTap == null) return widget.child;
-    return Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerDown: _pointerDown,
-      onPointerMove: (event) {
-        if (_down != null && (event.position - _down!.position).distance > kTouchSlop) _down = null;
-      },
-      onPointerCancel: (_) => _down = null,
-      onPointerUp: (event) {
-        final down = _down;
-        _down = null;
-        if (down == null || down.pointer != event.pointer || event.timeStamp - down.timeStamp >= kLongPressTimeout) return;
-        _tapTimer = Timer(kDoubleTapTimeout, () {
-          if (mounted && widget.canToggle()) widget.onTap?.call();
-        });
-      },
-      child: widget.child,
-    );
-  }
-}
-
-class _ReaderSegmentView extends StatelessWidget {
-  const _ReaderSegmentView({
-    required this.segment,
-    required this.pageCount,
-    required this.fontSize,
-    required this.lineHeight,
-    required this.palette,
-    required this.scrollController,
-    required this.blockKeys,
-    required this.desktop,
-    required this.onSelectionChanged,
-    required this.onTap,
-    required this.canToggleChrome,
-  });
-
-  final NovelTextSegment segment;
-  final int pageCount;
-  final double fontSize;
-  final double lineHeight;
-  final _ReaderPalette palette;
-  final ScrollController scrollController;
-  final List<GlobalKey> blockKeys;
-  final bool desktop;
-  final ValueChanged<SelectedContent?> onSelectionChanged;
-  final VoidCallback? onTap;
-  final bool Function() canToggleChrome;
-
-  @override
-  Widget build(BuildContext context) {
-    // One script decision per segment from its opening paragraphs, so the
-    // whole page uses one regional glyph set without scanning every block.
-    final sample = segment.blocks.whereType<NovelTextParagraph>().take(12).map((block) => block.text).join();
-    final paragraphStyle = frostContentTextStyle(
-      context,
-      sample,
-      Theme.of(context).textTheme.bodyLarge?.copyWith(color: palette.onBackground, fontSize: fontSize, height: lineHeight, letterSpacing: 0),
-    );
-    final chapterStyle = frostContentTextStyle(
-      context,
-      sample,
-      Theme.of(
-        context,
-      ).textTheme.titleLarge?.copyWith(color: palette.onBackground, fontSize: fontSize + 4, fontWeight: FontWeight.w700, height: 1.35, letterSpacing: 0),
-    );
-
-    return ColoredBox(
-      color: palette.background,
-      child: Scrollbar(
-        controller: scrollController,
-        child: SingleChildScrollView(
-          controller: scrollController,
-          padding: EdgeInsets.fromLTRB(0, 80 * MediaQuery.textScalerOf(context).scale(14) / 14, 0, 100 * MediaQuery.textScalerOf(context).scale(14) / 14),
-          child: FrostContentColumn(
-            maxWidth: FrostMetrics.readingMaxWidth,
-            child: SelectionArea(
-              onSelectionChanged: onSelectionChanged,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (var index = 0; index < segment.blocks.length; index++)
-                    KeyedSubtree(
-                      key: blockKeys[index],
-                      child: _ReaderTextTapRegion(
-                        onTap: segment.blocks[index] is NovelTextParagraph || segment.blocks[index] is NovelTextChapter ? onTap : null,
-                        canToggle: canToggleChrome,
-                        child: NovelReaderBlockView(
-                          block: segment.blocks[index],
-                          paragraphStyle: paragraphStyle,
-                          chapterStyle: chapterStyle,
-                          dividerColor: palette.line,
+            child: ReaderSelectableText(
+              regionKey: _region,
+              focusNode: _selectionFocus,
+              onSelectionChanged: _selectionChanged,
+              child: _TapToToggle(
+                onTap: () {
+                  if (_selectionActive) return;
+                  _keyboard.requestFocus();
+                  setState(() => _chromeVisible = !_chromeVisible);
+                },
+                child: CustomScrollView(
+                  controller: _scroll,
+                  slivers: [
+                    SliverPadding(padding: EdgeInsets.only(top: padding.top + _barExtent + FrostGap.group)),
+                    FrostSliverContentColumn(
+                      maxWidth: FrostMetrics.readingMaxWidth,
+                      sliver: SliverList.builder(
+                        itemCount: _model.blocks.length,
+                        itemBuilder: (context, index) => KeyedSubtree(
+                          key: _blockKeys.putIfAbsent(index, GlobalKey.new),
+                          child: _ReaderBlock(block: _model.blocks[index], typesetting: typesetting, first: index == 0, novel: _novel),
                         ),
                       ),
                     ),
-                  const SizedBox(height: 18),
-                  Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: Text(
-                      t.novel.reader.pagePosition(current: segment.index + 1, total: pageCount),
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(color: palette.muted, fontWeight: FontWeight.w700),
+                    SliverPadding(padding: EdgeInsets.only(bottom: padding.bottom + _barExtent + FrostGap.section)),
+                  ],
+                ),
+              ),
+            ),
+          );
+    return Focus(
+      focusNode: _keyboard,
+      autofocus: true,
+      onKeyEvent: _key,
+      child: FrostSurface(
+        role: FrostSurfaceRole.reading,
+        child: Stack(
+          children: [
+            Positioned.fill(child: body),
+            _Bar(
+              key: _topBar,
+              top: true,
+              visible: _chromeVisible,
+              child: Row(
+                spacing: FrostGap.inline,
+                children: [
+                  FrostButton.icon(icon: PivIcons.arrowLeft, label: FrostScope.labelsOf(context).back, onPressed: _close),
+                  Expanded(
+                    child: FrostText(_novel.title, content: true, role: FrostTextRole.headline, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ),
+                  if (chapter != null && chapters.length > 1)
+                    Flexible(
+                      child: FrostTitleMenu(
+                        key: const ValueKey('reader-chapters'),
+                        title: t.novel.reader.chapterPosition(current: chapter.index + 1, total: chapters.length),
+                        entries: [
+                          for (final item in chapters)
+                            FrostMenuAction(
+                              item.title ?? t.novel.reader.chapterNumber(number: item.index + 1),
+                              checked: item.index == chapter.index,
+                              onSelected: enabled ? () => goToChapter(item.index) : null,
+                            ),
+                        ],
+                      ),
+                    ),
+                  FrostPopover(
+                    title: t.novel.reader.settings,
+                    builder: (context, focusNode, toggle) => Focus(
+                      focusNode: focusNode,
+                      child: FrostButton.icon(
+                        key: const ValueKey('reader-settings'),
+                        icon: PivIcons.settings,
+                        label: t.novel.reader.settings,
+                        onPressed: enabled ? toggle : null,
+                      ),
+                    ),
+                    contentBuilder: (context, close) =>
+                        _ReaderSettingsPanel(volumeSupported: (widget.volumeKeys ?? ReaderVolumeKeys.instance).supported, onShown: _settingsShown),
+                  ),
+                ],
+              ),
+            ),
+            _Bar(
+              top: false,
+              visible: _chromeVisible,
+              child: Row(
+                spacing: FrostGap.inline,
+                children: [
+                  FrostButton.icon(
+                    icon: PivIcons.chevronLeft,
+                    label: t.novel.reader.previousChapter,
+                    onPressed: enabled && chapter != null && chapter.index > 0 ? () => goToChapter(chapter.index - 1) : null,
+                  ),
+                  Expanded(
+                    child: FrostSlider(
+                      key: const ValueKey('reader-progress'),
+                      value: _progress,
+                      onChanged: enabled ? _jumpToProgress : null,
+                      semanticLabel: t.novel.reader.readingProgress,
+                      valueLabel: (value) => t.novel.reader.progressValue(percent: (value * 100).round()),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ReaderTopChrome extends StatelessWidget {
-  const _ReaderTopChrome({required this.novel, required this.palette, required this.compact, required this.onBack, required this.onShowSettings});
-
-  final Novel novel;
-  final _ReaderPalette palette;
-  final bool compact;
-  final VoidCallback onBack;
-  final VoidCallback onShowSettings;
-
-  @override
-  Widget build(BuildContext context) {
-    final leading = FrostPageHeader.leadingFor(context, onBack: onBack);
-    final content = DecoratedBox(
-      decoration: BoxDecoration(
-        color: palette.surface,
-        borderRadius: compact ? BorderRadius.zero : BorderRadius.circular(8),
-        border: Border.all(color: palette.line.withValues(alpha: compact ? 1 : 0.72)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, 8))],
-      ),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(compact ? 8 : 10, compact ? 6 : 8, compact ? 8 : 10, compact ? 6 : 8),
-        child: Row(
-          children: [
-            if (leading != null) ...[leading, SizedBox(width: 8.0)],
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: compact ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    novel.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: compact ? TextAlign.center : TextAlign.start,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700),
+                  FrostButton.icon(
+                    icon: PivIcons.chevronRight,
+                    label: t.novel.reader.nextChapter,
+                    onPressed: enabled && chapter != null && chapter.index < chapters.length - 1 ? () => goToChapter(chapter.index + 1) : null,
+                  ),
+                  FrostButton.icon(
+                    key: const ValueKey('reader-auto-scroll'),
+                    icon: _autoScrolling ? PivIcons.pause : PivIcons.play,
+                    label: _autoScrolling ? t.novel.reader.pauseAutoScroll : t.novel.reader.startAutoScroll,
+                    selected: _autoScrolling,
+                    onPressed: enabled && !_model.isEmpty ? _toggleAutoScroll : null,
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            _ReaderQuietIconButton(icon: Icons.tune, tooltip: t.novel.reader.settings, enabled: true, palette: palette, onPressed: onShowSettings),
           ],
         ),
       ),
     );
-
-    if (compact) {
-      return SizedBox(width: double.infinity, child: content);
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: FrostContentColumn(maxWidth: FrostMetrics.readingMaxWidth, child: content),
-    );
   }
+
+  /// The height of a bar's controls.
+  double get _barExtent => FrostControlSize.regular.height(context) + FrostGap.related * 2;
 }
 
-class _ReaderChromeVisibility extends StatelessWidget {
-  const _ReaderChromeVisibility({required this.visible, required this.slideOffset, required this.child});
+/// A tap on the text, not a drag or a selection, shows or hides the bars.
+class _TapToToggle extends StatefulWidget {
+  const _TapToToggle({required this.onTap, required this.child});
 
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  State<_TapToToggle> createState() => _TapToToggleState();
+}
+
+class _TapToToggleState extends State<_TapToToggle> {
+  /// Whether the tap landed on a block that keeps the bars ([_KeepsBars]).
+  static bool _onKeepsBars(PointerEvent event) {
+    final hit = HitTestResult();
+    GestureBinding.instance.hitTestInView(hit, event.position, event.viewId);
+    return hit.path.map((entry) => entry.target).whereType<RenderMetaData>().any((target) => identical(target.metaData, _KeepsBars.tag));
+  }
+
+  Offset? _down;
+  Duration? _downAt;
+
+  /// Longer presses select text.
+  static const _tapDuration = Duration(milliseconds: 300);
+
+  @override
+  Widget build(BuildContext context) => Listener(
+    behavior: HitTestBehavior.translucent,
+    onPointerDown: (event) {
+      _down = event.position;
+      _downAt = event.timeStamp;
+    },
+    onPointerUp: (event) {
+      final down = _down, downAt = _downAt;
+      _down = null;
+      if (down == null || downAt == null) return;
+      if ((event.position - down).distance > kTouchSlop || event.timeStamp - downAt > _tapDuration) return;
+      if (_onKeepsBars(event)) return;
+      widget.onTap();
+    },
+    onPointerCancel: (_) => _down = null,
+    child: widget.child,
+  );
+}
+
+/// A block whose taps act on itself (an illustration, an embedded work) and
+/// leave the bars as they are.
+class _KeepsBars extends StatelessWidget {
+  const _KeepsBars({required this.child});
+
+  static const tag = Object();
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => MetaData(metaData: tag, child: child);
+}
+
+/// A bar over the text, at the top or the bottom, sliding away when hidden.
+class _Bar extends StatelessWidget {
+  const _Bar({required this.top, required this.visible, required this.child, super.key});
+
+  final bool top;
   final bool visible;
-  final Offset slideOffset;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      ignoring: !visible,
-      child: ExcludeFocus(
-        excluding: !visible,
-        child: ExcludeSemantics(
+    final duration = FrostMotion.duration(context, FrostMotion.reveal);
+    final bar = FrostSurface(
+      role: FrostSurfaceRole.chrome,
+      child: SafeArea(
+        top: top,
+        bottom: !top,
+        child: FrostContentColumn(
+          maxWidth: FrostMetrics.readingMaxWidth,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
+            child: child,
+          ),
+        ),
+      ),
+    );
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: top ? 0 : null,
+      bottom: top ? null : 0,
+      child: IgnorePointer(
+        ignoring: !visible,
+        child: ExcludeFocus(
           excluding: !visible,
-          child: AnimatedOpacity(duration: FrostMotion.duration(context, FrostMotion.expand), opacity: visible ? 1 : 0, child: child),
+          child: AnimatedSlide(
+            offset: visible ? Offset.zero : Offset(0, top ? -1 : 1),
+            duration: duration,
+            curve: Curves.easeOutCubic,
+            child: AnimatedOpacity(opacity: visible ? 1 : 0, duration: duration, child: bar),
+          ),
         ),
       ),
     );
   }
 }
 
-class _ReaderBottomChrome extends StatelessWidget {
-  const _ReaderBottomChrome({
-    required this.segments,
-    required this.totalTextCharacters,
-    required this.pageIndex,
-    required this.palette,
-    required this.compact,
-    required this.autoScrolling,
-    required this.onAutomaticScroll,
-    required this.onPageRequested,
-    required this.onProgressChanged,
-  });
+/// One block of the text: a paragraph, a chapter title, a page break or an
+/// illustration (or the way to the work it shows).
+class _ReaderBlock extends ConsumerWidget {
+  const _ReaderBlock({required this.block, required this.typesetting, required this.first, required this.novel});
 
-  final List<NovelTextSegment> segments;
-  final int totalTextCharacters;
-  final int pageIndex;
-  final _ReaderPalette palette;
-  final bool compact;
-  final bool autoScrolling;
-  final VoidCallback onAutomaticScroll;
-  final ValueChanged<int> onPageRequested;
-  final ValueChanged<double> onProgressChanged;
+  final NovelTextBlock block;
+  final ReaderTypesetting typesetting;
+  final bool first;
+  final Novel novel;
+
+  /// Illustrations keep this shape until theirs is known.
+  static const _imageRatio = 4 / 3;
 
   @override
-  Widget build(BuildContext context) {
-    final pageCount = segments.length;
-    final percent = _readPercent(segments: segments, totalTextCharacters: totalTextCharacters, pageIndex: pageIndex);
-    final currentPageLabel = pageCount == 0 ? '0' : '${pageIndex + 1}';
-    final progressLabel = '$currentPageLabel / ${math.max(pageCount, 1)} · $percent%';
-
-    final content = DecoratedBox(
-      decoration: BoxDecoration(
-        color: palette.surface,
-        borderRadius: compact ? BorderRadius.zero : BorderRadius.circular(8),
-        border: Border.all(color: palette.line.withValues(alpha: compact ? 1 : 0.72)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, -8))],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.t;
+    return switch (block) {
+      NovelTextParagraph(:final text) => ReaderParagraph(text: text, typesetting: typesetting),
+      NovelTextChapter(:final title) => ReaderChapterTitle(title: title, typesetting: typesetting, first: first),
+      NovelTextPageBreak() => Padding(
+        padding: EdgeInsets.symmetric(vertical: typesetting.paragraphGap),
+        child: const FrostDivider(),
       ),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(compact ? 14 : 16, 4, compact ? 14 : 16, 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final progressStyle = Theme.of(context).textTheme.labelLarge?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700);
-                final autoScroll = _ReaderAutoScrollSwitch(
-                  running: autoScrolling,
-                  enabled: segments.isNotEmpty,
-                  palette: palette,
-                  onChanged: onAutomaticScroll,
-                );
-                final progress = Expanded(
-                  child: Text(progressLabel, textAlign: TextAlign.center, style: progressStyle),
-                );
-                final previous = _ReaderQuietIconButton(
-                  icon: Icons.chevron_left,
-                  tooltip: t.novel.reader.previousPage,
-                  enabled: pageIndex > 0,
-                  palette: palette,
-                  onPressed: () => onPageRequested(pageIndex - 1),
-                );
-                final next = _ReaderQuietIconButton(
-                  icon: Icons.chevron_right,
-                  tooltip: t.novel.reader.nextPage,
-                  enabled: pageIndex < pageCount - 1,
-                  palette: palette,
-                  onPressed: () => onPageRequested(pageIndex + 1),
-                );
-                double textWidth(String value) {
-                  final painter = TextPainter(
-                    text: TextSpan(text: value, style: progressStyle),
-                    textDirection: Directionality.of(context),
-                    textScaler: MediaQuery.textScalerOf(context),
-                  )..layout();
-                  final width = painter.width;
-                  painter.dispose();
-                  return width;
-                }
-
-                final neededWidth = FrostDensity.of(context).controlHeight * 2 + 68 + textWidth(t.novel.reader.autoScroll) + textWidth(progressLabel) + 16;
-                if (neededWidth > constraints.maxWidth) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(children: [previous, progress, next]),
-                      autoScroll,
-                    ],
-                  );
-                }
-                return Row(children: [previous, progress, autoScroll, next]);
-              },
-            ),
-            _ReaderProgressSlider(pageIndex: pageIndex, pageCount: pageCount, palette: palette, onProgressChanged: onProgressChanged),
-          ],
-        ),
-      ),
-    );
-
-    if (compact) {
-      return SizedBox(width: double.infinity, child: content);
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: FrostContentColumn(maxWidth: FrostMetrics.readingMaxWidth, child: content),
-    );
-  }
-}
-
-class _ReaderAutoScrollSwitch extends StatelessWidget {
-  const _ReaderAutoScrollSwitch({required this.running, required this.enabled, required this.palette, required this.onChanged});
-  final bool running;
-  final bool enabled;
-  final _ReaderPalette palette;
-  final VoidCallback onChanged;
-
-  @override
-  Widget build(BuildContext context) => Tooltip(
-    message: running ? t.novel.reader.pauseAutoScroll : t.novel.reader.startAutoScroll,
-    child: MergeSemantics(
-      child: FrostClickSurface(
-        feedback: FrostClickFeedback.quiet,
-        shape: FrostClickShape.rounded(BorderRadius.circular(8)),
-        onTap: enabled ? onChanged : null,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ExcludeSemantics(
-              child: Text(
-                t.novel.reader.autoScroll,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700),
+      // Taps on an illustration or its button act on it, not on the bars.
+      NovelTextImage(:final id, :final isPixivWork, :final url) => _KeepsBars(
+        child: Padding(
+          padding: EdgeInsets.only(bottom: typesetting.paragraphGap),
+          child: switch ((url, isPixivWork ? int.tryParse(id.split('-').first) : null)) {
+            (final url?, _) => FrostContextMenuRegion(
+              entries: contentImageMenu(context, ref.read(rustMediaTransportProvider), url: url, title: novel.title),
+              child: Semantics(
+                button: true,
+                image: true,
+                label: t.novel.detail.images,
+                child: FrostClickSurface(
+                  shape: FrostClickShape.rounded(BorderRadius.circular(FrostRadius.lg)),
+                  onTap: () => unawaited(
+                    GoRouter.of(context).push(
+                      AppRoute.originalImageViewer.path,
+                      extra: OriginalImageViewerArgs(
+                        title: novel.title,
+                        source: DownloadSourceScope.of(context),
+                        pages: [OriginalImagePage(url: url, previewUrl: url, downloadOrigin: DownloadOrigin.ofImageUrl(Uri.parse(url)))],
+                      ),
+                    ),
+                  ),
+                  child: AppPixivImage(url: url, aspectRatio: _imageRatio, fit: BoxFit.contain),
+                ),
               ),
             ),
-            const SizedBox(width: 8),
-            FrostSwitch(value: running, onChanged: enabled ? (_) => onChanged() : null, semanticLabel: t.novel.reader.autoScroll),
-          ],
+            (null, final work?) => Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: FrostButton.outlined(
+                label: t.novel.reader.openEmbeddedWork,
+                icon: PivIcons.externalLink,
+                onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.illust(work))),
+              ),
+            ),
+            _ => FrostText(t.novel.reader.embeddedImageUnavailable, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
+          },
         ),
       ),
-    ),
-  );
-}
-
-class _ReaderQuietIconButton extends StatelessWidget {
-  const _ReaderQuietIconButton({required this.icon, required this.tooltip, required this.enabled, required this.palette, required this.onPressed});
-
-  final IconData icon;
-  final String tooltip;
-  final bool enabled;
-  final _ReaderPalette palette;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = enabled ? palette.onBackground : palette.muted.withValues(alpha: 0.38);
-
-    return Tooltip(
-      message: tooltip,
-      child: IconButton(
-        onPressed: enabled ? onPressed : null,
-        icon: Icon(icon, size: 21),
-        color: color,
-        disabledColor: color,
-        style: IconButton.styleFrom(
-          overlayColor: Colors.transparent,
-          backgroundColor: Colors.transparent,
-          fixedSize: Size.square(FrostDensity.of(context).controlHeight),
-          minimumSize: Size.square(FrostDensity.of(context).controlHeight),
-          padding: EdgeInsets.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      ),
-    );
+    };
   }
 }
 
-class _ReaderProgressSlider extends StatelessWidget {
-  const _ReaderProgressSlider({required this.pageIndex, required this.pageCount, required this.palette, required this.onProgressChanged});
+/// Size, spacing, scroll speed and the volume keys, kept as they change,
+/// and the keyboard's keys. Opening it pauses auto scroll.
+class _ReaderSettingsPanel extends ConsumerStatefulWidget {
+  const _ReaderSettingsPanel({required this.volumeSupported, required this.onShown});
 
-  final int pageIndex;
-  final int pageCount;
-  final _ReaderPalette palette;
-  final ValueChanged<double> onProgressChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = pageCount > 1;
-    final max = math.max(1, pageCount - 1).toDouble();
-    final value = enabled ? pageIndex.clamp(0, pageCount - 1).toDouble() : 0.0;
-
-    return SliderTheme(
-      data: SliderTheme.of(context).copyWith(
-        activeTrackColor: palette.accent,
-        inactiveTrackColor: palette.line,
-        thumbColor: palette.accent,
-        overlayColor: Colors.transparent,
-        tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 1.2),
-        activeTickMarkColor: palette.surface,
-        inactiveTickMarkColor: palette.muted.withValues(alpha: 0.42),
-      ),
-      child: SizedBox(
-        height: 24,
-        child: Slider(
-          min: 0,
-          max: max,
-          divisions: enabled ? pageCount - 1 : null,
-          value: value,
-          label: t.novel.reader.currentPage(page: pageIndex + 1),
-          onChanged: enabled ? onProgressChanged : null,
-        ),
-      ),
-    );
-  }
-}
-
-class _ReaderSettingsPanel extends StatelessWidget {
-  const _ReaderSettingsPanel({
-    required this.fontSize,
-    required this.lineHeight,
-    required this.palette,
-    required this.onFontSizeChanged,
-    required this.onLineHeightChanged,
-    required this.volumeSupported,
-    required this.volumeEnabled,
-    required this.onVolumeChanged,
-    required this.scrollSpeed,
-    required this.onSpeedChanged,
-  });
-
-  final double fontSize;
-  final double lineHeight;
-  final _ReaderPalette palette;
-  final ValueChanged<double> onFontSizeChanged;
-  final ValueChanged<double> onLineHeightChanged;
   final bool volumeSupported;
-  final bool volumeEnabled;
-  final ValueChanged<bool> onVolumeChanged;
-  final double scrollSpeed;
-  final ValueChanged<double> onSpeedChanged;
+  final ValueChanged<bool> onShown;
+
+  @override
+  ConsumerState<_ReaderSettingsPanel> createState() => _ReaderSettingsPanelState();
+}
+
+class _ReaderSettingsPanelState extends ConsumerState<_ReaderSettingsPanel> {
+  late final ValueChanged<bool> _shown = widget.onShown;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _shown(true));
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _shown(false));
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final t = context.t.novel.reader;
+    final settings = ref.watch(readerSettingsProvider);
+    final notifier = ref.read(readerSettingsProvider.notifier);
+    Widget slider({
+      required Key key,
+      required String label,
+      required double value,
+      required ({double min, double max}) range,
+      required int divisions,
+      required String Function(double) text,
+      required ValueChanged<double> onChanged,
+    }) => Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
+      spacing: FrostGap.inline,
       children: [
-        Text(
-          t.novel.reader.display,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700),
+        FrostText(label),
+        FrostSlider(
+          key: key,
+          value: value.clamp(range.min, range.max),
+          min: range.min,
+          max: range.max,
+          divisions: divisions,
+          semanticLabel: label,
+          valueLabel: text,
+          onChanged: onChanged,
         ),
-        const SizedBox(height: 10),
-        _ReaderStepper(
-          icon: Icons.text_fields,
-          label: t.novel.reader.fontSize,
-          value: fontSize.round().toString(),
-          palette: palette,
-          canDecrease: fontSize > 15,
-          canIncrease: fontSize < 26,
-          onDecrease: () => onFontSizeChanged(fontSize - 1),
-          onIncrease: () => onFontSizeChanged(fontSize + 1),
+      ],
+    );
+    return FrostFormSection(
+      children: [
+        slider(
+          key: const ValueKey('reader-font-size'),
+          label: t.fontSize,
+          value: settings.fontSize,
+          range: readerFontSizes,
+          divisions: (readerFontSizes.max - readerFontSizes.min).round(),
+          text: (value) => '${value.round()}',
+          onChanged: notifier.setFontSize,
         ),
-        const SizedBox(height: 8),
-        _ReaderStepper(
-          icon: Icons.format_line_spacing,
-          label: t.novel.reader.lineHeight,
-          value: lineHeight.toStringAsFixed(2),
-          palette: palette,
-          canDecrease: lineHeight > 1.45,
-          canIncrease: lineHeight < 2.2,
-          onDecrease: () => onLineHeightChanged(lineHeight - 0.08),
-          onIncrease: () => onLineHeightChanged(lineHeight + 0.08),
+        slider(
+          key: const ValueKey('reader-line-height'),
+          label: t.lineHeight,
+          value: settings.lineHeight,
+          range: readerLineHeights,
+          divisions: ((readerLineHeights.max - readerLineHeights.min) / .05).round(),
+          text: (value) => value.toStringAsFixed(2),
+          onChanged: notifier.setLineHeight,
         ),
-        const SizedBox(height: 8),
-        _ReaderStepper(
-          icon: Icons.speed,
-          label: t.novel.reader.autoScrollSpeed,
-          value: t.novel.reader.scrollSpeedValue(speed: scrollSpeed.round()),
-          palette: palette,
-          canDecrease: scrollSpeed > 12,
-          canIncrease: scrollSpeed < 96,
-          onDecrease: () => onSpeedChanged((scrollSpeed - 12).clamp(12, 96)),
-          onIncrease: () => onSpeedChanged((scrollSpeed + 12).clamp(12, 96)),
+        slider(
+          key: const ValueKey('reader-scroll-speed'),
+          label: t.autoScrollSpeed,
+          value: settings.autoScrollSpeed,
+          range: readerScrollSpeeds,
+          divisions: ((readerScrollSpeeds.max - readerScrollSpeeds.min) / 6).round(),
+          text: (value) => t.scrollSpeedValue(speed: value.round()),
+          onChanged: notifier.setAutoScrollSpeed,
         ),
-        if (volumeSupported)
-          FrostListRow.toggle(
-            title: t.novel.reader.volumeKeys,
-            subtitle: FrostRowSubtitle(t.novel.reader.volumeKeysHelp),
-            value: volumeEnabled,
-            onChanged: onVolumeChanged,
-          ),
-        const SizedBox(height: 16),
-        Text(t.novel.reader.shortcutsHelp, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.muted)),
+        if (widget.volumeSupported)
+          FrostListRow.toggle(title: t.volumeKeys, subtitle: FrostRowSubtitle(t.volumeKeysHelp), value: settings.volumeKeys, onChanged: notifier.setVolumeKeys),
+        FrostText(t.shortcutsHelp, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
       ],
     );
   }
 }
 
-class _ReaderStepper extends StatelessWidget {
-  const _ReaderStepper({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.palette,
-    required this.canDecrease,
-    required this.canIncrease,
-    required this.onDecrease,
-    required this.onIncrease,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final _ReaderPalette palette;
-  final bool canDecrease;
-  final bool canIncrease;
-  final VoidCallback onDecrease;
-  final VoidCallback onIncrease;
+/// The reader while the text loads: its surface and lines where the text
+/// will be.
+class _ReaderSkeleton extends StatelessWidget {
+  const _ReaderSkeleton();
 
   @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: palette.background,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: palette.line),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final caption = Row(
-              children: [
-                Icon(icon, size: 18, color: palette.muted),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: palette.onBackground)),
-                ),
-              ],
-            );
-            final valueStyle = Theme.of(context).textTheme.labelLarge?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700);
-            final valuePainter = TextPainter(
-              text: TextSpan(text: value, style: valueStyle),
-              textDirection: Directionality.of(context),
-              textScaler: MediaQuery.textScalerOf(context),
-            )..layout();
-            final valueWidth = math.max(56.0, valuePainter.width + 8).clamp(56.0, math.max(56.0, constraints.maxWidth - 112));
-            final controls = Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.remove),
-                  tooltip: t.novel.reader.decrease,
-                  color: palette.onBackground,
-                  onPressed: canDecrease ? onDecrease : null,
-                ),
-                SizedBox(
-                  width: valueWidth.toDouble(),
-                  child: Text(
-                    value,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  tooltip: t.novel.reader.increase,
-                  color: palette.onBackground,
-                  onPressed: canIncrease ? onIncrease : null,
-                ),
-              ],
-            );
-            if (constraints.maxWidth < 380 || MediaQuery.textScalerOf(context).scale(14) > 20) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  caption,
-                  const SizedBox(height: 4),
-                  Align(alignment: AlignmentDirectional.centerEnd, child: controls),
-                ],
-              );
-            }
-            return Row(
-              children: [
-                Expanded(child: caption),
-                controls,
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _ReaderSheetSurface extends StatelessWidget {
-  const _ReaderSheetSurface({required this.palette, required this.title, required this.child});
-
-  final _ReaderPalette palette;
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.78),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
+  Widget build(BuildContext context) => FrostSurface(
+    role: FrostSurfaceRole.reading,
+    child: SafeArea(
+      child: FrostContentColumn(
+        maxWidth: FrostMetrics.readingMaxWidth,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: FrostGap.group,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: palette.onBackground, fontWeight: FontWeight.w700),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  tooltip: t.novel.reader.close,
-                  color: palette.onBackground,
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Flexible(child: SingleChildScrollView(child: child)),
+            for (var paragraph = 0; paragraph < 6; paragraph++)
+              const FrostText('A paragraph of the novel that runs over a few lines of the reading column before the next one starts.', maxLines: 4),
           ],
-        ),
+        ).frostSkeleton(true),
       ),
-    );
-  }
-}
-
-class _ReaderLoadingPage extends StatelessWidget {
-  const _ReaderLoadingPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return FrostAutoScaffold(
-      builder: (context, layout, orientation, useHorizontalLayout) {
-        final desktop = useHorizontalLayout;
-        return Scaffold(
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(desktop ? 36 : 22, FrostGap.of(context).page, desktop ? 36 : 22, FrostGap.of(context).page),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: FrostMetrics.readingMaxWidth),
-                  child: Skeletonizer.zone(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        for (var paragraph = 0; paragraph < 4; paragraph++) ...[
-                          for (var line = 0; line < 4; line++)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 14),
-                              child: Bone(height: MediaQuery.textScalerOf(context).scale(18), width: double.infinity),
-                            ),
-                          const SizedBox(height: 18),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _ReaderPalette {
-  const _ReaderPalette({
-    required this.background,
-    required this.surface,
-    required this.onBackground,
-    required this.muted,
-    required this.line,
-    required this.accent,
-  });
-
-  final Color background;
-  final Color surface;
-  final Color onBackground;
-  final Color muted;
-  final Color line;
-  final Color accent;
-
-  static _ReaderPalette resolve(BuildContext context) {
-    final tokens = FrostThemeTokens.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return _ReaderPalette(
-      background: tokens.surface,
-      surface: tokens.surfaceRaised,
-      onBackground: colorScheme.onSurface,
-      muted: colorScheme.onSurfaceVariant,
-      line: tokens.line,
-      accent: tokens.keyGraphicOn(tokens.surfaceRaised),
-    );
-  }
-}
-
-int _readPercent({required List<NovelTextSegment> segments, required int totalTextCharacters, required int pageIndex}) {
-  if (segments.isEmpty || totalTextCharacters <= 0) {
-    return 0;
-  }
-
-  final clampedIndex = pageIndex.clamp(0, segments.length - 1);
-  final endOffset = segments[clampedIndex].endOffset;
-  return ((endOffset / totalTextCharacters) * 100).clamp(0, 100).round();
-}
-
-final _previousPageKeys = {LogicalKeyboardKey.arrowLeft, LogicalKeyboardKey.keyA};
-
-final _nextPageKeys = {LogicalKeyboardKey.arrowRight, LogicalKeyboardKey.keyD};
-
-final _scrollUpKeys = {LogicalKeyboardKey.arrowUp, LogicalKeyboardKey.keyW};
-
-final _scrollDownKeys = {LogicalKeyboardKey.arrowDown, LogicalKeyboardKey.keyS};
-
-const _keyboardScrollExtent = 320.0;
-
-bool _isNotFoundError(Object error) {
-  return error is PixivError && error.status == 404;
+    ),
+  );
 }

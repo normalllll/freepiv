@@ -1659,7 +1659,7 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 	@override String get decrease => '小さくする';
 	@override String get increase => '大きくする';
 	@override String get shortcutsTitle => 'ショートカット';
-	@override String get shortcutsHelp => '左右キーまたは A/D でページ移動、上下キーまたは W/S でスクロール';
+	@override String get shortcutsHelp => '←/→ または A/D：前/次の章。↑/↓ または W/S：スクロール。Esc：選択を解除し、もう一度で閉じる。';
 	@override String get volumeKeys => '音量キーで読む';
 	@override String get volumeKeysHelp => '音量下で先へ、音量上で前へ読み進めます。';
 	@override String get autoScroll => '自動スクロール';
@@ -1667,6 +1667,11 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 	@override String get pauseAutoScroll => '自動スクロール一時停止';
 	@override String get autoScrollSpeed => 'スクロール速度';
 	@override String scrollSpeedValue({required Object speed}) => '${speed} px/秒';
+	@override String chapterPosition({required Object current, required Object total}) => '第 ${current} / ${total} 章';
+	@override String chapterNumber({required Object number}) => '第 ${number} 章';
+	@override String get previousChapter => '前の章';
+	@override String get nextChapter => '次の章';
+	@override String progressValue({required Object percent}) => '${percent}%';
 }
 
 // Path: illustDetail.ugoira
@@ -2312,7 +2317,7 @@ extension on TranslationsJaJp {
 			'novel.reader.decrease' => '小さくする',
 			'novel.reader.increase' => '大きくする',
 			'novel.reader.shortcutsTitle' => 'ショートカット',
-			'novel.reader.shortcutsHelp' => '左右キーまたは A/D でページ移動、上下キーまたは W/S でスクロール',
+			'novel.reader.shortcutsHelp' => '←/→ または A/D：前/次の章。↑/↓ または W/S：スクロール。Esc：選択を解除し、もう一度で閉じる。',
 			'novel.reader.volumeKeys' => '音量キーで読む',
 			'novel.reader.volumeKeysHelp' => '音量下で先へ、音量上で前へ読み進めます。',
 			'novel.reader.autoScroll' => '自動スクロール',
@@ -2320,6 +2325,11 @@ extension on TranslationsJaJp {
 			'novel.reader.pauseAutoScroll' => '自動スクロール一時停止',
 			'novel.reader.autoScrollSpeed' => 'スクロール速度',
 			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} px/秒',
+			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => '第 ${current} / ${total} 章',
+			'novel.reader.chapterNumber' => ({required Object number}) => '第 ${number} 章',
+			'novel.reader.previousChapter' => '前の章',
+			'novel.reader.nextChapter' => '次の章',
+			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',
 			'follow.tooltipFollow' => 'ユーザーをフォロー',
 			'follow.tooltipUnfollow' => 'フォロー解除',
 			'follow.followed' => 'フォロー中',

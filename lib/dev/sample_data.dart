@@ -505,7 +505,10 @@ WebviewNovel sampleNovelText(int novelId) => WebviewNovel(
   caption: '',
   cdate: '',
   rating: const NovelRating(like: 0, bookmark: 120, view: 2000),
-  text: List.filled(40, 'The boats came back at dusk, one by one, and the town lit its lamps along the shore.').join('\n\n'),
+  text: [
+    for (final chapter in ['Dusk', 'The harbour', 'Morning'])
+      ['[chapter:$chapter]', ...List.filled(14, 'The boats came back at dusk, one by one, and the town lit its lamps along the shore.')].join('\n\n'),
+  ].join('\n\n'),
   illusts: const [],
   images: const [],
   glossaryItems: const [],

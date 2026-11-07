@@ -40,13 +40,15 @@ Future<void> mountPilotPage(
   bool signedIn = true,
   String location = '/',
   Object? extra,
+  Map<String, dynamic> settings = sampleSettings,
+  List<NavigatorObserver> observers = const [],
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   tester.platformDispatcher.textScaleFactorTestValue = textScale;
   addTearDown(tester.view.reset);
   addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-  await AppSettings.initialize(store: SampleSettingsStore(sampleSettings));
+  await AppSettings.initialize(store: SampleSettingsStore(settings));
   await tester.runAsync(() => LocaleSettings.setLocale(locale));
   addTearDown(() => LocaleSettings.setLocaleSync(AppLocale.enUs));
   if (signedIn) {
@@ -60,6 +62,7 @@ Future<void> mountPilotPage(
   final uri = Uri.parse(location);
   final router = GoRouter(
     initialLocation: location,
+    observers: observers,
     initialExtra: extra,
     routes: [
       GoRoute(path: uri.path, builder: (context, state) => page),
