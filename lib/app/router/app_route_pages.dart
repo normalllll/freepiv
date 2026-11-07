@@ -143,7 +143,7 @@ Page<void> meFollowingPage(BuildContext context, GoRouterState state) {
 Page<void> meFollowersPage(BuildContext context, GoRouterState state) {
   return FrostDetailPage(
     key: state.pageKey,
-    child: const MeUserListPage(kind: MeUserListKind.followers),
+    child: const FollowersPage(),
   );
 }
 

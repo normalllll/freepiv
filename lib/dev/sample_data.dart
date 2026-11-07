@@ -12,6 +12,7 @@ import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
+import 'package:freepiv/features/me/logic/me_logic.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/ranking/logic/ranking_logic.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
@@ -236,6 +237,11 @@ final sampleOverrideMap = <Object, Override>{
   fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
   newestProvider: newestProvider.overrideWith(SampleNewest.new),
   rankingProvider: rankingProvider.overrideWith(SampleRanking.new),
+  followersSourceProvider: followersSourceProvider.overrideWith((ref, userId) {
+    final source = SampleFollowers(userId: userId);
+    ref.onDispose(source.dispose);
+    return source;
+  }),
 };
 
 final sampleOverrides = [...sampleOverrideMap.values];
@@ -746,4 +752,15 @@ class _SampleRankingNovels extends RankingNovelListSource {
 
   @override
   Future<NovelPageResult> loadNextPage(String nextUrl) async => const NovelPageResult(novels: [], rankingNovels: []);
+}
+
+/// The sample account's followers: the recommended sample users.
+class SampleFollowers extends FollowerListSource {
+  SampleFollowers({required super.userId});
+
+  @override
+  Future<UserPageResult> loadFirstPage() async => UserPageResult(userPreviews: sampleUserPreviews());
+
+  @override
+  Future<UserPageResult> loadNextPage(String nextUrl) async => const UserPageResult(userPreviews: []);
 }
