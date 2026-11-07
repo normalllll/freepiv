@@ -393,7 +393,7 @@ class Translations$login$en_US {
 	String signedInAs({required Object name}) => 'Signed in as ${name}';
 	String get signInToPixiv => 'Sign in to Pixiv';
 	String get signInAgain => 'Sign in again';
-	String get openingBrowser => 'Opening browser...';
+	String get openingBrowser => 'Opening browser';
 	String get apiNotInitialized => 'Pixiv API is not initialized.';
 	String get desktopOnly => 'System browser sign-in currently supports only Linux, macOS, and Windows.';
 	String get openedInBrowser => 'Pixiv sign-in opened in the system browser. Return to the app after signing in.';
@@ -460,7 +460,7 @@ class Translations$about$en_US {
 	String get discord => 'Discord';
 	String get checkUpdate => 'Check update';
 	String get checkingUpdateShort => 'Checking';
-	String get checkingUpdate => 'Checking for updates...';
+	String get checkingUpdate => 'Checking for updates';
 	String get noUpdate => 'You are on the latest version';
 	String updateAvailable({required Object version, required Object buildNumber}) => 'New version available: ${version}+${buildNumber}';
 	String get checkUpdateFailed => 'Failed to check for updates';
@@ -686,7 +686,7 @@ class Translations$fanbox$en_US {
 	String get accessDenied => 'FANBOX denied this request. Check your access or open the website.';
 	String get rateLimited => 'Too many requests. Please try again later.';
 	String get loginFailed => 'Could not validate the session. Check the Cookie and proxy settings.';
-	String get working => 'Working…';
+	String get working => 'Working';
 	String get cancel => 'Cancel';
 	String get retry => 'Retry';
 	String get done => 'Done';
@@ -696,7 +696,7 @@ class Translations$fanbox$en_US {
 	String get unsupportedUrl => 'This link cannot be opened.';
 	String get restrictedInfo => 'This post remains visible, but its content requires a qualifying support plan.';
 	String get noPlans => 'No available plans';
-	String get downloadPreparing => 'Collecting accessible posts…';
+	String get downloadPreparing => 'Collecting accessible posts';
 	String downloadQueued({required Object count}) => '${count} files added to the download queue';
 	String get downloadNothingNew => 'Everything here is already in the download queue';
 	String get browserLogin => 'Log in with browser';
@@ -944,7 +944,7 @@ class Translations$settings$theme$en_US {
 	String get weakContrast => 'This color may be difficult to distinguish on some backgrounds.';
 	String get applyAnyway => 'Apply anyway';
 	String get useDefault => 'Use default pink';
-	String get saving => 'Saving…';
+	String get saving => 'Saving';
 	String get saveFailed => 'Could not save appearance. Try again.';
 	String get unsaved => 'Appearance changes are not saved yet.';
 	String get system => 'System';
@@ -1887,7 +1887,7 @@ extension on Translations {
 			'login.signedInAs' => ({required Object name}) => 'Signed in as ${name}',
 			'login.signInToPixiv' => 'Sign in to Pixiv',
 			'login.signInAgain' => 'Sign in again',
-			'login.openingBrowser' => 'Opening browser...',
+			'login.openingBrowser' => 'Opening browser',
 			'login.apiNotInitialized' => 'Pixiv API is not initialized.',
 			'login.desktopOnly' => 'System browser sign-in currently supports only Linux, macOS, and Windows.',
 			'login.openedInBrowser' => 'Pixiv sign-in opened in the system browser. Return to the app after signing in.',
@@ -1930,7 +1930,7 @@ extension on Translations {
 			'settings.theme.weakContrast' => 'This color may be difficult to distinguish on some backgrounds.',
 			'settings.theme.applyAnyway' => 'Apply anyway',
 			'settings.theme.useDefault' => 'Use default pink',
-			'settings.theme.saving' => 'Saving…',
+			'settings.theme.saving' => 'Saving',
 			'settings.theme.saveFailed' => 'Could not save appearance. Try again.',
 			'settings.theme.unsaved' => 'Appearance changes are not saved yet.',
 			'settings.theme.system' => 'System',
@@ -2061,7 +2061,7 @@ extension on Translations {
 			'about.discord' => 'Discord',
 			'about.checkUpdate' => 'Check update',
 			'about.checkingUpdateShort' => 'Checking',
-			'about.checkingUpdate' => 'Checking for updates...',
+			'about.checkingUpdate' => 'Checking for updates',
 			'about.noUpdate' => 'You are on the latest version',
 			'about.updateAvailable' => ({required Object version, required Object buildNumber}) => 'New version available: ${version}+${buildNumber}',
 			'about.checkUpdateFailed' => 'Failed to check for updates',
@@ -2398,7 +2398,7 @@ extension on Translations {
 			'fanbox.accessDenied' => 'FANBOX denied this request. Check your access or open the website.',
 			'fanbox.rateLimited' => 'Too many requests. Please try again later.',
 			'fanbox.loginFailed' => 'Could not validate the session. Check the Cookie and proxy settings.',
-			'fanbox.working' => 'Working…',
+			'fanbox.working' => 'Working',
 			'fanbox.cancel' => 'Cancel',
 			'fanbox.retry' => 'Retry',
 			'fanbox.done' => 'Done',
@@ -2408,7 +2408,7 @@ extension on Translations {
 			'fanbox.unsupportedUrl' => 'This link cannot be opened.',
 			'fanbox.restrictedInfo' => 'This post remains visible, but its content requires a qualifying support plan.',
 			'fanbox.noPlans' => 'No available plans',
-			'fanbox.downloadPreparing' => 'Collecting accessible posts…',
+			'fanbox.downloadPreparing' => 'Collecting accessible posts',
 			'fanbox.downloadQueued' => ({required Object count}) => '${count} files added to the download queue',
 			'fanbox.downloadNothingNew' => 'Everything here is already in the download queue',
 			'fanbox.browserLogin' => 'Log in with browser',

@@ -391,7 +391,7 @@ class Translations$login$zh_Hant_TW extends Translations$login$en_US {
 	@override String signedInAs({required Object name}) => '已登入為 ${name}';
 	@override String get signInToPixiv => '登入 Pixiv';
 	@override String get signInAgain => '重新登入';
-	@override String get openingBrowser => '正在開啟瀏覽器…';
+	@override String get openingBrowser => '正在開啟瀏覽器';
 	@override String get apiNotInitialized => 'Pixiv API 尚未初始化。';
 	@override String get desktopOnly => '系統瀏覽器登入目前僅支援 Linux、macOS 與 Windows。';
 	@override String get openedInBrowser => '已在系統瀏覽器開啟 Pixiv 登入。完成登入後請返回應用程式。';
@@ -458,7 +458,7 @@ class Translations$about$zh_Hant_TW extends Translations$about$en_US {
 	@override String get discord => 'Discord';
 	@override String get checkUpdate => '檢查更新';
 	@override String get checkingUpdateShort => '檢查中';
-	@override String get checkingUpdate => '正在檢查更新…';
+	@override String get checkingUpdate => '正在檢查更新';
 	@override String get noUpdate => '目前已是最新版本';
 	@override String updateAvailable({required Object version, required Object buildNumber}) => '發現新版本 ${version}+${buildNumber}';
 	@override String get checkUpdateFailed => '檢查更新失敗';
@@ -684,7 +684,7 @@ class Translations$fanbox$zh_Hant_TW extends Translations$fanbox$en_US {
 	@override String get accessDenied => 'FANBOX 拒絕了請求，請檢查存取權限或開啟網站。';
 	@override String get rateLimited => '請求過於頻繁，請稍後重試。';
 	@override String get loginFailed => '無法驗證工作階段，請檢查 Cookie 和代理設定。';
-	@override String get working => '處理中…';
+	@override String get working => '處理中';
 	@override String get cancel => '取消';
 	@override String get retry => '重試';
 	@override String get done => '完成';
@@ -694,7 +694,7 @@ class Translations$fanbox$zh_Hant_TW extends Translations$fanbox$en_US {
 	@override String get unsupportedUrl => '無法開啟此連結。';
 	@override String get restrictedInfo => '文章卡片會保留，內文需要符合金額要求的贊助方案。';
 	@override String get noPlans => '暫無可用方案';
-	@override String get downloadPreparing => '正在收集有權瀏覽的文章…';
+	@override String get downloadPreparing => '正在收集有權瀏覽的文章';
 	@override String downloadQueued({required Object count}) => '已加入下載佇列：${count} 個檔案';
 	@override String get downloadNothingNew => '這些檔案都已在下載佇列中';
 	@override String get browserLogin => '瀏覽器登入';
@@ -942,7 +942,7 @@ class Translations$settings$theme$zh_Hant_TW extends Translations$settings$theme
 	@override String get weakContrast => '此顏色在部分背景上的辨識度較弱。';
 	@override String get applyAnyway => '仍要套用';
 	@override String get useDefault => '使用預設粉色';
-	@override String get saving => '儲存中…';
+	@override String get saving => '儲存中';
 	@override String get saveFailed => '外觀儲存失敗，請重試。';
 	@override String get unsaved => '外觀變更尚未儲存。';
 	@override String get system => '跟隨系統';
@@ -1885,7 +1885,7 @@ extension on TranslationsZhHantTw {
 			'login.signedInAs' => ({required Object name}) => '已登入為 ${name}',
 			'login.signInToPixiv' => '登入 Pixiv',
 			'login.signInAgain' => '重新登入',
-			'login.openingBrowser' => '正在開啟瀏覽器…',
+			'login.openingBrowser' => '正在開啟瀏覽器',
 			'login.apiNotInitialized' => 'Pixiv API 尚未初始化。',
 			'login.desktopOnly' => '系統瀏覽器登入目前僅支援 Linux、macOS 與 Windows。',
 			'login.openedInBrowser' => '已在系統瀏覽器開啟 Pixiv 登入。完成登入後請返回應用程式。',
@@ -1928,7 +1928,7 @@ extension on TranslationsZhHantTw {
 			'settings.theme.weakContrast' => '此顏色在部分背景上的辨識度較弱。',
 			'settings.theme.applyAnyway' => '仍要套用',
 			'settings.theme.useDefault' => '使用預設粉色',
-			'settings.theme.saving' => '儲存中…',
+			'settings.theme.saving' => '儲存中',
 			'settings.theme.saveFailed' => '外觀儲存失敗，請重試。',
 			'settings.theme.unsaved' => '外觀變更尚未儲存。',
 			'settings.theme.system' => '跟隨系統',
@@ -2059,7 +2059,7 @@ extension on TranslationsZhHantTw {
 			'about.discord' => 'Discord',
 			'about.checkUpdate' => '檢查更新',
 			'about.checkingUpdateShort' => '檢查中',
-			'about.checkingUpdate' => '正在檢查更新…',
+			'about.checkingUpdate' => '正在檢查更新',
 			'about.noUpdate' => '目前已是最新版本',
 			'about.updateAvailable' => ({required Object version, required Object buildNumber}) => '發現新版本 ${version}+${buildNumber}',
 			'about.checkUpdateFailed' => '檢查更新失敗',
@@ -2396,7 +2396,7 @@ extension on TranslationsZhHantTw {
 			'fanbox.accessDenied' => 'FANBOX 拒絕了請求，請檢查存取權限或開啟網站。',
 			'fanbox.rateLimited' => '請求過於頻繁，請稍後重試。',
 			'fanbox.loginFailed' => '無法驗證工作階段，請檢查 Cookie 和代理設定。',
-			'fanbox.working' => '處理中…',
+			'fanbox.working' => '處理中',
 			'fanbox.cancel' => '取消',
 			'fanbox.retry' => '重試',
 			'fanbox.done' => '完成',
@@ -2406,7 +2406,7 @@ extension on TranslationsZhHantTw {
 			'fanbox.unsupportedUrl' => '無法開啟此連結。',
 			'fanbox.restrictedInfo' => '文章卡片會保留，內文需要符合金額要求的贊助方案。',
 			'fanbox.noPlans' => '暫無可用方案',
-			'fanbox.downloadPreparing' => '正在收集有權瀏覽的文章…',
+			'fanbox.downloadPreparing' => '正在收集有權瀏覽的文章',
 			'fanbox.downloadQueued' => ({required Object count}) => '已加入下載佇列：${count} 個檔案',
 			'fanbox.downloadNothingNew' => '這些檔案都已在下載佇列中',
 			'fanbox.browserLogin' => '瀏覽器登入',

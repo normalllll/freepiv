@@ -158,7 +158,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   void initState() {
     super.initState();
     final saved = ref.read(readerSettingsProvider);
-    _fontSize = saved.fontSize;
+    _fontSize = saved.textSize;
     _lineHeight = saved.lineHeight;
     _speed = saved.autoScrollSpeed;
     _volumeEnabled = saved.volumeKeys;
@@ -453,13 +453,13 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
 
   /// A new size or spacing keeps the reader's place.
   void _applySettings(ReaderSettings next) {
-    final reflow = next.fontSize != _fontSize || next.lineHeight != _lineHeight;
+    final reflow = next.textSize != _fontSize || next.lineHeight != _lineHeight;
     if (reflow) {
       _pause();
       _pending ??= _position();
     }
     setState(() {
-      _fontSize = next.fontSize.clamp(readerFontSizes.min, readerFontSizes.max);
+      _fontSize = next.textSize.clamp(readerFontSizes.min, readerFontSizes.max);
       _lineHeight = next.lineHeight.clamp(readerLineHeights.min, readerLineHeights.max);
       _speed = next.autoScrollSpeed;
       _volumeEnabled = next.volumeKeys;
@@ -907,11 +907,11 @@ class _ReaderSettingsPanelState extends ConsumerState<_ReaderSettingsPanel> {
         slider(
           key: const ValueKey('reader-font-size'),
           label: t.fontSize,
-          value: settings.fontSize,
+          value: settings.textSize,
           range: readerFontSizes,
           divisions: (readerFontSizes.max - readerFontSizes.min).round(),
           text: (value) => '${value.round()}',
-          onChanged: notifier.setFontSize,
+          onChanged: notifier.setTextSize,
         ),
         slider(
           key: const ValueKey('reader-line-height'),

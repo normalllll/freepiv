@@ -171,7 +171,7 @@ void main() {
     await settlePilot(tester);
     final before = _reader(tester).currentBlock;
     final container = ProviderScope.containerOf(tester.element(find.byType(NovelReaderContent)));
-    container.read(readerSettingsProvider.notifier).setFontSize(26);
+    container.read(readerSettingsProvider.notifier).setTextSize(26);
     await settlePilot(tester);
     expect(tester.widget<ReaderParagraph>(find.byType(ReaderParagraph).first).typesetting.body.fontSize, 26);
     expect(_reader(tester).currentBlock, before);

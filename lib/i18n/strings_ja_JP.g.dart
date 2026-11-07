@@ -391,7 +391,7 @@ class _Translations$login$ja_JP extends Translations$login$en_US {
 	@override String signedInAs({required Object name}) => '${name} としてログイン中';
 	@override String get signInToPixiv => 'Pixiv にログイン';
 	@override String get signInAgain => '再ログイン';
-	@override String get openingBrowser => 'ブラウザを開いています…';
+	@override String get openingBrowser => 'ブラウザを開いています';
 	@override String get apiNotInitialized => 'Pixiv API が初期化されていません。';
 	@override String get desktopOnly => 'システムブラウザでのログインは現在 Linux、macOS、Windows のみ対応しています。';
 	@override String get openedInBrowser => 'システムブラウザで Pixiv ログインを開きました。ログイン後にアプリへ戻ってください。';
@@ -458,7 +458,7 @@ class _Translations$about$ja_JP extends Translations$about$en_US {
 	@override String get discord => 'Discord';
 	@override String get checkUpdate => '更新を確認';
 	@override String get checkingUpdateShort => '確認中';
-	@override String get checkingUpdate => '更新を確認しています…';
+	@override String get checkingUpdate => '更新を確認しています';
 	@override String get noUpdate => '現在のバージョンは最新です';
 	@override String updateAvailable({required Object version, required Object buildNumber}) => '新しいバージョンがあります: ${version}+${buildNumber}';
 	@override String get checkUpdateFailed => '更新の確認に失敗しました';
@@ -684,7 +684,7 @@ class _Translations$fanbox$ja_JP extends Translations$fanbox$en_US {
 	@override String get accessDenied => 'FANBOX がリクエストを拒否しました。閲覧権限を確認するかサイトを開いてください。';
 	@override String get rateLimited => 'リクエストが多すぎます。しばらくお待ちください。';
 	@override String get loginFailed => 'セッションを確認できません。Cookie とプロキシ設定を確認してください。';
-	@override String get working => '処理中…';
+	@override String get working => '処理中';
 	@override String get cancel => 'キャンセル';
 	@override String get retry => '再試行';
 	@override String get done => '完了';
@@ -694,7 +694,7 @@ class _Translations$fanbox$ja_JP extends Translations$fanbox$en_US {
 	@override String get unsupportedUrl => 'このリンクは開けません。';
 	@override String get restrictedInfo => '投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。';
 	@override String get noPlans => 'プランがありません';
-	@override String get downloadPreparing => '閲覧可能な投稿を収集中…';
+	@override String get downloadPreparing => '閲覧可能な投稿を収集中';
 	@override String downloadQueued({required Object count}) => '${count} 件のファイルをダウンロードキューに追加しました';
 	@override String get downloadNothingNew => 'これらのファイルはすべてダウンロード待ちです';
 	@override String get browserLogin => 'ブラウザーでログイン';
@@ -942,7 +942,7 @@ class _Translations$settings$theme$ja_JP extends Translations$settings$theme$en_
 	@override String get weakContrast => '一部の背景ではこの色が見分けにくい場合があります。';
 	@override String get applyAnyway => 'このまま適用';
 	@override String get useDefault => '標準のピンクを使用';
-	@override String get saving => '保存中…';
+	@override String get saving => '保存中';
 	@override String get saveFailed => '外観を保存できませんでした。再試行してください。';
 	@override String get unsaved => '外観の変更はまだ保存されていません。';
 	@override String get system => '自動';
@@ -1885,7 +1885,7 @@ extension on TranslationsJaJp {
 			'login.signedInAs' => ({required Object name}) => '${name} としてログイン中',
 			'login.signInToPixiv' => 'Pixiv にログイン',
 			'login.signInAgain' => '再ログイン',
-			'login.openingBrowser' => 'ブラウザを開いています…',
+			'login.openingBrowser' => 'ブラウザを開いています',
 			'login.apiNotInitialized' => 'Pixiv API が初期化されていません。',
 			'login.desktopOnly' => 'システムブラウザでのログインは現在 Linux、macOS、Windows のみ対応しています。',
 			'login.openedInBrowser' => 'システムブラウザで Pixiv ログインを開きました。ログイン後にアプリへ戻ってください。',
@@ -1928,7 +1928,7 @@ extension on TranslationsJaJp {
 			'settings.theme.weakContrast' => '一部の背景ではこの色が見分けにくい場合があります。',
 			'settings.theme.applyAnyway' => 'このまま適用',
 			'settings.theme.useDefault' => '標準のピンクを使用',
-			'settings.theme.saving' => '保存中…',
+			'settings.theme.saving' => '保存中',
 			'settings.theme.saveFailed' => '外観を保存できませんでした。再試行してください。',
 			'settings.theme.unsaved' => '外観の変更はまだ保存されていません。',
 			'settings.theme.system' => '自動',
@@ -2059,7 +2059,7 @@ extension on TranslationsJaJp {
 			'about.discord' => 'Discord',
 			'about.checkUpdate' => '更新を確認',
 			'about.checkingUpdateShort' => '確認中',
-			'about.checkingUpdate' => '更新を確認しています…',
+			'about.checkingUpdate' => '更新を確認しています',
 			'about.noUpdate' => '現在のバージョンは最新です',
 			'about.updateAvailable' => ({required Object version, required Object buildNumber}) => '新しいバージョンがあります: ${version}+${buildNumber}',
 			'about.checkUpdateFailed' => '更新の確認に失敗しました',
@@ -2396,7 +2396,7 @@ extension on TranslationsJaJp {
 			'fanbox.accessDenied' => 'FANBOX がリクエストを拒否しました。閲覧権限を確認するかサイトを開いてください。',
 			'fanbox.rateLimited' => 'リクエストが多すぎます。しばらくお待ちください。',
 			'fanbox.loginFailed' => 'セッションを確認できません。Cookie とプロキシ設定を確認してください。',
-			'fanbox.working' => '処理中…',
+			'fanbox.working' => '処理中',
 			'fanbox.cancel' => 'キャンセル',
 			'fanbox.retry' => '再試行',
 			'fanbox.done' => '完了',
@@ -2406,7 +2406,7 @@ extension on TranslationsJaJp {
 			'fanbox.unsupportedUrl' => 'このリンクは開けません。',
 			'fanbox.restrictedInfo' => '投稿カードは表示されますが、本文の閲覧には条件を満たす支援が必要です。',
 			'fanbox.noPlans' => 'プランがありません',
-			'fanbox.downloadPreparing' => '閲覧可能な投稿を収集中…',
+			'fanbox.downloadPreparing' => '閲覧可能な投稿を収集中',
 			'fanbox.downloadQueued' => ({required Object count}) => '${count} 件のファイルをダウンロードキューに追加しました',
 			'fanbox.downloadNothingNew' => 'これらのファイルはすべてダウンロード待ちです',
 			'fanbox.browserLogin' => 'ブラウザーでログイン',

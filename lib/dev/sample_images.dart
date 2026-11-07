@@ -28,14 +28,18 @@ class SampleImage extends ImageProvider<SampleImage> {
   final int width;
   final int height;
 
-  static const _palettes = [
-    [Color(0xFFFFB3C7), Color(0xFF7E57C2)],
-    [Color(0xFF80DEEA), Color(0xFF1E88E5)],
-    [Color(0xFFFFE082), Color(0xFFEF6C00)],
-    [Color(0xFFA5D6A7), Color(0xFF00796B)],
-    [Color(0xFFCE93D8), Color(0xFF283593)],
-    [Color(0xFFFFCCBC), Color(0xFFC2185B)],
-  ];
+  /// The hues of each picture's gradient, from a pale one to a deep one:
+  /// rose to violet, aqua to blue, amber to orange, mint to teal, lilac to
+  /// indigo, peach to crimson.
+  static const _hues = [(345.0, 262.0), (187.0, 208.0), (45.0, 27.0), (122.0, 174.0), (291.0, 232.0), (14.0, 336.0)];
+
+  static List<Color> _palette(int seed) {
+    final (pale, deep) = _hues[seed % _hues.length];
+    return [HSVColor.fromAHSV(1, pale, .3, 1).toColor(), HSVColor.fromAHSV(1, deep, .8, .75).toColor()];
+  }
+
+  /// The soft highlights scattered over a picture.
+  static Color _highlight(double alpha) => HSVColor.fromAHSV(alpha, 0, 0, 1).toColor();
 
   @override
   Future<SampleImage> obtainKey(ImageConfiguration configuration) => SynchronousFuture(this);
@@ -46,7 +50,7 @@ class SampleImage extends ImageProvider<SampleImage> {
 
   Future<ui.Image> _draw() {
     final random = math.Random(seed);
-    final palette = _palettes[seed % _palettes.length];
+    final palette = _palette(seed);
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     final rect = ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
@@ -54,7 +58,7 @@ class SampleImage extends ImageProvider<SampleImage> {
     for (var index = 0; index < 5; index++) {
       final center = ui.Offset(random.nextDouble() * width, random.nextDouble() * height);
       final radius = (.1 + random.nextDouble() * .3) * math.min(width, height);
-      canvas.drawCircle(center, radius, ui.Paint()..color = const Color(0xFFFFFFFF).withValues(alpha: .08 + random.nextDouble() * .18));
+      canvas.drawCircle(center, radius, ui.Paint()..color = _highlight(.08 + random.nextDouble() * .18));
     }
     return recorder.endRecording().toImage(width, height);
   }

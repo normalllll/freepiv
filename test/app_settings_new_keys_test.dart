@@ -117,10 +117,10 @@ void main() {
       container.read(navigationPlacementProvider.notifier).setPlacement(FrostNavigationPlacement.sidebar);
       container.read(sidebarExpandedProvider.notifier).setExpanded(true);
       container.read(readerSettingsProvider.notifier)
-        ..setFontSize(20)
+        ..setTextSize(20)
         ..setVolumeKeys(true);
       expect(container.read(navigationPlacementProvider), FrostNavigationPlacement.sidebar);
-      expect(container.read(readerSettingsProvider).fontSize, 20);
+      expect(container.read(readerSettingsProvider).textSize, 20);
     });
     expect(AppSettings.navigationPlacement, FrostNavigationPlacement.sidebar);
     expect(AppSettings.sidebarExpanded, isTrue);

@@ -189,9 +189,9 @@ class SidebarExpandedNotifier extends Notifier<bool> {
 /// The novel reader's typography and controls, kept across launches.
 @immutable
 class ReaderSettings {
-  const ReaderSettings({required this.fontSize, required this.lineHeight, required this.autoScrollSpeed, required this.volumeKeys});
+  const ReaderSettings({required this.textSize, required this.lineHeight, required this.autoScrollSpeed, required this.volumeKeys});
 
-  final double fontSize;
+  final double textSize;
   final double lineHeight;
   final double autoScrollSpeed;
   final bool volumeKeys;
@@ -199,25 +199,25 @@ class ReaderSettings {
   @override
   bool operator ==(Object other) =>
       other is ReaderSettings &&
-      other.fontSize == fontSize &&
+      other.textSize == textSize &&
       other.lineHeight == lineHeight &&
       other.autoScrollSpeed == autoScrollSpeed &&
       other.volumeKeys == volumeKeys;
 
   @override
-  int get hashCode => Object.hash(fontSize, lineHeight, autoScrollSpeed, volumeKeys);
+  int get hashCode => Object.hash(textSize, lineHeight, autoScrollSpeed, volumeKeys);
 }
 
 class ReaderSettingsNotifier extends Notifier<ReaderSettings> {
   @override
   ReaderSettings build() => ReaderSettings(
-    fontSize: AppSettings.readerFontSize,
+    textSize: AppSettings.readerFontSize,
     lineHeight: AppSettings.readerLineHeight,
     autoScrollSpeed: AppSettings.readerAutoScrollSpeed,
     volumeKeys: AppSettings.readerVolumeKeys,
   );
 
-  void setFontSize(double value) {
+  void setTextSize(double value) {
     AppSettings.readerFontSize = value;
     state = build();
   }
