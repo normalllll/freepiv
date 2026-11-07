@@ -4,7 +4,7 @@ import 'package:freepiv/features/pixivision/page.dart';
 import 'package:freepiv/features/pixivision/article_page.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/features/fanbox/browse_page.dart';
-import 'package:freepiv/features/fanbox/detail.dart' show FanboxCreatorDetailPage;
+import 'package:freepiv/features/fanbox/creator_page.dart';
 import 'package:freepiv/features/fanbox/post_page.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/fanbox/login_page.dart';

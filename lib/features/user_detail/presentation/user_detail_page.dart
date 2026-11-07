@@ -14,6 +14,7 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/identity_header.dart';
+import 'package:freepiv/ui/compositions/identity_tabs_header.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:frost_data/frost_data.dart';
@@ -138,35 +139,16 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
         body: NestedScrollView(
           controller: _outer,
           headerSliverBuilder: (context, _) => [
-            SliverOverlapAbsorber(
-              handle: _overlap,
-              sliver: SliverMainAxisGroup(
-                slivers: [
-                  PinnedHeaderSliver(child: SizedBox(height: MediaQuery.paddingOf(context).top)),
-                  FrostSliverContentColumn(
-                    maxWidth: double.infinity,
-                    sliver: SliverToBoxAdapter(
-                      child: KeyedSubtree(
-                        key: _identityKey,
-                        child: _UserIdentity(detail: detail),
-                      ),
-                    ),
-                  ),
-                  PinnedHeaderSliver(
-                    child: FrostPinnedChromeGlass(
-                      opacity: 1,
-                      corners: FrostPinnedChromeCorners.bottom,
-                      child: FrostContentColumn(
-                        maxWidth: double.infinity,
-                        child: FrostTabBar(
-                          controller: _tabs,
-                          scrollable: true,
-                          tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: labels[kind]!)],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+            AppIdentityTabsHeader(
+              overlap: _overlap,
+              identity: KeyedSubtree(
+                key: _identityKey,
+                child: _UserIdentity(detail: detail),
+              ),
+              tabs: FrostTabBar(
+                controller: _tabs,
+                scrollable: true,
+                tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: labels[kind]!)],
               ),
             ),
           ],
@@ -284,6 +266,9 @@ class _UserTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget view(ScrollPhysics? physics, Widget? refreshHeader) => FrostLoadingScrollView(
+      // The NestedScrollView's inner controller: desktop platforms do not
+      // hand it down on their own, and the tabs would scroll alone.
+      primary: true,
       physics: physics,
       slivers: [
         SliverOverlapInjector(handle: overlap),
@@ -293,12 +278,12 @@ class _UserTab extends StatelessWidget {
     );
     final refresh = onRefresh;
     if (refresh == null) return view(null, null);
-    return FrostRefreshView(
+    return FrostNestedRefreshView(
       onRefresh: () async {
         await refresh();
         return true;
       },
-      builder: (context, physics, locators) => view(physics, locators.sliverHeader),
+      builder: (context, refresh) => view(refresh.physics, refresh.locators.sliverHeader),
     );
   }
 }

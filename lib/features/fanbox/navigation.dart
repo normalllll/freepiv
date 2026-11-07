@@ -1,16 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:frost_ui/frost_ui.dart';
 import 'logic.dart';
-
-double fanboxNavigationHeight(BuildContext context) {
-  final labelSize = Theme.of(context).textTheme.labelLarge?.fontSize ?? 14;
-  final textGrowth = (MediaQuery.textScalerOf(context).scale(labelSize) / labelSize - 1).clamp(0.0, double.infinity);
-  return 62.0 + FrostGap.related * textGrowth;
-}
-
-// Kept for existing layout checks; FANBOX now uses one navigation row at every width.
-({bool stacked, double height}) fanboxNavigationLayout(BuildContext context, double viewportWidth) => (stacked: false, height: fanboxNavigationHeight(context));
 
 String fanboxSectionLabel(BuildContext context, FanboxSection section) {
   final t = context.t.fanbox;
@@ -44,83 +34,3 @@ enum FanboxGroup {
   static FanboxGroup of(FanboxSection section) => values.where((group) => group.sections.contains(section)).firstOrNull ?? discover;
 }
 
-class FanboxSectionNavigation extends StatefulWidget {
-  const FanboxSectionNavigation({required this.section, required this.onSelected, this.controller, super.key});
-
-  /// The section the collection value beside the group tabs shows.
-  final FanboxSection section;
-  final ValueChanged<FanboxSection> onSelected;
-
-  /// Drives the group tabs when the page below swipes between groups. Without
-  /// one the tabs follow [section]'s group.
-  final TabController? controller;
-
-  @override
-  State<FanboxSectionNavigation> createState() => _FanboxSectionNavigationState();
-}
-
-class _FanboxSectionNavigationState extends State<FanboxSectionNavigation> with SingleTickerProviderStateMixin {
-  late final TabController? _ownController = widget.controller == null
-      ? TabController(length: FanboxGroup.values.length, initialIndex: FanboxGroup.of(widget.section).index, vsync: this)
-      : null;
-
-  TabController get _controller => widget.controller ?? _ownController!;
-
-  FanboxGroup get _group => FanboxGroup.of(widget.section);
-
-  @override
-  void didUpdateWidget(covariant FanboxSectionNavigation oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.controller == null && _controller.index != _group.index) _controller.animateTo(_group.index, duration: Duration.zero);
-  }
-
-  @override
-  void dispose() {
-    _ownController?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final group = _group;
-    return LayoutBuilder(
-      builder: (context, constraints) => Row(
-        children: [
-          Expanded(
-            child: FrostTabBar(
-              controller: _controller,
-              scrollable: true,
-              tabs: [
-                // Group names differ from their sections, so the tab and the
-                // collection value beside it never repeat the same label.
-                FrostTab(label: context.t.fanbox.feedGroup),
-                FrostTab(label: context.t.common.discover),
-                FrostTab(label: context.t.navigation.me),
-              ],
-              // A page-driven controller moves the pages itself; standalone, a
-              // tap reports the group's first section.
-              onTap: (index) {
-                if (widget.controller == null) widget.onSelected(FanboxGroup.values[index].sections.first);
-              },
-            ),
-          ),
-          const SizedBox(width: 8),
-          // It keeps its full label at the row's end while the scrollable group
-          // tabs take the rest; only at accessibility text sizes does the half
-          // row limit make the label wrap instead of pushing the row over.
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: constraints.maxWidth / 2),
-            child: FrostPicker<FanboxSection>.menu(
-              label: context.t.fanbox.title,
-              value: widget.section,
-              options: [
-                for (final section in {...group.sections, widget.section}) FrostPickerOption(value: section, label: fanboxSectionLabel(context, section)),
-              ],
-              onChanged: widget.onSelected,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
