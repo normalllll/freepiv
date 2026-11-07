@@ -899,5 +899,14 @@
   "viewer": {
     "position": "$title · $page / $total",
     "loading": "Loading the original image"
+  },
+  "userPage": {
+    "copyLink": "Copy profile link",
+    "linkCopied": "Link copied",
+    "openInBrowser": "Open in browser",
+    "copyBio": "Copy bio",
+    "bioCopied": "Bio copied",
+    "copyFailed": "Could not copy",
+    "openFailed": "Could not open the link"
   }
 }

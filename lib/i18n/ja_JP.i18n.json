@@ -899,5 +899,14 @@
   "viewer": {
     "position": "$title · $page / $total",
     "loading": "元画像を読み込み中"
+  },
+  "userPage": {
+    "copyLink": "プロフィールのリンクをコピー",
+    "linkCopied": "リンクをコピーしました",
+    "openInBrowser": "ブラウザで開く",
+    "copyBio": "自己紹介をコピー",
+    "bioCopied": "自己紹介をコピーしました",
+    "copyFailed": "コピーできませんでした",
+    "openFailed": "リンクを開けませんでした"
   }
 }

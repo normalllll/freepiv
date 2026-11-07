@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
-import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -21,7 +20,7 @@ class UserNovelListTabBody extends ConsumerStatefulWidget {
   ConsumerState<UserNovelListTabBody> createState() => _UserNovelListTabBodyState();
 }
 
-class _UserNovelListTabBodyState extends ConsumerState<UserNovelListTabBody> implements UserDetailTabRefreshController {
+class _UserNovelListTabBodyState extends ConsumerState<UserNovelListTabBody> {
   @override
   void initState() {
     super.initState();
@@ -48,7 +47,6 @@ class _UserNovelListTabBodyState extends ConsumerState<UserNovelListTabBody> imp
     );
   }
 
-  @override
   Future<bool> refreshTab() {
     final source = _readSource();
     return source.refresh(source.items.isEmpty);

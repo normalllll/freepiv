@@ -1,20 +1,28 @@
-import 'package:freepiv/ui/compositions/page_error.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
-import 'package:freepiv/features/user_detail/presentation/widgets/user_bookmarks_tab.dart';
-import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_skeleton.dart';
-import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
-import 'package:freepiv/features/user_detail/presentation/widgets/user_following_tab.dart';
-import 'package:freepiv/features/user_detail/presentation/widgets/user_illust_grid_tab.dart';
-import 'package:freepiv/features/user_detail/presentation/widgets/user_novel_list_tab.dart';
-import 'package:freepiv/features/user_detail/presentation/widgets/user_profile_info_tab.dart';
-import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
-import 'package:freepiv/app/router/app_route.dart';
+import 'dart:async';
 
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/app/refresh/app_refresh.dart';
+import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
+import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
+import 'package:freepiv/ui/compositions/artwork_card.dart';
+import 'package:freepiv/ui/compositions/content_rows.dart';
+import 'package:freepiv/ui/compositions/identity_header.dart';
+import 'package:freepiv/ui/compositions/page_error.dart';
+import 'package:freepiv/ui/compositions/work_actions.dart';
+import 'package:frost_data/frost_data.dart';
+import 'package:frost_ui/frost_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+/// The author page: the identity header scrolling away
+/// above the pinned tabs Illustrations, Manga, Novels, Bookmarks, Following
+/// and Details, each keeping its own scroll and pages.
 class UserDetailPage extends ConsumerWidget {
   const UserDetailPage({this.userId, this.userDetail, this.initialTab = UserContentTabKind.illust, super.key}) : assert(userId != null || userDetail != null);
 
@@ -24,216 +32,411 @@ class UserDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final args = UserDetailArgs(userId: userId, userDetail: userDetail);
-    final detailValue = ref.watch(userDetailProvider(args));
-    final visible = detailValue.asData?.value ?? userDetail;
+    final provider = userDetailProvider(UserDetailArgs(userId: userId, userDetail: userDetail));
+    final value = ref.watch(provider);
+    final shown = value.asData?.value ?? userDetail;
     final id = userId ?? userDetail!.user.id;
-
-    // The window shows the author's name, and the ambient backdrop takes its
-    // colours from the banner or avatar that the page already loads.
+    final Widget content = switch (value) {
+      AsyncValue(:final value?) => UserDetailContent(key: ValueKey(value.user.id), detail: value, initialTab: initialTab),
+      AsyncValue(:final error?) when shown == null => AppPageError.fromError(error: error, onRetry: () => unawaited(ref.read(provider.notifier).reload())),
+      _ when shown != null => UserDetailContent(key: ValueKey(shown.user.id), detail: shown, initialTab: initialTab),
+      _ => const _UserDetailSkeleton(),
+    };
+    // The window shows the author's name; the backdrop takes the banner's or
+    // the avatar's colours.
     return FrostWindowTitleContribution(
       path: AppLocations.user(id),
-      page: visible == null
+      page: shown == null
           ? null
-          : FrostPageTitle(
-              id: id,
-              title: visible.user.name,
-              kind: 'user',
-              imageUrl: visible.profile.backgroundImageUrl ?? visible.user.profileImageUrls.medium,
-            ),
-      child: _buildPage(detailValue, ref),
-    );
-  }
-
-  Widget _buildPage(AsyncValue<UserDetailResult> detailValue, WidgetRef ref) {
-    final args = UserDetailArgs(userId: userId, userDetail: userDetail);
-    return FrostAutoScaffold(
-      builder: (BuildContext context, FrostSizeLayout layout, Orientation orientation, bool useHorizontalLayout) {
-        return detailValue.when(
-          data: (detail) => UserDetailContent(
-            key: ValueKey<String>('user-detail-content-${detail.user.id}'),
-            detail: detail,
-            initialTab: initialTab,
-            useHorizontalLayout: useHorizontalLayout,
-          ),
-          loading: () {
-            final initialDetail = userDetail;
-            if (initialDetail != null) {
-              return UserDetailContent(
-                key: ValueKey<String>('user-detail-content-${initialDetail.user.id}'),
-                detail: initialDetail,
-                initialTab: initialTab,
-                useHorizontalLayout: useHorizontalLayout,
-              );
-            }
-
-            return UserDetailLoadingSkeleton(useHorizontalLayout: useHorizontalLayout);
-          },
-          error: (error, stackTrace) {
-            return AppPageError.fromError(error: error, onRetry: () => ref.read(userDetailProvider(args).notifier).reload());
-          },
-        );
-      },
+          : FrostPageTitle(id: id, title: shown.user.name, kind: 'user', imageUrl: shown.profile.backgroundImageUrl ?? shown.user.profileImageUrls.medium),
+      child: content,
     );
   }
 }
 
-class UserDetailContent extends StatefulWidget {
-  const UserDetailContent({required this.detail, required this.useHorizontalLayout, this.initialTab = UserContentTabKind.illust, super.key});
+User userOf(UserInfo info) => User(id: info.id, name: info.name, account: info.account, profileImageUrls: info.profileImageUrls, isFollowed: info.isFollowed);
 
-  final UserContentTabKind initialTab;
+class UserDetailContent extends ConsumerStatefulWidget {
+  const UserDetailContent({required this.detail, this.initialTab = UserContentTabKind.illust, super.key});
+
   final UserDetailResult detail;
-  final bool useHorizontalLayout;
+  final UserContentTabKind initialTab;
+
+  static const tabs = UserContentTabKind.values;
 
   @override
-  State<UserDetailContent> createState() => _UserDetailContentState();
+  ConsumerState<UserDetailContent> createState() => _UserDetailContentState();
 }
 
-class _UserDetailContentState extends State<UserDetailContent> with SingleTickerProviderStateMixin {
-  List<UserDetailTabItem> get _tabs => _tabsFor(widget.detail, t);
-  late final TabController _tabController;
-  late final Map<Object, GlobalKey> _tabKeys;
+class _UserDetailContentState extends ConsumerState<UserDetailContent> with SingleTickerProviderStateMixin {
+  late final _tabs = TabController(length: UserDetailContent.tabs.length, initialIndex: UserDetailContent.tabs.indexOf(widget.initialTab), vsync: this);
+  final _outer = ScrollController();
+  final _identityKey = GlobalKey();
+  final _overlap = SliverOverlapAbsorberHandle();
+  bool _identityGone = false;
+  var _bookmarks = UserBookmarkKind.illustManga;
 
-  int _currentIndex = 0;
+  int get _userId => widget.detail.user.id;
 
   @override
   void initState() {
     super.initState();
-
-    _tabKeys = {for (final tab in _tabs) tab.kind: GlobalKey(debugLabel: 'user-detail-tab-${tab.kind}')};
-
-    final initialIndex = _tabs.indexWhere((tab) => tab.kind == widget.initialTab);
-    _currentIndex = initialIndex < 0 ? 0 : initialIndex;
-    _tabController = TabController(initialIndex: _currentIndex, length: _tabs.length, vsync: this, animationDuration: const Duration(milliseconds: 200));
-    _tabController.addListener(_handleTabChanged);
+    _outer.addListener(_scrolled);
   }
 
   @override
-  void didUpdateWidget(covariant UserDetailContent oldWidget) {
+  void didUpdateWidget(UserDetailContent oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialTab == widget.initialTab) return;
-    final index = _tabs.indexWhere((tab) => tab.kind == widget.initialTab);
-    if (index >= 0) _tabController.animateTo(index, duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 200));
-  }
-
-  void _handleTabChanged() {
-    final nextIndex = _tabController.index;
-    if (nextIndex == _currentIndex || nextIndex < 0 || nextIndex >= _tabs.length) {
-      return;
-    }
-
-    setState(() {
-      _currentIndex = nextIndex;
-    });
+    if (oldWidget.initialTab != widget.initialTab) _tabs.index = UserDetailContent.tabs.indexOf(widget.initialTab);
   }
 
   @override
   void dispose() {
-    _tabController.removeListener(_handleTabChanged);
-    _tabController.dispose();
+    _tabs.dispose();
+    _outer.dispose();
+    _overlap.dispose();
     super.dispose();
   }
 
+  /// The page header names the author only once the identity header has
+  /// scrolled away.
+  void _scrolled() {
+    final identity = _identityKey.currentContext?.size?.height ?? 0;
+    final gone = _outer.hasClients && identity > 0 && _outer.offset >= identity;
+    if (gone != _identityGone) setState(() => _identityGone = gone);
+  }
+
+  /// The current tab's list; Details has none.
+  FrostListSource<Object?>? _source(UserContentTabKind kind) => switch (kind) {
+    UserContentTabKind.illust => ref.read(userIllustsProvider(userId: _userId, illustType: IllustType.illust)),
+    UserContentTabKind.manga => ref.read(userIllustsProvider(userId: _userId, illustType: IllustType.manga)),
+    UserContentTabKind.novel => ref.read(userNovelsProvider(userId: _userId)),
+    UserContentTabKind.bookmarks => switch (_bookmarks) {
+      UserBookmarkKind.illustManga => ref.read(userIllustBookmarksProvider(userId: _userId)),
+      UserBookmarkKind.novel => ref.read(userNovelBookmarksProvider(userId: _userId)),
+    },
+    UserContentTabKind.following => ref.read(userFollowingUsersProvider(userId: _userId)),
+    UserContentTabKind.profile => null,
+  };
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: FrostContentViewport(
-        child: UserDetailTabScaffold(
-          detail: widget.detail,
-          tabs: _tabs,
-          tabController: _tabController,
-          storageKey: 'content',
-          includeTopPadding: true,
-          showBackButton: !widget.useHorizontalLayout && !(FrostShellNavigationScope.maybeOf(context)?.ownsBackControl ?? false),
-          onRefresh: _tabs[_currentIndex].kind == UserContentTabKind.profile ? null : _refreshCurrentTab,
-          builder: (context, physics, locators) {
-            // Swipeable like the other tabbed pages; a tab stays alive once
-            // opened, keeping its list, scroll position and requests.
-            //
-            // Only the selected tab's list joins the nested scroll. The
-            // coordinator drives every attached inner list together, so a kept
-            // tab resting at its top would expand the header over the selected
-            // list while that list is still mid-way.
-            final nestedController = PrimaryScrollController.maybeOf(context);
-            return TabBarView(
-              controller: _tabController,
+    final t = context.t;
+    final detail = widget.detail;
+    final labels = {
+      UserContentTabKind.illust: t.user.tabs.illustrations,
+      UserContentTabKind.manga: t.user.tabs.manga,
+      UserContentTabKind.novel: t.user.tabs.novels,
+      UserContentTabKind.bookmarks: t.user.tabs.bookmarks,
+      UserContentTabKind.following: t.user.tabs.following,
+      UserContentTabKind.profile: t.user.tabs.profile,
+    };
+    return AppRefreshScope(
+      onRefresh: () async => _source(UserDetailContent.tabs[_tabs.index])?.refresh(false),
+      child: FrostPinnedChrome(
+        chrome: FrostPageHeader(title: _identityGone ? FrostText(detail.user.name) : null),
+        body: NestedScrollView(
+          controller: _outer,
+          headerSliverBuilder: (context, _) => [
+            SliverOverlapAbsorber(
+              handle: _overlap,
+              sliver: SliverMainAxisGroup(
+                slivers: [
+                  PinnedHeaderSliver(child: SizedBox(height: MediaQuery.paddingOf(context).top)),
+                  FrostSliverContentColumn(
+                    maxWidth: double.infinity,
+                    sliver: SliverToBoxAdapter(
+                      child: KeyedSubtree(
+                        key: _identityKey,
+                        child: _UserIdentity(detail: detail),
+                      ),
+                    ),
+                  ),
+                  PinnedHeaderSliver(
+                    child: FrostPinnedChromeGlass(
+                      opacity: 1,
+                      corners: FrostPinnedChromeCorners.bottom,
+                      child: FrostContentColumn(
+                        maxWidth: double.infinity,
+                        child: FrostTabBar(
+                          controller: _tabs,
+                          scrollable: true,
+                          tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: labels[kind]!)],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          body: ListenableBuilder(
+            listenable: _tabs,
+            builder: (context, _) => TabBarView(
+              controller: _tabs,
               children: [
-                for (final (index, tab) in _tabs.indexed)
-                  _KeptAlive(
-                    key: PageStorageKey<String>('user-detail-active-tab-${widget.detail.user.id}-${tab.kind}'),
-                    child: index == _currentIndex && nestedController != null
-                        ? PrimaryScrollController(
-                            controller: nestedController,
-                            automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
-                            child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
-                          )
-                        : PrimaryScrollController.none(
-                            child: _tabBodyFor(widget.detail, tab.kind, physics, UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader)),
-                          ),
+                for (final (index, kind) in UserDetailContent.tabs.indexed)
+                  FrostKeepAlive(
+                    child: FrostChromeActiveBody(
+                      active: _tabs.index == index,
+                      child: _UserTab(
+                        overlap: _overlap,
+                        onRefresh: switch (kind) {
+                          UserContentTabKind.profile => null,
+                          _ => () async => _source(kind)?.refresh(false),
+                        },
+                        slivers: _slivers(context, kind),
+                      ),
+                    ),
                   ),
               ],
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _tabBodyFor(UserDetailResult detail, Object kind, ScrollPhysics? physics, Widget? sliverHeader) {
-    final key = _tabKeys[kind];
-
+  List<Widget> _slivers(BuildContext context, UserContentTabKind kind) {
+    final t = context.t;
+    Widget empty(String title) => FrostEmptyState(icon: FrostIconSet.of(context).empty, title: title);
+    Widget works(IllustType type, String emptyTitle) => FrostSliverDataWaterfallGrid<Illust>(
+      source: ref.watch(userIllustsProvider(userId: _userId, illustType: type)),
+      firstLoadSkeleton: const AppArtworkWaterfallSkeleton(),
+      empty: empty(emptyTitle),
+      itemBuilder: (context, illust, index) => AppArtworkCard(illust: illust),
+    );
+    Widget column(Widget sliver) => FrostSliverContentColumn(maxWidth: FrostMetrics.readingMaxWidth, sliver: sliver);
     return switch (kind) {
-      UserContentTabKind.illust => UserIllustGridTabBody(key: key, detail: detail, illustType: IllustType.illust, physics: physics, sliverHeader: sliverHeader),
-      UserContentTabKind.manga => UserIllustGridTabBody(key: key, detail: detail, illustType: IllustType.manga, physics: physics, sliverHeader: sliverHeader),
-      UserContentTabKind.novel => UserNovelListTabBody(key: key, detail: detail, physics: physics, sliverHeader: sliverHeader),
-      UserContentTabKind.bookmarks => UserBookmarksTabBody(key: key, detail: detail, physics: physics, sliverHeader: sliverHeader),
-      UserContentTabKind.following => UserFollowingTabBody(key: key, detail: detail, physics: physics, sliverHeader: sliverHeader),
-      UserContentTabKind.profile => UserProfileInfoBody(key: key, detail: detail, physics: physics, sliverHeader: sliverHeader),
-      _ => const Placeholder(),
+      UserContentTabKind.illust => [works(IllustType.illust, t.user.empty.illustrations)],
+      UserContentTabKind.manga => [works(IllustType.manga, t.user.empty.manga)],
+      UserContentTabKind.novel => [
+        column(
+          FrostSliverDataList<Novel>(
+            source: ref.watch(userNovelsProvider(userId: _userId)),
+            firstLoadSkeleton: const AppRowsSkeleton(),
+            empty: empty(t.user.empty.novels),
+            itemBuilder: (context, novel, index) => AppNovelRow(novel: novel, showAuthor: false),
+          ),
+        ),
+      ],
+      UserContentTabKind.bookmarks => [
+        column(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: FrostPicker<UserBookmarkKind>.segmented(
+                  label: t.user.tabs.bookmarks,
+                  value: _bookmarks,
+                  onChanged: (kind) => setState(() => _bookmarks = kind),
+                  options: [
+                    FrostPickerOption(value: UserBookmarkKind.illustManga, label: t.user.bookmarks.illustManga),
+                    FrostPickerOption(value: UserBookmarkKind.novel, label: t.user.bookmarks.novels),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        switch (_bookmarks) {
+          UserBookmarkKind.illustManga => FrostSliverDataWaterfallGrid<Illust>(
+            source: ref.watch(userIllustBookmarksProvider(userId: _userId)),
+            firstLoadSkeleton: const AppArtworkWaterfallSkeleton(),
+            empty: empty(t.user.empty.bookmarkIllustrations),
+            itemBuilder: (context, illust, index) => AppArtworkCard(illust: illust),
+          ),
+          UserBookmarkKind.novel => column(
+            FrostSliverDataList<Novel>(
+              source: ref.watch(userNovelBookmarksProvider(userId: _userId)),
+              firstLoadSkeleton: const AppRowsSkeleton(),
+              empty: empty(t.user.empty.bookmarkNovels),
+              itemBuilder: (context, novel, index) => AppNovelRow(novel: novel),
+            ),
+          ),
+        },
+      ],
+      UserContentTabKind.following => [
+        column(
+          FrostSliverDataList<UserPreview>(
+            source: ref.watch(userFollowingUsersProvider(userId: _userId)),
+            firstLoadSkeleton: const AppRowsSkeleton(),
+            empty: empty(t.user.empty.following),
+            itemBuilder: (context, preview, index) => AppUserRow(preview: preview),
+          ),
+        ),
+      ],
+      UserContentTabKind.profile => [column(SliverToBoxAdapter(child: UserProfileDetails(detail: widget.detail)))],
     };
   }
-
-  Future<bool> _refreshCurrentTab() {
-    return _currentTabRefreshController()?.refreshTab() ?? Future.value(true);
-  }
-
-  UserDetailTabRefreshController? _currentTabRefreshController() {
-    final index = _tabController.index;
-    if (index < 0 || index >= _tabs.length) {
-      return null;
-    }
-
-    return _tabKeys[_tabs[index].kind]?.currentState as UserDetailTabRefreshController?;
-  }
 }
 
-List<UserDetailTabItem> _tabsFor(UserDetailResult detail, Translations translations) {
-  return [
-    UserDetailTabItem(kind: UserContentTabKind.illust, icon: Icons.image_outlined, label: translations.user.tabs.illustrations),
-    UserDetailTabItem(kind: UserContentTabKind.manga, icon: Icons.auto_stories_outlined, label: translations.user.tabs.manga),
-    UserDetailTabItem(kind: UserContentTabKind.novel, icon: Icons.menu_book_outlined, label: translations.user.tabs.novels),
-    UserDetailTabItem(kind: UserContentTabKind.bookmarks, icon: Icons.bookmarks_outlined, label: translations.user.tabs.bookmarks),
-    UserDetailTabItem(kind: UserContentTabKind.following, icon: Icons.people_outline, label: translations.user.tabs.following),
-    UserDetailTabItem(kind: UserContentTabKind.profile, icon: Icons.info_outline, label: translations.user.tabs.profile),
-  ];
-}
+/// One tab's own scroll view under the pinned header and tabs, pulling to
+/// refresh where the tab has a list.
+class _UserTab extends StatelessWidget {
+  const _UserTab({required this.overlap, required this.slivers, required this.onRefresh});
 
-class _KeptAlive extends StatefulWidget {
-  const _KeptAlive({required this.child, super.key});
-
-  final Widget child;
-
-  @override
-  State<_KeptAlive> createState() => _KeptAliveState();
-}
-
-class _KeptAliveState extends State<_KeptAlive> with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
+  final SliverOverlapAbsorberHandle overlap;
+  final List<Widget> slivers;
+  final Future<void> Function()? onRefresh;
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    return widget.child;
+    Widget view(ScrollPhysics? physics, Widget? refreshHeader) => FrostLoadingScrollView(
+      physics: physics,
+      slivers: [
+        SliverOverlapInjector(handle: overlap),
+        ?refreshHeader,
+        ...slivers,
+      ],
+    );
+    final refresh = onRefresh;
+    if (refresh == null) return view(null, null);
+    return FrostRefreshView(
+      onRefresh: () async {
+        await refresh();
+        return true;
+      },
+      builder: (context, physics, locators) => view(physics, locators.sliverHeader),
+    );
   }
+}
+
+/// Avatar, name, @account, the stat row, Follow (not on one's own page) and
+/// More, then the two-line bio, which a right-click or long press copies.
+class _UserIdentity extends StatelessWidget {
+  const _UserIdentity({required this.detail});
+
+  final UserDetailResult detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final user = userOf(detail.user);
+    final profile = detail.profile;
+    final bio = plainTextFromHtml(detail.user.comment ?? '').trim();
+    final web = Uri.parse('https://www.pixiv.net/users/${user.id}');
+    return Padding(
+      padding: const EdgeInsets.only(bottom: FrostGap.section),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: FrostGap.group,
+        children: [
+          AppIdentityHeader(
+            avatar: AppUserAvatar(user: user, size: FrostAvatarSize.xlarge),
+            name: user.name,
+            subtitle: '@${user.account}',
+            stats: [
+              AppIdentityStat(value: formatCount(profile.totalFollowUsers), caption: t.user.stats.following),
+              AppIdentityStat(value: formatCount(profile.totalIllusts), caption: t.user.stats.illustrations),
+              AppIdentityStat(value: formatCount(profile.totalManga), caption: t.user.stats.manga),
+              AppIdentityStat(value: formatCount(profile.totalNovels), caption: t.user.stats.novels),
+            ],
+            primary: AppFollowButton(user: user),
+            more: [
+              FrostMenuAction(
+                t.userPage.copyLink,
+                leading: const FrostGlyph.icon(PivIcons.link),
+                onSelected: () => unawaited(_copy(web.toString(), t.userPage.linkCopied)),
+              ),
+              FrostMenuAction(t.userPage.openInBrowser, leading: const FrostGlyph.icon(PivIcons.externalLink), onSelected: () => unawaited(_open(web))),
+            ],
+          ),
+          if (bio.isNotEmpty)
+            FrostContextMenuRegion(
+              entries: [
+                FrostMenuAction(
+                  t.userPage.copyBio,
+                  leading: const FrostGlyph.icon(PivIcons.copy),
+                  onSelected: () => unawaited(_copy(bio, t.userPage.bioCopied)),
+                ),
+              ],
+              child: FrostExpandableText(text: bio, maxLines: 2),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> _copy(String text, String done) async {
+  try {
+    await copyTextToClipboard(text);
+    FrostToast.copied(done);
+  } catch (error) {
+    toastErrorWithCause(t.userPage.copyFailed, error);
+  }
+}
+
+Future<void> _open(Uri url) async {
+  try {
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) throw StateError('No application opened $url.');
+  } catch (error) {
+    toastErrorWithCause(t.userPage.openFailed, error);
+  }
+}
+
+/// The Details tab: birthday, region, job and the links, leaving out what
+/// the author has not made public.
+class UserProfileDetails extends StatelessWidget {
+  const UserProfileDetails({required this.detail, super.key});
+
+  final UserDetailResult detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final profile = detail.profile;
+    String? text(String? value) => value == null || value.trim().isEmpty ? null : value.trim();
+    final birthday = text(profile.birth) ?? text(profile.birthDay);
+    final entries = [
+      if (birthday case final birthday?) FrostKeyValue(label: t.user.profile.birthday, value: birthday),
+      if (text(profile.region) case final region?) FrostKeyValue(label: t.user.profile.region, value: region),
+      if (text(profile.job) case final job?) FrostKeyValue(label: t.user.profile.job, value: job),
+      for (final (label, url) in [
+        (t.user.profile.webpage, profile.webpage),
+        (t.user.profile.twitter, profile.twitterUrl),
+        (t.user.profile.pawoo, profile.pawooUrl),
+      ])
+        if (text(url) case final url?) FrostKeyValue.link(label: label, value: url, onPressed: () => unawaited(_open(Uri.parse(url)))),
+    ];
+    if (entries.isEmpty) return FrostEmptyState(icon: FrostIconSet.of(context).empty, title: t.user.empty.profile);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: FrostGap.group),
+      child: FrostKeyValueList(entries: entries),
+    );
+  }
+}
+
+/// While an author known only by their id loads: the identity header and a
+/// feed at their size.
+class _UserDetailSkeleton extends StatelessWidget {
+  const _UserDetailSkeleton();
+
+  @override
+  Widget build(BuildContext context) => FrostPinnedChrome(
+    chrome: const FrostPageHeader(),
+    body: FrostLoadingScrollView(
+      slivers: [
+        const FrostChromeSpacer(),
+        FrostSliverContentColumn(
+          maxWidth: double.infinity,
+          sliver: SliverToBoxAdapter(
+            child: const AppIdentityHeader(
+              avatar: FrostAvatar(semanticLabel: '', size: FrostAvatarSize.xlarge),
+              name: 'Sample author',
+              subtitle: '@sample_author',
+              statsLoading: true,
+              stats: [
+                AppIdentityStat(value: '000', caption: '        '),
+                AppIdentityStat(value: '000', caption: '        '),
+              ],
+            ).frostSkeleton(true),
+          ),
+        ),
+        const SliverToBoxAdapter(child: AppArtworkWaterfallSkeleton()),
+      ],
+    ),
+  );
 }

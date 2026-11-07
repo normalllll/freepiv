@@ -1,6 +1,8 @@
 // Sample data for development: the sample entrypoint (tool/sample_main.dart),
 // screenshots and widget tests. Nothing in the app's own entrypoint imports
 // this file, so release builds leave it out.
+import 'dart:async';
+
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:freepiv/dev/sample_images.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
@@ -9,6 +11,7 @@ import 'package:freepiv/features/downloads/presentation/download_entry.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
+import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -176,6 +179,10 @@ final sampleOverrideMap = <Object, Override>{
   illustCommentsProvider: illustCommentsProvider.overrideWith2((_) => _SampleIllustComments()),
   illustUserWorksProvider: illustUserWorksProvider.overrideWith2((_) => _SampleUserWorks()),
   illustRelatedWorksProvider: illustRelatedWorksProvider.overrideWith2((_) => _SampleRelatedWorks()),
+  userDetailProvider: userDetailProvider.overrideWith2((_) => _SampleUserDetail()),
+  userIllustsProvider: userIllustsProvider.overrideWith2((_) => _SampleUserIllustsNotifier()),
+  userNovelsProvider: userNovelsProvider.overrideWith2((_) => _SampleUserNovelsNotifier()),
+  userFollowingUsersProvider: userFollowingUsersProvider.overrideWith2((_) => _SampleUserFollowingNotifier()),
   searchTrendingTagsProvider: searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
   downloadTasksProvider: downloadTasksProvider.overrideWith((ref) => Stream.value(sampleDownloadTasks)),
   fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
@@ -297,6 +304,121 @@ class _SampleRelatedWorks extends IllustRelatedWorks {
   @override
   IllustRelatedListSource build(int illustId) {
     final source = _SampleRelatedSource(illustId: illustId);
+    ref.onDispose(source.dispose);
+    return source;
+  }
+}
+
+/// The sample artist's page.
+final sampleUserDetail = UserDetailResult(
+  user: UserInfo(
+    id: 2000,
+    name: 'Sample artist',
+    account: 'sample_artist',
+    profileImageUrls: ProfileImageUrls(medium: sampleImageUrl(77, width: 170, height: 170)),
+    comment: 'I draw quiet towns, the sea and the light between them.\nCommissions are closed for now; thank you for looking.',
+    isFollowed: false,
+  ),
+  profile: const UserProfile(
+    webpage: 'https://example.com',
+    gender: '',
+    birth: '',
+    birthDay: '04-12',
+    birthYear: 0,
+    region: 'Kanagawa',
+    addressId: 0,
+    countryCode: '',
+    job: 'Illustrator',
+    jobId: 0,
+    totalFollowUsers: 128,
+    totalMypixivUsers: 0,
+    totalIllusts: 240,
+    totalManga: 12,
+    totalNovels: 3,
+    totalIllustBookmarksPublic: 50,
+    totalIllustSeries: 0,
+    totalNovelSeries: 1,
+    twitterUrl: 'https://twitter.com/sample_artist',
+    isPremium: false,
+    isUsingCustomProfileImage: true,
+  ),
+  profilePublicity: const UserProfilePublicity(gender: '', region: '', birthDay: '', birthYear: '', job: '', pawoo: false),
+  workspace: const UserWorkspace(
+    pc: '',
+    monitor: '',
+    tool: '',
+    scanner: '',
+    tablet: '',
+    mouse: '',
+    printer: '',
+    desktop: '',
+    music: '',
+    desk: '',
+    chair: '',
+    comment: '',
+  ),
+);
+
+class _SampleUserDetail extends UserDetail {
+  @override
+  FutureOr<UserDetailResult> build(UserDetailArgs args) => args.userDetail ?? sampleUserDetail;
+}
+
+class _SampleUserIllusts extends UserIllustListSource {
+  _SampleUserIllusts({required super.userId, required super.illustType});
+
+  @override
+  Future<IllustPageResult> loadFirstPage() async => IllustPageResult(
+    illusts: sampleIllusts(kind: illustType == IllustType.manga ? 'manga' : 'illust'),
+    rankingIllusts: const [],
+  );
+
+  @override
+  Future<IllustPageResult> loadNextPage(String nextUrl) async => const IllustPageResult(illusts: [], rankingIllusts: []);
+}
+
+class _SampleUserNovels extends UserNovelListSource {
+  _SampleUserNovels({required super.userId});
+
+  @override
+  Future<NovelPageResult> loadFirstPage() async => NovelPageResult(novels: sampleNovels(count: 6), rankingNovels: const []);
+
+  @override
+  Future<NovelPageResult> loadNextPage(String nextUrl) async => const NovelPageResult(novels: [], rankingNovels: []);
+}
+
+class _SampleUserFollowing extends UserFollowingListSource {
+  _SampleUserFollowing({required super.userId});
+
+  @override
+  Future<UserPageResult> loadFirstPage() async => UserPageResult(userPreviews: sampleUserPreviews());
+
+  @override
+  Future<UserPageResult> loadNextPage(String nextUrl) async => const UserPageResult(userPreviews: []);
+}
+
+class _SampleUserIllustsNotifier extends UserIllusts {
+  @override
+  UserIllustListSource build({required int userId, required IllustType illustType}) {
+    final source = _SampleUserIllusts(userId: userId, illustType: illustType);
+    ref.onDispose(source.dispose);
+    return source;
+  }
+}
+
+class _SampleUserNovelsNotifier extends UserNovels {
+  @override
+  UserNovelListSource build({required int userId}) {
+    final source = _SampleUserNovels(userId: userId);
+    ref.onDispose(source.dispose);
+    return source;
+  }
+}
+
+class _SampleUserFollowingNotifier extends UserFollowingUsers {
+  @override
+  UserFollowingListSource build({required int userId}) {
+    final source = _SampleUserFollowing(userId: userId);
     ref.onDispose(source.dispose);
     return source;
   }

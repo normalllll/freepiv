@@ -71,6 +71,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$artworkCard$zh_Hant_TW artworkCard = Translations$artworkCard$zh_Hant_TW.internal(_root);
 	@override late final Translations$illustDetail$zh_Hant_TW illustDetail = Translations$illustDetail$zh_Hant_TW.internal(_root);
 	@override late final Translations$viewer$zh_Hant_TW viewer = Translations$viewer$zh_Hant_TW.internal(_root);
+	@override late final Translations$userPage$zh_Hant_TW userPage = Translations$userPage$zh_Hant_TW.internal(_root);
 }
 
 // Path: downloadEntry
@@ -775,6 +776,22 @@ class Translations$viewer$zh_Hant_TW extends Translations$viewer$en_US {
 	// Translations
 	@override String position({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}';
 	@override String get loading => '正在載入原圖';
+}
+
+// Path: userPage
+class Translations$userPage$zh_Hant_TW extends Translations$userPage$en_US {
+	Translations$userPage$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get copyLink => '複製主頁連結';
+	@override String get linkCopied => '已複製連結';
+	@override String get openInBrowser => '在瀏覽器中開啟';
+	@override String get copyBio => '複製簡介';
+	@override String get bioCopied => '已複製簡介';
+	@override String get copyFailed => '無法複製';
+	@override String get openFailed => '無法開啟連結';
 }
 
 // Path: settings.theme
@@ -2315,6 +2332,13 @@ extension on TranslationsZhHantTw {
 			'illustDetail.missing' => '作品不存在或無權查看',
 			'viewer.position' => ({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}',
 			'viewer.loading' => '正在載入原圖',
+			'userPage.copyLink' => '複製主頁連結',
+			'userPage.linkCopied' => '已複製連結',
+			'userPage.openInBrowser' => '在瀏覽器中開啟',
+			'userPage.copyBio' => '複製簡介',
+			'userPage.bioCopied' => '已複製簡介',
+			'userPage.copyFailed' => '無法複製',
+			'userPage.openFailed' => '無法開啟連結',
 			_ => null,
 		};
 	}

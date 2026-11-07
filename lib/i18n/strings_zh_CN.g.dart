@@ -71,6 +71,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$artworkCard$zh_CN artworkCard = Translations$artworkCard$zh_CN.internal(_root);
 	@override late final Translations$illustDetail$zh_CN illustDetail = Translations$illustDetail$zh_CN.internal(_root);
 	@override late final Translations$viewer$zh_CN viewer = Translations$viewer$zh_CN.internal(_root);
+	@override late final Translations$userPage$zh_CN userPage = Translations$userPage$zh_CN.internal(_root);
 }
 
 // Path: downloadEntry
@@ -775,6 +776,22 @@ class Translations$viewer$zh_CN extends Translations$viewer$en_US {
 	// Translations
 	@override String position({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}';
 	@override String get loading => '正在加载原图';
+}
+
+// Path: userPage
+class Translations$userPage$zh_CN extends Translations$userPage$en_US {
+	Translations$userPage$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get copyLink => '复制主页链接';
+	@override String get linkCopied => '已复制链接';
+	@override String get openInBrowser => '在浏览器中打开';
+	@override String get copyBio => '复制简介';
+	@override String get bioCopied => '已复制简介';
+	@override String get copyFailed => '无法复制';
+	@override String get openFailed => '无法打开链接';
 }
 
 // Path: settings.theme
@@ -2315,6 +2332,13 @@ extension on TranslationsZhCn {
 			'illustDetail.missing' => '作品不存在或无权查看',
 			'viewer.position' => ({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}',
 			'viewer.loading' => '正在加载原图',
+			'userPage.copyLink' => '复制主页链接',
+			'userPage.linkCopied' => '已复制链接',
+			'userPage.openInBrowser' => '在浏览器中打开',
+			'userPage.copyBio' => '复制简介',
+			'userPage.bioCopied' => '已复制简介',
+			'userPage.copyFailed' => '无法复制',
+			'userPage.openFailed' => '无法打开链接',
 			_ => null,
 		};
 	}

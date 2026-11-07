@@ -899,5 +899,14 @@
   "viewer": {
     "position": "$title · $page / $total",
     "loading": "正在加载原图"
+  },
+  "userPage": {
+    "copyLink": "复制主页链接",
+    "linkCopied": "已复制链接",
+    "openInBrowser": "在浏览器中打开",
+    "copyBio": "复制简介",
+    "bioCopied": "已复制简介",
+    "copyFailed": "无法复制",
+    "openFailed": "无法打开链接"
   }
 }

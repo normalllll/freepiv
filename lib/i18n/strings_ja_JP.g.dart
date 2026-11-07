@@ -71,6 +71,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$artworkCard$ja_JP artworkCard = _Translations$artworkCard$ja_JP._(_root);
 	@override late final _Translations$illustDetail$ja_JP illustDetail = _Translations$illustDetail$ja_JP._(_root);
 	@override late final _Translations$viewer$ja_JP viewer = _Translations$viewer$ja_JP._(_root);
+	@override late final _Translations$userPage$ja_JP userPage = _Translations$userPage$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -775,6 +776,22 @@ class _Translations$viewer$ja_JP extends Translations$viewer$en_US {
 	// Translations
 	@override String position({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}';
 	@override String get loading => '元画像を読み込み中';
+}
+
+// Path: userPage
+class _Translations$userPage$ja_JP extends Translations$userPage$en_US {
+	_Translations$userPage$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get copyLink => 'プロフィールのリンクをコピー';
+	@override String get linkCopied => 'リンクをコピーしました';
+	@override String get openInBrowser => 'ブラウザで開く';
+	@override String get copyBio => '自己紹介をコピー';
+	@override String get bioCopied => '自己紹介をコピーしました';
+	@override String get copyFailed => 'コピーできませんでした';
+	@override String get openFailed => 'リンクを開けませんでした';
 }
 
 // Path: settings.theme
@@ -2315,6 +2332,13 @@ extension on TranslationsJaJp {
 			'illustDetail.missing' => '作品が存在しないか、閲覧できません',
 			'viewer.position' => ({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}',
 			'viewer.loading' => '元画像を読み込み中',
+			'userPage.copyLink' => 'プロフィールのリンクをコピー',
+			'userPage.linkCopied' => 'リンクをコピーしました',
+			'userPage.openInBrowser' => 'ブラウザで開く',
+			'userPage.copyBio' => '自己紹介をコピー',
+			'userPage.bioCopied' => '自己紹介をコピーしました',
+			'userPage.copyFailed' => 'コピーできませんでした',
+			'userPage.openFailed' => 'リンクを開けませんでした',
 			_ => null,
 		};
 	}

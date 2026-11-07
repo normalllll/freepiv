@@ -73,6 +73,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$artworkCard$en_US artworkCard = Translations$artworkCard$en_US.internal(_root);
 	late final Translations$illustDetail$en_US illustDetail = Translations$illustDetail$en_US.internal(_root);
 	late final Translations$viewer$en_US viewer = Translations$viewer$en_US.internal(_root);
+	late final Translations$userPage$en_US userPage = Translations$userPage$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -777,6 +778,22 @@ class Translations$viewer$en_US {
 	// Translations
 	String position({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}';
 	String get loading => 'Loading the original image';
+}
+
+// Path: userPage
+class Translations$userPage$en_US {
+	Translations$userPage$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get copyLink => 'Copy profile link';
+	String get linkCopied => 'Link copied';
+	String get openInBrowser => 'Open in browser';
+	String get copyBio => 'Copy bio';
+	String get bioCopied => 'Bio copied';
+	String get copyFailed => 'Could not copy';
+	String get openFailed => 'Could not open the link';
 }
 
 // Path: settings.theme
@@ -2317,6 +2334,13 @@ extension on Translations {
 			'illustDetail.missing' => 'This work does not exist or is not visible to you',
 			'viewer.position' => ({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}',
 			'viewer.loading' => 'Loading the original image',
+			'userPage.copyLink' => 'Copy profile link',
+			'userPage.linkCopied' => 'Link copied',
+			'userPage.openInBrowser' => 'Open in browser',
+			'userPage.copyBio' => 'Copy bio',
+			'userPage.bioCopied' => 'Bio copied',
+			'userPage.copyFailed' => 'Could not copy',
+			'userPage.openFailed' => 'Could not open the link',
 			_ => null,
 		};
 	}

@@ -7,54 +7,12 @@ import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/comments/presentation/widgets/comment_input_bar.dart';
 import 'package:freepiv/features/comments/presentation/widgets/comment_tile.dart';
-import 'package:freepiv/features/user_detail/presentation/widgets/user_collapsible_header.dart';
-import 'package:freepiv/features/user_detail/presentation/widgets/user_detail_tab_scaffold.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/pixiv_image.dart';
 import 'package:freepiv/shared/widgets/user_previewer.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
 const _images = ProfileImageUrls(medium: '');
-const _detail = UserDetailResult(
-  user: UserInfo(id: 7, name: 'A creator with a very long name', account: 'long_account_name', profileImageUrls: _images, isFollowed: false),
-  profile: UserProfile(
-    gender: '',
-    birth: '',
-    birthDay: '',
-    birthYear: 0,
-    region: '',
-    addressId: 0,
-    countryCode: '',
-    job: '',
-    jobId: 0,
-    totalFollowUsers: 4,
-    totalMypixivUsers: 0,
-    totalIllusts: 12,
-    totalManga: 3,
-    totalNovels: 1,
-    totalIllustBookmarksPublic: 0,
-    totalIllustSeries: 0,
-    totalNovelSeries: 0,
-    isPremium: false,
-    isUsingCustomProfileImage: false,
-  ),
-  profilePublicity: UserProfilePublicity(gender: '', region: '', birthDay: '', birthYear: '', job: '', pawoo: false),
-  workspace: UserWorkspace(
-    pc: '',
-    monitor: '',
-    tool: '',
-    scanner: '',
-    tablet: '',
-    mouse: '',
-    printer: '',
-    desktop: '',
-    music: '',
-    desk: '',
-    chair: '',
-    comment: '',
-  ),
-);
 
 Widget _app(Widget child, {double scale = 1, double width = 390}) => ProviderScope(
   child: TranslationProvider(
@@ -69,79 +27,6 @@ Widget _app(Widget child, {double scale = 1, double width = 390}) => ProviderSco
 );
 
 void main() {
-  testWidgets('joined user glass follows actual outer collapse and stays stable through inner scrolling', (tester) async {
-    double collapseExtent = 0;
-    await tester.pumpWidget(
-      _app(
-        DefaultTabController(
-          length: 1,
-          child: Builder(
-            builder: (context) {
-              collapseExtent = UserCollapsibleHeaderSliver.collapseExtentFor(context, 390, _detail).roundToDouble();
-              return UserDetailTabScaffold(
-                detail: _detail,
-                tabs: const [UserDetailTabItem(kind: 'works', label: 'Works', icon: Icons.image)],
-                tabController: DefaultTabController.of(context),
-                storageKey: 'glass-test',
-                includeTopPadding: false,
-                showBackButton: false,
-                builder: (context, physics, locators) => CustomScrollView(
-                  physics: physics,
-                  slivers: [
-                    UserDetailNestedSliverHeader(refreshSliverHeader: locators.sliverHeader),
-                    const SliverToBoxAdapter(child: SizedBox(height: 2000)),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-    await tester.pump();
-    final nested = tester.state<NestedScrollViewState>(find.byType(NestedScrollView));
-    List<double> glass() => tester.widgetList<FrostPinnedChromeGlass>(find.byType(FrostPinnedChromeGlass)).map((bar) => bar.opacity).toList();
-    // The header and its tab bar share one glass.
-    expect(glass(), [0]);
-    nested.outerController.jumpTo(collapseExtent / 2);
-    await tester.pump();
-    expect(glass().single, closeTo(.5, .01));
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(glass().single, closeTo(.5, .01));
-    nested.outerController.jumpTo(collapseExtent);
-    nested.innerController.jumpTo(12);
-    await tester.pump();
-    expect(glass(), [1]);
-    nested.innerController.jumpTo(0);
-    nested.outerController.jumpTo(0);
-    await tester.pump();
-    expect(glass(), [0], reason: 'refresh-to-top has no boolean overlap flash');
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('author without cover or introduction keeps a compact header at 2x text', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(
-      _app(
-        CustomScrollView(
-          slivers: [
-            const UserCollapsibleHeaderSliver(detail: _detail, includeTopPadding: false, showBackButton: true, bottom: SizedBox.shrink(), bottomHeight: 0),
-            const SliverToBoxAdapter(child: SizedBox(height: 1000)),
-          ],
-        ),
-        scale: 2,
-      ),
-    );
-    expect(tester.takeException(), isNull);
-    // Without an introduction the header drops the comment block only; the
-    // cover band keeps its height (an avatar wash fills it).
-    final layout = UserCollapsibleHeaderLayout.forWidth(390);
-    expect(layout.expandedHeight(commentHeight: 0, statsHeight: 40), lessThan(layout.expandedHeight(commentHeight: 40, statsHeight: 40)));
-    final covered = UserCollapsibleHeaderLayout.forWidth(390, textScale: 2);
-    expect(covered.stackedHeaderHeight, greaterThanOrEqualTo(covered.nameTop + covered.nameHeight));
-  });
-
   testWidgets('comment is a content row with a separate reply action', (tester) async {
     await tester.binding.setSurfaceSize(const Size(320, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
