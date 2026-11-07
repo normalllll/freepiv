@@ -404,7 +404,8 @@
     "downloadPage": "下載頁面",
     "downloadAssetUnavailable": "找不到適合目前平台的下載項目，已開啟發布頁面。",
     "openDownloadFailed": "開啟下載頁面失敗",
-    "openLinkFailed": "開啟連結失敗"
+    "openLinkFailed": "開啟連結失敗",
+    "latestValue": "最新版本 $version+$buildNumber"
   },
   "home": {
     "emptyTitle": "尚無推薦",

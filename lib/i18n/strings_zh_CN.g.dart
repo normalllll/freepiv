@@ -466,6 +466,7 @@ class Translations$about$zh_CN extends Translations$about$en_US {
 	@override String get downloadAssetUnavailable => '未找到适合当前平台的下载项，已打开发布页面。';
 	@override String get openDownloadFailed => '打开下载页面失败';
 	@override String get openLinkFailed => '打开链接失败';
+	@override String latestValue({required Object version, required Object buildNumber}) => '最新版本 ${version}+${buildNumber}';
 }
 
 // Path: home
@@ -2059,6 +2060,7 @@ extension on TranslationsZhCn {
 			'about.downloadAssetUnavailable' => '未找到适合当前平台的下载项，已打开发布页面。',
 			'about.openDownloadFailed' => '打开下载页面失败',
 			'about.openLinkFailed' => '打开链接失败',
+			'about.latestValue' => ({required Object version, required Object buildNumber}) => '最新版本 ${version}+${buildNumber}',
 			'home.emptyTitle' => '暂无推荐',
 			'home.emptyMessage' => '下拉即可重新获取推荐。',
 			'home.rankings' => '排行榜',
@@ -2211,9 +2213,9 @@ extension on TranslationsZhCn {
 			'illust.contextMenu.openOriginal' => '在 Pixiv 打开',
 			'illust.imageLabels.original' => '原图',
 			'illust.imageLabels.large' => '大图',
-			'illust.imageLabels.image' => '图片',
 			_ => null,
 		} ?? switch (path) {
+			'illust.imageLabels.image' => '图片',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下载队列：${count} 张图片',
 			'illust.toast.downloadComplete' => ({required Object name}) => '已保存 ${name}',
 			'illust.toast.downloadFailed' => '下载失败',

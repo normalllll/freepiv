@@ -466,6 +466,7 @@ class Translations$about$zh_Hant_TW extends Translations$about$en_US {
 	@override String get downloadAssetUnavailable => '找不到適合目前平台的下載項目，已開啟發布頁面。';
 	@override String get openDownloadFailed => '開啟下載頁面失敗';
 	@override String get openLinkFailed => '開啟連結失敗';
+	@override String latestValue({required Object version, required Object buildNumber}) => '最新版本 ${version}+${buildNumber}';
 }
 
 // Path: home
@@ -2059,6 +2060,7 @@ extension on TranslationsZhHantTw {
 			'about.downloadAssetUnavailable' => '找不到適合目前平台的下載項目，已開啟發布頁面。',
 			'about.openDownloadFailed' => '開啟下載頁面失敗',
 			'about.openLinkFailed' => '開啟連結失敗',
+			'about.latestValue' => ({required Object version, required Object buildNumber}) => '最新版本 ${version}+${buildNumber}',
 			'home.emptyTitle' => '尚無推薦',
 			'home.emptyMessage' => '下拉即可重新取得推薦。',
 			'home.rankings' => '排行榜',
@@ -2211,9 +2213,9 @@ extension on TranslationsZhHantTw {
 			'illust.contextMenu.openOriginal' => '在 Pixiv 開啟',
 			'illust.imageLabels.original' => '原圖',
 			'illust.imageLabels.large' => '大圖',
-			'illust.imageLabels.image' => '圖片',
 			_ => null,
 		} ?? switch (path) {
+			'illust.imageLabels.image' => '圖片',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下載佇列：${count} 張圖片',
 			'illust.toast.downloadComplete' => ({required Object name}) => '已儲存 ${name}',
 			'illust.toast.downloadFailed' => '下載失敗',

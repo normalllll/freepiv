@@ -404,7 +404,8 @@
     "downloadPage": "ダウンロードページ",
     "downloadAssetUnavailable": "このプラットフォームに合うダウンロード項目が見つかりません。リリースページを開きます。",
     "openDownloadFailed": "ダウンロードページを開けませんでした",
-    "openLinkFailed": "リンクを開けませんでした"
+    "openLinkFailed": "リンクを開けませんでした",
+    "latestValue": "最新: $version+$buildNumber"
   },
   "home": {
     "emptyTitle": "おすすめはまだありません",

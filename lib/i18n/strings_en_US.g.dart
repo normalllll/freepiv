@@ -468,6 +468,7 @@ class Translations$about$en_US {
 	String get downloadAssetUnavailable => 'No download asset matched this platform. Opening the release page.';
 	String get openDownloadFailed => 'Failed to open the download page';
 	String get openLinkFailed => 'Failed to open link';
+	String latestValue({required Object version, required Object buildNumber}) => 'Latest: ${version}+${buildNumber}';
 }
 
 // Path: home
@@ -2061,6 +2062,7 @@ extension on Translations {
 			'about.downloadAssetUnavailable' => 'No download asset matched this platform. Opening the release page.',
 			'about.openDownloadFailed' => 'Failed to open the download page',
 			'about.openLinkFailed' => 'Failed to open link',
+			'about.latestValue' => ({required Object version, required Object buildNumber}) => 'Latest: ${version}+${buildNumber}',
 			'home.emptyTitle' => 'No recommendations yet',
 			'home.emptyMessage' => 'Pull down to fetch recommendations again.',
 			'home.rankings' => 'Rankings',
@@ -2213,9 +2215,9 @@ extension on Translations {
 			'illust.contextMenu.openOriginal' => 'Open on Pixiv',
 			'illust.imageLabels.original' => 'original image',
 			'illust.imageLabels.large' => 'large image',
-			'illust.imageLabels.image' => 'image',
 			_ => null,
 		} ?? switch (path) {
+			'illust.imageLabels.image' => 'image',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} images added to the download queue',
 			'illust.toast.downloadComplete' => ({required Object name}) => 'Saved ${name}',
 			'illust.toast.downloadFailed' => 'Download failed',

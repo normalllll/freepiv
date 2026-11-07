@@ -1,345 +1,224 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
 import 'package:freepiv/app/frost_config.dart';
-import 'package:freepiv/shared/widgets/legacy_frost.dart';
-import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/services/updater_service.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// Where the project's community gathers.
+const _telegramUrl = 'https://t.me/+ONtNV3HTQ0NhMzVh';
+const _discordUrl = 'https://discord.gg/jQatz6965H';
+
+/// What checking for an update has come to.
+sealed class _UpdateCheck {
+  const _UpdateCheck();
+}
+
+class _NotChecked extends _UpdateCheck {
+  const _NotChecked();
+}
+
+class _Checking extends _UpdateCheck {
+  const _Checking();
+}
+
+class _UpToDate extends _UpdateCheck {
+  const _UpToDate();
+}
+
+class _Available extends _UpdateCheck {
+  const _Available(this.update);
+  final AppUpdateInfo update;
+}
+
+class _CheckFailed extends _UpdateCheck {
+  const _CheckFailed();
+}
+
+/// About: the app's icon, name, version and build over
+/// one group of rows: Check for updates, whose value says what it found, and
+/// the project, release, Telegram and Discord links, opened outside.
 class AboutPage extends StatefulWidget {
-  const AboutPage({super.key});
+  const AboutPage({this.packageInfo = UpdaterService.packageInfo, this.checkForUpdate = UpdaterService.checkForUpdate, this.openUrl = _launch, super.key});
+
+  final Future<PackageInfo> Function() packageInfo;
+  final Future<AppUpdateInfo?> Function() checkForUpdate;
+
+  /// Opens a link outside the app; false when nothing could.
+  final Future<bool> Function(String url) openUrl;
+
+  static Future<bool> _launch(String url) => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+
+  /// The edge of the app icon.
+  static const iconExtent = 72.0;
 
   @override
   State<AboutPage> createState() => _AboutPageState();
 }
 
 class _AboutPageState extends State<AboutPage> {
-  late final Future<PackageInfo> _packageInfoFuture = UpdaterService.packageInfo();
-  bool _checkingUpdate = false;
+  late final Future<PackageInfo> _packageInfo = widget.packageInfo();
+  _UpdateCheck _check = const _NotChecked();
 
-  @override
-  Widget build(BuildContext context) {
-    final translations = context.t;
-
-    return FrostAutoScaffold(
-      builder: (context, layout, orientation, useHorizontalLayout) {
-        return Scaffold(
-          appBar: PivAppBar(FrostPageHeader(title: Text(translations.about.title))),
-          body: SafeArea(
-            top: useHorizontalLayout,
-            child: FutureBuilder<PackageInfo>(
-              future: _packageInfoFuture,
-              builder: (context, snapshot) {
-                final packageInfo = snapshot.data;
-
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.only(top: 12, bottom: 24),
-                  child: FrostContentColumn(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _AboutHero(
-                          packageInfo: packageInfo,
-                          packageInfoFailed: snapshot.hasError,
-                          checkingUpdate: _checkingUpdate,
-                          onCheckUpdate: _checkUpdate,
-                          onOpenDownloadPage: _openDownloadPage,
-                        ),
-                        const SizedBox(height: 24),
-                        _AboutSection(
-                          title: translations.about.versionInfo,
-                          children: [
-                            _AboutValueRow(
-                              icon: PivIcons.info,
-                              title: translations.about.appVersion,
-                              value: packageInfo == null
-                                  ? snapshot.hasError
-                                        ? translations.errors.generic
-                                        : translations.about.loading
-                                  : '${packageInfo.version}+${packageInfo.buildNumber}',
-                            ),
-                            ValueListenableBuilder<AppUpdateInfo?>(
-                              valueListenable: UpdaterService.latestRelease,
-                              builder: (context, latestRelease, child) {
-                                return _AboutValueRow(
-                                  icon: PivIcons.newspaper,
-                                  title: translations.about.latestVersion,
-                                  value: latestRelease == null ? translations.about.noCachedUpdate : '${latestRelease.version}+${latestRelease.buildNumber}',
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        _AboutSection(
-                          title: translations.about.project,
-                          children: [
-                            _AboutActionRow(
-                              icon: PivIcons.code,
-                              title: translations.about.projectPage,
-                              subtitle: UpdaterService.projectUrl,
-                              onTap: () => _openUrl(UpdaterService.projectUrl),
-                            ),
-                            _AboutActionRow(
-                              icon: PivIcons.newspaper,
-                              title: translations.about.releasePage,
-                              subtitle: UpdaterService.latestReleaseUrl,
-                              onTap: _openDownloadPage,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        _AboutSection(
-                          title: translations.about.community,
-                          children: [
-                            _AboutActionRow(
-                              icon: PivIcons.send,
-                              title: translations.about.telegram,
-                              subtitle: 'https://t.me/+ONtNV3HTQ0NhMzVh',
-                              onTap: () => _openUrl('https://t.me/+ONtNV3HTQ0NhMzVh'),
-                            ),
-                            _AboutActionRow(
-                              icon: PivIcons.messageCircle,
-                              title: translations.about.discord,
-                              subtitle: 'https://discord.gg/jQatz6965H',
-                              onTap: () => _openUrl('https://discord.gg/jQatz6965H'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
-
+  /// Checks once at a time; a newer release opens its download for this platform.
   Future<void> _checkUpdate() async {
-    if (_checkingUpdate) {
-      return;
-    }
-
-    setState(() {
-      _checkingUpdate = true;
-    });
-
-    final translations = context.t.about;
+    if (_check is _Checking) return;
+    setState(() => _check = const _Checking());
+    final t = context.t.about;
     try {
-      final update = await UpdaterService.checkForUpdate();
-      if (!mounted) {
-        return;
-      }
-
-      if (update == null) {
-        FrostToast.info(translations.noUpdate);
-        return;
-      }
-
-      FrostToast.success(translations.updateAvailable(version: update.version, buildNumber: update.buildNumber));
+      final update = await widget.checkForUpdate();
+      if (!mounted) return;
+      setState(() => _check = update == null ? const _UpToDate() : _Available(update));
+      if (update == null) return;
       final downloadUrl = await UpdaterService.selectDownloadUrl(update.assets);
-      if (!mounted) {
-        return;
-      }
-
+      if (!mounted) return;
       if (downloadUrl == null) {
-        FrostToast.warning(translations.downloadAssetUnavailable);
-        await _openUrl(update.releaseUrl, failureMessage: translations.openDownloadFailed);
+        FrostToast.warning(t.downloadAssetUnavailable);
+        await _open(update.releaseUrl, failure: t.openDownloadFailed);
         return;
       }
-
-      await _openUrl(downloadUrl, failureMessage: translations.openDownloadFailed);
+      await _open(downloadUrl, failure: t.openDownloadFailed);
     } catch (error) {
-      if (mounted) {
-        toastErrorWithCause(translations.checkUpdateFailed, error);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _checkingUpdate = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() => _check = const _CheckFailed());
+      toastErrorWithCause(t.checkUpdateFailed, error);
     }
   }
 
-  Future<void> _openDownloadPage() {
-    return _openUrl(UpdaterService.latestReleaseUrl, failureMessage: context.t.about.openDownloadFailed);
-  }
-
-  Future<void> _openUrl(String url, {String? failureMessage}) async {
+  Future<void> _open(String url, {String? failure}) async {
+    final message = failure ?? context.t.about.openLinkFailed;
     try {
-      final opened = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-      if (!opened && mounted) {
-        FrostToast.error(failureMessage ?? context.t.about.openLinkFailed);
-      }
+      if (!await widget.openUrl(url) && mounted) FrostToast.error(message);
     } catch (_) {
-      if (mounted) FrostToast.error(failureMessage ?? context.t.about.openLinkFailed);
+      if (mounted) FrostToast.error(message);
     }
   }
-}
-
-class _AboutHero extends StatelessWidget {
-  const _AboutHero({
-    required this.packageInfo,
-    required this.packageInfoFailed,
-    required this.checkingUpdate,
-    required this.onCheckUpdate,
-    required this.onOpenDownloadPage,
-  });
-
-  final PackageInfo? packageInfo;
-  final bool packageInfoFailed;
-  final bool checkingUpdate;
-  final VoidCallback onCheckUpdate;
-  final VoidCallback onOpenDownloadPage;
 
   @override
   Widget build(BuildContext context) {
-    final translations = context.t.about;
-    final tokens = FrostThemeTokens.of(context);
-    final textTheme = Theme.of(context).textTheme;
-    final currentPackageInfo = packageInfo;
-
-    return FrostSurface(
-      role: FrostSurfaceRole.glassPanel,
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      color: tokens.surfaceTint,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: tokens.line),
-                    ),
-                    child: Image.asset('assets/icon-512.png', fit: BoxFit.cover),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    final t = context.t;
+    return FrostPinnedChrome(
+      chrome: FrostContentColumn(
+        maxWidth: FrostMetrics.readingMaxWidth,
+        child: FrostPageHeader(title: FrostText(t.about.title)),
+      ),
+      body: FrostLoadingScrollView(
+        slivers: [
+          const FrostChromeSpacer(),
+          SliverToBoxAdapter(
+            child: FrostContentColumn(
+              maxWidth: FrostMetrics.readingMaxWidth,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: FrostGap.section,
+                children: [
+                  _Identity(packageInfo: _packageInfo),
+                  FrostGroupedSection(
                     children: [
-                      Text(translations.appName, style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 5),
-                      Text(
-                        currentPackageInfo == null
-                            ? packageInfoFailed
-                                  ? context.t.errors.generic
-                                  : translations.loading
-                            : translations.currentVersion(version: currentPackageInfo.version, buildNumber: currentPackageInfo.buildNumber),
-                        style: textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      _checkRow(context),
+                      FrostListRow(
+                        leading: const FrostGlyph.icon(PivIcons.code),
+                        title: t.about.projectPage,
+                        subtitle: const FrostRowSubtitle(UpdaterService.projectUrl, tone: FrostTextTone.tertiary),
+                        accessory: FrostRowAccessory.external,
+                        onPressed: () => unawaited(_open(UpdaterService.projectUrl)),
+                      ),
+                      FrostListRow(
+                        leading: const FrostGlyph.icon(PivIcons.newspaper),
+                        title: t.about.releasePage,
+                        subtitle: const FrostRowSubtitle(UpdaterService.latestReleaseUrl, tone: FrostTextTone.tertiary),
+                        accessory: FrostRowAccessory.external,
+                        onPressed: () => unawaited(_open(UpdaterService.latestReleaseUrl, failure: t.about.openDownloadFailed)),
+                      ),
+                      FrostListRow(
+                        leading: const FrostGlyph.icon(PivIcons.send),
+                        title: t.about.telegram,
+                        accessory: FrostRowAccessory.external,
+                        onPressed: () => unawaited(_open(_telegramUrl)),
+                      ),
+                      FrostListRow(
+                        leading: const FrostGlyph.icon(PivIcons.messageCircle),
+                        title: t.about.discord,
+                        accessory: FrostRowAccessory.external,
+                        onPressed: () => unawaited(_open(_discordUrl)),
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                FilledButton.icon(
-                  onPressed: checkingUpdate ? null : onCheckUpdate,
-                  icon: checkingUpdate ? SizedBox.square(dimension: 16, child: PivSkeletonBlock()) : const FrostIcon(PivIcons.refreshCw, size: 18),
-                  label: Text(translations.checkUpdate),
-                ),
-                OutlinedButton.icon(
-                  onPressed: onOpenDownloadPage,
-                  icon: const FrostIcon(PivIcons.externalLink, size: 18),
-                  label: Text(translations.downloadPage),
-                ),
-              ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Check for updates; its value is what the last check found, a failure
+  /// with its retry, or the release last seen.
+  Widget _checkRow(BuildContext context) {
+    final t = context.t.about;
+    final check = _check;
+    return ValueListenableBuilder(
+      valueListenable: UpdaterService.latestRelease,
+      builder: (context, latest, _) => FrostListRow(
+        key: const ValueKey('about-check-update'),
+        leading: const FrostGlyph.icon(PivIcons.refreshCw),
+        title: t.checkUpdate,
+        subtitle: switch (check) {
+          _CheckFailed() => FrostRowSubtitle(t.checkUpdateFailed, tone: FrostTextTone.negative),
+          _ => null,
+        },
+        value: switch (check) {
+          _UpToDate() => t.noUpdate,
+          _Available(:final update) => t.updateAvailable(version: update.version, buildNumber: update.buildNumber),
+          _NotChecked() when latest != null => t.latestValue(version: latest.version, buildNumber: latest.buildNumber),
+          _ => null,
+        },
+        trailing: switch (check) {
+          _Checking() => FrostActivityIndicator(semanticLabel: t.checkingUpdate),
+          _CheckFailed() => FrostButton.quiet(label: context.t.common.retry, onPressed: () => unawaited(_checkUpdate())),
+          _ => null,
+        },
+        onPressed: check is _Checking ? null : () => unawaited(_checkUpdate()),
+      ),
+    );
+  }
+}
+
+/// The app's icon and name, and its version and build once known.
+class _Identity extends StatelessWidget {
+  const _Identity({required this.packageInfo});
+
+  final Future<PackageInfo> packageInfo;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    return FutureBuilder(
+      future: packageInfo,
+      builder: (context, snapshot) {
+        final info = snapshot.data;
+        return Column(
+          spacing: FrostGap.related,
+          children: [
+            Image.asset('assets/icon-512.png', width: AboutPage.iconExtent, height: AboutPage.iconExtent, cacheWidth: 256, excludeFromSemantics: true),
+            FrostText(t.about.appName, role: FrostTextRole.title1, textAlign: TextAlign.center),
+            FrostText(
+              switch ((info, snapshot.hasError)) {
+                (final info?, _) => t.about.currentVersion(version: info.version, buildNumber: info.buildNumber),
+                (_, true) => t.errors.generic,
+                _ => t.about.loading,
+              },
+              role: FrostTextRole.footnote,
+              tone: FrostTextTone.secondary,
+              textAlign: TextAlign.center,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AboutSection extends StatelessWidget {
-  const _AboutSection({required this.title, required this.children});
-
-  final String title;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(2, 0, 2, 8),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700),
-          ),
-        ),
-        FrostGroupedSection(children: children),
-      ],
-    );
-  }
-}
-
-class _AboutActionRow extends StatelessWidget {
-  const _AboutActionRow({required this.icon, required this.title, required this.subtitle, required this.onTap});
-
-  final FrostIconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: onTap,
-      leading: FrostIcon(icon, size: 24),
-      title: Text(title),
-      subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-      trailing: const FrostIcon(PivIcons.externalLink, size: 18),
-    );
-  }
-}
-
-class _AboutValueRow extends StatelessWidget {
-  const _AboutValueRow({required this.icon, required this.title, required this.value});
-
-  final FrostIconData icon;
-  final String title;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    if (MediaQuery.sizeOf(context).width < 600 || MediaQuery.textScalerOf(context).scale(16) >= 24) {
-      return ListTile(leading: FrostIcon(icon, size: 24), title: Text(title), subtitle: Text(value));
-    }
-    return ListTile(
-      leading: FrostIcon(icon, size: 24),
-      title: Text(title),
-      trailing: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 260),
-        child: Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.end,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-        ),
-      ),
+        );
+      },
     );
   }
 }

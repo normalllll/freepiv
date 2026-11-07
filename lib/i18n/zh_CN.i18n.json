@@ -404,7 +404,8 @@
     "downloadPage": "下载页面",
     "downloadAssetUnavailable": "未找到适合当前平台的下载项，已打开发布页面。",
     "openDownloadFailed": "打开下载页面失败",
-    "openLinkFailed": "打开链接失败"
+    "openLinkFailed": "打开链接失败",
+    "latestValue": "最新版本 $version+$buildNumber"
   },
   "home": {
     "emptyTitle": "暂无推荐",

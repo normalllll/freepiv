@@ -466,6 +466,7 @@ class _Translations$about$ja_JP extends Translations$about$en_US {
 	@override String get downloadAssetUnavailable => 'このプラットフォームに合うダウンロード項目が見つかりません。リリースページを開きます。';
 	@override String get openDownloadFailed => 'ダウンロードページを開けませんでした';
 	@override String get openLinkFailed => 'リンクを開けませんでした';
+	@override String latestValue({required Object version, required Object buildNumber}) => '最新: ${version}+${buildNumber}';
 }
 
 // Path: home
@@ -2059,6 +2060,7 @@ extension on TranslationsJaJp {
 			'about.downloadAssetUnavailable' => 'このプラットフォームに合うダウンロード項目が見つかりません。リリースページを開きます。',
 			'about.openDownloadFailed' => 'ダウンロードページを開けませんでした',
 			'about.openLinkFailed' => 'リンクを開けませんでした',
+			'about.latestValue' => ({required Object version, required Object buildNumber}) => '最新: ${version}+${buildNumber}',
 			'home.emptyTitle' => 'おすすめはまだありません',
 			'home.emptyMessage' => '下に引っ張るとおすすめを再取得できます。',
 			'home.rankings' => 'ランキング',
@@ -2211,9 +2213,9 @@ extension on TranslationsJaJp {
 			'illust.contextMenu.openOriginal' => 'Pixiv で開く',
 			'illust.imageLabels.original' => 'オリジナル画像',
 			'illust.imageLabels.large' => '大きい画像',
-			'illust.imageLabels.image' => '画像',
 			_ => null,
 		} ?? switch (path) {
+			'illust.imageLabels.image' => '画像',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} 枚の画像をダウンロードキューに追加しました',
 			'illust.toast.downloadComplete' => ({required Object name}) => '${name} を保存しました',
 			'illust.toast.downloadFailed' => 'ダウンロードに失敗しました',

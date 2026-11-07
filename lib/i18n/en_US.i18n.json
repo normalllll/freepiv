@@ -404,7 +404,8 @@
     "downloadPage": "Download page",
     "downloadAssetUnavailable": "No download asset matched this platform. Opening the release page.",
     "openDownloadFailed": "Failed to open the download page",
-    "openLinkFailed": "Failed to open link"
+    "openLinkFailed": "Failed to open link",
+    "latestValue": "Latest: $version+$buildNumber"
   },
   "home": {
     "emptyTitle": "No recommendations yet",
