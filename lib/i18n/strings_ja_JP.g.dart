@@ -72,6 +72,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$illustDetail$ja_JP illustDetail = _Translations$illustDetail$ja_JP._(_root);
 	@override late final _Translations$viewer$ja_JP viewer = _Translations$viewer$ja_JP._(_root);
 	@override late final _Translations$userPage$ja_JP userPage = _Translations$userPage$ja_JP._(_root);
+	@override late final _Translations$novelDetail$ja_JP novelDetail = _Translations$novelDetail$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -792,6 +793,22 @@ class _Translations$userPage$ja_JP extends Translations$userPage$en_US {
 	@override String get bioCopied => '自己紹介をコピーしました';
 	@override String get copyFailed => 'コピーできませんでした';
 	@override String get openFailed => 'リンクを開けませんでした';
+}
+
+// Path: novelDetail
+class _Translations$novelDetail$ja_JP extends Translations$novelDetail$en_US {
+	_Translations$novelDetail$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get missing => '小説が存在しないか、閲覧できません';
+	@override String get bookmark => 'ブックマーク';
+	@override String get bookmarked => 'ブックマーク済み';
+	@override String bookmarks({required Object count}) => 'ブックマーク ${count}';
+	@override String get related => '関連小説';
+	@override String get noRelated => '関連小説はありません';
+	@override String get authorNovels => '作者のほかの小説';
 }
 
 // Path: settings.theme
@@ -2339,6 +2356,13 @@ extension on TranslationsJaJp {
 			'userPage.bioCopied' => '自己紹介をコピーしました',
 			'userPage.copyFailed' => 'コピーできませんでした',
 			'userPage.openFailed' => 'リンクを開けませんでした',
+			'novelDetail.missing' => '小説が存在しないか、閲覧できません',
+			'novelDetail.bookmark' => 'ブックマーク',
+			'novelDetail.bookmarked' => 'ブックマーク済み',
+			'novelDetail.bookmarks' => ({required Object count}) => 'ブックマーク ${count}',
+			'novelDetail.related' => '関連小説',
+			'novelDetail.noRelated' => '関連小説はありません',
+			'novelDetail.authorNovels' => '作者のほかの小説',
 			_ => null,
 		};
 	}

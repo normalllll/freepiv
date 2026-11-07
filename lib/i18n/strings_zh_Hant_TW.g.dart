@@ -72,6 +72,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$illustDetail$zh_Hant_TW illustDetail = Translations$illustDetail$zh_Hant_TW.internal(_root);
 	@override late final Translations$viewer$zh_Hant_TW viewer = Translations$viewer$zh_Hant_TW.internal(_root);
 	@override late final Translations$userPage$zh_Hant_TW userPage = Translations$userPage$zh_Hant_TW.internal(_root);
+	@override late final Translations$novelDetail$zh_Hant_TW novelDetail = Translations$novelDetail$zh_Hant_TW.internal(_root);
 }
 
 // Path: downloadEntry
@@ -792,6 +793,22 @@ class Translations$userPage$zh_Hant_TW extends Translations$userPage$en_US {
 	@override String get bioCopied => '已複製簡介';
 	@override String get copyFailed => '無法複製';
 	@override String get openFailed => '無法開啟連結';
+}
+
+// Path: novelDetail
+class Translations$novelDetail$zh_Hant_TW extends Translations$novelDetail$en_US {
+	Translations$novelDetail$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get missing => '小說不存在或無權查看';
+	@override String get bookmark => '收藏';
+	@override String get bookmarked => '已收藏';
+	@override String bookmarks({required Object count}) => '${count} 收藏';
+	@override String get related => '相關小說';
+	@override String get noRelated => '暫無相關小說';
+	@override String get authorNovels => '作者的其他小說';
 }
 
 // Path: settings.theme
@@ -2339,6 +2356,13 @@ extension on TranslationsZhHantTw {
 			'userPage.bioCopied' => '已複製簡介',
 			'userPage.copyFailed' => '無法複製',
 			'userPage.openFailed' => '無法開啟連結',
+			'novelDetail.missing' => '小說不存在或無權查看',
+			'novelDetail.bookmark' => '收藏',
+			'novelDetail.bookmarked' => '已收藏',
+			'novelDetail.bookmarks' => ({required Object count}) => '${count} 收藏',
+			'novelDetail.related' => '相關小說',
+			'novelDetail.noRelated' => '暫無相關小說',
+			'novelDetail.authorNovels' => '作者的其他小說',
 			_ => null,
 		};
 	}

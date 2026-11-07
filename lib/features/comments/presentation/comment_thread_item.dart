@@ -7,7 +7,10 @@ import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
+import 'package:freepiv/ui/compositions/loading_section.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:frost_ui/social.dart';
@@ -80,5 +83,61 @@ class AppCommentBody extends StatelessWidget {
     }
     if (index < text.length) spans.add(TextSpan(text: text.substring(index)));
     return FrostText.rich(TextSpan(children: spans), content: true, selectable: true);
+  }
+}
+
+/// The first comments of a work and the way to all of them, loading
+/// and failing on their own.
+class AppCommentsPreview extends StatelessWidget {
+  const AppCommentsPreview({required this.value, required this.total, required this.onRetry, required this.location, super.key});
+
+  final AsyncValue<CommentPageResult> value;
+  final int? total;
+  final VoidCallback onRetry;
+
+  /// The comments page.
+  final String location;
+
+  /// Comments the preview shows.
+  static const shown = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final total = this.total;
+    // The way to the comments page stays without comments and when they
+    // fail: the full page is where the first comment is written.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: FrostGap.related,
+      children: [
+        AppLoadingSection(
+          title: total == null ? t.illust.section.comments : t.illust.section.commentsWithCount(count: total),
+          value: value,
+          onRetry: onRetry,
+          failed: t.illust.comments.failed,
+          builder: (page) {
+            if (page.comments.isEmpty) return FrostText(t.illust.comments.empty, role: FrostTextRole.footnote, tone: FrostTextTone.secondary);
+            return FutureBuilder(
+              future: pixivCommentAssets,
+              builder: (context, assets) => Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final comment in page.comments.take(shown))
+                    FrostThread(item: appCommentItem(context, comment, assets: assets.data ?? PixivCommentAssets.empty)),
+                ],
+              ),
+            );
+          },
+        ),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: FrostButton.quiet(
+            label: total == null || total == 0 ? t.illust.comments.open : t.illustDetail.allComments(count: total),
+            onPressed: () => unawaited(GoRouter.of(context).push(location, extra: total)),
+          ),
+        ),
+      ],
+    );
   }
 }

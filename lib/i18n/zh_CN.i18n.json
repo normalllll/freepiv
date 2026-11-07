@@ -908,5 +908,14 @@
     "bioCopied": "已复制简介",
     "copyFailed": "无法复制",
     "openFailed": "无法打开链接"
+  },
+  "novelDetail": {
+    "missing": "小说不存在或无权查看",
+    "bookmark": "收藏",
+    "bookmarked": "已收藏",
+    "bookmarks": "$count 收藏",
+    "related": "相关小说",
+    "noRelated": "暂无相关小说",
+    "authorNovels": "作者的其他小说"
   }
 }

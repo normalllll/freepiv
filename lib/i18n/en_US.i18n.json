@@ -908,5 +908,14 @@
     "bioCopied": "Bio copied",
     "copyFailed": "Could not copy",
     "openFailed": "Could not open the link"
+  },
+  "novelDetail": {
+    "missing": "This novel does not exist or is not visible to you",
+    "bookmark": "Bookmark",
+    "bookmarked": "Bookmarked",
+    "bookmarks": "$count bookmarks",
+    "related": "Related novels",
+    "noRelated": "No related novels",
+    "authorNovels": "More by the author"
   }
 }

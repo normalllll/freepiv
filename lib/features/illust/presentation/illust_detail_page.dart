@@ -16,7 +16,6 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -162,56 +161,106 @@ class _IllustDetailContentState extends ConsumerState<IllustDetailContent> {
     );
   }
 
-  /// The stage fixed beside a fixed-width info column, the only scrolling
-  /// area.
-  Widget _wide(BuildContext context, IllustInfoContext info, Widget stage) {
-    final back = FrostPageHeader.leadingFor(context);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(
-          child: SafeArea(
-            right: false,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                stage,
-                if (back != null) PositionedDirectional(top: FrostGap.related, start: FrostGap.related, child: back),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(
-          width: IllustDetailContent.infoWidth,
-          child: SafeArea(
-            left: false,
-            child: FrostLoadingScrollView(
-              key: const ValueKey('illust-info'),
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.all(FrostGap.section),
-                  sliver: SliverList.list(
-                    children: [
-                      IllustInfoHeading(info: info),
-                      const SizedBox(height: FrostGap.section),
-                      IllustAbout(illust: info.illust),
-                      const SizedBox(height: FrostGap.section),
-                      IllustCommentsPreview(illust: info.illust),
-                      const SizedBox(height: FrostGap.section),
-                      IllustAuthorWorks(illust: info.illust),
-                      const SizedBox(height: FrostGap.section),
-                      IllustRelatedPreview(illust: info.illust),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _wide(BuildContext context, IllustInfoContext info, Widget stage) => _wideLayout(
+    context,
+    stage: stage,
+    info: _wideInfo(
+      heading: IllustInfoHeading(info: info),
+      about: IllustAbout(illust: info.illust),
+      comments: IllustCommentsPreview(illust: info.illust),
+      works: IllustAuthorWorks(illust: info.illust),
+      related: IllustRelatedPreview(illust: info.illust),
+    ),
+  );
 }
+
+/// Keys of the info column's blocks, the same in the loaded column and its
+/// skeleton.
+abstract final class IllustInfoBlocks {
+  static const heading = ValueKey('info-heading');
+  static const about = ValueKey('info-about');
+  static const comments = ValueKey('info-comments');
+  static const works = ValueKey('info-works');
+  static const related = ValueKey('info-related');
+  static const tabs = ValueKey('info-tabs');
+}
+
+/// The wide info column's blocks in order, with the gaps between them.
+List<Widget> _wideInfo({required Widget heading, required Widget about, required Widget comments, required Widget works, required Widget related}) => [
+  KeyedSubtree(key: IllustInfoBlocks.heading, child: heading),
+  const SizedBox(height: FrostGap.section),
+  KeyedSubtree(key: IllustInfoBlocks.about, child: about),
+  const SizedBox(height: FrostGap.section),
+  KeyedSubtree(key: IllustInfoBlocks.comments, child: comments),
+  const SizedBox(height: FrostGap.section),
+  KeyedSubtree(key: IllustInfoBlocks.works, child: works),
+  const SizedBox(height: FrostGap.section),
+  KeyedSubtree(key: IllustInfoBlocks.related, child: related),
+];
+
+/// The stage fixed beside a fixed-width info column, the only scrolling
+/// area; the loaded page and its skeleton both lay out through this.
+Widget _wideLayout(BuildContext context, {required Widget stage, required List<Widget> info}) {
+  final back = FrostPageHeader.leadingFor(context);
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Expanded(
+        child: SafeArea(
+          right: false,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              stage,
+              if (back != null) PositionedDirectional(top: FrostGap.related, start: FrostGap.related, child: back),
+            ],
+          ),
+        ),
+      ),
+      SizedBox(
+        width: IllustDetailContent.infoWidth,
+        child: SafeArea(
+          left: false,
+          child: FrostLoadingScrollView(
+            key: const ValueKey('illust-info'),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.all(FrostGap.section),
+                sliver: SliverList.list(children: info),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+/// The narrow info blocks under the picture: the heading, the About /
+/// Comments tabs, then About with the works, or the comments.
+List<Widget> _narrowInfo({
+  required Widget heading,
+  required Widget tabs,
+  required bool comments,
+  required Widget about,
+  required Widget works,
+  required Widget related,
+  required Widget commentsBlock,
+}) => [
+  const SizedBox(height: FrostGap.group),
+  KeyedSubtree(key: IllustInfoBlocks.heading, child: heading),
+  const SizedBox(height: FrostGap.group),
+  KeyedSubtree(key: IllustInfoBlocks.tabs, child: tabs),
+  const SizedBox(height: FrostGap.group),
+  if (!comments) ...[
+    KeyedSubtree(key: IllustInfoBlocks.about, child: about),
+    const SizedBox(height: FrostGap.section),
+    KeyedSubtree(key: IllustInfoBlocks.works, child: works),
+    const SizedBox(height: FrostGap.section),
+    KeyedSubtree(key: IllustInfoBlocks.related, child: related),
+  ] else
+    KeyedSubtree(key: IllustInfoBlocks.comments, child: commentsBlock),
+];
 
 /// The narrow layout: the picture edge to edge scrolls with the
 /// info; once it has scrolled away the header shows the title, and the
@@ -300,24 +349,18 @@ class _NarrowIllustDetailState extends State<_NarrowIllustDetail> with SingleTic
                   FrostSliverContentColumn(
                     maxWidth: FrostMetrics.readingMaxWidth,
                     sliver: SliverList.list(
-                      children: [
-                        const SizedBox(height: FrostGap.group),
-                        IllustInfoHeading(info: info),
-                        const SizedBox(height: FrostGap.group),
-                        Opacity(
+                      children: _narrowInfo(
+                        heading: IllustInfoHeading(info: info),
+                        tabs: Opacity(
                           opacity: _tabsPinned ? 0 : 1,
                           child: KeyedSubtree(key: _tabsKey, child: tabBar),
                         ),
-                        const SizedBox(height: FrostGap.group),
-                        if (_tabs.index == 0) ...[
-                          IllustAbout(illust: illust),
-                          const SizedBox(height: FrostGap.section),
-                          IllustAuthorWorks(illust: illust),
-                          const SizedBox(height: FrostGap.section),
-                          IllustRelatedPreview(illust: illust),
-                        ] else
-                          IllustCommentsPreview(illust: illust),
-                      ],
+                        comments: _tabs.index != 0,
+                        about: IllustAbout(illust: illust),
+                        works: IllustAuthorWorks(illust: illust),
+                        related: IllustRelatedPreview(illust: illust),
+                        commentsBlock: IllustCommentsPreview(illust: illust),
+                      ),
                     ),
                   ),
                 ],
@@ -330,50 +373,85 @@ class _NarrowIllustDetailState extends State<_NarrowIllustDetail> with SingleTic
   }
 }
 
-/// While a work known only by its id loads: the stage and the info column
-/// at their size.
-class _IllustDetailSkeleton extends StatelessWidget {
+/// While a work known only by its id loads: the loaded page's own layout,
+/// with the stage and every block of the info column as bones of the same
+/// size, so nothing moves when the work arrives.
+class _IllustDetailSkeleton extends StatefulWidget {
   const _IllustDetailSkeleton();
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final wide = constraints.maxWidth >= IllustDetailContent.sideBySideFrom && constraints.maxWidth > constraints.maxHeight;
-      final info = Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          FrostListRow.skeleton(title: 'A sample work title', icon: false, subtitle: null, value: null),
-          FrostListRow.skeleton(title: 'Sample artist', icon: true, subtitle: null, value: null),
-          const AppRowsSkeleton(count: 3, subtitle: false),
-        ],
-      );
-      if (wide) {
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Center(child: FrostMediaFrame.skeleton(aspectRatio: 3 / 4, radius: 0)),
+  State<_IllustDetailSkeleton> createState() => _IllustDetailSkeletonState();
+}
+
+class _IllustDetailSkeletonState extends State<_IllustDetailSkeleton> with SingleTickerProviderStateMixin {
+  late final _tabs = TabController(length: 2, vsync: this, animationDuration: Duration.zero);
+
+  @override
+  void dispose() {
+    _tabs.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= IllustDetailContent.sideBySideFrom && constraints.maxWidth > constraints.maxHeight;
+        if (wide) {
+          return _wideLayout(
+            context,
+            stage: Center(child: FrostMediaFrame.skeleton(aspectRatio: 3 / 4, radius: 0)),
+            info: _wideInfo(
+              heading: const IllustInfoHeadingSkeleton(),
+              about: const IllustAboutSkeleton(),
+              comments: const IllustCommentsLoading(),
+              works: const IllustAuthorWorksLoading(),
+              related: const IllustRelatedLoading(),
             ),
-            SizedBox(
-              width: IllustDetailContent.infoWidth,
-              child: SafeArea(child: info),
+          );
+        }
+        return FrostPinnedChrome(
+          chrome: const FrostPageHeader(),
+          body: LayoutBuilder(
+            builder: (context, body) => FrostLoadingScrollView(
+              key: const ValueKey('illust-narrow'),
+              slivers: [
+                const FrostChromeSpacer(),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: math.min(body.maxWidth, constraints.maxHeight),
+                    child: FrostMediaFrame.skeleton(aspectRatio: null, radius: 0),
+                  ),
+                ),
+                FrostSliverContentColumn(
+                  maxWidth: FrostMetrics.readingMaxWidth,
+                  sliver: SliverList.list(
+                    children: _narrowInfo(
+                      heading: const IllustInfoHeadingSkeleton(),
+                      tabs: IgnorePointer(
+                        child: FrostTabBar(
+                          controller: _tabs,
+                          scrollable: true,
+                          tabs: [
+                            FrostTab(label: t.illustDetail.tabs.about),
+                            FrostTab(label: t.illustDetail.tabs.comments),
+                          ],
+                        ),
+                      ),
+                      comments: false,
+                      about: const IllustAboutSkeleton(),
+                      works: const IllustAuthorWorksLoading(),
+                      related: const IllustRelatedLoading(),
+                      commentsBlock: const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         );
-      }
-      return FrostPinnedChrome(
-        chrome: const FrostPageHeader(),
-        body: FrostLoadingScrollView(
-          slivers: [
-            const FrostChromeSpacer(),
-            SliverToBoxAdapter(child: FrostMediaFrame.skeleton(aspectRatio: 1, radius: 0)),
-            FrostSliverContentColumn(
-              maxWidth: FrostMetrics.readingMaxWidth,
-              sliver: SliverToBoxAdapter(child: info),
-            ),
-          ],
-        ),
-      );
-    },
-  );
+      },
+    );
+  }
 }

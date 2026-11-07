@@ -74,6 +74,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$illustDetail$en_US illustDetail = Translations$illustDetail$en_US.internal(_root);
 	late final Translations$viewer$en_US viewer = Translations$viewer$en_US.internal(_root);
 	late final Translations$userPage$en_US userPage = Translations$userPage$en_US.internal(_root);
+	late final Translations$novelDetail$en_US novelDetail = Translations$novelDetail$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -794,6 +795,22 @@ class Translations$userPage$en_US {
 	String get bioCopied => 'Bio copied';
 	String get copyFailed => 'Could not copy';
 	String get openFailed => 'Could not open the link';
+}
+
+// Path: novelDetail
+class Translations$novelDetail$en_US {
+	Translations$novelDetail$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get missing => 'This novel does not exist or is not visible to you';
+	String get bookmark => 'Bookmark';
+	String get bookmarked => 'Bookmarked';
+	String bookmarks({required Object count}) => '${count} bookmarks';
+	String get related => 'Related novels';
+	String get noRelated => 'No related novels';
+	String get authorNovels => 'More by the author';
 }
 
 // Path: settings.theme
@@ -2341,6 +2358,13 @@ extension on Translations {
 			'userPage.bioCopied' => 'Bio copied',
 			'userPage.copyFailed' => 'Could not copy',
 			'userPage.openFailed' => 'Could not open the link',
+			'novelDetail.missing' => 'This novel does not exist or is not visible to you',
+			'novelDetail.bookmark' => 'Bookmark',
+			'novelDetail.bookmarked' => 'Bookmarked',
+			'novelDetail.bookmarks' => ({required Object count}) => '${count} bookmarks',
+			'novelDetail.related' => 'Related novels',
+			'novelDetail.noRelated' => 'No related novels',
+			'novelDetail.authorNovels' => 'More by the author',
 			_ => null,
 		};
 	}

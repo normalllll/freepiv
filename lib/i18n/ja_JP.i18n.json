@@ -908,5 +908,14 @@
     "bioCopied": "自己紹介をコピーしました",
     "copyFailed": "コピーできませんでした",
     "openFailed": "リンクを開けませんでした"
+  },
+  "novelDetail": {
+    "missing": "小説が存在しないか、閲覧できません",
+    "bookmark": "ブックマーク",
+    "bookmarked": "ブックマーク済み",
+    "bookmarks": "ブックマーク $count",
+    "related": "関連小説",
+    "noRelated": "関連小説はありません",
+    "authorNovels": "作者のほかの小説"
   }
 }

@@ -72,6 +72,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$illustDetail$zh_CN illustDetail = Translations$illustDetail$zh_CN.internal(_root);
 	@override late final Translations$viewer$zh_CN viewer = Translations$viewer$zh_CN.internal(_root);
 	@override late final Translations$userPage$zh_CN userPage = Translations$userPage$zh_CN.internal(_root);
+	@override late final Translations$novelDetail$zh_CN novelDetail = Translations$novelDetail$zh_CN.internal(_root);
 }
 
 // Path: downloadEntry
@@ -792,6 +793,22 @@ class Translations$userPage$zh_CN extends Translations$userPage$en_US {
 	@override String get bioCopied => '已复制简介';
 	@override String get copyFailed => '无法复制';
 	@override String get openFailed => '无法打开链接';
+}
+
+// Path: novelDetail
+class Translations$novelDetail$zh_CN extends Translations$novelDetail$en_US {
+	Translations$novelDetail$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get missing => '小说不存在或无权查看';
+	@override String get bookmark => '收藏';
+	@override String get bookmarked => '已收藏';
+	@override String bookmarks({required Object count}) => '${count} 收藏';
+	@override String get related => '相关小说';
+	@override String get noRelated => '暂无相关小说';
+	@override String get authorNovels => '作者的其他小说';
 }
 
 // Path: settings.theme
@@ -2339,6 +2356,13 @@ extension on TranslationsZhCn {
 			'userPage.bioCopied' => '已复制简介',
 			'userPage.copyFailed' => '无法复制',
 			'userPage.openFailed' => '无法打开链接',
+			'novelDetail.missing' => '小说不存在或无权查看',
+			'novelDetail.bookmark' => '收藏',
+			'novelDetail.bookmarked' => '已收藏',
+			'novelDetail.bookmarks' => ({required Object count}) => '${count} 收藏',
+			'novelDetail.related' => '相关小说',
+			'novelDetail.noRelated' => '暂无相关小说',
+			'novelDetail.authorNovels' => '作者的其他小说',
 			_ => null,
 		};
 	}

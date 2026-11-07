@@ -250,9 +250,12 @@ class AppArtworkCardSkeleton extends StatelessWidget {
 
 /// First-load placeholders the size of a feed's cards.
 class AppArtworkWaterfallSkeleton extends StatelessWidget {
-  const AppArtworkWaterfallSkeleton({this.count = 12, super.key});
+  const AppArtworkWaterfallSkeleton({this.count = 12, this.padding, super.key});
 
   final int count;
+
+  /// The padding of the grid it stands for; null keeps the grid's own.
+  final EdgeInsetsGeometry? padding;
 
   static const _ratios = [.75, 1.0, .66, 1.33, .8, 1.0];
 
@@ -261,6 +264,7 @@ class AppArtworkWaterfallSkeleton extends StatelessWidget {
     items: List.generate(count, (index) => index),
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
+    padding: padding,
     itemBuilder: (context, _, index) => AppArtworkCardSkeleton(aspectRatio: _ratios[index % _ratios.length]),
   );
 }

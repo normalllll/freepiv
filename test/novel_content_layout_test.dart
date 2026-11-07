@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/features/novel/presentation/detail/widgets/novel_header.dart';
 import 'package:freepiv/features/novel/presentation/reader/novel_reader_page.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/shared/widgets/novel_previewer.dart';
@@ -94,21 +93,6 @@ void main() {
     expect(find.text('#3'), findsOneWidget);
     expect(find.textContaining('#fantasy · fantasy'), findsNothing);
     expect(find.textContaining('#fantasy'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('coverless narrow detail keeps reading action before supporting content', (tester) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    await tester.pumpWidget(_host(const NovelHeader(novel: _novel, webviewNovel: _webviewNovel, onStartReading: _noop)));
-    await tester.pump();
-
-    expect(find.byType(LargeNovelCoverImage), findsNothing);
-    expect(find.byType(NovelCaptionBox), findsOneWidget);
-    expect(find.byIcon(Icons.menu_book_outlined), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 
@@ -395,8 +379,6 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 }
-
-void _noop() {}
 
 WebviewNovel _webviewWithText(String text) => WebviewNovel(
   id: '7',

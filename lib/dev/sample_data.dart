@@ -11,6 +11,7 @@ import 'package:freepiv/features/downloads/presentation/download_entry.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
+import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
@@ -183,6 +184,10 @@ final sampleOverrideMap = <Object, Override>{
   userIllustsProvider: userIllustsProvider.overrideWith2((_) => _SampleUserIllustsNotifier()),
   userNovelsProvider: userNovelsProvider.overrideWith2((_) => _SampleUserNovelsNotifier()),
   userFollowingUsersProvider: userFollowingUsersProvider.overrideWith2((_) => _SampleUserFollowingNotifier()),
+  novelTextProvider: novelTextProvider.overrideWith2((_) => _SampleNovelText()),
+  novelCommentsProvider: novelCommentsProvider.overrideWith2((_) => _SampleNovelComments()),
+  novelUserWorksProvider: novelUserWorksProvider.overrideWith2((_) => _SampleNovelUserWorks()),
+  novelRelatedWorksProvider: novelRelatedWorksProvider.overrideWith2((_) => _SampleNovelRelated()),
   searchTrendingTagsProvider: searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
   downloadTasksProvider: downloadTasksProvider.overrideWith((ref) => Stream.value(sampleDownloadTasks)),
   fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
@@ -419,6 +424,58 @@ class _SampleUserFollowingNotifier extends UserFollowingUsers {
   @override
   UserFollowingListSource build({required int userId}) {
     final source = _SampleUserFollowing(userId: userId);
+    ref.onDispose(source.dispose);
+    return source;
+  }
+}
+
+WebviewNovel sampleNovelText(int novelId) => WebviewNovel(
+  id: '$novelId',
+  title: 'Sample novel',
+  userId: '2000',
+  coverUrl: '',
+  tags: const [],
+  caption: '',
+  cdate: '',
+  rating: const NovelRating(like: 0, bookmark: 120, view: 2000),
+  text: List.filled(40, 'The boats came back at dusk, one by one, and the town lit its lamps along the shore.').join('\n\n'),
+  illusts: const [],
+  images: const [],
+  glossaryItems: const [],
+  replaceableItemIds: const [],
+  aiType: 0,
+  isOriginal: true,
+);
+
+class _SampleNovelText extends NovelText {
+  @override
+  FutureOr<WebviewNovel> build(int novelId) => sampleNovelText(novelId);
+}
+
+class _SampleNovelComments extends NovelComments {
+  @override
+  Future<CommentPageResult> build(int novelId) async => CommentPageResult(comments: sampleComments(count: 4));
+}
+
+class _SampleNovelUserWorks extends NovelUserWorks {
+  @override
+  Future<NovelPageResult> build(int userId) async => NovelPageResult(novels: sampleNovels(count: 5), rankingNovels: const []);
+}
+
+class _SampleNovelRelatedSource extends NovelRelatedListSource {
+  _SampleNovelRelatedSource({required super.novelId});
+
+  @override
+  Future<NovelPageResult> loadFirstPage() async => NovelPageResult(novels: sampleNovels(count: 6).reversed.toList(), rankingNovels: const []);
+
+  @override
+  Future<NovelPageResult> loadNextPage(String nextUrl) async => const NovelPageResult(novels: [], rankingNovels: []);
+}
+
+class _SampleNovelRelated extends NovelRelatedWorks {
+  @override
+  NovelRelatedListSource build(int novelId) {
+    final source = _SampleNovelRelatedSource(novelId: novelId);
     ref.onDispose(source.dispose);
     return source;
   }

@@ -908,5 +908,14 @@
     "bioCopied": "已複製簡介",
     "copyFailed": "無法複製",
     "openFailed": "無法開啟連結"
+  },
+  "novelDetail": {
+    "missing": "小說不存在或無權查看",
+    "bookmark": "收藏",
+    "bookmarked": "已收藏",
+    "bookmarks": "$count 收藏",
+    "related": "相關小說",
+    "noRelated": "暫無相關小說",
+    "authorNovels": "作者的其他小說"
   }
 }
