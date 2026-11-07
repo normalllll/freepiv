@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -144,5 +145,47 @@ void main() {
     expectNoLayoutErrors(tester, where: 'head');
     await _scrollTo(tester, find.text('#$longText'));
     expectNoLayoutErrors(tester, where: 'body');
+  });
+
+  group('a table in the article', () {
+    Future<void> mountTable(WidgetTester tester, String html) => mountPilotPage(
+      tester,
+      SingleChildScrollView(
+        child: FrostContentColumn(
+          maxWidth: FrostMetrics.readingMaxWidth,
+          child: PixivisionBlock(
+            block: ArticleBlock(kind: BlockKind.table, html: html, text: '', images: const [], links: const [], works: const [], embeds: const []),
+            imageRatios: const {},
+            onLink: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    Finder table() => find.byType(FrostTable<List<String>>);
+
+    testWidgets('shows a long cell in full', (tester) async {
+      const long = 'Quiet harbour towns at dusk, drawn from the water with the lamps of the shore coming on one by one';
+      await mountTable(tester, '<table><tr><th>Theme</th><th>Note</th></tr><tr><td>Harbours</td><td>$long</td></tr></table>');
+      final cell = find.descendant(of: table(), matching: find.text(long));
+      expect(cell, findsOneWidget);
+      final paragraph = tester.renderObject<RenderParagraph>(find.descendant(of: cell, matching: find.byType(RichText)));
+      expect(paragraph.didExceedMaxLines, isFalse, reason: 'not cut off');
+      final line = tester.getSize(find.descendant(of: table(), matching: find.text('Harbours'))).height;
+      expect(tester.getSize(cell).height, greaterThan(line * 1.5), reason: 'the long cell wraps onto more lines');
+      expect(tester.widget<FrostTable<List<String>>>(table()).showHeader, isTrue);
+      expect(find.descendant(of: table(), matching: find.text('Theme')), findsOneWidget);
+      expectNoLayoutErrors(tester);
+    });
+
+    testWidgets('a table without header cells has no header row', (tester) async {
+      await mountTable(tester, '<table><tr><td>Period</td><td>2026-11-01 to 2026-11-30</td></tr><tr><td>Entries</td><td>12</td></tr></table>');
+      final frost = tester.widget<FrostTable<List<String>>>(table());
+      expect(frost.showHeader, isFalse);
+      expect(frost.rows.first, ['Period', '2026-11-01 to 2026-11-30'], reason: 'the first row is data');
+      final top = tester.getTopLeft(table()).dy;
+      expect(tester.getTopLeft(find.text('Period')).dy - top, lessThan(24), reason: 'the first row starts at the top of the table');
+      expectNoLayoutErrors(tester);
+    });
   });
 }

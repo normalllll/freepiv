@@ -455,8 +455,9 @@ class PixivisionBlock extends StatelessWidget {
   }
 }
 
-/// A table of an article, as tall as its rows, in the flow of the text; its
-/// first row heads the columns when it is all header cells.
+/// A table of an article, as tall as its rows, in the flow of the text, every
+/// cell in full. A first row of header cells heads the columns; a table
+/// without one has no header.
 class _ArticleTable extends StatelessWidget {
   const _ArticleTable({required this.rows});
 
@@ -472,6 +473,7 @@ class _ArticleTable extends StatelessWidget {
     final header = [for (var column = 0; column < width; column++) headed && column < rows.first.length ? _text(rows.first[column]) : ''];
     return FrostTable<List<String>>(
       shrinkWrap: true,
+      showHeader: headed,
       columns: [
         for (final (column, label) in header.indexed)
           FrostTableColumn(
