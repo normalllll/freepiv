@@ -14,9 +14,11 @@ import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
+import 'package:freepiv/features/pixivision/logic.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -216,6 +218,7 @@ final sampleOverrideMap = <Object, Override>{
   fanboxSessionProvider: fanboxSessionProvider.overrideWith(_SampleFanboxSession.new),
   fanboxBrowseProvider: fanboxBrowseProvider.overrideWith2((_) => _SampleFanboxBrowse()),
   fanboxPostProvider: fanboxPostProvider.overrideWith((ref, id) async => sampleFanboxPosts().firstWhere((post) => post.id == id)),
+  pixivisionBrowseProvider: pixivisionBrowseProvider.overrideWith2((_) => _SamplePixivision()),
   searchTrendingTagsProvider: searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
   downloadTasksProvider: downloadTasksProvider.overrideWith((ref) => Stream.value(sampleDownloadTasks)),
   fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
@@ -604,4 +607,30 @@ class _SampleFanboxBrowse extends FanboxBrowse {
     FanboxSection.bookmarks => FanboxCollection([for (final post in sampleFanboxPosts(count: 3)) FanboxBookmarkEntry(post.id)]),
     _ => FanboxCollection([for (final post in sampleFanboxPosts()) FanboxPostEntry(post)]),
   };
+}
+
+/// Pixivision articles with generated covers.
+List<ArticleSummary> sampleArticles({int count = 6}) => [
+  for (var index = 0; index < count; index++)
+    ArticleSummary(
+      id: 9000 + index,
+      title: index.isEven ? 'Quiet harbour towns in illustration' : 'A longer feature: twelve artists draw the light of late autumn evenings',
+      url: 'https://www.pixivision.net/en/a/${9000 + index}',
+      thumbnail: sampleImageUrl(150 + index, width: 800, height: 450),
+      tags: const [],
+    ),
+];
+
+class _SamplePixivision extends PixivisionBrowse {
+  @override
+  Future<PixivisionListing> build(String url) async => PixivisionListing(
+    ArticlePage(
+      url: url,
+      title: 'pixivision',
+      articles: sampleArticles(),
+      monthlyRanking: const [],
+      recommended: sampleArticles(count: 3),
+      categories: const [],
+    ),
+  );
 }

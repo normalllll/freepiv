@@ -80,6 +80,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$downloadsPage$en_US downloadsPage = Translations$downloadsPage$en_US.internal(_root);
 	late final Translations$loginPage$en_US loginPage = Translations$loginPage$en_US.internal(_root);
 	late final Translations$fanboxPage$en_US fanboxPage = Translations$fanboxPage$en_US.internal(_root);
+	late final Translations$discoverPage$en_US discoverPage = Translations$discoverPage$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -885,6 +886,16 @@ class Translations$fanboxPage$en_US {
 	String get accountSettings => 'FANBOX account settings';
 	String get localOnly => 'Saved posts stay on this device only';
 	String get creatorPage => 'Open creator';
+}
+
+// Path: discoverPage
+class Translations$discoverPage$en_US {
+	Translations$discoverPage$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get noArticles => 'No articles right now';
 }
 
 // Path: settings.theme
@@ -2463,6 +2474,7 @@ extension on Translations {
 			'fanboxPage.accountSettings' => 'FANBOX account settings',
 			'fanboxPage.localOnly' => 'Saved posts stay on this device only',
 			'fanboxPage.creatorPage' => 'Open creator',
+			'discoverPage.noArticles' => 'No articles right now',
 			_ => null,
 		};
 	}

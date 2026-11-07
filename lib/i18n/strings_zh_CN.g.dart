@@ -78,6 +78,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$downloadsPage$zh_CN downloadsPage = Translations$downloadsPage$zh_CN.internal(_root);
 	@override late final Translations$loginPage$zh_CN loginPage = Translations$loginPage$zh_CN.internal(_root);
 	@override late final Translations$fanboxPage$zh_CN fanboxPage = Translations$fanboxPage$zh_CN.internal(_root);
+	@override late final Translations$discoverPage$zh_CN discoverPage = Translations$discoverPage$zh_CN.internal(_root);
 }
 
 // Path: downloadEntry
@@ -883,6 +884,16 @@ class Translations$fanboxPage$zh_CN extends Translations$fanboxPage$en_US {
 	@override String get accountSettings => 'FANBOX 账号设置';
 	@override String get localOnly => '本机书签只保存在这台设备上';
 	@override String get creatorPage => '打开创作者';
+}
+
+// Path: discoverPage
+class Translations$discoverPage$zh_CN extends Translations$discoverPage$en_US {
+	Translations$discoverPage$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get noArticles => '暂时没有文章';
 }
 
 // Path: settings.theme
@@ -2461,6 +2472,7 @@ extension on TranslationsZhCn {
 			'fanboxPage.accountSettings' => 'FANBOX 账号设置',
 			'fanboxPage.localOnly' => '本机书签只保存在这台设备上',
 			'fanboxPage.creatorPage' => '打开创作者',
+			'discoverPage.noArticles' => '暂时没有文章',
 			_ => null,
 		};
 	}

@@ -951,5 +951,8 @@
     "accountSettings": "FANBOX アカウント設定",
     "localOnly": "保存した投稿はこの端末にのみ残ります",
     "creatorPage": "クリエイターを開く"
+  },
+  "discoverPage": {
+    "noArticles": "現在記事はありません"
   }
 }

@@ -951,5 +951,8 @@
     "accountSettings": "FANBOX 账号设置",
     "localOnly": "本机书签只保存在这台设备上",
     "creatorPage": "打开创作者"
+  },
+  "discoverPage": {
+    "noArticles": "暂时没有文章"
   }
 }

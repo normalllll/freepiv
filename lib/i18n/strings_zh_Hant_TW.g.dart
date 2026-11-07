@@ -78,6 +78,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$downloadsPage$zh_Hant_TW downloadsPage = Translations$downloadsPage$zh_Hant_TW.internal(_root);
 	@override late final Translations$loginPage$zh_Hant_TW loginPage = Translations$loginPage$zh_Hant_TW.internal(_root);
 	@override late final Translations$fanboxPage$zh_Hant_TW fanboxPage = Translations$fanboxPage$zh_Hant_TW.internal(_root);
+	@override late final Translations$discoverPage$zh_Hant_TW discoverPage = Translations$discoverPage$zh_Hant_TW.internal(_root);
 }
 
 // Path: downloadEntry
@@ -883,6 +884,16 @@ class Translations$fanboxPage$zh_Hant_TW extends Translations$fanboxPage$en_US {
 	@override String get accountSettings => 'FANBOX 帳號設定';
 	@override String get localOnly => '本機書籤只保存在這台裝置上';
 	@override String get creatorPage => '開啟創作者';
+}
+
+// Path: discoverPage
+class Translations$discoverPage$zh_Hant_TW extends Translations$discoverPage$en_US {
+	Translations$discoverPage$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get noArticles => '暫時沒有文章';
 }
 
 // Path: settings.theme
@@ -2461,6 +2472,7 @@ extension on TranslationsZhHantTw {
 			'fanboxPage.accountSettings' => 'FANBOX 帳號設定',
 			'fanboxPage.localOnly' => '本機書籤只保存在這台裝置上',
 			'fanboxPage.creatorPage' => '開啟創作者',
+			'discoverPage.noArticles' => '暫時沒有文章',
 			_ => null,
 		};
 	}

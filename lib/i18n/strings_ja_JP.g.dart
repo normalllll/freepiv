@@ -78,6 +78,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$downloadsPage$ja_JP downloadsPage = _Translations$downloadsPage$ja_JP._(_root);
 	@override late final _Translations$loginPage$ja_JP loginPage = _Translations$loginPage$ja_JP._(_root);
 	@override late final _Translations$fanboxPage$ja_JP fanboxPage = _Translations$fanboxPage$ja_JP._(_root);
+	@override late final _Translations$discoverPage$ja_JP discoverPage = _Translations$discoverPage$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -883,6 +884,16 @@ class _Translations$fanboxPage$ja_JP extends Translations$fanboxPage$en_US {
 	@override String get accountSettings => 'FANBOX アカウント設定';
 	@override String get localOnly => '保存した投稿はこの端末にのみ残ります';
 	@override String get creatorPage => 'クリエイターを開く';
+}
+
+// Path: discoverPage
+class _Translations$discoverPage$ja_JP extends Translations$discoverPage$en_US {
+	_Translations$discoverPage$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get noArticles => '現在記事はありません';
 }
 
 // Path: settings.theme
@@ -2461,6 +2472,7 @@ extension on TranslationsJaJp {
 			'fanboxPage.accountSettings' => 'FANBOX アカウント設定',
 			'fanboxPage.localOnly' => '保存した投稿はこの端末にのみ残ります',
 			'fanboxPage.creatorPage' => 'クリエイターを開く',
+			'discoverPage.noArticles' => '現在記事はありません',
 			_ => null,
 		};
 	}
