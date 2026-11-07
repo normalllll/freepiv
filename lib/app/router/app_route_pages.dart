@@ -3,7 +3,7 @@ import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/features/about/presentation/about_page.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';

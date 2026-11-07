@@ -2,7 +2,7 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart' show Arti
 import 'package:freepiv/features/pixivision/navigation.dart';
 import 'package:freepiv/features/pixivision/page.dart';
 import 'package:freepiv/features/pixivision/article_page.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freepiv/features/fanbox/browse_page.dart';
 import 'package:freepiv/features/fanbox/creator_page.dart';
 import 'package:freepiv/features/fanbox/post_page.dart';
