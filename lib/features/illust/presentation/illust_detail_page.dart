@@ -327,7 +327,7 @@ class _NarrowIllustDetailState extends State<_NarrowIllustDetail> with SingleTic
     );
     final header = FrostPageHeader(
       title: _imageGone ? FrostText(illust.title) : null,
-      actions: [FrostToolbarItem.menu(label: FrostScope.labelsOf(context).more, icon: PivIcons.more, entries: illustMoreMenu(context, info))],
+      actions: [FrostToolbarItem.menu(label: FrostScope.labelsOf(context).more, icon: PivIcons.more, showsLabel: false, entries: illustMoreMenu(context, info))],
     );
     return FrostMediaSystemChrome(
       active: !_imageGone,

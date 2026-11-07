@@ -75,6 +75,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$novelDetail$zh_CN novelDetail = Translations$novelDetail$zh_CN.internal(_root);
 	@override late final Translations$commentsPage$zh_CN commentsPage = Translations$commentsPage$zh_CN.internal(_root);
 	@override late final Translations$searchPage$zh_CN searchPage = Translations$searchPage$zh_CN.internal(_root);
+	@override late final Translations$downloadsPage$zh_CN downloadsPage = Translations$downloadsPage$zh_CN.internal(_root);
 }
 
 // Path: downloadEntry
@@ -834,6 +835,20 @@ class Translations$searchPage$zh_CN extends Translations$searchPage$en_US {
 	@override String get minHeight => '最小高度';
 	@override String get clearFilters => '清除筛选';
 	@override String get noUserFilters => '用户搜索没有筛选条件';
+}
+
+// Path: downloadsPage
+class Translations$downloadsPage$zh_CN extends Translations$downloadsPage$en_US {
+	Translations$downloadsPage$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get all => '全部';
+	@override String get inProgress => '进行中';
+	@override String get nothingInProgress => '没有进行中的下载';
+	@override String get nothingDone => '还没有下载过';
+	@override String failedGroup({required Object count}) => '${count} 项失败';
 }
 
 // Path: settings.theme
@@ -2393,6 +2408,11 @@ extension on TranslationsZhCn {
 			'searchPage.minHeight' => '最小高度',
 			'searchPage.clearFilters' => '清除筛选',
 			'searchPage.noUserFilters' => '用户搜索没有筛选条件',
+			'downloadsPage.all' => '全部',
+			'downloadsPage.inProgress' => '进行中',
+			'downloadsPage.nothingInProgress' => '没有进行中的下载',
+			'downloadsPage.nothingDone' => '还没有下载过',
+			'downloadsPage.failedGroup' => ({required Object count}) => '${count} 项失败',
 			_ => null,
 		};
 	}

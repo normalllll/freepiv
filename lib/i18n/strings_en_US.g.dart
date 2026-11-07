@@ -77,6 +77,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$novelDetail$en_US novelDetail = Translations$novelDetail$en_US.internal(_root);
 	late final Translations$commentsPage$en_US commentsPage = Translations$commentsPage$en_US.internal(_root);
 	late final Translations$searchPage$en_US searchPage = Translations$searchPage$en_US.internal(_root);
+	late final Translations$downloadsPage$en_US downloadsPage = Translations$downloadsPage$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -836,6 +837,20 @@ class Translations$searchPage$en_US {
 	String get minHeight => 'Minimum height';
 	String get clearFilters => 'Clear filters';
 	String get noUserFilters => 'User search has no filters';
+}
+
+// Path: downloadsPage
+class Translations$downloadsPage$en_US {
+	Translations$downloadsPage$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get all => 'All';
+	String get inProgress => 'In progress';
+	String get nothingInProgress => 'No downloads in progress';
+	String get nothingDone => 'Nothing downloaded yet';
+	String failedGroup({required Object count}) => '${count} failed';
 }
 
 // Path: settings.theme
@@ -2395,6 +2410,11 @@ extension on Translations {
 			'searchPage.minHeight' => 'Minimum height',
 			'searchPage.clearFilters' => 'Clear filters',
 			'searchPage.noUserFilters' => 'User search has no filters',
+			'downloadsPage.all' => 'All',
+			'downloadsPage.inProgress' => 'In progress',
+			'downloadsPage.nothingInProgress' => 'No downloads in progress',
+			'downloadsPage.nothingDone' => 'Nothing downloaded yet',
+			'downloadsPage.failedGroup' => ({required Object count}) => '${count} failed',
 			_ => null,
 		};
 	}

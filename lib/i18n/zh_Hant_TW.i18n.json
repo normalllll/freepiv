@@ -926,5 +926,12 @@
     "minHeight": "最小高度",
     "clearFilters": "清除篩選",
     "noUserFilters": "使用者搜尋沒有篩選條件"
+  },
+  "downloadsPage": {
+    "all": "全部",
+    "inProgress": "進行中",
+    "nothingInProgress": "沒有進行中的下載",
+    "nothingDone": "還沒有下載過",
+    "failedGroup": "$count 項失敗"
   }
 }

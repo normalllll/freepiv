@@ -926,5 +926,12 @@
     "minHeight": "最小の高さ",
     "clearFilters": "絞り込みを解除",
     "noUserFilters": "ユーザー検索には絞り込みがありません"
+  },
+  "downloadsPage": {
+    "all": "すべて",
+    "inProgress": "進行中",
+    "nothingInProgress": "進行中のダウンロードはありません",
+    "nothingDone": "まだダウンロードしていません",
+    "failedGroup": "失敗 $count 件"
   }
 }

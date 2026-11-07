@@ -926,5 +926,12 @@
     "minHeight": "Minimum height",
     "clearFilters": "Clear filters",
     "noUserFilters": "User search has no filters"
+  },
+  "downloadsPage": {
+    "all": "All",
+    "inProgress": "In progress",
+    "nothingInProgress": "No downloads in progress",
+    "nothingDone": "Nothing downloaded yet",
+    "failedGroup": "$count failed"
   }
 }

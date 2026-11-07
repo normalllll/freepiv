@@ -75,6 +75,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$novelDetail$ja_JP novelDetail = _Translations$novelDetail$ja_JP._(_root);
 	@override late final _Translations$commentsPage$ja_JP commentsPage = _Translations$commentsPage$ja_JP._(_root);
 	@override late final _Translations$searchPage$ja_JP searchPage = _Translations$searchPage$ja_JP._(_root);
+	@override late final _Translations$downloadsPage$ja_JP downloadsPage = _Translations$downloadsPage$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -834,6 +835,20 @@ class _Translations$searchPage$ja_JP extends Translations$searchPage$en_US {
 	@override String get minHeight => '最小の高さ';
 	@override String get clearFilters => '絞り込みを解除';
 	@override String get noUserFilters => 'ユーザー検索には絞り込みがありません';
+}
+
+// Path: downloadsPage
+class _Translations$downloadsPage$ja_JP extends Translations$downloadsPage$en_US {
+	_Translations$downloadsPage$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get all => 'すべて';
+	@override String get inProgress => '進行中';
+	@override String get nothingInProgress => '進行中のダウンロードはありません';
+	@override String get nothingDone => 'まだダウンロードしていません';
+	@override String failedGroup({required Object count}) => '失敗 ${count} 件';
 }
 
 // Path: settings.theme
@@ -2393,6 +2408,11 @@ extension on TranslationsJaJp {
 			'searchPage.minHeight' => '最小の高さ',
 			'searchPage.clearFilters' => '絞り込みを解除',
 			'searchPage.noUserFilters' => 'ユーザー検索には絞り込みがありません',
+			'downloadsPage.all' => 'すべて',
+			'downloadsPage.inProgress' => '進行中',
+			'downloadsPage.nothingInProgress' => '進行中のダウンロードはありません',
+			'downloadsPage.nothingDone' => 'まだダウンロードしていません',
+			'downloadsPage.failedGroup' => ({required Object count}) => '失敗 ${count} 件',
 			_ => null,
 		};
 	}

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +7,7 @@ import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router_shell.dart';
+import 'package:freepiv/core/downloads/download_manager.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/features/downloads/presentation/download_entry.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
@@ -36,6 +39,28 @@ DownloadTaskSnapshot _task(String filename, {DownloadStatus status = DownloadSta
     createdAt: created,
     updatedAt: created,
   );
+}
+
+/// Retries that wait on [gate], then fail.
+class _SlowFailingManager implements DownloadManager {
+  _SlowFailingManager(this.tasks);
+
+  final List<DownloadTaskSnapshot> tasks;
+  final gate = Completer<void>();
+  final retried = <String>[];
+
+  @override
+  Future<List<DownloadTaskSnapshot>> listTasks({int? illustId, DownloadStatus? status, SaveState? saveState}) async => tasks;
+
+  @override
+  Future<void> retry(String jobId) async {
+    retried.add(jobId);
+    await gate.future;
+    throw StateError('offline');
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {
@@ -80,15 +105,28 @@ void main() {
   });
 
   group('shell', () {
-    Future<void> mount(WidgetTester tester, List<DownloadTaskSnapshot> tasks) async {
-      tester.view.physicalSize = const Size(1147, 717);
+    // Whether the entry's panel was still up when each page was pushed.
+    final panelUpAtPush = <bool>[];
+
+    Future<void> mount(
+      WidgetTester tester,
+      List<DownloadTaskSnapshot> tasks, {
+      DownloadManager? manager,
+      Size size = const Size(1147, 717),
+      double textScale = 1,
+    }) async {
+      tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = textScale;
       addTearDown(tester.view.reset);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      panelUpAtPush.clear();
       final key = GlobalKey<NavigatorState>();
       final router = GoRouter(
         routes: [
           ShellRoute(
             navigatorKey: key,
+            observers: [_PushProbe(() => panelUpAtPush.add(find.byType(DownloadEntryPanel).evaluate().isNotEmpty))],
             builder: (context, state, child) => RouterShell(
               location: state.uri,
               selectedIndex: 0,
@@ -109,7 +147,11 @@ void main() {
       addTearDown(router.dispose);
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [downloadTasksProvider.overrideWith((ref) => Stream.value(tasks)), fanboxDownloadsProvider.overrideWithValue(const {})],
+          overrides: [
+            downloadTasksProvider.overrideWith((ref) => Stream.value(tasks)),
+            fanboxDownloadsProvider.overrideWithValue(const {}),
+            if (manager != null) downloadManagerProvider.overrideWithValue(manager),
+          ],
           child: TranslationProvider(
             child: FrostApp.router(config: freepivFrostConfig, routerConfig: router, title: 'freepiv'),
           ),
@@ -141,6 +183,25 @@ void main() {
       expect(appDestinationIndexForPath(AppRoute.downloads.path), isNull);
     });
 
+    testWidgets('Retry failed in the panel runs once at a time and says when it fails', (tester) async {
+      final failed = _task('f.png', status: DownloadStatus.failed, saveState: SaveState.none, progress: 0);
+      final manager = _SlowFailingManager([failed]);
+      await mount(tester, [failed], manager: manager);
+      await tester.tap(find.byType(FrostShellTaskButton));
+      await tester.pumpAndSettle();
+      FrostButton retryFailed() => tester.widget<FrostButton>(find.widgetWithText(FrostButton, t.downloadEntry.retryFailed).hitTestable().first);
+      retryFailed().onPressed!();
+      await tester.pump();
+      expect(retryFailed().onPressed, isNull, reason: 'busy while it runs');
+      expect(manager.retried, ['f.png']);
+      manager.gate.complete();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.textContaining(t.settings.downloads.actionFailed), findsOneWidget);
+      expect(retryFailed().onPressed, isNotNull, reason: 'it can be tried again');
+      await tester.pumpAndSettle(const Duration(seconds: 5));
+    });
+
     testWidgets('the sidebar entry opens its panel, and a row opens that item', (tester) async {
       await mount(tester, [_task('b.png', status: DownloadStatus.running, saveState: SaveState.none, progress: .5)]);
       await tester.tap(find.byType(FrostShellTaskButton));
@@ -152,5 +213,43 @@ void main() {
       expect(find.byType(DownloadEntryPanel), findsNothing);
       expect(find.text('downloads ${AppLocations.downloads(item: _work.key)}'), findsOneWidget);
     });
+
+    for (final (name, size, textScale) in [
+      ('the sidebar\'s anchored panel', const Size(1147, 717), 1.0),
+      ('the bottom bar\'s floating panel', const Size(390, 844), 1.0),
+      ('the bottom sheet at large text', const Size(390, 844), 2.5),
+    ]) {
+      testWidgets('$name closes before a row or See all opens the downloads page', (tester) async {
+        await mount(tester, [_task('b.png', status: DownloadStatus.running, saveState: SaveState.none, progress: .5)], size: size, textScale: textScale);
+        for (final (target, location) in [
+          (find.text('Summer sketches'), AppLocations.downloads(item: _work.key)),
+          (find.text(t.downloadEntry.viewAll), AppRoute.downloads.path),
+        ]) {
+          await tester.tap(find.byType(FrostShellTaskButton));
+          await tester.pumpAndSettle();
+          expect(find.byType(DownloadEntryPanel), findsOneWidget);
+          await tester.ensureVisible(target.hitTestable());
+          await tester.pumpAndSettle();
+          await tester.tap(target.hitTestable());
+          await tester.pumpAndSettle();
+          expect(find.byType(DownloadEntryPanel), findsNothing);
+          expect(find.text('downloads $location'), findsOneWidget);
+          expect(panelUpAtPush.last, isFalse, reason: 'the panel was closed before the page opened');
+          GoRouter.of(tester.element(find.text('downloads $location'))).pop();
+          await tester.pumpAndSettle();
+        }
+        expect(panelUpAtPush, everyElement(isFalse));
+      });
+    }
   });
+}
+
+/// Reports every push on the navigator it watches.
+class _PushProbe extends NavigatorObserver {
+  _PushProbe(this.onPush);
+
+  final VoidCallback onPush;
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) => onPush();
 }

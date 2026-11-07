@@ -128,3 +128,11 @@ void expectLocalesComplete(List<String> sections) {
     }
   }
 }
+
+/// The page header's More menu is a bare icon, its label kept for tooltips
+/// and accessibility.
+void expectIconOnlyMore(WidgetTester tester) {
+  final more = FrostScope.labelsOf(tester.element(find.byType(Navigator).last)).more;
+  expect(find.bySemanticsLabel(more), findsWidgets, reason: 'the header has a More menu');
+  expect(find.text(more), findsNothing, reason: 'its label is not drawn');
+}

@@ -7,7 +7,7 @@ import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/downloads/logic.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
-import 'package:freepiv/features/downloads/presentation/download_item_widgets.dart';
+import 'package:freepiv/features/downloads/presentation/downloads_page.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -147,9 +147,12 @@ void _openFromPanel(BuildContext context, String location) {
   unawaited(closeFrostPanelThen(context, (origin) => GoRouter.of(origin).push(location)));
 }
 
+/// The download manager the entry's panel acts through.
+final downloadManagerProvider = Provider<DownloadManager>((ref) => downloadManager);
+
 /// The entry's panel: a summary, bulk actions, the first items needing
 /// attention and the way to the downloads page. Closing it never cancels.
-class DownloadEntryPanel extends ConsumerWidget {
+class DownloadEntryPanel extends ConsumerStatefulWidget {
   const DownloadEntryPanel({super.key});
 
   static const shownItems = 4;
@@ -169,10 +172,31 @@ class DownloadEntryPanel extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DownloadEntryPanel> createState() => _DownloadEntryPanelState();
+}
+
+class _DownloadEntryPanelState extends ConsumerState<DownloadEntryPanel> {
+  /// Actions still running; each runs once at a time.
+  final _busy = <Object>{};
+
+  /// Runs [action] unless it is already running; a failure says so.
+  Future<void> _run(Object key, Future<void> Function(DownloadManager manager) action) async {
+    if (!_busy.add(key)) return;
+    setState(() {});
+    try {
+      await runDownloadAction(() => action(ref.read(downloadManagerProvider)));
+    } finally {
+      if (mounted) setState(() => _busy.remove(key));
+    }
+  }
+
+  FrostActionState _state(Object key) => _busy.contains(key) ? const FrostActionState.running() : FrostActionState.idle;
+
+  @override
+  Widget build(BuildContext context) {
     final t = context.t;
     final activity = ref.watch(downloadActivityProvider);
-    final items = ordered(activity.items);
+    final items = DownloadEntryPanel.ordered(activity.items);
     void open(String location) => _openFromPanel(context, location);
 
     Widget summary({bool shrink = false}) => FrostText(
@@ -183,9 +207,18 @@ class DownloadEntryPanel extends ConsumerWidget {
       overflow: TextOverflow.ellipsis,
     );
     final bulk = [
-      if (activity.failed > 0) FrostButton.quiet(label: t.downloadEntry.retryFailed, onPressed: () => unawaited(downloadManager.retryFailed())),
+      if (activity.failed > 0)
+        FrostButton.quiet(
+          label: t.downloadEntry.retryFailed,
+          state: _state(#retryFailed),
+          onPressed: _busy.contains(#retryFailed) ? null : () => unawaited(_run(#retryFailed, (manager) => manager.retryFailed())),
+        ),
       if (items.any((item) => item.state == DownloadItemState.completed))
-        FrostButton.quiet(label: t.downloadEntry.clearCompleted, onPressed: () => unawaited(downloadManager.clearCompleted())),
+        FrostButton.quiet(
+          label: t.downloadEntry.clearCompleted,
+          state: _state(#clearCompleted),
+          onPressed: _busy.contains(#clearCompleted) ? null : () => unawaited(_run(#clearCompleted, (manager) => manager.clearCompleted())),
+        ),
     ];
 
     return Column(
@@ -207,7 +240,7 @@ class DownloadEntryPanel extends ConsumerWidget {
             ),
           ],
         ),
-        for (final item in items.take(shownItems))
+        for (final item in items.take(DownloadEntryPanel.shownItems))
           FrostTaskRow(
             key: ValueKey(item.key),
             title: downloadItemTitle(item),
@@ -224,26 +257,29 @@ class DownloadEntryPanel extends ConsumerWidget {
               DownloadItemState.failed => t.settings.downloads.filesFailed(count: item.failed),
               _ => t.settings.downloads.filesProgress(done: item.completed, total: item.total),
             },
-            thumbnail: DownloadSourceThumbnail(source: item.source, url: item.source.thumbnailUrl ?? item.onlyTask?.thumbnailUrl, size: 40),
+            thumbnail: DownloadThumbnail(source: item.source, url: item.source.thumbnailUrl ?? item.onlyTask?.thumbnailUrl),
             actions: [
               if (item.state == DownloadItemState.failed && item.tasks.any((task) => task.needsRetry && !isGeneratedDownload(task.origin)))
                 FrostTaskAction(
                   label: t.common.retry,
                   icon: PivIcons.refreshCw,
-                  onPressed: () {
-                    for (final task in item.tasks.where((task) => task.needsRetry && !isGeneratedDownload(task.origin))) {
-                      unawaited(downloadManager.retry(task.id));
-                    }
-                  },
+                  // A retry still running is not asked again.
+                  onPressed: () => unawaited(
+                    _run(item.key, (manager) async {
+                      for (final task in item.tasks.where((task) => task.needsRetry && !isGeneratedDownload(task.origin))) {
+                        await manager.retry(task.id);
+                      }
+                    }),
+                  ),
                 ),
             ],
             onPressed: () => open(AppLocations.downloads(item: item.key)),
           ),
-        if (items.length > shownItems)
+        if (items.length > DownloadEntryPanel.shownItems)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: FrostGap.inline),
             child: FrostText(
-              t.downloadEntry.more(count: items.length - shownItems),
+              t.downloadEntry.more(count: items.length - DownloadEntryPanel.shownItems),
               role: FrostTextRole.footnote,
               tone: FrostTextTone.secondary,
             ),

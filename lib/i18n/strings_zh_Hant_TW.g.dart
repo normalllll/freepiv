@@ -75,6 +75,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$novelDetail$zh_Hant_TW novelDetail = Translations$novelDetail$zh_Hant_TW.internal(_root);
 	@override late final Translations$commentsPage$zh_Hant_TW commentsPage = Translations$commentsPage$zh_Hant_TW.internal(_root);
 	@override late final Translations$searchPage$zh_Hant_TW searchPage = Translations$searchPage$zh_Hant_TW.internal(_root);
+	@override late final Translations$downloadsPage$zh_Hant_TW downloadsPage = Translations$downloadsPage$zh_Hant_TW.internal(_root);
 }
 
 // Path: downloadEntry
@@ -834,6 +835,20 @@ class Translations$searchPage$zh_Hant_TW extends Translations$searchPage$en_US {
 	@override String get minHeight => '最小高度';
 	@override String get clearFilters => '清除篩選';
 	@override String get noUserFilters => '使用者搜尋沒有篩選條件';
+}
+
+// Path: downloadsPage
+class Translations$downloadsPage$zh_Hant_TW extends Translations$downloadsPage$en_US {
+	Translations$downloadsPage$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get all => '全部';
+	@override String get inProgress => '進行中';
+	@override String get nothingInProgress => '沒有進行中的下載';
+	@override String get nothingDone => '還沒有下載過';
+	@override String failedGroup({required Object count}) => '${count} 項失敗';
 }
 
 // Path: settings.theme
@@ -2393,6 +2408,11 @@ extension on TranslationsZhHantTw {
 			'searchPage.minHeight' => '最小高度',
 			'searchPage.clearFilters' => '清除篩選',
 			'searchPage.noUserFilters' => '使用者搜尋沒有篩選條件',
+			'downloadsPage.all' => '全部',
+			'downloadsPage.inProgress' => '進行中',
+			'downloadsPage.nothingInProgress' => '沒有進行中的下載',
+			'downloadsPage.nothingDone' => '還沒有下載過',
+			'downloadsPage.failedGroup' => ({required Object count}) => '${count} 項失敗',
 			_ => null,
 		};
 	}

@@ -926,5 +926,12 @@
     "minHeight": "最小高度",
     "clearFilters": "清除筛选",
     "noUserFilters": "用户搜索没有筛选条件"
+  },
+  "downloadsPage": {
+    "all": "全部",
+    "inProgress": "进行中",
+    "nothingInProgress": "没有进行中的下载",
+    "nothingDone": "还没有下载过",
+    "failedGroup": "$count 项失败"
   }
 }
