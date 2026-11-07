@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_autocomplete_session.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_models.dart';
-import 'package:freepiv/features/search/presentation/widgets/search_filter_bar.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
 
@@ -14,19 +13,13 @@ export 'search_models.dart';
 /// only while the title row does not hold it (FrostShell.titleContentInCaptionOf).
 /// The draft of the page's scope follows the session and the other way round.
 class SearchBox extends ConsumerStatefulWidget {
-  const SearchBox({required this.onSearch, this.fixedType, this.onSelected, this.showFilters = true, this.autofocus = false, super.key});
+  const SearchBox({required this.onSearch, this.fixedType, this.autofocus = false, super.key});
 
   /// Focuses the field when it first shows.
   final bool autofocus;
 
-  final bool showFilters;
-
   final SearchType? fixedType;
   final ValueChanged<SearchSubmission> onSearch;
-
-  /// Kept for the pages built before the rebuild; the shared suggestions open
-  /// works and users themselves.
-  final ValueChanged<SearchSelection>? onSelected;
 
   @override
   ConsumerState<SearchBox> createState() => SearchBoxState();
@@ -40,6 +33,7 @@ class SearchBoxState extends ConsumerState<SearchBox> {
   void initState() {
     super.initState();
     _session.addInputFocus(_focus);
+    _focus.addListener(_focusChanged);
     _session.addListener(_publishDraft);
     appSearchHeaderFocusRequests.addListener(_focusOnRequest);
     // The session notifies the title bar search too; not while building.
@@ -65,6 +59,10 @@ class SearchBoxState extends ConsumerState<SearchBox> {
     _session.removeInputFocus(_focus);
     _focus.dispose();
     super.dispose();
+  }
+
+  void _focusChanged() {
+    if (_focus.hasFocus && mounted) appSearchOpened(ref, context);
   }
 
   /// Adds a trending tag to the query and keeps the search open for more.
@@ -106,7 +104,6 @@ class SearchBoxState extends ConsumerState<SearchBox> {
           context,
           onSubmitted: (query, type) => widget.onSearch(SearchSubmission(type: widget.fixedType ?? type, query: query)),
         );
-        final type = widget.fixedType ?? _session.type;
         return FrostSearchInput.suggesting(
           controller: _session.controller,
           focusNode: _focus,
@@ -117,8 +114,7 @@ class SearchBoxState extends ConsumerState<SearchBox> {
           placement: FrostSuggestionPlacement.overlay,
           onSubmitted: (_) => actions.submit(type: widget.fixedType),
           onClear: _session.clearAll,
-          content: appSearchContent(context, ref, actions),
-          actions: [if (widget.showFilters && type != SearchType.user) SearchFilterButton(type: type, allowTypeSelection: false, compact: true)],
+          content: appSearchContent(context, ref, actions, compactDiscover: false),
         );
       },
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freepiv/features/discover/discover_sections.dart';
 import 'package:freepiv/features/discover/page.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/features/search/presentation/app_search.dart';
@@ -22,6 +23,15 @@ void main() {
     expect(find.byType(FrostFilterChip), findsNWidgets(6), reason: 'every recent search');
     expect(find.byType(AppEntryRow), findsOneWidget);
     expect(find.text('#初音ミク'), findsOneWidget);
+  });
+
+  testWidgets('"All trending tags" opens the page with the tags just under the header', (tester) async {
+    await mountPilotPage(tester, const DiscoverPage(section: DiscoverSection.trending), size: phoneSize);
+    final heading = tester.getRect(find.text(t.search.trendingTags));
+    final header = tester.getRect(find.byType(FrostPageHeader));
+    expect(heading.top, greaterThanOrEqualTo(header.bottom - 1), reason: 'not under the pinned header');
+    expect(heading.top, lessThan(header.bottom + 48), reason: 'scrolled to the tags, past history and the entries');
+    expect(find.text(t.discover.history), findsNothing);
   });
 
   testWidgets('a trending tag is added to the search as a finished word', (tester) async {

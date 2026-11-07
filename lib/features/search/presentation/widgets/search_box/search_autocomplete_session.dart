@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_models.dart';
@@ -10,13 +10,20 @@ import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 
 class SearchAutocompleteSession extends ChangeNotifier {
-  SearchAutocompleteSession({required SearchType initialType, String initialText = ''}) : _type = initialType {
+  /// [autocomplete] finds the tags completing a word; Pixiv's by default.
+  SearchAutocompleteSession({required SearchType initialType, String initialText = '', Future<List<Tag>> Function(String word)? autocomplete})
+    : _type = initialType,
+      _autocomplete = autocomplete ?? _pixivAutocomplete {
     controller.addListener(_handleTextChanged);
     focusNode.addListener(_handleFocusNodeChanged);
     if (initialText.isNotEmpty) {
       setText(initialText, suppressAutocomplete: true);
     }
   }
+
+  static Future<List<Tag>> _pixivAutocomplete(String word) async => (await pixivApi.getSearchAutocomplete(word: word)).tags;
+
+  final Future<List<Tag>> Function(String word) _autocomplete;
 
   static final _numericPattern = RegExp(r'^\d+$');
   static const _debounceDuration = Duration(milliseconds: 250);
@@ -83,21 +90,18 @@ class SearchAutocompleteSession extends ChangeNotifier {
             label: t.search.direct.illust(id: id),
             value: '$id',
             id: id,
-            icon: Icons.image_outlined,
           ),
           SearchSuggestion(
             kind: SearchItemKind.user,
             label: t.search.direct.user(id: id),
             value: '$id',
             id: id,
-            icon: Icons.person_outline,
           ),
           SearchSuggestion(
             kind: SearchItemKind.novel,
             label: t.search.direct.novel(id: id),
             value: '$id',
             id: id,
-            icon: Icons.menu_book_outlined,
           ),
         ]);
       }
@@ -105,7 +109,7 @@ class SearchAutocompleteSession extends ChangeNotifier {
 
     if (_type != SearchType.user) {
       for (final tag in _tags) {
-        items.add(SearchSuggestion(kind: SearchItemKind.tag, label: '#${tag.name}', subtitle: tag.translatedName, value: tag.name, icon: Icons.tag));
+        items.add(SearchSuggestion(kind: SearchItemKind.tag, label: '#${tag.name}', subtitle: tag.translatedName, value: tag.name));
       }
     }
 
@@ -303,12 +307,12 @@ class SearchAutocompleteSession extends ChangeNotifier {
 
   Future<void> _fetchAutocomplete(String query, int requestId) async {
     try {
-      final result = await pixivApi.getSearchAutocomplete(word: query);
+      final tags = await _autocomplete(query);
       if (_disposed || requestId != _requestId) {
         return;
       }
 
-      _tags = result.tags;
+      _tags = tags;
       _error = null;
       _loading = false;
       _autocompleteCompleted = true;

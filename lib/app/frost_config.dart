@@ -201,6 +201,9 @@ abstract final class PivIcons {
   static const clock = FrostIconData.glyph(FreepivIcons.clock);
   static const eye = FrostIconData.glyph(FreepivIcons.eye);
   static const smile = FrostIconData.glyph(FreepivIcons.smile);
+  static const bookOpen = FrostIconData.glyph(FreepivIcons.bookOpen);
+  static const history = FrostIconData.glyph(FreepivIcons.history);
+  static const image = FrostIconData.glyph(FreepivIcons.image);
 }
 
 /// freepiv's own sizes, outside the shared design values.

@@ -20,6 +20,8 @@ import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/pixivision/logic.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
+import 'package:freepiv/features/search/presentation/app_search.dart';
+import 'package:freepiv/features/search/presentation/widgets/search_box/search_autocomplete_session.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
@@ -237,6 +239,11 @@ final sampleOverrideMap = <Object, Override>{
   fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
   newestProvider: newestProvider.overrideWith(SampleNewest.new),
   rankingProvider: rankingProvider.overrideWith(SampleRanking.new),
+  appSearchSessionProvider: appSearchSessionProvider.overrideWith((ref) {
+    final session = SearchAutocompleteSession(initialType: SearchType.illust, autocomplete: sampleAutocomplete);
+    ref.onDispose(session.dispose);
+    return session;
+  }),
   followersSourceProvider: followersSourceProvider.overrideWith((ref, userId) {
     final source = SampleFollowers(userId: userId);
     ref.onDispose(source.dispose);
@@ -764,3 +771,11 @@ class SampleFollowers extends FollowerListSource {
   @override
   Future<UserPageResult> loadNextPage(String nextUrl) async => const UserPageResult(userPreviews: []);
 }
+
+/// Tags completing [word] in the sample app: a few built from it.
+Future<List<Tag>> sampleAutocomplete(String word) async => [
+  Tag(name: word, translatedName: 'sample'),
+  Tag(name: '$wordオリジナル', translatedName: '$word original'),
+  Tag(name: '${word}10000users入り', translatedName: '$word 10000+ bookmarks'),
+  Tag(name: '$word風景', translatedName: '$word scenery'),
+];

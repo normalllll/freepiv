@@ -154,7 +154,9 @@ abstract final class AppLocations {
 
   /// The discover page; [focusSearch] opens it with its search focused, the
   /// way the bottom-bar layout searches.
-  static String discover({bool focusSearch = false}) => AppRoute.discover._location(query: {AppRouteQuery.focus: focusSearch ? AppRouteQuery.on : null});
+  /// [section] (a DiscoverSection name) opens it scrolled to that section.
+  static String discover({bool focusSearch = false, String? section}) =>
+      AppRoute.discover._location(query: {AppRouteQuery.focus: focusSearch ? AppRouteQuery.on : null, AppRouteQuery.section: section});
 
   static String downloads({String? item}) => AppRoute.downloads._location(query: {AppRouteQuery.item: item});
 

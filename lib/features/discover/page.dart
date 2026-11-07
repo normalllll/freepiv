@@ -1,11 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/features/pixivision/logic.dart';
+import 'package:freepiv/features/discover/discover_sections.dart';
 import 'package:freepiv/features/pixivision/navigation.dart';
 import 'package:freepiv/features/search/logic/search_history_logic.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
@@ -14,7 +14,6 @@ import 'package:freepiv/features/search/presentation/widgets/search_box/search_b
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/entry_row.dart';
-import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,12 +21,16 @@ import 'package:go_router/go_router.dart';
 /// every recent search (each removable, and Clear), the entry row (ranking,
 /// Pixivision, FANBOX), every trending tag as a picture card that adds the
 /// tag to the search, and three Pixivision articles. Without the title-bar
-/// search the header holds the page search box, focused when asked to.
-class DiscoverPage extends ConsumerWidget {
-  const DiscoverPage({this.focusSearch = false, super.key});
+/// search the header holds the page search box, focused when asked to. It
+/// opens scrolled to [section] when given one.
+class DiscoverPage extends ConsumerStatefulWidget {
+  const DiscoverPage({this.focusSearch = false, this.section, super.key});
 
   /// Opens with the header search focused (the bottom-bar layout's search).
   final bool focusSearch;
+
+  /// The section to open at: "All history" and "All trending tags".
+  final DiscoverSection? section;
 
   /// Trending tag cards are at least this wide; two columns on a phone.
   static const tagTileWidth = 150.0;
@@ -35,16 +38,44 @@ class DiscoverPage extends ConsumerWidget {
   /// Pixivision cards are at least this wide.
   static const articleTileWidth = 240.0;
 
-  static const _pixivisionReferer = {'Referer': 'https://www.pixivision.net/'};
+  @override
+  ConsumerState<DiscoverPage> createState() => _DiscoverPageState();
+}
+
+class _DiscoverPageState extends ConsumerState<DiscoverPage> {
+  final _scroll = ScrollController();
+  final _spacer = GlobalKey();
+  final _sections = {for (final section in DiscoverSection.values) section: GlobalKey()};
+
+  /// The section still to reveal, once the content above it has loaded.
+  late DiscoverSection? _pending = widget.section;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  /// Scrolls [section]'s heading to just under the pinned header.
+  void _reveal(DiscoverSection section) {
+    if (!mounted) return;
+    final heading = _sections[section]!.currentContext?.findRenderObject();
+    final spacer = _spacer.currentContext?.findRenderObject();
+    if (heading == null || !_scroll.hasClients) return;
+    final viewport = RenderAbstractViewport.of(heading);
+    final chrome = spacer is RenderSliver ? spacer.geometry?.scrollExtent ?? 0 : 0;
+    final offset = viewport.getOffsetToReveal(heading, 0).offset - chrome;
+    _scroll.jumpTo(offset.clamp(0, _scroll.position.maxScrollExtent));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final t = context.t;
     final inCaption = FrostShell.titleContentInCaptionOf(context);
     final actions = AppSearchActions(ref, context);
-    final language = pixivisionLanguagePath(t.$meta.locale);
-    final pixivision = pixivisionBrowseProvider('https://www.pixivision.net/$language/');
+    final pixivision = discoverPixivision(t);
     Future<void> refresh() async {
+      ref.read(discoverFreshnessProvider).fetched();
       ref.invalidate(pixivision);
       await Future.wait([ref.read(searchTrendingTagsProvider.notifier).reload(keepPreviousData: true), ref.read(pixivision.future)]);
     }
@@ -52,6 +83,12 @@ class DiscoverPage extends ConsumerWidget {
     final history = ref.watch(searchHistoryProvider);
     final trending = ref.watch(searchTrendingTagsProvider);
     final articles = ref.watch(pixivision);
+    // Trending tags sit under history and the entries, both shown at once; once
+    // the tags have loaded, their heading is where it stays.
+    if (_pending case final section? when section == DiscoverSection.history || trending.hasValue || trending.hasError) {
+      _pending = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _reveal(section));
+    }
     Widget column(Widget child) => SliverToBoxAdapter(
       child: FrostContentColumn(maxWidth: double.infinity, child: child),
     );
@@ -64,24 +101,26 @@ class DiscoverPage extends ConsumerWidget {
               ? null
               : SearchBox(
                   onSearch: (submission) => actions.submit(text: submission.query, type: submission.type),
-                  showFilters: false,
-                  autofocus: focusSearch,
+                  autofocus: widget.focusSearch,
                 ),
         ),
         body: FrostRefreshView(
+          scrollController: _scroll,
           onRefresh: () async {
             await refresh();
             return true;
           },
           builder: (context, physics, locators) => FrostLoadingScrollView(
             key: const PageStorageKey('discover'),
+            controller: _scroll,
             physics: physics,
             slivers: [
-              const FrostChromeSpacer(),
+              FrostChromeSpacer(key: _spacer),
               ?locators.sliverHeader,
               if (history.isNotEmpty) ...[
                 column(
                   FrostSectionHeader(
+                    key: _sections[DiscoverSection.history],
                     title: t.discover.history,
                     actionLabel: t.discover.clearHistory,
                     onAction: () => ref.read(searchHistoryProvider.notifier).clear(),
@@ -105,47 +144,16 @@ class DiscoverPage extends ConsumerWidget {
               column(
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: FrostGap.section),
-                  child: AppEntryRow(
-                    entries: [
-                      AppEntry(
-                        icon: PivIcons.activity,
-                        label: t.navigation.ranking,
-                        onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.ranking())),
-                      ),
-                      AppEntry(
-                        icon: PivIcons.newspaper,
-                        label: t.pixivision.title,
-                        onPressed: () => unawaited(GoRouter.of(context).push(AppRoute.pixivision.path)),
-                      ),
-                      AppEntry(icon: PivIcons.heart, label: t.fanbox.title, onPressed: () => unawaited(GoRouter.of(context).push(AppRoute.fanbox.path))),
-                    ],
-                  ),
+                  child: AppEntryRow(entries: discoverEntries(t, (location) => unawaited(GoRouter.of(context).push(location)))),
                 ),
               ),
-              column(FrostSectionHeader(title: t.search.trendingTags)),
+              column(FrostSectionHeader(key: _sections[DiscoverSection.trending], title: t.search.trendingTags)),
               column(switch (trending) {
                 AsyncValue(:final value?) when value.isEmpty => FrostText(t.search.emptyTrendingTitle, tone: FrostTextTone.secondary),
                 AsyncValue(:final value?) => FrostGrid(
-                  minItemWidth: tagTileWidth,
+                  minItemWidth: DiscoverPage.tagTileWidth,
                   aspectRatio: 1,
-                  children: [
-                    for (final tag in value)
-                      FrostMediaCard(
-                        media: AppPixivImage(url: tag.illust.imageUrls.squareMedium, aspectRatio: 1, radius: 0),
-                        aspectRatio: 1,
-                        semanticLabel: '#${tag.tag}',
-                        overlay: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FrostText('#${tag.tag}', content: true, role: FrostTextRole.subheadline, maxLines: 1, overflow: TextOverflow.ellipsis),
-                            if (tag.translatedName case final name? when name.isNotEmpty)
-                              FrostText(name, content: true, role: FrostTextRole.footnote, maxLines: 1, overflow: TextOverflow.ellipsis),
-                          ],
-                        ),
-                        onPressed: () => actions.insertTag(tag.tag),
-                      ),
-                  ],
+                  children: [for (final tag in value) DiscoverTagCard(tag: tag, onPressed: () => actions.insertTag(tag.tag))],
                 ),
                 AsyncValue(:final error?) => FrostCompactMessage.error(
                   error: error,
@@ -165,18 +173,13 @@ class DiscoverPage extends ConsumerWidget {
                 ),
               ),
               column(switch (articles) {
-                AsyncValue(:final value?) => switch ([...(value.page.recommended.isNotEmpty ? value.page.recommended : value.page.articles)].take(3).toList()) {
+                AsyncValue(:final value?) => switch (discoverArticles(value)) {
                   final shown when shown.isEmpty => FrostText(t.discoverPage.noArticles, tone: FrostTextTone.secondary),
                   final shown => FrostGrid(
-                    minItemWidth: articleTileWidth,
+                    minItemWidth: DiscoverPage.articleTileWidth,
                     children: [
                       for (final article in shown)
-                        FrostMediaCard(
-                          media: AppPixivImage(url: article.thumbnail ?? '', aspectRatio: 16 / 9, radius: 0, headers: _pixivisionReferer),
-                          aspectRatio: 16 / 9,
-                          title: article.title,
-                          onPressed: () => unawaited(openPixivisionLink(context, article.url, summary: article)),
-                        ),
+                        DiscoverArticleCard(article: article, onPressed: () => unawaited(openPixivisionLink(context, article.url, summary: article))),
                     ],
                   ),
                 },

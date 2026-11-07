@@ -118,7 +118,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
         controller: _tabs,
         header: FrostPageHeader(
           title: inCaption ? FrostText(_keyword) : null,
-          middle: inCaption ? null : SearchBox(onSearch: _submit, showFilters: false),
+          middle: inCaption ? null : SearchBox(onSearch: _submit),
         ),
         tabs: [
           FrostTab(label: t.search.type.illustManga),

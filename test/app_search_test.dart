@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
@@ -119,34 +118,11 @@ void main() {
     await _finish(tester);
   });
 
-  testWidgets('with words the search group offers every type, the draft type first, and a number opens directly', (tester) async {
-    final (_, container) = await _mount(tester);
-    final session = container.read(appSearchSessionProvider)..setType(SearchType.novel);
-    session.controller.text = '42';
-    await tester.pump();
-    final groups = _sections(tester);
-    expect(groups.first.children.map((item) => (item as FrostSearchSuggestionRow).label), ['Search novels for “42”', 'Search illustrations & manga for “42”', 'Search users for “42”']);
-    expect(groups[1].children.map((item) => (item as FrostSearchSuggestionRow).label), ['Open illustration #42', 'Open user #42', 'Open novel #42']);
-    await _finish(tester);
-  });
 
-  testWidgets('with no words the dropdown has recent searches and the discover entries', (tester) async {
-    final (_, container) = await _mount(tester);
-    for (final query in ['a', 'b', 'c', 'd', 'e', 'f']) {
-      container.read(searchHistoryProvider.notifier).record(query);
-    }
-    await tester.pump();
-    final groups = _sections(tester);
-    expect(groups.first.children, hasLength(5));
-    expect(groups.first.actionLabel, 'All history');
-    expect(groups[1].children.map((item) => (item as FrostSearchSuggestionRow).label), ['Ranking', 'pixivision', 'FANBOX']);
-    await _finish(tester);
-  });
-
-  testWidgets('Ctrl K is advertised on the title bar search', (tester) async {
+  testWidgets('the title bar search gives its room to the placeholder, not a shortcut hint', (tester) async {
     await _mount(tester);
     final caption = tester.widget<FrostCaptionSearch>(find.byType(FrostCaptionSearch));
-    expect(caption.hint, const FrostShortcut(LogicalKeyboardKey.keyK, primary: true).hintLabel(tester.element(find.byType(FrostCaptionSearch))));
+    expect(caption.hint, isNull);
     expect(caption.placeholder, 'Search illustrations, novels, users');
     await _finish(tester);
   });
@@ -154,9 +130,3 @@ void main() {
 
 /// The title bar search's element is a ConsumerWidget's element, a WidgetRef.
 void _submit(BuildContext element, {SearchType? type}) => AppSearchActions(element as WidgetRef, element).submit(type: type);
-
-/// The title bar dropdown's sections, in order.
-List<FrostSearchSection> _sections(WidgetTester tester) {
-  final content = tester.widget<FrostCaptionSearch>(find.byType(FrostCaptionSearch)).content! as Column;
-  return content.children.whereType<FrostSearchSection>().toList();
-}

@@ -22,6 +22,7 @@ import 'package:freepiv/features/ranking/presentation/ranking_page.dart';
 import 'package:freepiv/features/search/presentation/search_illust_result_page.dart';
 import 'package:freepiv/features/search/presentation/search_novel_result_page.dart';
 import 'package:freepiv/features/discover/page.dart';
+import 'package:freepiv/features/discover/discover_sections.dart';
 import 'package:freepiv/features/search/presentation/search_user_result_page.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
@@ -81,7 +82,10 @@ class _RankingRoute extends StatelessWidget {
 Page<void> discoverPage(BuildContext context, GoRouterState state) {
   return FrostDetailPage(
     key: state.pageKey,
-    child: DiscoverPage(focusSearch: state.uri.queryParameters[AppRouteQuery.focus] == AppRouteQuery.on),
+    child: DiscoverPage(
+      focusSearch: state.uri.queryParameters[AppRouteQuery.focus] == AppRouteQuery.on,
+      section: DiscoverSection.values.where((section) => section.name == state.uri.queryParameters[AppRouteQuery.section]).firstOrNull,
+    ),
   );
 }
 

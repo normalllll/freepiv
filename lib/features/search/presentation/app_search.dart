@@ -1,8 +1,11 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/features/pixivision/logic.dart';
+import 'package:freepiv/core/utils/text_format.dart';
+import 'package:freepiv/features/discover/discover_sections.dart';
 import 'package:freepiv/features/pixivision/navigation.dart';
 import 'package:freepiv/features/search/logic/search_history_logic.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
@@ -10,6 +13,7 @@ import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_autocomplete_session.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_models.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
@@ -102,10 +106,6 @@ class AppSearchPlacementProbe extends StatelessWidget {
   }
 }
 
-/// How many recent searches and trending tags the dropdown shows.
-const _recentSearches = 5;
-const _dropdownTrendingTags = 8;
-const _dropdownArticles = 3;
 
 AppSearchKind appSearchKind(SearchType type) => switch (type) {
   SearchType.illust => AppSearchKind.illust,
@@ -169,142 +169,236 @@ class AppSearchActions {
   }
 }
 
-/// The dropdown's groups. With no input: recent searches, the discover entries,
-/// trending tags and Pixivision articles (text rows until Frost can show
-/// media in suggestions, freepiv-20261107-search-media-suggestions). With
-/// input: search the whole query by type, open a number directly, and
-/// complete the last word with a tag.
-List<Widget> appSearchSuggestions(BuildContext context, WidgetRef ref, AppSearchActions actions) {
-  final t = context.t;
-  final session = ref.watch(appSearchSessionProvider);
-  final query = session.searchText;
-  if (query.isEmpty) {
-    final history = ref.watch(searchHistoryProvider);
-    final trending = ref.watch(searchTrendingTagsProvider).value ?? const [];
-    final language = pixivisionLanguagePath(t.$meta.locale);
-    final pixivision = ref.watch(pixivisionBrowseProvider('https://www.pixivision.net/$language/')).value?.page;
-    final articles = pixivision == null
-        ? const []
-        : (pixivision.recommended.isNotEmpty ? pixivision.recommended : pixivision.articles).take(_dropdownArticles).toList();
-    return [
-      if (history.isNotEmpty)
-        FrostSearchSection(
-          title: t.discover.history,
-          actionLabel: t.appSearch.allHistory,
-          onAction: () => actions.open(AppRoute.discover.path),
-          children: [
-            for (final entry in history.take(_recentSearches))
-              FrostSearchSuggestionRow(
-                label: entry,
-                icon: const FrostIconData.glyph(Icons.history),
-                onSelected: () => actions.submit(text: entry),
-                onRemove: () => ref.read(searchHistoryProvider.notifier).remove(entry),
-              ),
-          ],
-        ),
-      FrostSearchSection(
-        title: t.common.discover,
-        children: [
-          FrostSearchSuggestionRow(label: t.navigation.ranking, icon: PivIcons.activity, onSelected: () => actions.open(AppLocations.ranking())),
-          FrostSearchSuggestionRow(label: t.pixivision.title, icon: PivIcons.newspaper, onSelected: () => actions.open(AppRoute.pixivision.path)),
-          FrostSearchSuggestionRow(label: t.fanbox.title, icon: PivIcons.heart, onSelected: () => actions.open(AppRoute.fanbox.path)),
-        ],
-      ),
-      if (trending.isNotEmpty)
-        FrostSearchSection(
-          title: t.search.trendingTags,
-          actionLabel: t.appSearch.allTrendingTags,
-          onAction: () => actions.open(AppRoute.discover.path),
-          children: [
-            for (final tag in trending.take(_dropdownTrendingTags))
-              FrostSearchSuggestionRow(label: '#${tag.tag}', detail: tag.translatedName, inlineDetail: true, keepsOpen: true, onSelected: () => actions.insertTag(tag.tag)),
-          ],
-        ),
-      if (articles.isNotEmpty)
-        FrostSearchSection(
-          title: t.pixivision.title,
-          actionLabel: t.discover.viewAll,
-          onAction: () => actions.open(AppRoute.pixivision.path),
-          children: [
-            for (final article in articles)
-              FrostSearchSuggestionRow(
-                label: article.title,
-                icon: PivIcons.newspaper,
-                onSelected: () {
-                  session.unfocus(appendTrailingSpace: false);
-                  openPixivisionLink(context, article.url, summary: article);
-                },
-              ),
-          ],
-        ),
-    ];
-  }
+/// How many recent searches and trending tags the compact discover shows.
+const appSearchRecentCount = 5;
+const appSearchTagCount = 8;
 
-  final types = [session.type, ...SearchType.values.where((type) => type != session.type)];
-  final direct = session.suggestions.where((suggestion) => suggestion.id != null).toList();
-  final tags = session.suggestions.where((suggestion) => suggestion.kind == SearchItemKind.tag).toList();
-  return [
-    FrostSearchSection(
-      title: t.navigation.search,
-      children: [
-        for (final type in types)
-          FrostSearchSuggestionRow(
-            label: switch (type) {
-              SearchType.illust => t.appSearch.searchIllust(query: query),
-              SearchType.novel => t.appSearch.searchNovel(query: query),
-              SearchType.user => t.appSearch.searchUser(query: query),
-            },
-            icon: PivIcons.search,
-            onSelected: () => actions.submit(type: type),
-          ),
-      ],
-    ),
-    if (direct.isNotEmpty)
-      FrostSearchSection(
-        title: t.appSearch.openGroup,
-        children: [
-          for (final suggestion in direct)
-            FrostSearchSuggestionRow(
-              label: suggestion.label,
-              icon: FrostIconData.glyph(suggestion.icon),
-              onSelected: () => actions.open(switch (suggestion.kind) {
-                SearchItemKind.illust => AppLocations.illust(suggestion.id!),
-                SearchItemKind.user => AppLocations.user(suggestion.id!),
-                SearchItemKind.novel || SearchItemKind.tag => AppLocations.novel(suggestion.id!),
-              }),
-            ),
-        ],
-      ),
-    if (tags.isNotEmpty)
-      FrostSearchSection(
-        title: t.appSearch.tagGroup,
-        children: [
-          for (final tag in tags)
-            FrostSearchSuggestionRow(label: tag.label, detail: tag.subtitle, inlineDetail: true, keepsOpen: true, onSelected: () => session.commitTerm(tag.value)),
-        ],
-      ),
-    if (session.error != null)
-      FrostSearchSection(
-        children: [FrostSearchSuggestionRow(label: t.common.retry, icon: PivIcons.refreshCw, keepsOpen: true, onSelected: session.retry)],
-      ),
-  ];
+/// Trending tags stand in rows of this many in the compact discover.
+const appSearchTagColumns = 4;
+
+/// The dropdown's content ([FrostCaptionSearch.content],
+/// [FrostSearchInput.suggesting]). With no input, the compact discover:
+/// the last searches, two rows of trending tag cards and
+/// a row of Pixivision cards, each section only when it has something. With
+/// input: search the whole query by type, open a number
+/// directly, complete the last word with a tag, and the completion's status,
+/// a failure with its details and a retry. Every row and card is an option
+/// the field's arrow keys and Enter reach.
+///
+/// The compact discover belongs to the title bar search; a page header
+/// search ([compactDiscover] false) shows nothing until there is input,
+/// the page under it being the discover page or results.
+Widget? appSearchContent(BuildContext context, WidgetRef ref, AppSearchActions actions, {bool compactDiscover = true}) {
+  final session = ref.watch(appSearchSessionProvider);
+  if (session.searchText.isEmpty) return compactDiscover ? _CompactDiscover(actions: actions) : null;
+  return _Suggestions(actions: actions);
 }
 
-/// The dropdown's status line: a failed or empty tag completion.
-/// The dropdown content ([FrostCaptionSearch.content]): the suggestion
-/// sections, then the completion status.
-Widget appSearchContent(BuildContext context, WidgetRef ref, AppSearchActions actions) {
-  final session = ref.watch(appSearchSessionProvider);
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      ...appSearchSuggestions(context, ref, actions),
-      FrostSearchStatus(loading: session.loading, message: appSearchMessage(context, session)),
-    ],
+/// Each time the dropdown opens on the compact discover, stale trending tags
+/// and Pixivision are fetched again behind what is shown.
+void appSearchOpened(WidgetRef ref, BuildContext context) {
+  if (ref.read(appSearchSessionProvider).searchText.isNotEmpty) return;
+  ref.read(discoverFreshnessProvider).refreshIfStale(ref, context.t);
+}
+
+class _CompactDiscover extends ConsumerWidget {
+  const _CompactDiscover({required this.actions});
+
+  final AppSearchActions actions;
+
+  /// Tag cards are a little wider than tall, so two rows and the rest fit
+  /// the dropdown without scrolling.
+  static const _tagAspect = 3 / 2;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.t;
+    final history = ref.watch(searchHistoryProvider);
+    final trending = ref.watch(searchTrendingTagsProvider).value ?? const [];
+    final listing = ref.watch(discoverPixivision(t)).value;
+    final articles = listing == null ? const <ArticleSummary>[] : discoverArticles(listing);
+    final tags = trending.take(appSearchTagCount).toList();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (history.isNotEmpty)
+          FrostSearchSection(
+            title: t.discover.history,
+            actionLabel: t.appSearch.allHistory,
+            onAction: () => actions.open(AppLocations.discover(section: DiscoverSection.history.name)),
+            children: [
+              for (final entry in history.take(appSearchRecentCount))
+                FrostSearchSuggestionRow(
+                  key: ValueKey(('history', entry)),
+                  label: entry,
+                  icon: PivIcons.history,
+                  onSelected: () => actions.submit(text: entry),
+                  onRemove: () => ref.read(searchHistoryProvider.notifier).remove(entry),
+                ),
+            ],
+          ),
+        if (tags.isNotEmpty)
+          FrostSearchSection(
+            title: t.search.trendingTags,
+            actionLabel: t.appSearch.allTrendingTags,
+            onAction: () => actions.open(AppLocations.discover(section: DiscoverSection.trending.name)),
+            children: [
+              for (var start = 0; start < tags.length; start += appSearchTagColumns)
+                Padding(
+                  padding: EdgeInsets.only(top: start == 0 ? 0 : FrostGap.inline),
+                  child: _OptionRow(
+                    columns: appSearchTagColumns,
+                    children: [
+                      for (final tag in tags.skip(start).take(appSearchTagColumns))
+                        FrostSearchOption(
+                          key: ValueKey(('tag', tag.tag)),
+                          keepsOpen: true,
+                          semanticLabel: '#${tag.tag}',
+                          onSelected: () => actions.insertTag(tag.tag),
+                          // The option takes the tap; the card only shows.
+                          child: IgnorePointer(child: DiscoverTagCard(tag: tag, aspectRatio: _tagAspect)),
+                        ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        if (articles.isNotEmpty)
+          FrostSearchSection(
+            title: t.pixivision.title,
+            actionLabel: t.discover.viewAll,
+            onAction: () => actions.open(AppRoute.pixivision.path),
+            children: [
+              _OptionRow(
+                columns: discoverArticleCount,
+                children: [
+                  for (final article in articles)
+                    FrostSearchOption(
+                      key: ValueKey(('article', article.id)),
+                      semanticLabel: article.title,
+                      onSelected: () {
+                        actions.session.unfocus(appendTrailingSpace: false);
+                        actions.onCollapse?.call();
+                        unawaited(openPixivisionLink(context, article.url, summary: article));
+                      },
+                      child: IgnorePointer(child: DiscoverArticleCard(article: article, titleLines: 1)),
+                    ),
+                ],
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+/// Options sharing a row in equal columns; a short row keeps its columns.
+class _OptionRow extends StatelessWidget {
+  const _OptionRow({required this.columns, required this.children});
+
+  final int columns;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    spacing: FrostGap.inline,
+    children: [for (var index = 0; index < columns; index++) Expanded(child: index < children.length ? children[index] : const SizedBox.shrink())],
   );
 }
 
+class _Suggestions extends ConsumerWidget {
+  const _Suggestions({required this.actions});
+
+  final AppSearchActions actions;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.t;
+    final session = ref.watch(appSearchSessionProvider);
+    final query = session.searchText;
+    final types = [session.type, ...SearchType.values.where((type) => type != session.type)];
+    final direct = session.suggestions.where((suggestion) => suggestion.id != null).toList();
+    final tags = session.suggestions.where((suggestion) => suggestion.kind == SearchItemKind.tag).toList();
+    final error = session.error;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FrostSearchSection(
+          title: t.navigation.search,
+          children: [
+            for (final type in types)
+              FrostSearchSuggestionRow(
+                key: ValueKey(('search', type)),
+                label: switch (type) {
+                  SearchType.illust => t.appSearch.searchIllust(query: query),
+                  SearchType.novel => t.appSearch.searchNovel(query: query),
+                  SearchType.user => t.appSearch.searchUser(query: query),
+                },
+                icon: PivIcons.search,
+                onSelected: () => actions.submit(type: type),
+              ),
+          ],
+        ),
+        if (direct.isNotEmpty)
+          FrostSearchSection(
+            title: t.appSearch.openGroup,
+            children: [
+              for (final suggestion in direct)
+                FrostSearchSuggestionRow(
+                  key: ValueKey(('open', suggestion.kind)),
+                  label: suggestion.label,
+                  icon: switch (suggestion.kind) {
+                    SearchItemKind.illust => PivIcons.image,
+                    SearchItemKind.user => PivIcons.user,
+                    SearchItemKind.novel || SearchItemKind.tag => PivIcons.bookOpen,
+                  },
+                  onSelected: () => actions.open(switch (suggestion.kind) {
+                    SearchItemKind.illust => AppLocations.illust(suggestion.id!),
+                    SearchItemKind.user => AppLocations.user(suggestion.id!),
+                    SearchItemKind.novel || SearchItemKind.tag => AppLocations.novel(suggestion.id!),
+                  }),
+                ),
+            ],
+          ),
+        if (tags.isNotEmpty)
+          FrostSearchSection(
+            title: t.appSearch.tagGroup,
+            children: [
+              for (final tag in tags)
+                FrostSearchSuggestionRow(
+                  key: ValueKey(('completion', tag.value)),
+                  label: tag.label,
+                  icon: PivIcons.tags,
+                  detail: tag.subtitle,
+                  inlineDetail: true,
+                  keepsOpen: true,
+                  onSelected: () => session.commitTerm(tag.value),
+                ),
+            ],
+          ),
+        FrostSearchStatus(loading: session.loading, message: appSearchMessage(context, session)),
+        if (error != null)
+          FrostSearchSection(
+            children: [
+              FrostSearchSuggestionRow(
+                key: const ValueKey('completion-retry'),
+                label: t.common.retry,
+                icon: PivIcons.refreshCw,
+                keepsOpen: true,
+                onSelected: session.retry,
+              ),
+              FrostErrorDetails.quiet(details: pixivErrorDetails(error)),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+/// The dropdown's status line: a failed or empty tag completion.
 String? appSearchMessage(BuildContext context, SearchAutocompleteSession session) {
   if (session.searchText.isEmpty) return null;
   if (session.error != null) return context.t.appSearch.suggestionsFailed;
@@ -315,25 +409,44 @@ String? appSearchMessage(BuildContext context, SearchAutocompleteSession session
 }
 
 /// The search in the window's title row ([FrostShell.titleBarSearch]).
-class AppTitleBarSearch extends ConsumerWidget {
+class AppTitleBarSearch extends ConsumerStatefulWidget {
   const AppTitleBarSearch({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(appSearchSessionProvider);
-    return ListenableBuilder(
-      listenable: session,
-      builder: (context, _) {
-        final actions = AppSearchActions(ref, context);
-        return FrostCaptionSearch(
-          controller: session.controller,
-          focusNode: session.focusNode,
-          placeholder: context.t.appSearch.placeholder,
-          hint: const FrostShortcut(LogicalKeyboardKey.keyK, primary: true).hintLabel(context),
-          content: appSearchContent(context, ref, actions),
-          onSubmitted: (_) => actions.submit(),
-        );
-      },
-    );
+  ConsumerState<AppTitleBarSearch> createState() => _AppTitleBarSearchState();
+}
+
+class _AppTitleBarSearchState extends ConsumerState<AppTitleBarSearch> {
+  late final SearchAutocompleteSession _session = ref.read(appSearchSessionProvider);
+
+  @override
+  void initState() {
+    super.initState();
+    _session.focusNode.addListener(_focusChanged);
   }
+
+  @override
+  void dispose() {
+    _session.focusNode.removeListener(_focusChanged);
+    super.dispose();
+  }
+
+  void _focusChanged() {
+    if (_session.focusNode.hasFocus && mounted) appSearchOpened(ref, context);
+  }
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: _session,
+    builder: (context, _) {
+      final actions = AppSearchActions(ref, context);
+      return FrostCaptionSearch(
+        controller: _session.controller,
+        focusNode: _session.focusNode,
+        placeholder: context.t.appSearch.placeholder,
+        content: appSearchContent(context, ref, actions),
+        onSubmitted: (_) => actions.submit(),
+      );
+    },
+  );
 }

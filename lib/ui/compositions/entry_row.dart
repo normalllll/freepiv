@@ -15,8 +15,7 @@ class AppEntry {
   final FrostCountBadgeTone countTone;
 }
 
-/// The row of entries the search dropdown, the discover page and "Me" share:
-/// a module tile per entry with its icon and label, and a
+/// The row of entries on the discover page: a module tile per entry with its icon and label, and a
 /// count badge where one is given. With a pointer the tiles keep one fixed
 /// width from the start; with touch they share the row equally, [touchColumns] to a row.
 class AppEntryRow extends StatelessWidget {
@@ -43,8 +42,7 @@ class AppEntryRow extends StatelessWidget {
             Row(
               spacing: FrostGap.related,
               children: [
-                for (var index = start; index < start + columns; index++)
-                  Expanded(child: index < tiles.length ? tiles[index] : const SizedBox.shrink()),
+                for (var index = start; index < start + columns; index++) Expanded(child: index < tiles.length ? tiles[index] : const SizedBox.shrink()),
               ],
             ),
         ],
@@ -66,36 +64,34 @@ class _EntryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(FrostRadius.lg);
-    return Semantics(
-      button: true,
-      label: entry.count > 0 ? '${entry.label}, ${entry.count}' : entry.label,
-      excludeSemantics: true,
-      child: FrostClickSurface(
-        shape: FrostClickShape.rounded(radius),
-        onTap: entry.onPressed,
-        child: FrostSurface(
-          role: FrostSurfaceRole.module,
-          borderRadius: radius,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: FrostGap.related, vertical: FrostGap.group),
-            child: Column(
+    final label = entry.count > 0 ? '${entry.label}, ${entry.count}' : entry.label;
+    final tile = FrostSurface(
+      role: FrostSurfaceRole.module,
+      borderRadius: radius,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: FrostGap.related, vertical: FrostGap.group),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: FrostGap.inline,
+          children: [
+            Row(
               mainAxisSize: MainAxisSize.min,
               spacing: FrostGap.inline,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: FrostGap.inline,
-                  children: [
-                    FrostIcon(entry.icon, size: FrostControlSize.large.iconSize),
-                    if (entry.count > 0) FrostCountBadge(count: entry.count, tone: entry.countTone),
-                  ],
-                ),
-                FrostText(entry.label, role: FrostTextRole.footnote, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center),
+                FrostIcon(entry.icon, size: FrostControlSize.large.iconSize),
+                if (entry.count > 0) FrostCountBadge(count: entry.count, tone: entry.countTone),
               ],
             ),
-          ),
+            FrostText(entry.label, role: FrostTextRole.footnote, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center),
+          ],
         ),
       ),
+    );
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: FrostClickSurface(shape: FrostClickShape.rounded(radius), onTap: entry.onPressed, child: tile),
     );
   }
 }
