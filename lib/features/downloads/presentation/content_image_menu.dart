@@ -5,7 +5,7 @@ import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/pixiv_image.dart';
+import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:path/path.dart' as p;
 
 /// An image shown inside other content (a FANBOX post, a Pixivision article,
@@ -47,7 +47,7 @@ Future<void> _downloadThroughManager({
     await downloadManager.ensureReadyForDownloads();
     DownloadFlight.launch(
       origin: flightOrigin,
-      artwork: PixivImage(url: url, headers: headers),
+      artwork: AppPixivImage(url: url, headers: headers),
     );
     final file = await downloadManager.download(
       origin: DownloadOrigin.ofImageUrl(uri),
