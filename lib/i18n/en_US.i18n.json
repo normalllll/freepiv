@@ -600,7 +600,13 @@
     "emptyTitle": "No newest works",
     "compactFilter": "$workType · $scope",
     "novelChars": "$count chars",
-    "novelPages": "$count pages"
+    "novelPages": "$count pages",
+    "empty": {
+      "following": "Nothing new from the people you follow",
+      "privateFollows": "Nothing new from your private follows",
+      "mypixiv": "Nothing new from your My pixiv friends",
+      "everyone": "No new works yet"
+    }
   },
   "illust": {
     "contextMenu": {

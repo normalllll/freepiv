@@ -600,7 +600,13 @@
     "emptyTitle": "暂无最新作品",
     "compactFilter": "$workType · $scope",
     "novelChars": "$count 字",
-    "novelPages": "$count 页"
+    "novelPages": "$count 页",
+    "empty": {
+      "following": "关注的人还没有新作品",
+      "privateFollows": "非公开关注的人还没有新作品",
+      "mypixiv": "好P友还没有新作品",
+      "everyone": "还没有新作品"
+    }
   },
   "illust": {
     "contextMenu": {

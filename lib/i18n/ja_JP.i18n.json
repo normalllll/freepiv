@@ -600,7 +600,13 @@
     "emptyTitle": "最新作品はありません",
     "compactFilter": "$workType · $scope",
     "novelChars": "$count 文字",
-    "novelPages": "$count ページ"
+    "novelPages": "$count ページ",
+    "empty": {
+      "following": "フォロー中のユーザーの新着はありません",
+      "privateFollows": "非公開フォローの新着はありません",
+      "mypixiv": "マイピクの新着はありません",
+      "everyone": "新着作品はまだありません"
+    }
   },
   "illust": {
     "contextMenu": {

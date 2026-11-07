@@ -556,6 +556,7 @@ class Translations$newest$zh_Hant_TW extends Translations$newest$en_US {
 	@override String compactFilter({required Object workType, required Object scope}) => '${workType} · ${scope}';
 	@override String novelChars({required Object count}) => '${count} 字';
 	@override String novelPages({required Object count}) => '${count} 頁';
+	@override late final Translations$newest$empty$zh_Hant_TW empty = Translations$newest$empty$zh_Hant_TW.internal(_root);
 }
 
 // Path: illust
@@ -1415,6 +1416,19 @@ class Translations$newest$followScope$zh_Hant_TW extends Translations$newest$fol
 	@override String get compactPublic => '公開';
 }
 
+// Path: newest.empty
+class Translations$newest$empty$zh_Hant_TW extends Translations$newest$empty$en_US {
+	Translations$newest$empty$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get following => '追蹤的人還沒有新作品';
+	@override String get privateFollows => '非公開追蹤的人還沒有新作品';
+	@override String get mypixiv => '好P友還沒有新作品';
+	@override String get everyone => '還沒有新作品';
+}
+
 // Path: illust.contextMenu
 class Translations$illust$contextMenu$zh_Hant_TW extends Translations$illust$contextMenu$en_US {
 	Translations$illust$contextMenu$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
@@ -2184,6 +2198,10 @@ extension on TranslationsZhHantTw {
 			'newest.compactFilter' => ({required Object workType, required Object scope}) => '${workType} · ${scope}',
 			'newest.novelChars' => ({required Object count}) => '${count} 字',
 			'newest.novelPages' => ({required Object count}) => '${count} 頁',
+			'newest.empty.following' => '追蹤的人還沒有新作品',
+			'newest.empty.privateFollows' => '非公開追蹤的人還沒有新作品',
+			'newest.empty.mypixiv' => '好P友還沒有新作品',
+			'newest.empty.everyone' => '還沒有新作品',
 			'illust.contextMenu.download' => '下載',
 			'illust.contextMenu.downloadAll' => '下載全部',
 			'illust.contextMenu.copyImage' => '複製圖像',
@@ -2193,12 +2211,12 @@ extension on TranslationsZhHantTw {
 			'illust.imageLabels.large' => '大圖',
 			'illust.imageLabels.image' => '圖片',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下載佇列：${count} 張圖片',
+			_ => null,
+		} ?? switch (path) {
 			'illust.toast.downloadComplete' => ({required Object name}) => '已儲存 ${name}',
 			'illust.toast.downloadFailed' => '下載失敗',
 			'illust.toast.copying' => ({required Object label}) => '正在複製${label}',
 			'illust.toast.copied' => ({required Object label}) => '已複製${label}',
-			_ => null,
-		} ?? switch (path) {
 			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '已複製${label}：${value}',
 			'illust.toast.copyFailed' => ({required Object label}) => '複製${label}失敗',
 			'illust.toast.openFailed' => '無法在 Pixiv 開啟作品',

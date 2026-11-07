@@ -556,6 +556,7 @@ class Translations$newest$zh_CN extends Translations$newest$en_US {
 	@override String compactFilter({required Object workType, required Object scope}) => '${workType} · ${scope}';
 	@override String novelChars({required Object count}) => '${count} 字';
 	@override String novelPages({required Object count}) => '${count} 页';
+	@override late final Translations$newest$empty$zh_CN empty = Translations$newest$empty$zh_CN.internal(_root);
 }
 
 // Path: illust
@@ -1415,6 +1416,19 @@ class Translations$newest$followScope$zh_CN extends Translations$newest$followSc
 	@override String get compactPublic => '公开';
 }
 
+// Path: newest.empty
+class Translations$newest$empty$zh_CN extends Translations$newest$empty$en_US {
+	Translations$newest$empty$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get following => '关注的人还没有新作品';
+	@override String get privateFollows => '非公开关注的人还没有新作品';
+	@override String get mypixiv => '好P友还没有新作品';
+	@override String get everyone => '还没有新作品';
+}
+
 // Path: illust.contextMenu
 class Translations$illust$contextMenu$zh_CN extends Translations$illust$contextMenu$en_US {
 	Translations$illust$contextMenu$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
@@ -2184,6 +2198,10 @@ extension on TranslationsZhCn {
 			'newest.compactFilter' => ({required Object workType, required Object scope}) => '${workType} · ${scope}',
 			'newest.novelChars' => ({required Object count}) => '${count} 字',
 			'newest.novelPages' => ({required Object count}) => '${count} 页',
+			'newest.empty.following' => '关注的人还没有新作品',
+			'newest.empty.privateFollows' => '非公开关注的人还没有新作品',
+			'newest.empty.mypixiv' => '好P友还没有新作品',
+			'newest.empty.everyone' => '还没有新作品',
 			'illust.contextMenu.download' => '下载',
 			'illust.contextMenu.downloadAll' => '下载全部',
 			'illust.contextMenu.copyImage' => '复制图片',
@@ -2193,12 +2211,12 @@ extension on TranslationsZhCn {
 			'illust.imageLabels.large' => '大图',
 			'illust.imageLabels.image' => '图片',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下载队列：${count} 张图片',
+			_ => null,
+		} ?? switch (path) {
 			'illust.toast.downloadComplete' => ({required Object name}) => '已保存 ${name}',
 			'illust.toast.downloadFailed' => '下载失败',
 			'illust.toast.copying' => ({required Object label}) => '正在复制${label}',
 			'illust.toast.copied' => ({required Object label}) => '已复制${label}',
-			_ => null,
-		} ?? switch (path) {
 			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '已复制${label}：${value}',
 			'illust.toast.copyFailed' => ({required Object label}) => '复制${label}失败',
 			'illust.toast.openFailed' => '无法在 Pixiv 打开作品',

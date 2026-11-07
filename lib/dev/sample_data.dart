@@ -12,6 +12,7 @@ import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
+import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/pixivision/logic.dart';
@@ -232,16 +233,17 @@ final sampleOverrideMap = <Object, Override>{
   searchTrendingTagsProvider: searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
   downloadTasksProvider: downloadTasksProvider.overrideWith((ref) => Stream.value(sampleDownloadTasks)),
   fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
+  newestProvider: newestProvider.overrideWith(SampleNewest.new),
 };
 
 final sampleOverrides = [...sampleOverrideMap.values];
 
 /// Novels by sample authors, some long-titled and in a series.
-List<Novel> sampleNovels({int count = 12}) => [
+List<Novel> sampleNovels({int count = 12, String? title, String? author}) => [
   for (var index = 0; index < count; index++)
     Novel(
       id: 70000 + index,
-      title: index.isEven ? 'Sample novel ${index + 1}' : 'A rather long sample novel title that needs two lines ${index + 1}',
+      title: title ?? (index.isEven ? 'Sample novel ${index + 1}' : 'A rather long sample novel title that needs two lines ${index + 1}'),
       caption: 'The opening of a story about the sea, the town on its shore and the people who wait there for the boats to come back.',
       restrict: 0,
       xRestrict: 0,
@@ -259,7 +261,7 @@ List<Novel> sampleNovels({int count = 12}) => [
       ],
       pageCount: 3,
       textLength: 12000 + index * 830,
-      user: _artist,
+      user: author == null ? _artist : User(id: _artist.id, name: author, account: author, profileImageUrls: _artist.profileImageUrls),
       series: Series(id: index % 3 == 0 ? 500 : null, title: index % 3 == 0 ? 'The shore stories' : null),
       totalBookmarks: 120 + index,
       isBookmarked: index % 4 == 0,
@@ -680,4 +682,24 @@ class _SampleNovelDetail extends NovelDetail {
   @override
   FutureOr<Novel> build(NovelDetailArgs args) =>
       args.novel ?? sampleNovels().firstWhere((novel) => novel.id == args.novelId, orElse: () => sampleNovels().first);
+}
+
+/// Newest feeds answering from the sample works; private follows are empty.
+class SampleNewest extends Newest {
+  @override
+  NewestListSource createSource(NewestFeedKey key) => SampleNewestSource(key);
+}
+
+class SampleNewestSource extends NewestListSource {
+  SampleNewestSource(NewestFeedKey key) : super(key: key);
+
+  @override
+  Future<Object> loadFirstPage() async {
+    if (key.followScope == NewestFollowScope.private) return const IllustPageResult(illusts: [], rankingIllusts: []);
+    if (key.isNovel) return NovelPageResult(novels: sampleNovels(), rankingNovels: const []);
+    return IllustPageResult(illusts: sampleIllusts(kind: key.workType == NewestWorkType.manga ? 'manga' : 'illust'), rankingIllusts: const []);
+  }
+
+  @override
+  Future<Object> loadNextPage(String nextUrl) async => const IllustPageResult(illusts: [], rankingIllusts: []);
 }

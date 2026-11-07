@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show protected;
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -22,6 +23,15 @@ List<NewestWorkType> newestWorkTypeOptions(NewestAudience audience) {
     NewestAudience.everyone => _publicNewestWorkTypes,
   };
 }
+
+/// The type [from] becomes on moving to [audience]: the same where it is one
+/// of [audience]'s types, its nearest one otherwise.
+NewestWorkType carriedNewestWorkType(NewestWorkType from, NewestAudience audience) => switch ((from, audience)) {
+  (NewestWorkType.novel, _) => NewestWorkType.novel,
+  (NewestWorkType.illustManga, NewestAudience.everyone) => NewestWorkType.illust,
+  (NewestWorkType.illust || NewestWorkType.manga, NewestAudience.following || NewestAudience.mypixiv) => NewestWorkType.illustManga,
+  _ => normalizeNewestWorkType(audience, from),
+};
 
 NewestWorkType normalizeNewestWorkType(NewestAudience audience, NewestWorkType workType) {
   final options = newestWorkTypeOptions(audience);
@@ -196,7 +206,7 @@ class NewestListSource extends FrostCursorListSource<NewestItem, Object> {
 class Newest extends _$Newest {
   @override
   NewestState build() {
-    final sources = {for (final key in newestFeedKeys) key: _createSource(key)};
+    final sources = {for (final key in newestFeedKeys) key: createSource(key)};
     ref.onDispose(() {
       for (final source in sources.values) {
         source.dispose();
@@ -213,12 +223,20 @@ class Newest extends _$Newest {
     );
   }
 
+  /// Shows [audience], carrying the current type over where it still holds:
+  /// novels stay novels, Illust & Manga becomes Illust for everyone, and
+  /// everyone's Illust or Manga becomes Illust & Manga for follows.
   void setAudience(NewestAudience audience) {
     if (state.audience == audience) {
       return;
     }
 
-    state = state.copyWith(audience: audience);
+    final carried = carriedNewestWorkType(state.keyForAudience(state.audience).workType, audience);
+    state = switch (audience) {
+      NewestAudience.following => state.copyWith(audience: audience, followingWorkType: carried),
+      NewestAudience.mypixiv => state.copyWith(audience: audience, mypixivWorkType: carried),
+      NewestAudience.everyone => state.copyWith(audience: audience, everyoneWorkType: carried),
+    };
     loadCurrentIfNeeded();
   }
 
@@ -255,7 +273,9 @@ class Newest extends _$Newest {
     }
   }
 
-  NewestListSource _createSource(NewestFeedKey key) {
+  /// The feed for [key]; sample data answers its own.
+  @protected
+  NewestListSource createSource(NewestFeedKey key) {
     return NewestListSource(key: key);
   }
 }

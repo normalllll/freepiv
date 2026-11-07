@@ -5,14 +5,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
-import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart' show AppCardBookmarkButton;
 import 'package:freepiv/ui/compositions/content_rows.dart';
+import 'package:freepiv/ui/compositions/destination_header.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/ui/compositions/sectioned_page.dart';
 import 'package:frost_data/frost_data.dart';
@@ -94,7 +93,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
       if (_tabs.index != index) _tabs.animateTo(index);
     });
     return AppSectionedPage(
-      header: const _HomeHeader(),
+      header: AppDestinationHeader(title: t.navigation.home),
       controller: _tabs,
       scrollControllers: _scrolls,
       tabs: [
@@ -110,45 +109,6 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
         HomeType.novels => _novelSlivers(context, ref.watch(homeNovelSourceProvider)),
         HomeType.users => _userSlivers(context, ref.watch(homeUserSourceProvider)),
       },
-    );
-  }
-}
-
-/// The page header: the page title in the title-bar layout; the way to Me
-/// and to search where the title row holds no search.
-class _HomeHeader extends ConsumerWidget {
-  const _HomeHeader();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final t = context.t;
-    if (FrostShell.titleContentInCaptionOf(context)) return FrostPageHeader(title: FrostText(t.navigation.home));
-    final account = pixivAccountNotifier.value?.user;
-    final avatarUrl = account?.profileImageUrls.px170X170 ?? '';
-    return FrostPageHeader(
-      leading: [
-        if (account != null)
-          Semantics(
-            button: true,
-            label: t.navigation.me,
-            excludeSemantics: true,
-            child: FrostClickSurface(
-              shape: const FrostClickShape.circle(),
-              onTap: () => GoRouter.of(context).go(AppRoute.me.path),
-              child: FrostAvatar.person(
-                name: account.name,
-                colorKey: account.id,
-                size: FrostAvatarSize.small,
-                image: avatarUrl.isEmpty ? null : pixivImageProvider(ref, avatarUrl),
-              ),
-            ),
-          ),
-      ],
-      middle: FrostSearchEntry(
-        key: const ValueKey('home-search-entry'),
-        placeholder: t.appSearch.placeholder,
-        onPressed: () => openAppSearch(ref, GoRouter.of(context)),
-      ),
     );
   }
 }

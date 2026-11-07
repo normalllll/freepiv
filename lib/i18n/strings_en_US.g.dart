@@ -558,6 +558,7 @@ class Translations$newest$en_US {
 	String compactFilter({required Object workType, required Object scope}) => '${workType} · ${scope}';
 	String novelChars({required Object count}) => '${count} chars';
 	String novelPages({required Object count}) => '${count} pages';
+	late final Translations$newest$empty$en_US empty = Translations$newest$empty$en_US.internal(_root);
 }
 
 // Path: illust
@@ -1417,6 +1418,19 @@ class Translations$newest$followScope$en_US {
 	String get compactPublic => 'Public';
 }
 
+// Path: newest.empty
+class Translations$newest$empty$en_US {
+	Translations$newest$empty$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get following => 'Nothing new from the people you follow';
+	String get privateFollows => 'Nothing new from your private follows';
+	String get mypixiv => 'Nothing new from your My pixiv friends';
+	String get everyone => 'No new works yet';
+}
+
 // Path: illust.contextMenu
 class Translations$illust$contextMenu$en_US {
 	Translations$illust$contextMenu$en_US.internal(this._root);
@@ -2186,6 +2200,10 @@ extension on Translations {
 			'newest.compactFilter' => ({required Object workType, required Object scope}) => '${workType} · ${scope}',
 			'newest.novelChars' => ({required Object count}) => '${count} chars',
 			'newest.novelPages' => ({required Object count}) => '${count} pages',
+			'newest.empty.following' => 'Nothing new from the people you follow',
+			'newest.empty.privateFollows' => 'Nothing new from your private follows',
+			'newest.empty.mypixiv' => 'Nothing new from your My pixiv friends',
+			'newest.empty.everyone' => 'No new works yet',
 			'illust.contextMenu.download' => 'Download',
 			'illust.contextMenu.downloadAll' => 'Download all',
 			'illust.contextMenu.copyImage' => 'Copy image',
@@ -2195,12 +2213,12 @@ extension on Translations {
 			'illust.imageLabels.large' => 'large image',
 			'illust.imageLabels.image' => 'image',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} images added to the download queue',
+			_ => null,
+		} ?? switch (path) {
 			'illust.toast.downloadComplete' => ({required Object name}) => 'Saved ${name}',
 			'illust.toast.downloadFailed' => 'Download failed',
 			'illust.toast.copying' => ({required Object label}) => 'Copying ${label}',
 			'illust.toast.copied' => ({required Object label}) => 'Copied ${label}',
-			_ => null,
-		} ?? switch (path) {
 			'illust.toast.copiedValue' => ({required Object label, required Object value}) => 'Copied ${label}: ${value}',
 			'illust.toast.copyFailed' => ({required Object label}) => 'Failed to copy ${label}',
 			'illust.toast.openFailed' => 'Could not open this work on Pixiv',

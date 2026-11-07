@@ -556,6 +556,7 @@ class _Translations$newest$ja_JP extends Translations$newest$en_US {
 	@override String compactFilter({required Object workType, required Object scope}) => '${workType} · ${scope}';
 	@override String novelChars({required Object count}) => '${count} 文字';
 	@override String novelPages({required Object count}) => '${count} ページ';
+	@override late final _Translations$newest$empty$ja_JP empty = _Translations$newest$empty$ja_JP._(_root);
 }
 
 // Path: illust
@@ -1415,6 +1416,19 @@ class _Translations$newest$followScope$ja_JP extends Translations$newest$followS
 	@override String get compactPublic => '公開';
 }
 
+// Path: newest.empty
+class _Translations$newest$empty$ja_JP extends Translations$newest$empty$en_US {
+	_Translations$newest$empty$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get following => 'フォロー中のユーザーの新着はありません';
+	@override String get privateFollows => '非公開フォローの新着はありません';
+	@override String get mypixiv => 'マイピクの新着はありません';
+	@override String get everyone => '新着作品はまだありません';
+}
+
 // Path: illust.contextMenu
 class _Translations$illust$contextMenu$ja_JP extends Translations$illust$contextMenu$en_US {
 	_Translations$illust$contextMenu$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
@@ -2184,6 +2198,10 @@ extension on TranslationsJaJp {
 			'newest.compactFilter' => ({required Object workType, required Object scope}) => '${workType} · ${scope}',
 			'newest.novelChars' => ({required Object count}) => '${count} 文字',
 			'newest.novelPages' => ({required Object count}) => '${count} ページ',
+			'newest.empty.following' => 'フォロー中のユーザーの新着はありません',
+			'newest.empty.privateFollows' => '非公開フォローの新着はありません',
+			'newest.empty.mypixiv' => 'マイピクの新着はありません',
+			'newest.empty.everyone' => '新着作品はまだありません',
 			'illust.contextMenu.download' => 'ダウンロード',
 			'illust.contextMenu.downloadAll' => 'すべてダウンロード',
 			'illust.contextMenu.copyImage' => '画像をコピーする',
@@ -2193,12 +2211,12 @@ extension on TranslationsJaJp {
 			'illust.imageLabels.large' => '大きい画像',
 			'illust.imageLabels.image' => '画像',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} 枚の画像をダウンロードキューに追加しました',
+			_ => null,
+		} ?? switch (path) {
 			'illust.toast.downloadComplete' => ({required Object name}) => '${name} を保存しました',
 			'illust.toast.downloadFailed' => 'ダウンロードに失敗しました',
 			'illust.toast.copying' => ({required Object label}) => '${label}をコピーしています',
 			'illust.toast.copied' => ({required Object label}) => '${label}をコピーしました',
-			_ => null,
-		} ?? switch (path) {
 			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '${label}をコピーしました：${value}',
 			'illust.toast.copyFailed' => ({required Object label}) => '${label}のコピーに失敗しました',
 			'illust.toast.openFailed' => 'Pixiv で作品を開けませんでした',
