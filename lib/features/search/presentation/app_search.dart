@@ -174,7 +174,7 @@ class AppSearchActions {
 /// media in suggestions, freepiv-20261107-search-media-suggestions). With
 /// input: search the whole query by type, open a number directly, and
 /// complete the last word with a tag.
-List<FrostSearchSuggestionGroup> appSearchSuggestions(BuildContext context, WidgetRef ref, AppSearchActions actions) {
+List<Widget> appSearchSuggestions(BuildContext context, WidgetRef ref, AppSearchActions actions) {
   final t = context.t;
   final session = ref.watch(appSearchSessionProvider);
   final query = session.searchText;
@@ -188,13 +188,13 @@ List<FrostSearchSuggestionGroup> appSearchSuggestions(BuildContext context, Widg
         : (pixivision.recommended.isNotEmpty ? pixivision.recommended : pixivision.articles).take(_dropdownArticles).toList();
     return [
       if (history.isNotEmpty)
-        FrostSearchSuggestionGroup(
+        FrostSearchSection(
           title: t.discover.history,
           actionLabel: t.appSearch.allHistory,
           onAction: () => actions.open(AppRoute.discover.path),
-          items: [
+          children: [
             for (final entry in history.take(_recentSearches))
-              FrostSearchSuggestion(
+              FrostSearchSuggestionRow(
                 label: entry,
                 icon: const FrostIconData.glyph(Icons.history),
                 onSelected: () => actions.submit(text: entry),
@@ -202,33 +202,32 @@ List<FrostSearchSuggestionGroup> appSearchSuggestions(BuildContext context, Widg
               ),
           ],
         ),
-      FrostSearchSuggestionGroup(
+      FrostSearchSection(
         title: t.common.discover,
-        items: [
-          FrostSearchSuggestion(label: t.navigation.ranking, icon: PivIcons.activity, onSelected: () => actions.open(AppLocations.ranking())),
-          FrostSearchSuggestion(label: t.pixivision.title, icon: PivIcons.newspaper, onSelected: () => actions.open(AppRoute.pixivision.path)),
-          FrostSearchSuggestion(label: t.fanbox.title, icon: PivIcons.heart, onSelected: () => actions.open(AppRoute.fanbox.path)),
+        children: [
+          FrostSearchSuggestionRow(label: t.navigation.ranking, icon: PivIcons.activity, onSelected: () => actions.open(AppLocations.ranking())),
+          FrostSearchSuggestionRow(label: t.pixivision.title, icon: PivIcons.newspaper, onSelected: () => actions.open(AppRoute.pixivision.path)),
+          FrostSearchSuggestionRow(label: t.fanbox.title, icon: PivIcons.heart, onSelected: () => actions.open(AppRoute.fanbox.path)),
         ],
       ),
       if (trending.isNotEmpty)
-        FrostSearchSuggestionGroup(
+        FrostSearchSection(
           title: t.search.trendingTags,
-          keepsOpen: true,
           actionLabel: t.appSearch.allTrendingTags,
           onAction: () => actions.open(AppRoute.discover.path),
-          items: [
+          children: [
             for (final tag in trending.take(_dropdownTrendingTags))
-              FrostSearchSuggestion(label: '#${tag.tag}', detail: tag.translatedName, inlineDetail: true, onSelected: () => actions.insertTag(tag.tag)),
+              FrostSearchSuggestionRow(label: '#${tag.tag}', detail: tag.translatedName, inlineDetail: true, keepsOpen: true, onSelected: () => actions.insertTag(tag.tag)),
           ],
         ),
       if (articles.isNotEmpty)
-        FrostSearchSuggestionGroup(
+        FrostSearchSection(
           title: t.pixivision.title,
           actionLabel: t.discover.viewAll,
           onAction: () => actions.open(AppRoute.pixivision.path),
-          items: [
+          children: [
             for (final article in articles)
-              FrostSearchSuggestion(
+              FrostSearchSuggestionRow(
                 label: article.title,
                 icon: PivIcons.newspaper,
                 onSelected: () {
@@ -245,11 +244,11 @@ List<FrostSearchSuggestionGroup> appSearchSuggestions(BuildContext context, Widg
   final direct = session.suggestions.where((suggestion) => suggestion.id != null).toList();
   final tags = session.suggestions.where((suggestion) => suggestion.kind == SearchItemKind.tag).toList();
   return [
-    FrostSearchSuggestionGroup(
+    FrostSearchSection(
       title: t.navigation.search,
-      items: [
+      children: [
         for (final type in types)
-          FrostSearchSuggestion(
+          FrostSearchSuggestionRow(
             label: switch (type) {
               SearchType.illust => t.appSearch.searchIllust(query: query),
               SearchType.novel => t.appSearch.searchNovel(query: query),
@@ -261,11 +260,11 @@ List<FrostSearchSuggestionGroup> appSearchSuggestions(BuildContext context, Widg
       ],
     ),
     if (direct.isNotEmpty)
-      FrostSearchSuggestionGroup(
+      FrostSearchSection(
         title: t.appSearch.openGroup,
-        items: [
+        children: [
           for (final suggestion in direct)
-            FrostSearchSuggestion(
+            FrostSearchSuggestionRow(
               label: suggestion.label,
               icon: FrostIconData.glyph(suggestion.icon),
               onSelected: () => actions.open(switch (suggestion.kind) {
@@ -277,23 +276,35 @@ List<FrostSearchSuggestionGroup> appSearchSuggestions(BuildContext context, Widg
         ],
       ),
     if (tags.isNotEmpty)
-      FrostSearchSuggestionGroup(
+      FrostSearchSection(
         title: t.appSearch.tagGroup,
-        keepsOpen: true,
-        items: [
+        children: [
           for (final tag in tags)
-            FrostSearchSuggestion(label: tag.label, detail: tag.subtitle, inlineDetail: true, onSelected: () => session.commitTerm(tag.value)),
+            FrostSearchSuggestionRow(label: tag.label, detail: tag.subtitle, inlineDetail: true, keepsOpen: true, onSelected: () => session.commitTerm(tag.value)),
         ],
       ),
     if (session.error != null)
-      FrostSearchSuggestionGroup(
-        keepsOpen: true,
-        items: [FrostSearchSuggestion(label: t.common.retry, icon: PivIcons.refreshCw, onSelected: session.retry)],
+      FrostSearchSection(
+        children: [FrostSearchSuggestionRow(label: t.common.retry, icon: PivIcons.refreshCw, keepsOpen: true, onSelected: session.retry)],
       ),
   ];
 }
 
 /// The dropdown's status line: a failed or empty tag completion.
+/// The dropdown content ([FrostCaptionSearch.content]): the suggestion
+/// sections, then the completion status.
+Widget appSearchContent(BuildContext context, WidgetRef ref, AppSearchActions actions) {
+  final session = ref.watch(appSearchSessionProvider);
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      ...appSearchSuggestions(context, ref, actions),
+      FrostSearchStatus(loading: session.loading, message: appSearchMessage(context, session)),
+    ],
+  );
+}
+
 String? appSearchMessage(BuildContext context, SearchAutocompleteSession session) {
   if (session.searchText.isEmpty) return null;
   if (session.error != null) return context.t.appSearch.suggestionsFailed;
@@ -319,9 +330,7 @@ class AppTitleBarSearch extends ConsumerWidget {
           focusNode: session.focusNode,
           placeholder: context.t.appSearch.placeholder,
           hint: const FrostShortcut(LogicalKeyboardKey.keyK, primary: true).hintLabel(context),
-          suggestions: appSearchSuggestions(context, ref, actions),
-          loading: session.loading,
-          message: appSearchMessage(context, session),
+          content: appSearchContent(context, ref, actions),
           onSubmitted: (_) => actions.submit(),
         );
       },

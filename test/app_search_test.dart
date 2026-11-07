@@ -124,9 +124,9 @@ void main() {
     final session = container.read(appSearchSessionProvider)..setType(SearchType.novel);
     session.controller.text = '42';
     await tester.pump();
-    final groups = tester.widget<FrostCaptionSearch>(find.byType(FrostCaptionSearch)).suggestions;
-    expect(groups.first.items.map((item) => item.label), ['Search novels for “42”', 'Search illustrations & manga for “42”', 'Search users for “42”']);
-    expect(groups[1].items.map((item) => item.label), ['Open illustration #42', 'Open user #42', 'Open novel #42']);
+    final groups = _sections(tester);
+    expect(groups.first.children.map((item) => (item as FrostSearchSuggestionRow).label), ['Search novels for “42”', 'Search illustrations & manga for “42”', 'Search users for “42”']);
+    expect(groups[1].children.map((item) => (item as FrostSearchSuggestionRow).label), ['Open illustration #42', 'Open user #42', 'Open novel #42']);
     await _finish(tester);
   });
 
@@ -136,10 +136,10 @@ void main() {
       container.read(searchHistoryProvider.notifier).record(query);
     }
     await tester.pump();
-    final groups = tester.widget<FrostCaptionSearch>(find.byType(FrostCaptionSearch)).suggestions;
-    expect(groups.first.items, hasLength(5));
+    final groups = _sections(tester);
+    expect(groups.first.children, hasLength(5));
     expect(groups.first.actionLabel, 'All history');
-    expect(groups[1].items.map((item) => item.label), ['Ranking', 'pixivision', 'FANBOX']);
+    expect(groups[1].children.map((item) => (item as FrostSearchSuggestionRow).label), ['Ranking', 'pixivision', 'FANBOX']);
     await _finish(tester);
   });
 
@@ -154,3 +154,9 @@ void main() {
 
 /// The title bar search's element is a ConsumerWidget's element, a WidgetRef.
 void _submit(BuildContext element, {SearchType? type}) => AppSearchActions(element as WidgetRef, element).submit(type: type);
+
+/// The title bar dropdown's sections, in order.
+List<FrostSearchSection> _sections(WidgetTester tester) {
+  final content = tester.widget<FrostCaptionSearch>(find.byType(FrostCaptionSearch)).content! as Column;
+  return content.children.whereType<FrostSearchSection>().toList();
+}

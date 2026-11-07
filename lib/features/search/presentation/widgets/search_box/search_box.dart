@@ -117,9 +117,7 @@ class SearchBoxState extends ConsumerState<SearchBox> {
           placement: FrostSuggestionPlacement.overlay,
           onSubmitted: (_) => actions.submit(type: widget.fixedType),
           onClear: _session.clearAll,
-          suggestions: appSearchSuggestions(context, ref, actions),
-          loading: _session.loading,
-          message: appSearchMessage(context, _session),
+          content: appSearchContent(context, ref, actions),
           actions: [if (widget.showFilters && type != SearchType.user) SearchFilterButton(type: type, allowTypeSelection: false, compact: true)],
         );
       },
