@@ -18,29 +18,44 @@ Future<void> openPixivisionLink(BuildContext context, String value, {ArticleSumm
       return;
     }
   }
-  if (uri!.host == 'www.pixiv.net' || uri.host == 'pixiv.net') {
-    final segments = uri.pathSegments;
-    String Function(Object id)? location;
-    String? id;
-    for (final (segment, destination) in [('artworks', AppLocations.illust), ('users', AppLocations.user)]) {
-      final index = segments.indexOf(segment);
-      if (index >= 0 && segments.length > index + 1) {
-        location = destination;
-        id = segments[index + 1];
-        break;
-      }
-    }
-    // A pixiv website URL, not an app route.
-    if (uri.path.contains('/novel/show.php')) {
-      location = AppLocations.novel;
-      id = uri.queryParameters['id'];
-    }
-    if (location != null && id != null && int.tryParse(id) != null) {
-      await context.push(location(id));
-      return;
-    }
+  if (pixivAppLocation(uri!) case final location?) {
+    await context.push(location);
+    return;
   }
   await openPixivisionExternalLink(context, value);
+}
+
+const _pixivHosts = {'pixiv.net', 'www.pixiv.net', 'touch.pixiv.net', 'm.pixiv.net'};
+
+/// The app location of a pixiv website address for a work, a user or a
+/// novel, current or legacy (`member.php?id=`, `member_illust.php?illust_id=`,
+/// `/i/<id>`, the touch and mobile hosts), or null for anything else.
+String? pixivAppLocation(Uri uri) {
+  if (!_pixivHosts.contains(uri.host.toLowerCase())) return null;
+  String? numeric(String? value) => value != null && int.tryParse(value) != null ? value : null;
+  final segments = uri.pathSegments.where((segment) => segment.isNotEmpty).toList();
+  // These are pixiv website paths, not app routes.
+  for (final (segment, location) in [('artworks', AppLocations.illust), ('users', AppLocations.user), ('i', AppLocations.illust)]) {
+    final index = segments.indexOf(segment);
+    if (index >= 0 && index + 1 < segments.length) {
+      if (numeric(segments[index + 1]) case final id?) return location(id);
+    }
+  }
+  final page = segments.lastOrNull;
+  final query = uri.queryParameters;
+  return switch (page) {
+    'show.php' when segments.contains('novel') => numeric(query['id']).map(AppLocations.novel),
+    'member_illust.php' => numeric(query['illust_id']).map(AppLocations.illust) ?? numeric(query['id']).map(AppLocations.user),
+    'member.php' => numeric(query['id']).map(AppLocations.user),
+    _ => null,
+  };
+}
+
+extension on String? {
+  T? map<T>(T Function(String value) transform) => switch (this) {
+    final value? => transform(value),
+    null => null,
+  };
 }
 
 bool _isWebLink(Uri? uri) => uri != null && ['https', 'http'].contains(uri.scheme) && uri.host.isNotEmpty && uri.userInfo.isEmpty;

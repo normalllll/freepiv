@@ -16,6 +16,7 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/loading_section.dart';
+import 'package:freepiv/ui/compositions/pixiv_text.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:frost_ui/social.dart' show FrostThread;
@@ -244,7 +245,7 @@ class _IllustAboutState extends State<IllustAbout> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: FrostGap.group,
       children: [
-        if (caption.isNotEmpty) FrostExpandableText(text: caption),
+        if (caption.isNotEmpty) AppPixivText(illust.caption),
         if (illust.tags.isNotEmpty)
           FrostWrap(
             children: [

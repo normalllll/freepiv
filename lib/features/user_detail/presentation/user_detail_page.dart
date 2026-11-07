@@ -16,6 +16,7 @@ import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/identity_header.dart';
 import 'package:freepiv/ui/compositions/identity_tabs_header.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
+import 'package:freepiv/ui/compositions/pixiv_text.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -337,7 +338,7 @@ class _UserIdentity extends StatelessWidget {
                   onSelected: () => unawaited(_copy(bio, t.userPage.bioCopied)),
                 ),
               ],
-              child: FrostExpandableText(text: bio, maxLines: 2),
+              child: AppPixivText(detail.user.comment ?? '', maxLines: 2),
             ),
         ],
       ),

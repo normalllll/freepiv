@@ -22,6 +22,7 @@ import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/loading_section.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
+import 'package:freepiv/ui/compositions/pixiv_text.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -276,7 +277,7 @@ class _NovelAbout extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: FrostGap.group,
       children: [
-        if (text.isNotEmpty) FrostExpandableText(text: text),
+        if (text.isNotEmpty) AppPixivText(caption?.trim().isNotEmpty ?? false ? caption! : novel.caption),
         if (novel.tags.isNotEmpty)
           FrostWrap(
             children: [
