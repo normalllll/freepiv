@@ -887,6 +887,8 @@ class Translations$fanboxPage$zh_Hant_TW extends Translations$fanboxPage$en_US {
 	@override String get accountSettings => 'FANBOX 帳號設定';
 	@override String get localOnly => '本機書籤只保存在這台裝置上';
 	@override String get creatorPage => '開啟創作者';
+	@override String get noComments => '還沒有留言';
+	@override String get collecting => '正在收集貼文';
 }
 
 // Path: discoverPage
@@ -2494,6 +2496,8 @@ extension on TranslationsZhHantTw {
 			'fanboxPage.accountSettings' => 'FANBOX 帳號設定',
 			'fanboxPage.localOnly' => '本機書籤只保存在這台裝置上',
 			'fanboxPage.creatorPage' => '開啟創作者',
+			'fanboxPage.noComments' => '還沒有留言',
+			'fanboxPage.collecting' => '正在收集貼文',
 			'discoverPage.noArticles' => '暫時沒有文章',
 			_ => null,
 		};

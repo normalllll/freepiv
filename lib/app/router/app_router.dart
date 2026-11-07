@@ -4,8 +4,8 @@ import 'package:freepiv/features/pixivision/page.dart';
 import 'package:freepiv/features/pixivision/article_page.dart';
 import 'package:flutter/material.dart';
 import 'package:freepiv/features/fanbox/browse_page.dart';
-import 'package:freepiv/features/fanbox/page.dart';
-import 'package:freepiv/features/fanbox/detail.dart';
+import 'package:freepiv/features/fanbox/detail.dart' show FanboxCreatorDetailPage;
+import 'package:freepiv/features/fanbox/post_page.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/fanbox/login_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
@@ -140,22 +140,41 @@ class AppRouter {
                 ),
               ),
             ),
-            fanboxTagRoute(),
+            GoRoute(
+              path: AppRoute.fanboxTag.path,
+              name: AppRoute.fanboxTag.name,
+              pageBuilder: (context, state) => FrostDetailPage(
+                key: state.pageKey,
+                child: FanboxBrowsePage(
+                  location: (
+                    section: FanboxSection.tag,
+                    creatorId: state.uri.queryParameters[AppRouteQuery.creator] ?? '',
+                    query: state.uri.queryParameters[AppRouteQuery.query] ?? '',
+                  ),
+                ),
+              ),
+            ),
             GoRoute(
               path: AppRoute.fanboxPost.path,
               name: AppRoute.fanboxPost.name,
-              builder: (context, state) => FanboxPostDetailPage(
-                postId: state.pathParameters[AppRouteParam.postId]!,
-                summary: state.extra is FanboxPost ? state.extra as FanboxPost : null,
+              pageBuilder: (context, state) => FrostDetailPage(
+                key: state.pageKey,
+                child: FanboxPostDetailPage(
+                  postId: state.pathParameters[AppRouteParam.postId]!,
+                  summary: state.extra is FanboxPost ? state.extra as FanboxPost : null,
+                ),
               ),
             ),
             GoRoute(
               path: AppRoute.fanboxCreator.path,
               name: AppRoute.fanboxCreator.name,
-              builder: (context, state) => FanboxCreatorDetailPage(
-                creatorId: state.pathParameters[AppRouteParam.creatorId]!,
-                showPlans: state.uri.queryParameters[AppRouteQuery.plans] == 'true',
-                summary: state.extra is FanboxCreator ? state.extra as FanboxCreator : null,
+              pageBuilder: (context, state) => FrostDetailPage(
+                key: state.pageKey,
+                child: FanboxCreatorDetailPage(
+                  creatorId: state.pathParameters[AppRouteParam.creatorId]!,
+                  showPlans: state.uri.queryParameters[AppRouteQuery.plans] == 'true',
+                  summary: state.extra is FanboxCreator ? state.extra as FanboxCreator : null,
+                ),
               ),
             ),
             // FANBOX's own sign-in page where the platform has a web view.

@@ -958,7 +958,9 @@
     "searchTags": "タグを「$query」で検索",
     "accountSettings": "FANBOX アカウント設定",
     "localOnly": "保存した投稿はこの端末にのみ残ります",
-    "creatorPage": "クリエイターを開く"
+    "creatorPage": "クリエイターを開く",
+    "noComments": "コメントはまだありません",
+    "collecting": "投稿を収集中"
   },
   "discoverPage": {
     "noArticles": "現在記事はありません"

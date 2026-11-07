@@ -887,6 +887,8 @@ class Translations$fanboxPage$zh_CN extends Translations$fanboxPage$en_US {
 	@override String get accountSettings => 'FANBOX 账号设置';
 	@override String get localOnly => '本机书签只保存在这台设备上';
 	@override String get creatorPage => '打开创作者';
+	@override String get noComments => '还没有评论';
+	@override String get collecting => '正在收集帖子';
 }
 
 // Path: discoverPage
@@ -2494,6 +2496,8 @@ extension on TranslationsZhCn {
 			'fanboxPage.accountSettings' => 'FANBOX 账号设置',
 			'fanboxPage.localOnly' => '本机书签只保存在这台设备上',
 			'fanboxPage.creatorPage' => '打开创作者',
+			'fanboxPage.noComments' => '还没有评论',
+			'fanboxPage.collecting' => '正在收集帖子',
 			'discoverPage.noArticles' => '暂时没有文章',
 			_ => null,
 		};

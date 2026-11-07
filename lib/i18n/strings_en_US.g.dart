@@ -889,6 +889,8 @@ class Translations$fanboxPage$en_US {
 	String get accountSettings => 'FANBOX account settings';
 	String get localOnly => 'Saved posts stay on this device only';
 	String get creatorPage => 'Open creator';
+	String get noComments => 'No comments yet';
+	String get collecting => 'Collecting posts';
 }
 
 // Path: discoverPage
@@ -2496,6 +2498,8 @@ extension on Translations {
 			'fanboxPage.accountSettings' => 'FANBOX account settings',
 			'fanboxPage.localOnly' => 'Saved posts stay on this device only',
 			'fanboxPage.creatorPage' => 'Open creator',
+			'fanboxPage.noComments' => 'No comments yet',
+			'fanboxPage.collecting' => 'Collecting posts',
 			'discoverPage.noArticles' => 'No articles right now',
 			_ => null,
 		};

@@ -887,6 +887,8 @@ class _Translations$fanboxPage$ja_JP extends Translations$fanboxPage$en_US {
 	@override String get accountSettings => 'FANBOX アカウント設定';
 	@override String get localOnly => '保存した投稿はこの端末にのみ残ります';
 	@override String get creatorPage => 'クリエイターを開く';
+	@override String get noComments => 'コメントはまだありません';
+	@override String get collecting => '投稿を収集中';
 }
 
 // Path: discoverPage
@@ -2494,6 +2496,8 @@ extension on TranslationsJaJp {
 			'fanboxPage.accountSettings' => 'FANBOX アカウント設定',
 			'fanboxPage.localOnly' => '保存した投稿はこの端末にのみ残ります',
 			'fanboxPage.creatorPage' => 'クリエイターを開く',
+			'fanboxPage.noComments' => 'コメントはまだありません',
+			'fanboxPage.collecting' => '投稿を収集中',
 			'discoverPage.noArticles' => '現在記事はありません',
 			_ => null,
 		};

@@ -17,7 +17,6 @@ import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
-import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:frost_ui/media.dart';
 import 'package:go_router/go_router.dart';
@@ -48,6 +47,9 @@ class IllustDetailPage extends ConsumerWidget {
     };
     final id = illustId ?? illust?.id;
     if (id == null) return content;
+    // The artwork the window is tinted with: the preview the card showed, or
+    // for a page opened without one the detail's, and then it stays.
+    final artwork = illust ?? shown;
     return FrostWindowTitleContribution(
       path: AppLocations.illust(id),
       page: shown == null
@@ -56,7 +58,7 @@ class IllustDetailPage extends ConsumerWidget {
               id: id,
               title: shown.title,
               kind: shown.kind,
-              imageUrl: illustPreviewImageUrl(shown.imageUrls, ref.watch(previewImageQualityProvider)),
+              imageUrl: illustPreviewImageUrl(artwork!.imageUrls, ref.watch(previewImageQualityProvider)),
             ),
       child: content,
     );
@@ -127,7 +129,6 @@ class _IllustDetailContentState extends ConsumerState<IllustDetailContent> {
     final illust = widget.illust;
     final pages = artworkPages(illust, ref.watch(viewerImageQualityProvider), ref.watch(previewImageQualityProvider));
     final info = IllustInfoContext(illust: illust, pages: pages, page: _page, playback: _playback);
-    final previewUrl = pages.first.previewUrl;
     Widget stage({bool strip = true, Widget? overlay}) => KeyedSubtree(
       key: _stageKey,
       child: IllustStage(
@@ -156,7 +157,7 @@ class _IllustDetailContentState extends ConsumerState<IllustDetailContent> {
       },
       child: Focus(
         autofocus: true,
-        child: previewUrl.isEmpty ? page : FrostAmbientBackdrop.fromImage(image: pixivImageProvider(ref, previewUrl), stageKey: _stageKey, child: page),
+        child: page,
       ),
     );
   }
@@ -289,19 +290,21 @@ class _NarrowIllustDetailState extends State<_NarrowIllustDetail> with SingleTic
     super.dispose();
   }
 
-  bool _above(GlobalKey key, double line) {
+  /// Whether [key]'s bottom is above [line]. The list drops what is far from
+  /// the viewport, so a block that is not there keeps its [last] answer.
+  bool _above(GlobalKey key, double line, {required bool last}) {
     final box = key.currentContext?.findRenderObject();
-    if (box is! RenderBox || !box.attached) return false;
+    if (box is! RenderBox || !box.attached) return last;
     final viewport = context.findRenderObject() as RenderBox?;
-    if (viewport == null) return false;
+    if (viewport == null) return last;
     final bottom = viewport.globalToLocal(box.localToGlobal(Offset(0, box.size.height))).dy;
     return bottom <= line;
   }
 
   bool _scrolled(ScrollNotification notification) {
     final header = MediaQuery.paddingOf(context).top + FrostPageHeader.verticalHeight;
-    final imageGone = _above(_imageKey, header);
-    final tabsPinned = _above(_tabsKey, header);
+    final imageGone = _above(_imageKey, header, last: _imageGone);
+    final tabsPinned = _above(_tabsKey, header, last: _tabsPinned);
     if (imageGone != _imageGone || tabsPinned != _tabsPinned) {
       setState(() {
         _imageGone = imageGone;

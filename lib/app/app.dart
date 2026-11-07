@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:freepiv/ui/compositions/pixiv_image.dart' show pixivImageOverride;
+import 'package:freepiv/ui/compositions/pixiv_image.dart' show pixivImageProviderFor;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -11,7 +11,6 @@ import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/core/platform/platform_info.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import 'window/window_title.dart';
@@ -65,18 +64,10 @@ class _FreepivMaterialAppState extends ConsumerState<_FreepivMaterialApp> {
     super.dispose();
   }
 
-  /// The visible work's thumbnail, decoded at the backdrop's sample width.
-  ImageProvider? _backdropImage(String? url) {
-    if (url == null) return null;
-    if (pixivImageOverride?.call(url) case final image?) return image;
-    final transport = ref.read(rustMediaTransportProvider);
-    return RustExtendedNetworkImageProvider(
-      request: MediaRequest(url: url, headers: const {'Referer': 'https://www.pixiv.net/'}),
-      decodeWidth: FrostAmbientBackdropHost.sampleWidth,
-      mediaStream: transport.stream,
-      mediaStreamCacheIdentity: transport.imageCacheIdentity,
-    );
-  }
+  /// The visible work's artwork: the same provider its card or page already
+  /// shows the picture with, so the backdrop reuses that decoded image instead
+  /// of fetching it again.
+  ImageProvider? _backdropImage(String? url) => url == null ? null : pixivImageProviderFor(ref.read(rustMediaTransportProvider), url);
 
   @override
   Widget build(BuildContext context) {

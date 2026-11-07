@@ -958,7 +958,9 @@
     "searchTags": "Search tags for “$query”",
     "accountSettings": "FANBOX account settings",
     "localOnly": "Saved posts stay on this device only",
-    "creatorPage": "Open creator"
+    "creatorPage": "Open creator",
+    "noComments": "No comments yet",
+    "collecting": "Collecting posts"
   },
   "discoverPage": {
     "noArticles": "No articles right now"

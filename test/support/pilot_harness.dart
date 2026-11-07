@@ -23,6 +23,9 @@ const phoneSize = Size(390, 844);
 /// page under test.
 final openedLocations = <String>[];
 
+/// What each of [openedLocations] was opened with.
+final openedExtras = <Object?>[];
+
 /// Mounts [page] alone (no shell) in the app's Frost config, at [size],
 /// [textScale] and [locale], with [overrides] (by provider) replacing the
 /// sample providers, and
@@ -53,6 +56,7 @@ Future<void> mountPilotPage(
   pixivImageOverride = sampleImageProvider;
   addTearDown(() => pixivImageOverride = null);
   openedLocations.clear();
+  openedExtras.clear();
   final uri = Uri.parse(location);
   final router = GoRouter(
     initialLocation: location,
@@ -63,6 +67,7 @@ Future<void> mountPilotPage(
         path: '/:rest(.*)',
         builder: (context, state) {
           openedLocations.add(state.uri.toString());
+          openedExtras.add(state.extra);
           return FrostText('opened ${state.uri}');
         },
       ),

@@ -5,9 +5,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
-import 'package:freepiv/features/fanbox/cards.dart';
+import 'package:freepiv/features/fanbox/browse_page.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
-import 'package:freepiv/features/fanbox/page.dart';
+import 'package:freepiv/ui/compositions/fanbox_rows.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -53,9 +53,9 @@ void main() {
                 body: SingleChildScrollView(
                   child: Column(
                     children: [
-                      FanboxBookmarkRow(postId: 'a'),
-                      FanboxBookmarkRow(postId: 'b'),
-                      FanboxBookmarkRow(postId: 'c'),
+                      FanboxEntryView(entry: FanboxBookmarkEntry('a')),
+                      FanboxEntryView(entry: FanboxBookmarkEntry('b')),
+                      FanboxEntryView(entry: FanboxBookmarkEntry('c')),
                     ],
                   ),
                 ),
@@ -75,7 +75,7 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(find.text('Post c'), findsOneWidget);
-    expect(find.byType(FanboxPostCard), findsNWidgets(2));
+    expect(find.byType(AppFanboxPostCard), findsNWidgets(2));
 
     await tester.tap(find.text(t.fanbox.retry));
     await tester.pump();
@@ -103,7 +103,7 @@ void main() {
                   controller: scroll,
                   scrollCacheExtent: const ScrollCacheExtent.pixels(0),
                   itemCount: 40,
-                  itemBuilder: (context, index) => FanboxBookmarkRow(postId: '$index'),
+                  itemBuilder: (context, index) => FanboxEntryView(entry: FanboxBookmarkEntry('$index')),
                 ),
               ),
             ),

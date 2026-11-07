@@ -13,7 +13,7 @@ import 'package:frost_ui/media.dart';
 import 'package:path/path.dart' as p;
 
 class OriginalImageViewerArgs {
-  const OriginalImageViewerArgs({required this.title, required this.source, required this.pages, this.initialIndex = 0});
+  const OriginalImageViewerArgs({required this.title, required this.source, required this.pages, this.initialIndex = 0, this.openOriginal});
 
   /// What the viewer shows, for its title row and download tasks.
   final String title;
@@ -22,10 +22,14 @@ class OriginalImageViewerArgs {
   final DownloadSource source;
   final List<OriginalImagePage> pages;
   final int initialIndex;
+
+  /// Opens the shown page where it comes from (a FANBOX image on the web),
+  /// from the top row and the menu; none when null.
+  final OriginalImageOpenAction? openOriginal;
 }
 
 class OriginalImagePage {
-  const OriginalImagePage({required this.url, required this.previewUrl, required this.downloadOrigin, this.aspectRatio, this.headers});
+  const OriginalImagePage({required this.url, required this.previewUrl, required this.downloadOrigin, this.aspectRatio, this.headers, this.accountKey});
 
   final String url;
   final String previewUrl;
@@ -37,6 +41,18 @@ class OriginalImagePage {
 
   /// The request headers the image host wants; Pixiv's referer when null.
   final Map<String, String>? headers;
+
+  /// The account an image behind a sign-in is fetched for; such an image is
+  /// never cached on disk. Null for public images.
+  final String? accountKey;
+}
+
+/// An action that opens the shown page outside the viewer.
+class OriginalImageOpenAction {
+  const OriginalImageOpenAction({required this.label, required this.onOpen});
+
+  final String label;
+  final void Function(OriginalImagePage page) onOpen;
 }
 
 /// The original image viewer: black, over the content
@@ -108,7 +124,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
       final page = _all[_index];
       DownloadFlight.launch(
         origin: origin,
-        artwork: AppPixivImage(url: page.previewUrl, headers: page.headers),
+        artwork: AppPixivImage(url: page.previewUrl, headers: page.headers, accountKey: page.accountKey),
       );
       final file = await downloadManager.saveBytes(
         origin: page.downloadOrigin,
@@ -144,6 +160,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
   Widget build(BuildContext context) {
     final t = context.t;
     final ready = _loaded[_index] != null && !_busy;
+    final open = widget.args.openOriginal;
     Widget chrome(BuildContext context) => FrostMediaChrome(
       top: Row(
         spacing: FrostGap.related,
@@ -157,6 +174,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          if (open != null) FrostButton.iconOnMedia(icon: PivIcons.externalLink, label: open.label, onPressed: () => open.onOpen(_all[_index])),
         ],
       ),
       bottom: Row(
@@ -216,6 +234,7 @@ class _OriginalImageViewerPageState extends State<OriginalImageViewerPage> {
                   enabled: ready,
                   onSelected: () => unawaited(_copy()),
                 ),
+              if (open != null) FrostMenuAction(open.label, leading: const FrostGlyph.icon(PivIcons.externalLink), onSelected: () => open.onOpen(_all[index])),
             ],
           ),
         ),
@@ -291,7 +310,7 @@ class _ViewerPageState extends ConsumerState<_ViewerPage> {
   @override
   Widget build(BuildContext context) {
     final page = widget.page;
-    final image = pixivImageProvider(ref, page.url, headers: page.headers, keepBytes: true, revision: _revision);
+    final image = pixivImageProvider(ref, page.url, headers: page.headers, accountKey: page.accountKey, keepBytes: true, revision: _revision);
     _watch(image);
     return FrostContextMenuRegion(
       entries: widget.menu,
@@ -322,7 +341,7 @@ class _ViewerPageState extends ConsumerState<_ViewerPage> {
                     : Stack(
                         fit: StackFit.expand,
                         children: [
-                          AppPixivImage(url: page.previewUrl, headers: page.headers, radius: 0, fit: BoxFit.contain),
+                          AppPixivImage(url: page.previewUrl, headers: page.headers, accountKey: page.accountKey, radius: 0, fit: BoxFit.contain),
                           Align(
                             alignment: Alignment.bottomCenter,
                             child: FrostProgressBar(

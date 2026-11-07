@@ -56,7 +56,7 @@ class NovelDetailPage extends ConsumerWidget {
     if (id == null) return content;
     return FrostWindowTitleContribution(
       path: AppLocations.novel(id),
-      page: shown == null ? null : FrostPageTitle(id: id, title: shown.title, kind: 'novel', imageUrl: shown.imageUrls.squareMedium),
+      page: shown == null ? null : FrostPageTitle(id: id, title: shown.title, kind: 'novel', imageUrl: shown.imageUrls.medium),
       child: content,
     );
   }
@@ -75,6 +75,7 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
   final _scroll = ScrollController();
   final _headKey = GlobalKey();
   bool _headGone = false;
+  double _headHeight = 0;
 
   Novel get _novel => widget.novel;
 
@@ -91,10 +92,11 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
   }
 
   /// Once the title has scrolled away the header carries it and the
-  /// reading button.
+  /// reading button. The list drops the head when it is far above; its last
+  /// height still stands.
   void _scrolled() {
-    final head = _headKey.currentContext?.size?.height ?? 0;
-    final gone = head > 0 && _scroll.offset > head;
+    _headHeight = _headKey.currentContext?.size?.height ?? _headHeight;
+    final gone = _headHeight > 0 && _scroll.offset > _headHeight;
     if (gone != _headGone) setState(() => _headGone = gone);
   }
 

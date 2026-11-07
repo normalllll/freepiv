@@ -230,7 +230,12 @@ final sampleOverrideMap = <Object, Override>{
   }),
   fanboxSessionProvider: fanboxSessionProvider.overrideWith(_SampleFanboxSession.new),
   fanboxBrowseProvider: fanboxBrowseProvider.overrideWith2((_) => _SampleFanboxBrowse()),
-  fanboxPostProvider: fanboxPostProvider.overrideWith((ref, id) async => sampleFanboxPosts().firstWhere((post) => post.id == id)),
+  fanboxPostProvider: fanboxPostProvider.overrideWith((ref, id) async => sampleFanboxPost(id)),
+  fanboxCreatorProvider: fanboxCreatorProvider.overrideWith((ref, id) async => sampleFanboxCreator(id)),
+  fanboxCommentsProvider: fanboxCommentsProvider.overrideWith2((_) => SampleFanboxComments()),
+  fanboxPlansProvider: fanboxPlansProvider.overrideWith((ref, creatorId) async => sampleFanboxPlans(creatorId)),
+  fanboxTagsProvider: fanboxTagsProvider.overrideWith((ref, creatorId) async => const [FanboxTag(name: 'illustration', count: 42), FanboxTag(name: 'process', count: 12)]),
+  fanboxSupportProvider: fanboxSupportProvider.overrideWith((ref, creatorId) async => FanboxSupport(creatorId: creatorId, fanCardUrl: sampleImageUrl(140, width: 960, height: 600))),
   pixivisionBrowseProvider: pixivisionBrowseProvider.overrideWith2((_) => _SamplePixivision()),
   pixivisionPageLoaderProvider: pixivisionPageLoaderProvider.overrideWithValue(samplePixivisionPage),
   pixivisionTagsProvider: pixivisionTagsProvider.overrideWith((ref, language) async => samplePixivisionTags),
@@ -644,6 +649,7 @@ class _SampleFanboxSession extends FanboxSession {
 class _SampleFanboxBrowse extends FanboxBrowse {
   @override
   Future<FanboxCollection> build(FanboxLocation location) async => switch (location.section) {
+    FanboxSection.creatorPlans => FanboxCollection([for (final plan in sampleFanboxPlans(location.creatorId)) FanboxPlanEntry(plan)]),
     FanboxSection.following || FanboxSection.recommended || FanboxSection.pixiv || FanboxSection.searchCreators => FanboxCollection([
       for (final post in sampleFanboxPosts(count: 6))
         FanboxCreatorEntry(
@@ -886,5 +892,110 @@ PixivisionDocument samplePixivisionDocument(String url) {
         for (final work in block.works)
           ?work.preview: 1200 / 800,
     },
+  );
+}
+
+/// A sample post with a body of every kind of block.
+FanboxPost sampleFanboxPost(String id) {
+  final post = sampleFanboxPosts().firstWhere((post) => post.id == id, orElse: () => sampleFanboxPosts().first);
+  return FanboxPost(
+    id: post.id,
+    creatorId: post.creatorId,
+    user: post.user,
+    title: post.title,
+    excerpt: post.excerpt,
+    coverUrl: post.coverUrl,
+    publishedDatetime: post.publishedDatetime,
+    updatedDatetime: post.updatedDatetime,
+    feeRequired: post.feeRequired,
+    isRestricted: post.isRestricted,
+    isLiked: post.isLiked,
+    likeCount: post.likeCount,
+    commentCount: post.commentCount,
+    tags: post.tags,
+    previousPostId: '5001',
+    nextPostId: '5003',
+    blocks: post.isRestricted
+        ? const []
+        : [
+            const FanboxBlock.paragraph(
+              text: 'Thank you for your support. The full process notes are on the blog, and the brushes are in the attachment.',
+              spans: [
+                FanboxTextSpan(offset: 62, length: 4, bold: false, italic: false, url: 'https://example.test/blog'),
+                FanboxTextSpan(offset: 0, length: 26, bold: true, italic: false),
+              ],
+            ),
+            const FanboxBlock.heading(text: 'Rough sketches'),
+            FanboxBlock.image(
+              image: FanboxImage(id: 'img1', originalUrl: sampleImageUrl(130, width: 1200, height: 800), thumbnailUrl: '', width: 1200, height: 800, extension_: 'png'),
+            ),
+            const FanboxBlock.file(file: FanboxFile(id: 'file1', name: 'brushes', extension_: 'zip', size: 2400000, url: 'https://example.test/brushes.zip')),
+            const FanboxBlock.postLink(postId: '5004', creatorId: 'sample_creator', title: 'Last month’s sketches'),
+            const FanboxBlock.unknown(text: '', rawJson: '{}'),
+          ],
+  );
+}
+
+FanboxCreator sampleFanboxCreator(String id) => FanboxCreator(
+  creatorId: id,
+  user: FanboxUser(id: '600', name: 'Studio Kite', iconUrl: sampleImageUrl(90, width: 120, height: 120)),
+  description: 'Illustrations of harbours, lighthouses and the people who keep them. New sketches every month for every plan.',
+  isFollowed: false,
+  isSupported: true,
+  hasAdultContent: false,
+  profileLinks: const ['https://example.test/studio-kite', 'https://example.test/@kite'],
+  profileImages: [for (var index = 0; index < 3; index++) sampleImageUrl(160 + index, width: 600, height: 600)],
+);
+
+List<FanboxPlan> sampleFanboxPlans(String creatorId) => [
+  for (final (index, fee) in [300, 500, 1000].indexed)
+    FanboxPlan(
+      id: 'plan$index',
+      creatorId: creatorId,
+      user: const FanboxUser(id: '600', name: 'Studio Kite'),
+      title: ['Sketch plan', 'Process plan', 'Full plan'][index],
+      description: '${['Rough sketches every month.', 'Sketches and the process behind each piece.', 'Everything: finished pieces, process and files.'][index]}\nPrevious months stay open while you support.',
+      fee: fee,
+    ),
+];
+
+/// Comments on a sample post: one with a reply, one of the account's own.
+class SampleFanboxComments extends FanboxComments {
+  @override
+  Future<FanboxCommentPage> build(String postId) async => const FanboxCommentPage(
+    canComment: true,
+    comments: [
+      FanboxComment(
+        id: 'c1',
+        user: FanboxUser(id: '700', name: 'A supporter'),
+        body: 'The harbour at dusk is lovely.',
+        createdDatetime: '2026-11-02T09:00:00+09:00',
+        isLiked: false,
+        isOwn: false,
+        likeCount: 3,
+        replies: [
+          FanboxComment(
+            id: 'c2',
+            user: FanboxUser(id: '600', name: 'Studio Kite'),
+            body: 'Thank you!',
+            createdDatetime: '2026-11-02T10:00:00+09:00',
+            isLiked: true,
+            isOwn: false,
+            likeCount: 1,
+            replies: [],
+          ),
+        ],
+      ),
+      FanboxComment(
+        id: 'c3',
+        user: FanboxUser(id: '1000', name: 'Sample user'),
+        body: 'Looking forward to the next one.',
+        createdDatetime: '2026-11-03T09:00:00+09:00',
+        isLiked: false,
+        isOwn: true,
+        likeCount: 0,
+        replies: [],
+      ),
+    ],
   );
 }

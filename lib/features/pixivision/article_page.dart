@@ -48,6 +48,7 @@ class _PixivisionArticlePageState extends ConsumerState<PixivisionArticlePage> {
   final _headKey = GlobalKey();
   final _blocks = <int, GlobalKey>{};
   bool _headGone = false;
+  double _headHeight = 0;
 
   @override
   void initState() {
@@ -61,10 +62,11 @@ class _PixivisionArticlePageState extends ConsumerState<PixivisionArticlePage> {
     super.dispose();
   }
 
-  /// Once the title has scrolled away the header carries it.
+  /// Once the title has scrolled away the header carries it. The list drops
+  /// the head when it is far above; its last height still stands.
   void _scrolled() {
-    final head = _headKey.currentContext?.size?.height ?? 0;
-    final gone = head > 0 && _scroll.offset > head;
+    _headHeight = _headKey.currentContext?.size?.height ?? _headHeight;
+    final gone = _headHeight > 0 && _scroll.offset > _headHeight;
     if (gone != _headGone) setState(() => _headGone = gone);
   }
 

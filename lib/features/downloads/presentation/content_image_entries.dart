@@ -26,11 +26,12 @@ List<FrostMenuEntry> contentImageMenu(BuildContext context, RustMediaTransport t
       onSelected: () => unawaited(actions.download(source, DownloadFlight.originOf(context) ?? Rect.zero)),
     ),
     if (isDesktopPlatform)
-      FrostMenuAction(t.illust.contextMenu.copyImage, leading: const FrostGlyph.icon(PivIcons.copy), onSelected: () => unawaited(_copy(transport, url, headers))),
+      FrostMenuAction(t.illust.contextMenu.copyImage, leading: const FrostGlyph.icon(PivIcons.copy), onSelected: () => unawaited(copyContentImage(transport, url, headers))),
   ];
 }
 
-Future<void> _copy(RustMediaTransport transport, String url, Map<String, String> headers) async {
+/// Copies the image at [url], fetched with [headers], to the clipboard.
+Future<void> copyContentImage(RustMediaTransport transport, String url, Map<String, String> headers) async {
   final label = t.illust.imageLabels.image;
   try {
     final bytes = BytesBuilder(copy: false);

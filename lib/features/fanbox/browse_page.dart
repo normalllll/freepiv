@@ -9,9 +9,10 @@ import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/fanbox/login_panel.dart';
 import 'package:freepiv/features/fanbox/navigation.dart' show FanboxGroup, fanboxSectionLabel;
-import 'package:freepiv/features/fanbox/page.dart' show openFanboxCreator, openFanboxPost, openFanboxTag;
+import 'package:freepiv/features/fanbox/fanbox_actions.dart' show openFanboxCreator, openFanboxPost, openFanboxTag;
+import 'package:freepiv/features/fanbox/fanbox_plans.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart' show FanboxNotice;
+import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart' show FanboxNotice, FanboxPost, FanboxUser;
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/fanbox_rows.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -221,12 +222,7 @@ class FanboxCollectionFeed extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final t = context.t;
     final provider = fanboxBrowseProvider(location);
-    final state = ref.watch(provider);
-    final data = state.value;
-    final entries = data?.entries ?? const <FanboxEntry>[];
-    Widget column(Widget sliver) => FrostSliverContentColumn(maxWidth: FrostMetrics.readingMaxWidth, sliver: sliver);
     return FrostRefreshView(
       onRefresh: () async {
         ref.invalidate(provider);
@@ -236,64 +232,73 @@ class FanboxCollectionFeed extends ConsumerWidget {
       builder: (context, physics, locators) => FrostLoadingScrollView(
         key: PageStorageKey(location),
         physics: physics,
-        slivers: [
-          const FrostChromeSpacer(),
-          ?locators.sliverHeader,
-          if (location.section == FanboxSection.bookmarks)
-            column(
-              SliverToBoxAdapter(
-                child: FrostText(t.fanboxPage.localOnly, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
-              ),
-            ),
-          if (data == null)
-            state.hasError
-                ? SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: FrostErrorContent.fromError(error: state.error!, onRetry: () => ref.invalidate(provider)),
-                  )
-                : column(const SliverToBoxAdapter(child: AppRowsSkeleton()))
-          else if (entries.isEmpty && !data.hasMore && data.error == null)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: FrostEmptyState(icon: FrostIconSet.of(context).empty, title: t.fanbox.empty),
-            )
-          else ...[
-            column(
-              SliverList.separated(
-                itemCount: entries.length,
-                separatorBuilder: (_, _) => const SizedBox(height: FrostGap.related),
-                itemBuilder: (context, index) => FanboxEntryView(entry: entries[index]),
-              ),
-            ),
-            column(
-              SliverLayoutBuilder(
-                builder: (context, constraints) {
-                  final near = constraints.remainingCacheExtent > 0;
-                  if (near && data.hasMore && !data.loadingMore && data.error == null) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(ref.read(provider.notifier).loadMore()));
-                  }
-                  return SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: FrostGap.group),
-                      child: data.error != null
-                          ? FrostCompactMessage.error(
-                              error: data.error!,
-                              actionLabel: t.fanbox.retry,
-                              onAction: () => unawaited(ref.read(provider.notifier).loadMore()),
-                            )
-                          : data.loadingMore
-                          ? Center(child: FrostActivityIndicator(semanticLabel: t.fanbox.loadMore))
-                          : const SizedBox.shrink(),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ],
+        slivers: [const FrostChromeSpacer(), ?locators.sliverHeader, ...fanboxCollectionSlivers(context, ref, location)],
       ),
     );
   }
+}
+
+/// The slivers of one FANBOX collection, for a page's own scroll view.
+List<Widget> fanboxCollectionSlivers(BuildContext context, WidgetRef ref, FanboxLocation location) {
+  final t = context.t;
+  final provider = fanboxBrowseProvider(location);
+  final state = ref.watch(provider);
+  final data = state.value;
+  final entries = data?.entries ?? const <FanboxEntry>[];
+  Widget column(Widget sliver) => FrostSliverContentColumn(maxWidth: FrostMetrics.readingMaxWidth, sliver: sliver);
+  return [
+    if (location.section == FanboxSection.bookmarks)
+      column(
+        SliverToBoxAdapter(
+          child: FrostText(t.fanboxPage.localOnly, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
+        ),
+      ),
+    if (data == null)
+      state.hasError
+          ? SliverFillRemaining(
+              hasScrollBody: false,
+              child: FrostErrorContent.fromError(error: state.error!, onRetry: () => ref.invalidate(provider)),
+            )
+          : column(const SliverToBoxAdapter(child: AppRowsSkeleton()))
+    else if (entries.isEmpty && !data.hasMore && data.error == null)
+      SliverFillRemaining(
+        hasScrollBody: false,
+        child: FrostEmptyState(icon: FrostIconSet.of(context).empty, title: t.fanbox.empty),
+      )
+    else ...[
+      column(
+        SliverList.separated(
+          itemCount: entries.length,
+          separatorBuilder: (_, _) => const SizedBox(height: FrostGap.related),
+          itemBuilder: (context, index) => FanboxEntryView(entry: entries[index]),
+        ),
+      ),
+      column(
+        SliverLayoutBuilder(
+          builder: (context, constraints) {
+            final near = constraints.remainingCacheExtent > 0;
+            if (near && data.hasMore && !data.loadingMore && data.error == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(ref.read(provider.notifier).loadMore()));
+            }
+            return SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: FrostGap.group),
+                child: data.error != null
+                    ? FrostCompactMessage.error(
+                        error: data.error!,
+                        actionLabel: t.fanbox.retry,
+                        onAction: () => unawaited(ref.read(provider.notifier).loadMore()),
+                      )
+                    : data.loadingMore
+                    ? Center(child: FrostActivityIndicator(semanticLabel: t.fanbox.loadMore))
+                    : const SizedBox.shrink(),
+              ),
+            );
+          },
+        ),
+      ),
+    ],
+  ];
 }
 
 /// One entry of a collection.
@@ -322,7 +327,8 @@ class FanboxEntryView extends ConsumerWidget {
           onOpen: () => openFanboxPost(context, value.id, summary: value),
           onCreator: () => openFanboxCreator(context, value.creatorId),
         ),
-        _ => FrostListRow.skeleton(title: 'A saved post title', icon: true, subtitle: 'Creator', value: null),
+        // The size of the card it becomes, so the list does not jump.
+        _ => const _PostCardSkeleton(),
       },
       FanboxCreatorEntry(:final creator) => FrostListRow(
         title: creator.user.name,
@@ -333,14 +339,7 @@ class FanboxEntryView extends ConsumerWidget {
         accessory: FrostRowAccessory.chevron,
         onPressed: () => openFanboxCreator(context, creator.creatorId, summary: creator),
       ),
-      FanboxPlanEntry(:final plan) => FrostListRow(
-        title: plan.title,
-        contentTitle: true,
-        subtitle: FrostRowSubtitle(plan.user.name, content: true),
-        leading: FrostLeading.custom(AppFanboxAvatar(user: plan.user)),
-        value: t.fanbox.monthlyFee(fee: plan.fee),
-        onPressed: () => openFanboxCreator(context, plan.creatorId),
-      ),
+      FanboxPlanEntry(:final plan) => FanboxPlanRow(plan: plan, showsCreator: true),
       FanboxTagEntry(:final tag) => FrostListRow(
         title: '#${tag.name}',
         contentTitle: true,
@@ -361,4 +360,31 @@ class FanboxEntryView extends ConsumerWidget {
       ),
     };
   }
+}
+
+/// A post card while its post loads: a card with a cover, as most are.
+class _PostCardSkeleton extends StatelessWidget {
+  const _PostCardSkeleton();
+
+  static const _post = FanboxPost(
+    id: '',
+    creatorId: '',
+    user: FanboxUser(id: '', name: 'Creator name'),
+    title: 'A saved post title',
+    excerpt: 'The first lines of the post as its card shows them.',
+    // Not an address: the cover keeps its frame without fetching anything.
+    coverUrl: 'cover',
+    publishedDatetime: '2026-01-01',
+    updatedDatetime: '2026-01-01',
+    feeRequired: 0,
+    isRestricted: false,
+    isLiked: false,
+    likeCount: 0,
+    commentCount: 0,
+    tags: [],
+    blocks: [],
+  );
+
+  @override
+  Widget build(BuildContext context) => AppFanboxPostCard(post: _post, onOpen: () {}, onCreator: () {}).frostSkeleton(true);
 }

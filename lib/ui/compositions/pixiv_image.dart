@@ -14,14 +14,27 @@ const pixivRefererHeaders = {'Referer': 'https://www.pixiv.net/'};
 /// pictures. Null in the app itself.
 ImageProvider? Function(String url)? pixivImageOverride;
 
-/// The image at [url] through the app's media transport, cached on disk.
+/// The image at [url] through the app's media transport, cached on disk
+/// unless it is fetched for an [accountKey] (an image behind a sign-in).
 /// A higher [revision] asks for it again after a failure; [keepBytes] keeps
 /// the encoded file for copying and saving ([pixivImageBytes]).
-ImageProvider pixivImageProvider(WidgetRef ref, String url, {Map<String, String>? headers, int revision = 0, bool keepBytes = false}) {
+ImageProvider pixivImageProvider(WidgetRef ref, String url, {Map<String, String>? headers, String? accountKey, int revision = 0, bool keepBytes = false}) =>
+    pixivImageProviderFor(ref.watch(rustMediaTransportProvider), url, headers: headers, accountKey: accountKey, revision: revision, keepBytes: keepBytes);
+
+/// [pixivImageProvider] through [transport], for code outside a widget's
+/// build (the window's ambient backdrop). Equal arguments give an equal
+/// provider, so the picture a card already decoded is reused.
+ImageProvider pixivImageProviderFor(
+  RustMediaTransport transport,
+  String url, {
+  Map<String, String>? headers,
+  String? accountKey,
+  int revision = 0,
+  bool keepBytes = false,
+}) {
   if (pixivImageOverride?.call(url) case final image?) return image;
-  final transport = ref.watch(rustMediaTransportProvider);
   return RustExtendedNetworkImageProvider(
-    request: MediaRequest(url: url, headers: headers ?? pixivRefererHeaders, allowDiskCache: true),
+    request: MediaRequest(url: url, headers: headers ?? pixivRefererHeaders, allowDiskCache: accountKey == null, accountKey: accountKey ?? ''),
     mediaStream: transport.stream,
     mediaStreamCacheIdentity: transport.imageCacheIdentity,
     reloadRevision: revision,
@@ -42,6 +55,7 @@ class AppPixivImage extends ConsumerStatefulWidget {
     this.radius = FrostRadius.lg,
     this.fit = BoxFit.cover,
     this.headers,
+    this.accountKey,
     this.semanticLabel,
     this.placeholderUrl,
     super.key,
@@ -54,6 +68,10 @@ class AppPixivImage extends ConsumerStatefulWidget {
   final double radius;
   final BoxFit fit;
   final Map<String, String>? headers;
+
+  /// The account an image behind a sign-in is fetched for; such an image is
+  /// never cached on disk. Null for public images.
+  final String? accountKey;
   final String? semanticLabel;
 
   /// A smaller picture already cached (the card's preview), shown until
@@ -73,14 +91,14 @@ class _AppPixivImageState extends ConsumerState<AppPixivImage> {
       return FrostMediaFrame(aspectRatio: widget.aspectRatio, radius: widget.radius, semanticLabel: widget.semanticLabel, child: const SizedBox.expand());
     }
     return FrostMediaFrame(
-      image: pixivImageProvider(ref, widget.url, headers: widget.headers, revision: _revision),
+      image: pixivImageProvider(ref, widget.url, headers: widget.headers, accountKey: widget.accountKey, revision: _revision),
       aspectRatio: widget.aspectRatio,
       radius: widget.radius,
       fit: widget.fit,
       semanticLabel: widget.semanticLabel,
       placeholderBuilder: switch (widget.placeholderUrl) {
         final placeholder? when placeholder.isNotEmpty && placeholder != widget.url => (context, _) => Image(
-          image: pixivImageProvider(ref, placeholder, headers: widget.headers),
+          image: pixivImageProvider(ref, placeholder, headers: widget.headers, accountKey: widget.accountKey),
           fit: widget.fit,
           excludeFromSemantics: true,
         ),

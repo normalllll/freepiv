@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
-import 'package:freepiv/features/fanbox/widgets.dart' show fanboxImageHeaders;
+import 'package:freepiv/features/fanbox/fanbox_actions.dart' show fanboxImageHeaders;
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
