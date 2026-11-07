@@ -37,7 +37,7 @@ void main() {
       AppRouter.router.go(path);
       await tester.pumpAndSettle();
       expect(AppRouter.router.routeInformationProvider.value.uri.path, '/login', reason: path);
-      expect(find.text(t.login.signInToPixiv), findsOneWidget);
+      expect(find.text(t.loginPage.signIn), findsOneWidget);
       expect(find.text(t.fanbox.title), findsNothing);
     }
 

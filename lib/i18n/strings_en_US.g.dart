@@ -78,6 +78,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$commentsPage$en_US commentsPage = Translations$commentsPage$en_US.internal(_root);
 	late final Translations$searchPage$en_US searchPage = Translations$searchPage$en_US.internal(_root);
 	late final Translations$downloadsPage$en_US downloadsPage = Translations$downloadsPage$en_US.internal(_root);
+	late final Translations$loginPage$en_US loginPage = Translations$loginPage$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -851,6 +852,19 @@ class Translations$downloadsPage$en_US {
 	String get nothingInProgress => 'No downloads in progress';
 	String get nothingDone => 'Nothing downloaded yet';
 	String failedGroup({required Object count}) => '${count} failed';
+}
+
+// Path: loginPage
+class Translations$loginPage$en_US {
+	Translations$loginPage$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get intro => 'Sign in with your Pixiv account in the browser, then come back here';
+	String get signIn => 'Sign in in the browser';
+	String get waiting => 'Finish signing in in the browser';
+	String get reopen => 'Open the browser again';
 }
 
 // Path: settings.theme
@@ -2415,6 +2429,10 @@ extension on Translations {
 			'downloadsPage.nothingInProgress' => 'No downloads in progress',
 			'downloadsPage.nothingDone' => 'Nothing downloaded yet',
 			'downloadsPage.failedGroup' => ({required Object count}) => '${count} failed',
+			'loginPage.intro' => 'Sign in with your Pixiv account in the browser, then come back here',
+			'loginPage.signIn' => 'Sign in in the browser',
+			'loginPage.waiting' => 'Finish signing in in the browser',
+			'loginPage.reopen' => 'Open the browser again',
 			_ => null,
 		};
 	}

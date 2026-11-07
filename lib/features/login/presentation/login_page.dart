@@ -1,16 +1,24 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app_links/app_links.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/shared.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// Where the sign-in stands.
+enum LoginStage { idle, opening, waiting, exchanging, signedIn }
+
+/// Pixiv sign-in, one task in the middle of the page:
+/// the app, a line on how it works, "Sign in in the browser" and the proxy
+/// settings. While the browser is out it waits with Reopen and Cancel; the
+/// token exchange shows a bar; a failure shows why with its details. Tokens,
+/// callback addresses and raw responses never show.
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -19,266 +27,153 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
+  AppLinkCallbackHandle? _callback;
+  AppLinkCallbackHandle? _callbackError;
+  final _handled = <String>{};
   UserAccountResult? _account;
-  AppLinkCallbackHandle? _appLinkCallbackHandle;
-  AppLinkCallbackHandle? _appLinkErrorCallbackHandle;
-  final Set<String> _handledAuthCallbacks = <String>{};
-  bool _isOpeningLogin = false;
-  bool _isCompletingLogin = false;
-  String? _status;
+  LoginStage _stage = LoginStage.idle;
   String? _error;
   String? _errorDetails;
 
   @override
   void initState() {
     super.initState();
-    _appLinkCallbackHandle = appLinkDispatcher.registerCallback(_handleAppLink);
-    _appLinkErrorCallbackHandle = appLinkDispatcher.registerErrorCallback(_handleAppLinkError);
+    _callback = appLinkDispatcher.registerCallback(_handleAppLink);
+    _callbackError = appLinkDispatcher.registerErrorCallback(_fail);
   }
 
   @override
   void dispose() {
-    _appLinkCallbackHandle?.dispose();
-    _appLinkErrorCallbackHandle?.dispose();
+    _callback?.dispose();
+    _callbackError?.dispose();
     super.dispose();
   }
 
-  Future<void> _handleAppLink(AppLinkRequest request) async {
-    switch (request.route) {
-      case AppLinkRoute.pixivAuthCallback:
-        await _handlePixivAuthCallback(request);
-        return;
-      case AppLinkRoute.unknown:
-        return;
-    }
-  }
-
-  void _handleAppLinkError(Object error) {
-    if (!mounted) {
-      return;
-    }
-
+  void _fail(Object error) {
+    if (!mounted) return;
     setState(() {
+      _stage = LoginStage.idle;
       _error = formatPixivError(error);
       _errorDetails = pixivErrorDetails(error);
     });
   }
 
-  Future<void> _openLogin() async {
-    final translations = t;
-    if (!appServicesInitialized) {
-      setState(() => _error = translations.login.apiNotInitialized);
-      return;
-    }
-
-    setState(() {
-      _isOpeningLogin = true;
-      _status = null;
-      _error = null;
-      _errorDetails = null;
-    });
-
-    try {
-      await _openSystemBrowser(pixivApi.generateLoginUrl());
-
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _status = translations.login.openedInBrowser;
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _error = formatPixivError(error);
-        _errorDetails = pixivErrorDetails(error);
-      });
-    } finally {
-      if (mounted) {
-        setState(() => _isOpeningLogin = false);
-      }
-    }
-  }
-
-  Future<void> _handlePixivAuthCallback(AppLinkRequest request) async {
-    if (!mounted || _isCompletingLogin) return;
-    final rawUri = request.uri.toString();
-    if (!_handledAuthCallbacks.add(rawUri)) {
-      return;
-    }
-
+  Future<void> _handleAppLink(AppLinkRequest request) async {
+    if (request.route != AppLinkRoute.pixivAuthCallback || !mounted || _stage == LoginStage.exchanging) return;
+    // The same callback can arrive twice (cold start and stream).
+    if (!_handled.add(request.uri.toString())) return;
     final code = request.pixivAuthCode;
     if (code == null) {
       setState(() => _error = t.login.callbackMissingCode(uri: request.uri.scheme));
       return;
     }
-
     setState(() {
-      _isCompletingLogin = true;
-      _status = t.login.callbackReceived;
+      _stage = LoginStage.exchanging;
       _error = null;
       _errorDetails = null;
     });
-
     try {
       final account = await pixivApi.initAccountAuthToken(code: code);
       if (!mounted) return;
       setPixivAccount(account);
       setState(() {
         _account = account;
-        _isCompletingLogin = false;
-        _status = t.login.signedInAs(name: account.user.name);
-        _error = null;
-        _errorDetails = null;
+        _stage = LoginStage.signedIn;
       });
     } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isCompletingLogin = false;
-        _error = formatPixivError(error);
-        _errorDetails = pixivErrorDetails(error);
-      });
+      _fail(error);
+    }
+  }
+
+  Future<void> _open() async {
+    if (!appServicesInitialized) {
+      setState(() => _error = t.login.apiNotInitialized);
+      return;
+    }
+    setState(() {
+      _stage = LoginStage.opening;
+      _error = null;
+      _errorDetails = null;
+    });
+    try {
+      await _openSystemBrowser(pixivApi.generateLoginUrl());
+      if (mounted) setState(() => _stage = LoginStage.waiting);
+    } catch (error) {
+      _fail(error);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final account = _account ?? (appServicesInitialized ? pixivApi.account() : null);
-    final isBusy = _isOpeningLogin || _isCompletingLogin;
-    final translations = t;
-    final proxySettings = ref.watch(proxySettingsProvider);
-
-    return Scaffold(
-      appBar: PivAppBar(FrostPageHeader(title: Text(translations.login.title))),
-      body: SingleChildScrollView(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: FrostSurface(
-                role: FrostSurfaceRole.glassPanel,
+    final proxy = ref.watch(proxySettingsProvider);
+    final waiting = _stage == LoginStage.waiting;
+    return FrostPinnedChrome(
+      chrome: FrostPageHeader(title: FrostText(t.login.title)),
+      body: FrostLoadingScrollView(
+        slivers: [
+          const FrostChromeSpacer(),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: FrostContentColumn(
+                maxWidth: FrostMetrics.readingMaxWidth,
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: AnimatedSize(
-                    duration: FrostMotion.duration(context, const Duration(milliseconds: 180)),
-                    alignment: Alignment.topCenter,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Icon(Icons.account_circle_outlined, color: Theme.of(context).colorScheme.onSurface, size: 32),
-                        const SizedBox(height: 12),
-                        Text(
-                          account == null ? translations.login.notSignedIn : translations.login.signedInAs(name: account.user.name),
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-                          textAlign: TextAlign.center,
+                  padding: const EdgeInsets.symmetric(vertical: FrostGap.section),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: FrostGap.group,
+                    children: [
+                      Image.asset('assets/icon-512.png', width: _iconExtent, height: _iconExtent, cacheWidth: 256, excludeFromSemantics: true),
+                      FrostText('freepiv', role: FrostTextRole.title1, textAlign: TextAlign.center),
+                      FrostText(
+                        account == null ? t.loginPage.intro : t.login.signedInAs(name: account.user.name),
+                        tone: FrostTextTone.secondary,
+                        textAlign: TextAlign.center,
+                      ),
+                      if (waiting) ...[
+                        FrostText(t.loginPage.waiting, role: FrostTextRole.headline, textAlign: TextAlign.center),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: FrostGap.related,
+                          children: [
+                            FrostButton.prominent(label: t.loginPage.reopen, onPressed: () => unawaited(_open())),
+                            FrostButton(label: t.common.cancel, role: FrostButtonRole.cancel, onPressed: () => setState(() => _stage = LoginStage.idle)),
+                          ],
                         ),
-                        const SizedBox(height: 24),
-                        _LoginProxyNotice(settings: proxySettings, onTap: () => showProxySettingsDialog(context)),
-                        const SizedBox(height: 14),
-                        FilledButton(
-                          onPressed: isBusy ? null : _openLogin,
-                          child: Text(
-                            _isOpeningLogin
-                                ? translations.login.openingBrowser
-                                : account == null
-                                ? translations.login.signInToPixiv
-                                : translations.login.signInAgain,
-                          ),
+                      ] else
+                        FrostButton.prominent(
+                          label: account == null ? t.loginPage.signIn : t.login.signInAgain,
+                          state: _stage == LoginStage.opening ? const FrostActionState.running() : FrostActionState.idle,
+                          onPressed: _stage == LoginStage.exchanging || _stage == LoginStage.opening ? null : () => unawaited(_open()),
                         ),
-                        if (_isCompletingLogin) ...[const SizedBox(height: 12), const PivSkeletonBlock(width: double.infinity, height: 4)],
-                        if (_status != null) ...[const SizedBox(height: 16), Text(_status!, textAlign: TextAlign.center)],
-                        if (_error != null) ...[
-                          const SizedBox(height: 16),
-                          Text(
-                            _error!,
-                            style: TextStyle(color: Theme.of(context).colorScheme.error),
-                            textAlign: TextAlign.center,
-                          ),
-                          if (_errorDetails case final details?) ...[const SizedBox(height: 8), FrostErrorDetails(details: details)],
-                        ],
-                      ],
-                    ),
+                      if (_stage == LoginStage.exchanging) FrostActivityIndicator(semanticLabel: t.login.callbackReceived),
+                      FrostButton.quiet(
+                        label: proxy.active ? t.settings.proxy.entrySubtitleOn(url: proxy.url!) : t.settings.proxy.open,
+                        onPressed: () => unawaited(showProxySettingsDialog(context)),
+                      ),
+                      if (_error case final error?) FrostInlineBanner(tone: FrostBannerTone.negative, message: error),
+                      if (_errorDetails case final details?) FrostErrorDetails(details: details),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
-}
 
-class _LoginProxyNotice extends StatelessWidget {
-  const _LoginProxyNotice({required this.settings, required this.onTap});
-
-  final AppProxySettings settings;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final translations = context.t;
-    final proxyTranslations = translations.settings.proxy;
-    final tokens = FrostThemeTokens.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final active = settings.active;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: tokens.surfaceRaised,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: tokens.line.withValues(alpha: 0.35)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  active ? Icons.hub : Icons.hub_outlined,
-                  color: active ? tokens.keyGraphicOn(tokens.surfaceRaised) : colorScheme.onSurfaceVariant,
-                  size: 20,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    translations.login.proxyHint,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant, height: 1.35, fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Align(
-              alignment: AlignmentDirectional.centerEnd,
-              child: TextButton.icon(onPressed: onTap, icon: const Icon(Icons.tune), label: Text(proxyTranslations.open)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  static const _iconExtent = 72.0;
 }
 
 Future<void> _openSystemBrowser(String url) async {
   if (Platform.isLinux) {
     final result = await Process.run('xdg-open', [url]);
-    if (result.exitCode != 0) {
-      throw UnsupportedError(t.login.browserOpenUnsupported);
-    }
+    if (result.exitCode != 0) throw UnsupportedError(t.login.browserOpenUnsupported);
     return;
   }
-  final launched = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-  if (!launched) {
-    throw UnsupportedError(t.login.browserOpenUnsupported);
-  }
+  if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) throw UnsupportedError(t.login.browserOpenUnsupported);
 }

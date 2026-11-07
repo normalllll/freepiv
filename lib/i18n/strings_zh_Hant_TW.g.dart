@@ -76,6 +76,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$commentsPage$zh_Hant_TW commentsPage = Translations$commentsPage$zh_Hant_TW.internal(_root);
 	@override late final Translations$searchPage$zh_Hant_TW searchPage = Translations$searchPage$zh_Hant_TW.internal(_root);
 	@override late final Translations$downloadsPage$zh_Hant_TW downloadsPage = Translations$downloadsPage$zh_Hant_TW.internal(_root);
+	@override late final Translations$loginPage$zh_Hant_TW loginPage = Translations$loginPage$zh_Hant_TW.internal(_root);
 }
 
 // Path: downloadEntry
@@ -849,6 +850,19 @@ class Translations$downloadsPage$zh_Hant_TW extends Translations$downloadsPage$e
 	@override String get nothingInProgress => '沒有進行中的下載';
 	@override String get nothingDone => '還沒有下載過';
 	@override String failedGroup({required Object count}) => '${count} 項失敗';
+}
+
+// Path: loginPage
+class Translations$loginPage$zh_Hant_TW extends Translations$loginPage$en_US {
+	Translations$loginPage$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get intro => '在瀏覽器中登入 Pixiv 帳號，然後回到這裡';
+	@override String get signIn => '在瀏覽器中登入';
+	@override String get waiting => '請在瀏覽器中完成登入';
+	@override String get reopen => '重新開啟瀏覽器';
 }
 
 // Path: settings.theme
@@ -2413,6 +2427,10 @@ extension on TranslationsZhHantTw {
 			'downloadsPage.nothingInProgress' => '沒有進行中的下載',
 			'downloadsPage.nothingDone' => '還沒有下載過',
 			'downloadsPage.failedGroup' => ({required Object count}) => '${count} 項失敗',
+			'loginPage.intro' => '在瀏覽器中登入 Pixiv 帳號，然後回到這裡',
+			'loginPage.signIn' => '在瀏覽器中登入',
+			'loginPage.waiting' => '請在瀏覽器中完成登入',
+			'loginPage.reopen' => '重新開啟瀏覽器',
 			_ => null,
 		};
 	}

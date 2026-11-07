@@ -933,5 +933,11 @@
     "nothingInProgress": "沒有進行中的下載",
     "nothingDone": "還沒有下載過",
     "failedGroup": "$count 項失敗"
+  },
+  "loginPage": {
+    "intro": "在瀏覽器中登入 Pixiv 帳號，然後回到這裡",
+    "signIn": "在瀏覽器中登入",
+    "waiting": "請在瀏覽器中完成登入",
+    "reopen": "重新開啟瀏覽器"
   }
 }

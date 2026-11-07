@@ -76,6 +76,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$commentsPage$zh_CN commentsPage = Translations$commentsPage$zh_CN.internal(_root);
 	@override late final Translations$searchPage$zh_CN searchPage = Translations$searchPage$zh_CN.internal(_root);
 	@override late final Translations$downloadsPage$zh_CN downloadsPage = Translations$downloadsPage$zh_CN.internal(_root);
+	@override late final Translations$loginPage$zh_CN loginPage = Translations$loginPage$zh_CN.internal(_root);
 }
 
 // Path: downloadEntry
@@ -849,6 +850,19 @@ class Translations$downloadsPage$zh_CN extends Translations$downloadsPage$en_US 
 	@override String get nothingInProgress => '没有进行中的下载';
 	@override String get nothingDone => '还没有下载过';
 	@override String failedGroup({required Object count}) => '${count} 项失败';
+}
+
+// Path: loginPage
+class Translations$loginPage$zh_CN extends Translations$loginPage$en_US {
+	Translations$loginPage$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get intro => '在浏览器中登录 Pixiv 账号，然后回到这里';
+	@override String get signIn => '在浏览器中登录';
+	@override String get waiting => '请在浏览器中完成登录';
+	@override String get reopen => '重新打开浏览器';
 }
 
 // Path: settings.theme
@@ -2413,6 +2427,10 @@ extension on TranslationsZhCn {
 			'downloadsPage.nothingInProgress' => '没有进行中的下载',
 			'downloadsPage.nothingDone' => '还没有下载过',
 			'downloadsPage.failedGroup' => ({required Object count}) => '${count} 项失败',
+			'loginPage.intro' => '在浏览器中登录 Pixiv 账号，然后回到这里',
+			'loginPage.signIn' => '在浏览器中登录',
+			'loginPage.waiting' => '请在浏览器中完成登录',
+			'loginPage.reopen' => '重新打开浏览器',
 			_ => null,
 		};
 	}

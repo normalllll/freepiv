@@ -933,5 +933,11 @@
     "nothingInProgress": "No downloads in progress",
     "nothingDone": "Nothing downloaded yet",
     "failedGroup": "$count failed"
+  },
+  "loginPage": {
+    "intro": "Sign in with your Pixiv account in the browser, then come back here",
+    "signIn": "Sign in in the browser",
+    "waiting": "Finish signing in in the browser",
+    "reopen": "Open the browser again"
   }
 }

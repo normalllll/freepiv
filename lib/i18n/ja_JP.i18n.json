@@ -933,5 +933,11 @@
     "nothingInProgress": "進行中のダウンロードはありません",
     "nothingDone": "まだダウンロードしていません",
     "failedGroup": "失敗 $count 件"
+  },
+  "loginPage": {
+    "intro": "ブラウザで pixiv アカウントにログインしてから、ここに戻ってください",
+    "signIn": "ブラウザでログイン",
+    "waiting": "ブラウザでログインを完了してください",
+    "reopen": "ブラウザをもう一度開く"
   }
 }

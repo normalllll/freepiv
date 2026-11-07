@@ -76,6 +76,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$commentsPage$ja_JP commentsPage = _Translations$commentsPage$ja_JP._(_root);
 	@override late final _Translations$searchPage$ja_JP searchPage = _Translations$searchPage$ja_JP._(_root);
 	@override late final _Translations$downloadsPage$ja_JP downloadsPage = _Translations$downloadsPage$ja_JP._(_root);
+	@override late final _Translations$loginPage$ja_JP loginPage = _Translations$loginPage$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -849,6 +850,19 @@ class _Translations$downloadsPage$ja_JP extends Translations$downloadsPage$en_US
 	@override String get nothingInProgress => '進行中のダウンロードはありません';
 	@override String get nothingDone => 'まだダウンロードしていません';
 	@override String failedGroup({required Object count}) => '失敗 ${count} 件';
+}
+
+// Path: loginPage
+class _Translations$loginPage$ja_JP extends Translations$loginPage$en_US {
+	_Translations$loginPage$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get intro => 'ブラウザで pixiv アカウントにログインしてから、ここに戻ってください';
+	@override String get signIn => 'ブラウザでログイン';
+	@override String get waiting => 'ブラウザでログインを完了してください';
+	@override String get reopen => 'ブラウザをもう一度開く';
 }
 
 // Path: settings.theme
@@ -2413,6 +2427,10 @@ extension on TranslationsJaJp {
 			'downloadsPage.nothingInProgress' => '進行中のダウンロードはありません',
 			'downloadsPage.nothingDone' => 'まだダウンロードしていません',
 			'downloadsPage.failedGroup' => ({required Object count}) => '失敗 ${count} 件',
+			'loginPage.intro' => 'ブラウザで pixiv アカウントにログインしてから、ここに戻ってください',
+			'loginPage.signIn' => 'ブラウザでログイン',
+			'loginPage.waiting' => 'ブラウザでログインを完了してください',
+			'loginPage.reopen' => 'ブラウザをもう一度開く',
 			_ => null,
 		};
 	}
