@@ -11,6 +11,7 @@ import 'package:freepiv/features/illust/presentation/artwork_actions.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
+import 'package:freepiv/ui/compositions/skeleton_fill.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -78,7 +79,13 @@ class AppArtworkCard extends ConsumerWidget {
               : illust.pageCount > 1
               ? FrostBadge(label: '${illust.pageCount}', icon: PivIcons.images, tone: FrostBadgeTone.onMedia)
               : null,
-          footer: tile ? null : AppArtworkCardFooter(title: illust.title, author: illust.user.name, bookmark: AppCardBookmarkButton(workId: illust.id, initiallyBookmarked: illust.isBookmarked)),
+          footer: tile
+              ? null
+              : AppArtworkCardFooter(
+                  title: illust.title,
+                  author: illust.user.name,
+                  bookmark: AppCardBookmarkButton(workId: illust.id, initiallyBookmarked: illust.isBookmarked),
+                ),
           semanticLabel: t.artworkCard.semantics(title: illust.title, author: illust.user.name),
           onPressed: () => openArtwork(cardContext, illust, tag),
           contextMenu: artworkMenu(cardContext, ref, illust),
@@ -141,7 +148,14 @@ class AppArtworkCardFooter extends StatelessWidget {
               ),
               SizedBox(
                 height: _line(context, FrostTextRole.footnote),
-                child: FrostText(author, role: FrostTextRole.footnote, tone: FrostTextTone.secondary, content: true, maxLines: 1, overflow: TextOverflow.ellipsis),
+                child: FrostText(
+                  author,
+                  role: FrostTextRole.footnote,
+                  tone: FrostTextTone.secondary,
+                  content: true,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -250,21 +264,28 @@ class AppArtworkCardSkeleton extends StatelessWidget {
 
 /// First-load placeholders the size of a feed's cards.
 class AppArtworkWaterfallSkeleton extends StatelessWidget {
-  const AppArtworkWaterfallSkeleton({this.count = 12, this.padding, super.key});
+  const AppArtworkWaterfallSkeleton({this.count, this.padding, super.key});
 
-  final int count;
+  /// Null fills the window; a number is for a short fixed preview.
+  final int? count;
 
   /// The padding of the grid it stands for; null keeps the grid's own.
   final EdgeInsetsGeometry? padding;
 
   static const _ratios = [.75, 1.0, .66, 1.33, .8, 1.0];
+  static const _widest = 1.33;
 
   @override
-  Widget build(BuildContext context) => FrostWaterfallGrid<int>(
-    items: List.generate(count, (index) => index),
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    padding: padding,
-    itemBuilder: (context, _, index) => AppArtworkCardSkeleton(aspectRatio: _ratios[index % _ratios.length]),
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => FrostWaterfallGrid<int>(
+      items: List.generate(
+        count ?? appWaterfallSkeletonCount(context, width: constraints.maxWidth, widestRatio: _widest, footerExtent: AppArtworkCardFooter.extentOf(context)),
+        (index) => index,
+      ),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: padding,
+      itemBuilder: (context, _, index) => AppArtworkCardSkeleton(aspectRatio: _ratios[index % _ratios.length]),
+    ),
   );
 }

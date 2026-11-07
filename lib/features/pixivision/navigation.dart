@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -52,7 +53,7 @@ Future<void> openPixivisionExternalLink(BuildContext context, String value) asyn
   } catch (_) {
     // Surface the same actionable failure for unsupported handlers and errors.
   }
-  if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.t.pixivision.openFailed)));
+  if (context.mounted) FrostToast.error(context.t.pixivision.openFailed);
 }
 
 String? validPixivisionUrl(String? value) {

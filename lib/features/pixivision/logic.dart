@@ -4,6 +4,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider;
+import 'package:frost_data/frost_data.dart';
 
 part 'logic.g.dart';
 
@@ -111,3 +113,62 @@ Future<PixivisionDocument> pixivisionArticle(Ref ref, String url) async {
 
 @riverpod
 Future<TagDirectory> pixivisionTags(Ref ref, String language) async => (await ref.watch(pixivisionApiProvider(language).future)).getTagDirectory();
+
+/// Fetches one listing page of Pixivision by its address; sample data answers
+/// its own.
+final pixivisionPageLoaderProvider = Provider<Future<ArticlePage> Function(String url)>(
+  (ref) => (url) async => (await ref.read(pixivisionApiProvider(Uri.parse(url).pathSegments.first).future)).getNextArticlePage(url: url),
+);
+
+/// The articles one section of a listing shows: the latest (or a category's,
+/// or a search's) page by page from the next link; the monthly ranking and
+/// the recommendations of the page in one go. An article another page
+/// already brought is not shown twice.
+class PixivisionArticleListSource extends FrostCursorListSource<ArticleSummary, ArticlePage> {
+  PixivisionArticleListSource({required this.url, required this.section, required this.load});
+
+  final String url;
+  final PixivisionSection section;
+  final Future<ArticlePage> Function(String url) load;
+  final _seen = <int>{};
+  final _visited = <String>{};
+
+  @override
+  Future<ArticlePage> loadFirstPage() {
+    _seen.clear();
+    _visited
+      ..clear()
+      ..add(url);
+    return load(url);
+  }
+
+  @override
+  Future<ArticlePage> loadNextPage(String nextUrl) {
+    _visited.add(nextUrl);
+    return load(nextUrl);
+  }
+
+  /// Only the latest pages on; a link back to a page already read ends it.
+  @override
+  String? nextUrlFromPage(ArticlePage page) => switch (page.nextUrl) {
+    final next? when section == PixivisionSection.articles && !_visited.contains(next) => next,
+    _ => null,
+  };
+
+  @override
+  List<ArticleSummary> itemsFromPage(ArticlePage page) => [
+    for (final article in switch (section) {
+      PixivisionSection.ranking => page.monthlyRanking,
+      PixivisionSection.recommended => page.recommended,
+      _ => page.articles,
+    })
+      if (_seen.add(article.id)) article,
+  ];
+}
+
+/// The list of [PixivisionArticleListSource] for a listing address and section.
+final pixivisionArticlesProvider = Provider.autoDispose.family<PixivisionArticleListSource, (String, PixivisionSection)>((ref, key) {
+  final source = PixivisionArticleListSource(url: key.$1, section: key.$2, load: ref.watch(pixivisionPageLoaderProvider));
+  ref.onDispose(source.dispose);
+  return source;
+});

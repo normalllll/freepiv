@@ -78,7 +78,7 @@ class AppRouter {
             GoRoute(
               path: AppRoute.pixivision.path,
               name: AppRoute.pixivision.name,
-              builder: (context, state) => PixivisionPage(url: state.uri.queryParameters[AppRouteQuery.url]),
+              pageBuilder: (context, state) => FrostDetailPage(key: state.pageKey, child: PixivisionPage(url: state.uri.queryParameters[AppRouteQuery.url])),
             ),
             GoRoute(
               path: AppRoute.fanbox.path,
@@ -114,7 +114,7 @@ class AppRouter {
             GoRoute(
               path: AppRoute.pixivisionBrowse.path,
               name: AppRoute.pixivisionBrowse.name,
-              builder: (context, state) => PixivisionPage(url: state.uri.queryParameters[AppRouteQuery.url]),
+              pageBuilder: (context, state) => FrostDetailPage(key: state.pageKey, child: PixivisionPage(url: state.uri.queryParameters[AppRouteQuery.url])),
             ),
             GoRoute(
               path: AppRoute.pixivisionArticle.path,

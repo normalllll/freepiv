@@ -1,412 +1,224 @@
-import 'package:freepiv/shared/widgets/legacy_frost.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/features/pixivision/article_card.dart';
+import 'package:freepiv/features/pixivision/logic.dart';
+import 'package:freepiv/features/pixivision/navigation.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:frost_ui/frost_ui.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
-import 'logic.dart';
-import 'widgets.dart';
-import 'navigation.dart';
+import 'package:freepiv/ui/compositions/content_rows.dart';
+import 'package:freepiv/ui/compositions/sectioned_page.dart';
 import 'package:frost_data/frost_data.dart';
+import 'package:frost_ui/frost_ui.dart';
 
-final _pixivisionBrowseStorage = PageStorageBucket();
-
+/// Pixivision: the latest, ranked and recommended
+/// articles of a listing (all, a category or a search) and the tag
+/// directory, one section each. The category is in the title menu and the
+/// site search in the header; each listing keeps its own lists. The language
+/// follows the interface, or the address opened.
 class PixivisionPage extends ConsumerStatefulWidget {
   const PixivisionPage({this.url, super.key});
+
+  /// A Pixivision listing address to open: a category, a search, or the tag
+  /// directory.
   final String? url;
+
   @override
   ConsumerState<PixivisionPage> createState() => _PixivisionPageState();
 }
 
 class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTickerProviderStateMixin {
-  late final _search = TextEditingController(text: Uri.tryParse(widget.url ?? '')?.queryParameters['q'] ?? '');
-  final _focus = FocusNode();
-  bool _searchExpanded = false;
-  late PixivisionSection _section = _initialSection();
-  late final _tabController = TabController(length: PixivisionSection.values.length, initialIndex: _section.index, vsync: this);
-  late String? _url = widget.url;
-  @override
-  void initState() {
-    super.initState();
-    _tabController.addListener(_syncSection);
-  }
+  late String? _url = validPixivisionUrl(widget.url);
+  late final _search = TextEditingController(text: _queryOf(_url));
+  final _searchFocus = FocusNode();
+  final _header = FrostPageHeaderSearchController();
+  late final _tabs = TabController(
+    length: PixivisionSection.values.length,
+    initialIndex: _initialSection().index,
+    animationDuration: FrostMotion.navigation,
+    vsync: this,
+  )..addListener(_sectionChanged);
 
-  /// The section follows the page the tabs are on, so the browse selection
-  /// remembers it for the next visit.
-  void _syncSection() {
-    final section = PixivisionSection.values[_tabController.index];
-    if (section == _section) return;
-    _section = section;
-    ref.read(pixivisionBrowseSelectionProvider.notifier).select(url: _url, section: section);
+  static String _queryOf(String? url) => Uri.tryParse(url ?? '')?.queryParameters['q'] ?? '';
+
+  /// The tag directory's address (`/<language>/t/`).
+  static bool _isDirectory(String? url) {
+    final segments = Uri.tryParse(url ?? '')?.pathSegments.where((part) => part.isNotEmpty).toList();
+    return segments != null && segments.length == 2 && segments[1] == 't';
   }
 
   PixivisionSection _initialSection() {
-    if (_isDirectory(widget.url)) return PixivisionSection.tags;
+    if (_isDirectory(_url)) return PixivisionSection.tags;
     final selection = ref.read(pixivisionBrowseSelectionProvider);
-    return selection.url == widget.url ? selection.section : PixivisionSection.articles;
+    return selection.url == _url ? selection.section : PixivisionSection.articles;
   }
 
-  bool _isDirectory(String? url) {
-    final segments = Uri.tryParse(url ?? '')?.pathSegments.where((part) => part.isNotEmpty).toList();
-    return segments != null && segments.length == 2 && segments[1] == 't';
+  /// The section is remembered for the next visit to the same listing.
+  void _sectionChanged() {
+    if (_tabs.indexIsChanging) return;
+    ref.read(pixivisionBrowseSelectionProvider.notifier).select(url: _url, section: PixivisionSection.values[_tabs.index]);
   }
 
   @override
   void didUpdateWidget(covariant PixivisionPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.url != widget.url) {
-      _url = widget.url;
-      _section = _isDirectory(_url) ? PixivisionSection.tags : PixivisionSection.articles;
-      _tabController.animateTo(_section.index, duration: Duration.zero);
-      final query = Uri.tryParse(_url ?? '')?.queryParameters['q'] ?? '';
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && (Uri.tryParse(_url ?? '')?.queryParameters['q'] ?? '') == query && _search.text != query) _search.text = query;
-      });
-    }
+    if (oldWidget.url != widget.url) _show(validPixivisionUrl(widget.url));
   }
 
   @override
   void dispose() {
-    _tabController.removeListener(_syncSection);
-    _tabController.dispose();
+    _tabs.dispose();
     _search.dispose();
-    _focus.dispose();
+    _searchFocus.dispose();
+    _header.dispose();
     super.dispose();
+  }
+
+  /// Swaps the listing in this page; its latest articles come to the front.
+  void _show(String? url) {
+    _searchFocus.unfocus();
+    setState(() => _url = url);
+    _search.text = _queryOf(url);
+    if (!_isDirectory(url)) _tabs.animateTo(PixivisionSection.articles.index, duration: Duration.zero);
+    ref.read(pixivisionBrowseSelectionProvider.notifier).select(url: url, section: PixivisionSection.values[_tabs.index]);
   }
 
   @override
   Widget build(BuildContext context) {
-    final t = context.t.pixivision;
-    final requested = validPixivisionUrl(_url);
-    final language = requested == null ? pixivisionLanguagePath(context.t.$meta.locale) : Uri.parse(requested).pathSegments.first;
+    final t = context.t;
+    final language = _url == null ? pixivisionLanguagePath(t.$meta.locale) : Uri.parse(_url!).pathSegments.first;
     final home = 'https://www.pixivision.net/$language/';
-    final url = requested == null || _isDirectory(requested) ? home : requested;
-    final state = ref.watch(pixivisionBrowseProvider(url));
-    final homeState = ref.watch(pixivisionBrowseProvider(home));
-    final categories = homeState.value?.page.categories ?? const <ArticleLink>[];
-    void selectUrl(String next) {
-      _focus.unfocus();
-      // The listing swaps in this page rather than opening another one.
-      setState(() {
-        _url = next;
-        _section = PixivisionSection.articles;
-      });
-      _search.text = Uri.tryParse(next)?.queryParameters['q'] ?? '';
-      _tabController.animateTo(_section.index, duration: Duration.zero);
-      ref.read(pixivisionBrowseSelectionProvider.notifier).select(url: next, section: PixivisionSection.articles);
-    }
-
-    final query = Uri.parse(url).queryParameters['q'] ?? '';
-    // Tabs carry their label padding, so the row bleeds by it.
-    final chrome = FrostContentColumn(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 12),
-        child: LayoutBuilder(
-          builder: (context, constraints) => Row(
-            children: [
-              Expanded(
-                child: FrostTabBar(
-                  controller: _tabController,
-                  scrollable: true,
-                  tabs: [
-                    FrostTab(label: t.latest),
-                    FrostTab(label: t.ranking),
-                    FrostTab(label: t.recommended),
-                    FrostTab(label: t.tags),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Search results and tag pages are not in the list; the button
-              // then shows the first item, "All categories". At most half the
-              // row, like the FANBOX collection picker beside its tabs.
-              ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: constraints.maxWidth / 2),
-                child: FrostPicker<String>.menu(
-                  label: t.allCategories,
-                  value: url,
-                  options: [
-                    FrostPickerOption(value: home, label: t.allCategories),
-                    for (final item in categories) FrostPickerOption(value: item.url, label: item.title),
-                  ],
-                  onChanged: selectUrl,
-                ),
-              ),
+    final listing = _url == null || _isDirectory(_url) ? home : _url!;
+    final categories = ref.watch(pixivisionBrowseProvider(home)).value?.page.categories ?? const <ArticleLink>[];
+    final query = _queryOf(listing);
+    final category = categories.where((item) => item.url == listing).firstOrNull;
+    final title = switch ((query, category)) {
+      (final query, _) when query.isNotEmpty => query,
+      (_, final category?) => category.title,
+      _ => t.pixivision.allCategories,
+    };
+    FrostListSource<ArticleSummary> source(PixivisionSection section) =>
+        ref.watch(pixivisionArticlesProvider((section == PixivisionSection.articles ? listing : home, section)));
+    return AppSectionedPage(
+      controller: _tabs,
+      header: FrostPageHeader(
+        searchController: _header,
+        leading: [
+          FrostTitleMenu(
+            key: const ValueKey('pixivision-category'),
+            title: '${t.pixivision.title} · $title',
+            entries: [
+              FrostMenuAction(t.pixivision.allCategories, checked: listing == home, onSelected: () => _show(home)),
+              for (final item in categories) FrostMenuAction(item.title, checked: listing == item.url, onSelected: () => _show(item.url)),
             ],
           ),
+        ],
+        middle: FrostSearchInput(
+          controller: _search,
+          focusNode: _searchFocus,
+          placeholder: t.pixivision.searchHint,
+          onSubmitted: (value) {
+            final words = value.trim();
+            if (words.isEmpty) return;
+            _header.collapse();
+            _show(Uri.parse('${home}s/').replace(queryParameters: {'q': words}).toString());
+          },
+          onClear: () {
+            _search.clear();
+            if (query.isNotEmpty) _show(home);
+          },
         ),
       ),
-    );
-    const filterSliver = FrostChromeSpacer();
-    Widget sectionPage(PixivisionSection section) => section == PixivisionSection.tags
-        ? PageStorage(
-            bucket: _pixivisionBrowseStorage,
-            child: _TagDirectory(language: language, filterSliver: filterSliver),
-          )
-        : FrostRefreshView(
-            onRefresh: () async {
-              final target = section == PixivisionSection.articles ? url : home;
-              ref.invalidate(pixivisionBrowseProvider(target));
-              await ref.read(pixivisionBrowseProvider(target).future);
-              return true;
-            },
-            builder: (context, physics, locators) => LayoutBuilder(
-              builder: (context, constraints) {
-                final active = section == PixivisionSection.articles ? state : homeState;
-                final listing = active.value;
-                final items = switch (section) {
-                  PixivisionSection.ranking => listing?.page.monthlyRanking,
-                  PixivisionSection.recommended => listing?.page.recommended,
-                  _ => listing?.page.articles,
-                };
-                return PageStorage(
-                  bucket: _pixivisionBrowseStorage,
-                  child: FrostLoadStateSwitcher(
-                    phase: switch (items) {
-                      null when active.hasError => FrostLoadPhase.error,
-                      null => FrostLoadPhase.loading,
-                      _ => FrostLoadPhase.content,
-                    },
-                    child: FrostLoadingScrollView(
-                      key: PageStorageKey((url, section)),
-                      physics: physics,
-                      slivers: [
-                        filterSliver,
-                        ?locators.sliverHeader,
-                        if (items == null)
-                          SliverPadding(
-                            padding: pixivisionPadding(constraints.maxWidth),
-                            sliver: SliverToBoxAdapter(
-                              child: active.hasError
-                                  ? PixivisionError(
-                                      error: active.error,
-                                      retry: () => ref.invalidate(pixivisionBrowseProvider(section == PixivisionSection.articles ? url : home)),
-                                    )
-                                  : const PixivisionCardSkeleton(),
-                            ),
-                          )
-                        else
-                          PivSliverPagedList<ArticleSummary>(
-                            key: ValueKey((url, section)),
-                            items: items,
-                            hasMore: section == PixivisionSection.articles && listing?.page.nextUrl != null,
-                            loading: active.isLoading || listing!.loadingMore,
-                            hasError: listing?.error != null,
-                            onLoadMore: () async {
-                              final provider = pixivisionBrowseProvider(url);
-                              await ref.read(provider.notifier).loadMore();
-                              return mounted && ref.read(provider).value?.error == null;
-                            },
-                            padding: pixivisionPadding(constraints.maxWidth),
-                            itemBuilder: (context, article, index) => Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: PixivisionCard(article: article),
-                            ),
-                            footer: Column(
-                              children: [
-                                if (items.isEmpty) Padding(padding: const EdgeInsets.all(24), child: Text(t.empty)),
-                                if (listing?.loadingMore ?? false) const PixivisionCardSkeleton(),
-                                if (listing?.error case final error?)
-                                  FrostCompactMessage.error(
-                                    error: error,
-                                    actionLabel: t.loadMore,
-                                    onAction: () => ref.read(pixivisionBrowseProvider(url).notifier).loadMore(),
-                                  ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-    return PixivisionScaffold(
-      child: Column(
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 600;
-              final search = FrostSearchInput(
-                controller: _search,
-                focusNode: _focus,
-                placeholder: t.searchHint,
-                onSubmitted: (value) {
-                  final trimmed = value.trim();
-                  if (trimmed.isNotEmpty) {
-                    selectUrl(Uri.parse('${home}s/').replace(queryParameters: {'q': trimmed}).toString());
-                    if (compact) setState(() => _searchExpanded = false);
-                  }
-                },
-                onClear: () {
-                  _search.clear();
-                  if (query.isNotEmpty) selectUrl(home);
-                },
-              );
-              return FrostContentColumn(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              query.isEmpty ? t.title : query,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                          ),
-                          if (compact)
-                            IconButton(
-                              tooltip: t.searchHint,
-                              onPressed: () {
-                                setState(() => _searchExpanded = !_searchExpanded);
-                                if (_searchExpanded) {
-                                  _focus.requestFocus();
-                                } else {
-                                  _focus.unfocus();
-                                }
-                              },
-                              icon: Icon(_searchExpanded ? Icons.close : Icons.search),
-                            )
-                          else
-                            SizedBox(width: (constraints.maxWidth * .42).clamp(240, 420), child: search),
-                        ],
-                      ),
-                      if (compact)
-                        AnimatedSize(
-                          duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 180),
-                          alignment: Alignment.topCenter,
-                          child: _searchExpanded
-                              ? Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Focus(
-                                    onKeyEvent: (_, event) {
-                                      if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
-                                        _focus.unfocus();
-                                        setState(() => _searchExpanded = false);
-                                        return KeyEventResult.handled;
-                                      }
-                                      return KeyEventResult.ignored;
-                                    },
-                                    child: search,
-                                  ),
-                                )
-                              : const SizedBox.shrink(),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-          Expanded(
-            // The tabs stay put while the sections slide beneath them.
-            child: FrostPinnedChrome(
-              extent: 62.0,
-              chrome: chrome,
-              body: TabBarView(controller: _tabController, children: [for (final section in PixivisionSection.values) sectionPage(section)]),
-            ),
+      tabs: [
+        FrostTab(label: t.pixivision.latest),
+        FrostTab(label: t.pixivision.ranking),
+        FrostTab(label: t.pixivision.recommended),
+        FrostTab(label: t.pixivision.tags),
+      ],
+      onRefresh: (section) async => switch (PixivisionSection.values[section]) {
+        PixivisionSection.tags => ref.refresh(pixivisionTagsProvider(language).future),
+        final section => source(section).refresh(false),
+      },
+      // Another listing starts its latest articles afresh at the top.
+      sectionKey: (section) => PixivisionSection.values[section] == PixivisionSection.articles ? listing : home,
+      slivers: (context, section) => switch (PixivisionSection.values[section]) {
+        PixivisionSection.tags => [_TagDirectory(language: language)],
+        final section => [
+          FrostSliverDataWaterfallGrid<ArticleSummary>(
+            source: source(section),
+            firstLoadSkeleton: const AppPixivisionCardsSkeleton(),
+            empty: FrostEmptyState(icon: FrostIconSet.of(context).empty, title: t.pixivision.empty),
+            itemBuilder: (context, article, index) => AppPixivisionCard(article: article),
           ),
         ],
-      ),
+      },
     );
   }
 }
 
+/// The tag directory: each group's tags with their article counts, nested
+/// groups under their own headings.
 class _TagDirectory extends ConsumerWidget {
-  const _TagDirectory({required this.language, required this.filterSliver});
+  const _TagDirectory({required this.language});
+
   final String language;
-  final Widget filterSliver;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(pixivisionTagsProvider(language));
-    return FrostRefreshView(
-      onRefresh: () async {
-        ref.invalidate(pixivisionTagsProvider(language));
-        await ref.read(pixivisionTagsProvider(language).future);
-        return true;
-      },
-      builder: (context, physics, locators) => LayoutBuilder(
-        builder: (context, constraints) => FrostLoadingScrollView(
-          key: PageStorageKey(('pixivision-tags', language)),
-          physics: physics,
-          slivers: [
-            filterSliver,
-            ?locators.sliverHeader,
-            SliverPadding(
-              padding: pixivisionPadding(constraints.maxWidth),
-              sliver: SliverList.list(
-                children: [
-                  if (state.value case final directory?) ...[
-                    ..._groups(context, directory.groups),
-                    if (directory.groups.isEmpty) Text(context.t.pixivision.empty),
-                  ] else if (state.hasError)
-                    PixivisionError(error: state.error, retry: () => ref.invalidate(pixivisionTagsProvider(language)))
-                  else
-                    Skeletonizer(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: _groups(context, [
-                          for (var i = 0; i < (MediaQuery.sizeOf(context).height / 80).ceil(); i++)
-                            TagGroup(
-                              name: 'Tag group',
-                              nodes: [
-                                for (var j = 0; j < 8; j++)
-                                  const TagNode(
-                                    name: 'Tag name',
-                                    tag: PixivisionTag(id: 0, name: 'Tag name', url: ''),
-                                    children: [],
-                                  ),
-                              ],
-                            ),
-                        ]),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+    final t = context.t;
+    final directory = ref.watch(pixivisionTagsProvider(language));
+    return FrostSliverContentColumn(
+      maxWidth: double.infinity,
+      sliver: switch (directory) {
+        AsyncValue(:final value?) when value.groups.isEmpty => SliverToBoxAdapter(
+          child: FrostEmptyState(icon: FrostIconSet.of(context).empty, title: t.pixivision.empty),
+        ),
+        AsyncValue(:final value?) => SliverList.list(
+          children: [
+            for (final group in value.groups) ...[
+              FrostSectionHeader(title: group.name),
+              _TagNodes(nodes: group.nodes),
+            ],
           ],
         ),
-      ),
+        AsyncValue(:final error?) => SliverToBoxAdapter(
+          child: FrostErrorContent.fromError(error: error, onRetry: () => ref.invalidate(pixivisionTagsProvider(language))),
+        ),
+        _ => const SliverToBoxAdapter(child: AppRowsSkeleton(subtitle: false)),
+      },
     );
   }
+}
 
-  List<Widget> _groups(BuildContext context, List<TagGroup> groups) => [
-    for (final group in groups) ...[
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text(group.name, style: Theme.of(context).textTheme.titleLarge),
+class _TagNodes extends StatelessWidget {
+  const _TagNodes({required this.nodes});
+
+  final List<TagNode> nodes;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    spacing: FrostGap.related,
+    children: [
+      Wrap(
+        spacing: FrostGap.inline,
+        runSpacing: FrostGap.inline,
+        children: [
+          for (final node in nodes)
+            if (node.tag case final tag?)
+              FrostTag(
+                label: tag.name,
+                detail: node.articleCount == null ? null : '${node.articleCount}',
+                onPressed: () => unawaited(openPixivisionLink(context, tag.url)),
+              ),
+        ],
       ),
-      ..._nodes(context, group.nodes),
+      for (final node in nodes)
+        if (node.children.isNotEmpty) ...[
+          FrostText(node.name, role: FrostTextRole.headline),
+          _TagNodes(nodes: node.children),
+        ],
     ],
-  ];
-
-  List<Widget> _nodes(BuildContext context, List<TagNode> nodes) => [
-    Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final node in nodes)
-          if (node.tag case final tag?)
-            ActionChip(
-              label: Text(node.articleCount == null ? tag.name : '${tag.name} · ${node.articleCount}'),
-              onPressed: () => openPixivisionLink(context, tag.url),
-            ),
-      ],
-    ),
-    for (final node in nodes)
-      if (node.children.isNotEmpty) ...[
-        Padding(
-          padding: const EdgeInsets.only(top: 16, bottom: 8),
-          child: Text(node.name, style: Theme.of(context).textTheme.titleMedium),
-        ),
-        ..._nodes(context, node.children),
-      ],
-  ];
+  );
 }

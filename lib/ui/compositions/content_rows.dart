@@ -8,6 +8,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
+import 'package:freepiv/ui/compositions/skeleton_fill.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -149,16 +150,17 @@ class AppNovelRow extends StatelessWidget {
 
 /// First-load placeholders for a list of rows.
 class AppRowsSkeleton extends StatelessWidget {
-  const AppRowsSkeleton({this.count = 8, this.subtitle = true, super.key});
+  const AppRowsSkeleton({this.count, this.subtitle = true, super.key});
 
-  final int count;
+  /// Null fills the window; a number is for a short fixed preview.
+  final int? count;
   final bool subtitle;
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      for (var index = 0; index < count; index++)
+      for (var index = 0; index < (count ?? appSkeletonCount(context, shortestExtent: FrostControlSize.regular.height(context))); index++)
         FrostListRow.skeleton(title: 'Sample user name', icon: true, subtitle: subtitle ? '@sample_account' : null, value: null),
     ],
   );

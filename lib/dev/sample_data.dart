@@ -232,6 +232,8 @@ final sampleOverrideMap = <Object, Override>{
   fanboxBrowseProvider: fanboxBrowseProvider.overrideWith2((_) => _SampleFanboxBrowse()),
   fanboxPostProvider: fanboxPostProvider.overrideWith((ref, id) async => sampleFanboxPosts().firstWhere((post) => post.id == id)),
   pixivisionBrowseProvider: pixivisionBrowseProvider.overrideWith2((_) => _SamplePixivision()),
+  pixivisionPageLoaderProvider: pixivisionPageLoaderProvider.overrideWithValue(samplePixivisionPage),
+  pixivisionTagsProvider: pixivisionTagsProvider.overrideWith((ref, language) async => samplePixivisionTags),
   illustDetailProvider: illustDetailProvider.overrideWith2((_) => _SampleIllustDetail()),
   novelDetailProvider: novelDetailProvider.overrideWith2((_) => _SampleNovelDetail()),
   searchTrendingTagsProvider: searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
@@ -675,16 +677,7 @@ List<ArticleSummary> sampleArticles({int count = 6}) => [
 
 class _SamplePixivision extends PixivisionBrowse {
   @override
-  Future<PixivisionListing> build(String url) async => PixivisionListing(
-    ArticlePage(
-      url: url,
-      title: 'pixivision',
-      articles: sampleArticles(),
-      monthlyRanking: const [],
-      recommended: sampleArticles(count: 3),
-      categories: const [],
-    ),
-  );
+  Future<PixivisionListing> build(String url) async => PixivisionListing(await samplePixivisionPage(url));
 }
 
 class _SampleIllustDetail extends IllustDetail {
@@ -779,3 +772,43 @@ Future<List<Tag>> sampleAutocomplete(String word) async => [
   Tag(name: '${word}10000users入り', translatedName: '$word 10000+ bookmarks'),
   Tag(name: '$word風景', translatedName: '$word scenery'),
 ];
+
+/// A Pixivision listing page of the sample articles, with a next page for the latest.
+Future<ArticlePage> samplePixivisionPage(String url) async => ArticlePage(
+  url: url,
+  title: 'pixivision',
+  articles: [
+    for (final (index, article) in sampleArticles(count: 8).indexed)
+      ArticleSummary(
+        id: article.id + (url.contains('page=2') ? 100 : 0),
+        title: article.title,
+        url: article.url,
+        thumbnail: article.thumbnail,
+        publishDate: '2026-11-0${index % 7 + 1}',
+        category: const ArticleLink(title: 'Illustration', url: 'https://www.pixivision.net/en/c/illustration'),
+        tags: const [],
+      ),
+  ],
+  nextUrl: url.contains('page=2') ? null : '$url?page=2',
+  monthlyRanking: sampleArticles(count: 5),
+  recommended: sampleArticles(count: 4),
+  categories: const [
+    ArticleLink(title: 'Illustration', url: 'https://www.pixivision.net/en/c/illustration'),
+    ArticleLink(title: 'Manga', url: 'https://www.pixivision.net/en/c/manga'),
+    ArticleLink(title: 'Interview', url: 'https://www.pixivision.net/en/c/interview'),
+  ],
+);
+
+const samplePixivisionTags = TagDirectory(
+  url: 'https://www.pixivision.net/en/t/',
+  groups: [
+    TagGroup(
+      name: 'Themes',
+      nodes: [
+        TagNode(name: 'Landscape', tag: PixivisionTag(id: 1, name: 'Landscape', url: 'https://www.pixivision.net/en/t/1'), articleCount: 120, children: []),
+        TagNode(name: 'Cats', tag: PixivisionTag(id: 2, name: 'Cats', url: 'https://www.pixivision.net/en/t/2'), articleCount: 64, children: []),
+        TagNode(name: 'Autumn', tag: PixivisionTag(id: 3, name: 'Autumn', url: 'https://www.pixivision.net/en/t/3'), articleCount: 31, children: []),
+      ],
+    ),
+  ],
+);
