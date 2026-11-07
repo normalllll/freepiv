@@ -79,6 +79,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$searchPage$en_US searchPage = Translations$searchPage$en_US.internal(_root);
 	late final Translations$downloadsPage$en_US downloadsPage = Translations$downloadsPage$en_US.internal(_root);
 	late final Translations$loginPage$en_US loginPage = Translations$loginPage$en_US.internal(_root);
+	late final Translations$fanboxPage$en_US fanboxPage = Translations$fanboxPage$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -865,6 +866,25 @@ class Translations$loginPage$en_US {
 	String get signIn => 'Sign in in the browser';
 	String get waiting => 'Finish signing in in the browser';
 	String get reopen => 'Open the browser again';
+}
+
+// Path: fanboxPage
+class Translations$fanboxPage$en_US {
+	Translations$fanboxPage$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get groupFeed => 'Feed';
+	String get groupDiscover => 'Discover';
+	String get groupMine => 'Mine';
+	String get searchPlaceholder => 'Search FANBOX';
+	String openCreator({required Object id}) => 'Open creator @${id}';
+	String searchCreators({required Object query}) => 'Search creators for “${query}”';
+	String searchTags({required Object query}) => 'Search tags for “${query}”';
+	String get accountSettings => 'FANBOX account settings';
+	String get localOnly => 'Saved posts stay on this device only';
+	String get creatorPage => 'Open creator';
 }
 
 // Path: settings.theme
@@ -2433,6 +2453,16 @@ extension on Translations {
 			'loginPage.signIn' => 'Sign in in the browser',
 			'loginPage.waiting' => 'Finish signing in in the browser',
 			'loginPage.reopen' => 'Open the browser again',
+			'fanboxPage.groupFeed' => 'Feed',
+			'fanboxPage.groupDiscover' => 'Discover',
+			'fanboxPage.groupMine' => 'Mine',
+			'fanboxPage.searchPlaceholder' => 'Search FANBOX',
+			'fanboxPage.openCreator' => ({required Object id}) => 'Open creator @${id}',
+			'fanboxPage.searchCreators' => ({required Object query}) => 'Search creators for “${query}”',
+			'fanboxPage.searchTags' => ({required Object query}) => 'Search tags for “${query}”',
+			'fanboxPage.accountSettings' => 'FANBOX account settings',
+			'fanboxPage.localOnly' => 'Saved posts stay on this device only',
+			'fanboxPage.creatorPage' => 'Open creator',
 			_ => null,
 		};
 	}

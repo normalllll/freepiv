@@ -939,5 +939,17 @@
     "signIn": "Sign in in the browser",
     "waiting": "Finish signing in in the browser",
     "reopen": "Open the browser again"
+  },
+  "fanboxPage": {
+    "groupFeed": "Feed",
+    "groupDiscover": "Discover",
+    "groupMine": "Mine",
+    "searchPlaceholder": "Search FANBOX",
+    "openCreator": "Open creator @$id",
+    "searchCreators": "Search creators for “$query”",
+    "searchTags": "Search tags for “$query”",
+    "accountSettings": "FANBOX account settings",
+    "localOnly": "Saved posts stay on this device only",
+    "creatorPage": "Open creator"
   }
 }

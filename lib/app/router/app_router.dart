@@ -3,6 +3,7 @@ import 'package:freepiv/features/pixivision/navigation.dart';
 import 'package:freepiv/features/pixivision/page.dart';
 import 'package:freepiv/features/pixivision/detail.dart';
 import 'package:flutter/material.dart';
+import 'package:freepiv/features/fanbox/browse_page.dart';
 import 'package:freepiv/features/fanbox/page.dart';
 import 'package:freepiv/features/fanbox/detail.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
@@ -82,7 +83,7 @@ class AppRouter {
             GoRoute(
               path: AppRoute.fanbox.path,
               name: AppRoute.fanbox.name,
-              builder: (context, state) => FanboxPage(
+              builder: (context, state) => FanboxBrowsePage(
                 location: (
                   section: FanboxSection.values.where((e) => e.name == state.uri.queryParameters[AppRouteQuery.section]).firstOrNull ?? FanboxSection.home,
                   creatorId: state.uri.queryParameters[AppRouteQuery.creator] ?? '',
@@ -126,7 +127,7 @@ class AppRouter {
             GoRoute(
               path: AppRoute.fanboxBrowse.path,
               name: AppRoute.fanboxBrowse.name,
-              builder: (context, state) => FanboxPage(
+              builder: (context, state) => FanboxBrowsePage(
                 location: (
                   section:
                       FanboxSection.values.where((item) => item.name == state.uri.queryParameters[AppRouteQuery.section]).firstOrNull ?? FanboxSection.home,

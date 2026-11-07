@@ -27,7 +27,11 @@ class FollowingPage extends ConsumerWidget {
       valueListenable: pixivAccountNotifier,
       builder: (context, account, _) {
         final userId = int.tryParse(account?.user.id ?? '');
-        final header = FrostPageHeader(title: FrostText(t.me.following));
+        // The title lines up with the centred column below it.
+        final header = FrostContentColumn(
+          maxWidth: FrostMetrics.readingMaxWidth,
+          child: FrostPageHeader(title: FrostText(t.me.following)),
+        );
         if (userId == null) {
           return FrostPinnedChrome(
             chrome: header,

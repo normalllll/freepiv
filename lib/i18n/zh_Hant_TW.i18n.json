@@ -939,5 +939,17 @@
     "signIn": "在瀏覽器中登入",
     "waiting": "請在瀏覽器中完成登入",
     "reopen": "重新開啟瀏覽器"
+  },
+  "fanboxPage": {
+    "groupFeed": "動態",
+    "groupDiscover": "發現",
+    "groupMine": "我的",
+    "searchPlaceholder": "在 FANBOX 中搜尋",
+    "openCreator": "開啟創作者 @$id",
+    "searchCreators": "搜尋創作者「$query」",
+    "searchTags": "搜尋標籤「$query」",
+    "accountSettings": "FANBOX 帳號設定",
+    "localOnly": "本機書籤只保存在這台裝置上",
+    "creatorPage": "開啟創作者"
   }
 }

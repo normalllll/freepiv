@@ -114,12 +114,15 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
     return DownloadSourceScope(
       source: novelDownloadSource(_novel),
       child: FrostPinnedChrome(
-        chrome: FrostPageHeader(
-          title: _headGone ? FrostText(_novel.title) : null,
-          actions: [
-            if (_headGone && readable)
-              FrostToolbarItem.action(icon: PivIcons.newspaper, label: readLabel, showsLabel: true, onPressed: () => unawaited(_read())),
-          ],
+        chrome: FrostContentColumn(
+          maxWidth: FrostMetrics.readingMaxWidth,
+          child: FrostPageHeader(
+            title: _headGone ? FrostText(_novel.title) : null,
+            actions: [
+              if (_headGone && readable)
+                FrostToolbarItem.action(icon: PivIcons.newspaper, label: readLabel, showsLabel: true, onPressed: () => unawaited(_read())),
+            ],
+          ),
         ),
         body: FrostLoadingScrollView(
           controller: _scroll,

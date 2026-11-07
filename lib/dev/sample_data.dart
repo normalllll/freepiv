@@ -16,6 +16,7 @@ import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -212,6 +213,9 @@ final sampleOverrideMap = <Object, Override>{
     ref.onDispose(source.dispose);
     return source;
   }),
+  fanboxSessionProvider: fanboxSessionProvider.overrideWith(_SampleFanboxSession.new),
+  fanboxBrowseProvider: fanboxBrowseProvider.overrideWith2((_) => _SampleFanboxBrowse()),
+  fanboxPostProvider: fanboxPostProvider.overrideWith((ref, id) async => sampleFanboxPosts().firstWhere((post) => post.id == id)),
   searchTrendingTagsProvider: searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
   downloadTasksProvider: downloadTasksProvider.overrideWith((ref) => Stream.value(sampleDownloadTasks)),
   fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
@@ -546,4 +550,58 @@ class _SampleSearchUsers extends SearchUserListSource {
 
   @override
   Future<UserPageResult> loadNextPage(String nextUrl) async => const UserPageResult(userPreviews: []);
+}
+
+/// FANBOX posts by sample creators, some long-titled, some for supporters.
+List<FanboxPost> sampleFanboxPosts({int count = 8}) => [
+  for (var index = 0; index < count; index++)
+    FanboxPost(
+      id: '${5000 + index}',
+      creatorId: 'sample_creator',
+      user: FanboxUser(
+        id: '${600 + index % 3}',
+        name: ['Studio Kite', 'サンプル工房', 'A creator with a rather long name'][index % 3],
+        iconUrl: sampleImageUrl(90 + index % 3, width: 120, height: 120),
+      ),
+      title: index.isEven ? 'Monthly sketches ${index + 1}' : 'A longer post title about this month’s process, rough sketches and finished pieces ${index + 1}',
+      excerpt: 'Thank you for your support. This month I tried a new brush set and drew the harbour at dusk.',
+      coverUrl: index % 3 == 2 ? null : sampleImageUrl(120 + index, width: 1200, height: 675),
+      publishedDatetime: '2026-11-0${1 + index % 6}T12:00:00+09:00',
+      updatedDatetime: '2026-11-0${1 + index % 6}T12:00:00+09:00',
+      feeRequired: [0, 500, 1000][index % 3],
+      isRestricted: index % 3 == 2,
+      isLiked: index == 1,
+      likeCount: 40 + index * 7,
+      commentCount: index * 2,
+      tags: const ['illustration', 'process'],
+      blocks: const [],
+    ),
+];
+
+class _SampleFanboxSession extends FanboxSession {
+  @override
+  Future<String?> build() async => 'sample';
+}
+
+class _SampleFanboxBrowse extends FanboxBrowse {
+  @override
+  Future<FanboxCollection> build(FanboxLocation location) async => switch (location.section) {
+    FanboxSection.following || FanboxSection.recommended || FanboxSection.pixiv || FanboxSection.searchCreators => FanboxCollection([
+      for (final post in sampleFanboxPosts(count: 6))
+        FanboxCreatorEntry(
+          FanboxCreator(
+            creatorId: 'creator_${post.id}',
+            user: post.user,
+            description: post.excerpt,
+            isFollowed: true,
+            isSupported: post.feeRequired > 0,
+            hasAdultContent: false,
+            profileLinks: const [],
+            profileImages: const [],
+          ),
+        ),
+    ]),
+    FanboxSection.bookmarks => FanboxCollection([for (final post in sampleFanboxPosts(count: 3)) FanboxBookmarkEntry(post.id)]),
+    _ => FanboxCollection([for (final post in sampleFanboxPosts()) FanboxPostEntry(post)]),
+  };
 }

@@ -77,6 +77,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$searchPage$zh_Hant_TW searchPage = Translations$searchPage$zh_Hant_TW.internal(_root);
 	@override late final Translations$downloadsPage$zh_Hant_TW downloadsPage = Translations$downloadsPage$zh_Hant_TW.internal(_root);
 	@override late final Translations$loginPage$zh_Hant_TW loginPage = Translations$loginPage$zh_Hant_TW.internal(_root);
+	@override late final Translations$fanboxPage$zh_Hant_TW fanboxPage = Translations$fanboxPage$zh_Hant_TW.internal(_root);
 }
 
 // Path: downloadEntry
@@ -863,6 +864,25 @@ class Translations$loginPage$zh_Hant_TW extends Translations$loginPage$en_US {
 	@override String get signIn => '在瀏覽器中登入';
 	@override String get waiting => '請在瀏覽器中完成登入';
 	@override String get reopen => '重新開啟瀏覽器';
+}
+
+// Path: fanboxPage
+class Translations$fanboxPage$zh_Hant_TW extends Translations$fanboxPage$en_US {
+	Translations$fanboxPage$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get groupFeed => '動態';
+	@override String get groupDiscover => '發現';
+	@override String get groupMine => '我的';
+	@override String get searchPlaceholder => '在 FANBOX 中搜尋';
+	@override String openCreator({required Object id}) => '開啟創作者 @${id}';
+	@override String searchCreators({required Object query}) => '搜尋創作者「${query}」';
+	@override String searchTags({required Object query}) => '搜尋標籤「${query}」';
+	@override String get accountSettings => 'FANBOX 帳號設定';
+	@override String get localOnly => '本機書籤只保存在這台裝置上';
+	@override String get creatorPage => '開啟創作者';
 }
 
 // Path: settings.theme
@@ -2431,6 +2451,16 @@ extension on TranslationsZhHantTw {
 			'loginPage.signIn' => '在瀏覽器中登入',
 			'loginPage.waiting' => '請在瀏覽器中完成登入',
 			'loginPage.reopen' => '重新開啟瀏覽器',
+			'fanboxPage.groupFeed' => '動態',
+			'fanboxPage.groupDiscover' => '發現',
+			'fanboxPage.groupMine' => '我的',
+			'fanboxPage.searchPlaceholder' => '在 FANBOX 中搜尋',
+			'fanboxPage.openCreator' => ({required Object id}) => '開啟創作者 @${id}',
+			'fanboxPage.searchCreators' => ({required Object query}) => '搜尋創作者「${query}」',
+			'fanboxPage.searchTags' => ({required Object query}) => '搜尋標籤「${query}」',
+			'fanboxPage.accountSettings' => 'FANBOX 帳號設定',
+			'fanboxPage.localOnly' => '本機書籤只保存在這台裝置上',
+			'fanboxPage.creatorPage' => '開啟創作者',
 			_ => null,
 		};
 	}

@@ -110,7 +110,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final proxy = ref.watch(proxySettingsProvider);
     final waiting = _stage == LoginStage.waiting;
     return FrostPinnedChrome(
-      chrome: FrostPageHeader(title: FrostText(t.login.title)),
+      chrome: FrostContentColumn(
+        maxWidth: FrostMetrics.readingMaxWidth,
+        child: FrostPageHeader(title: FrostText(t.login.title)),
+      ),
       body: FrostLoadingScrollView(
         slivers: [
           const FrostChromeSpacer(),

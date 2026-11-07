@@ -939,5 +939,17 @@
     "signIn": "ブラウザでログイン",
     "waiting": "ブラウザでログインを完了してください",
     "reopen": "ブラウザをもう一度開く"
+  },
+  "fanboxPage": {
+    "groupFeed": "フィード",
+    "groupDiscover": "見つける",
+    "groupMine": "マイページ",
+    "searchPlaceholder": "FANBOX を検索",
+    "openCreator": "クリエイター @$id を開く",
+    "searchCreators": "クリエイターを「$query」で検索",
+    "searchTags": "タグを「$query」で検索",
+    "accountSettings": "FANBOX アカウント設定",
+    "localOnly": "保存した投稿はこの端末にのみ残ります",
+    "creatorPage": "クリエイターを開く"
   }
 }

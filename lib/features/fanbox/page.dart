@@ -1,3 +1,4 @@
+import 'package:freepiv/features/fanbox/browse_page.dart';
 import 'package:freepiv/shared/widgets/legacy_frost.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'login_panel.dart';
@@ -23,7 +24,7 @@ void openFanboxTag(BuildContext context, String tag, {String creatorId = ''}) =>
 
 GoRoute fanboxTagRoute() => GoRoute(
   path: AppRoute.fanboxTag.path,
-  builder: (context, state) => FanboxPage(
+  builder: (context, state) => FanboxBrowsePage(
     location: (
       section: FanboxSection.tag,
       creatorId: state.uri.queryParameters[AppRouteQuery.creator] ?? '',

@@ -202,8 +202,11 @@ class _WorkCommentsPageState extends ConsumerState<WorkCommentsPage> {
               children: [
                 Expanded(
                   child: FrostPinnedChrome(
-                    chrome: FrostPageHeader(
-                      title: FrostText(total == null ? t.illust.section.comments : t.illust.section.commentsWithCount(count: formatCount(total))),
+                    chrome: FrostContentColumn(
+                      maxWidth: FrostMetrics.readingMaxWidth,
+                      child: FrostPageHeader(
+                        title: FrostText(total == null ? t.illust.section.comments : t.illust.section.commentsWithCount(count: formatCount(total))),
+                      ),
                     ),
                     body: FrostRefreshView(
                       onRefresh: _refresh,

@@ -77,6 +77,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$searchPage$zh_CN searchPage = Translations$searchPage$zh_CN.internal(_root);
 	@override late final Translations$downloadsPage$zh_CN downloadsPage = Translations$downloadsPage$zh_CN.internal(_root);
 	@override late final Translations$loginPage$zh_CN loginPage = Translations$loginPage$zh_CN.internal(_root);
+	@override late final Translations$fanboxPage$zh_CN fanboxPage = Translations$fanboxPage$zh_CN.internal(_root);
 }
 
 // Path: downloadEntry
@@ -863,6 +864,25 @@ class Translations$loginPage$zh_CN extends Translations$loginPage$en_US {
 	@override String get signIn => '在浏览器中登录';
 	@override String get waiting => '请在浏览器中完成登录';
 	@override String get reopen => '重新打开浏览器';
+}
+
+// Path: fanboxPage
+class Translations$fanboxPage$zh_CN extends Translations$fanboxPage$en_US {
+	Translations$fanboxPage$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get groupFeed => '动态';
+	@override String get groupDiscover => '发现';
+	@override String get groupMine => '我的';
+	@override String get searchPlaceholder => '在 FANBOX 中搜索';
+	@override String openCreator({required Object id}) => '打开创作者 @${id}';
+	@override String searchCreators({required Object query}) => '搜索创作者“${query}”';
+	@override String searchTags({required Object query}) => '搜索标签“${query}”';
+	@override String get accountSettings => 'FANBOX 账号设置';
+	@override String get localOnly => '本机书签只保存在这台设备上';
+	@override String get creatorPage => '打开创作者';
 }
 
 // Path: settings.theme
@@ -2431,6 +2451,16 @@ extension on TranslationsZhCn {
 			'loginPage.signIn' => '在浏览器中登录',
 			'loginPage.waiting' => '请在浏览器中完成登录',
 			'loginPage.reopen' => '重新打开浏览器',
+			'fanboxPage.groupFeed' => '动态',
+			'fanboxPage.groupDiscover' => '发现',
+			'fanboxPage.groupMine' => '我的',
+			'fanboxPage.searchPlaceholder' => '在 FANBOX 中搜索',
+			'fanboxPage.openCreator' => ({required Object id}) => '打开创作者 @${id}',
+			'fanboxPage.searchCreators' => ({required Object query}) => '搜索创作者“${query}”',
+			'fanboxPage.searchTags' => ({required Object query}) => '搜索标签“${query}”',
+			'fanboxPage.accountSettings' => 'FANBOX 账号设置',
+			'fanboxPage.localOnly' => '本机书签只保存在这台设备上',
+			'fanboxPage.creatorPage' => '打开创作者',
 			_ => null,
 		};
 	}

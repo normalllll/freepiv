@@ -77,6 +77,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$searchPage$ja_JP searchPage = _Translations$searchPage$ja_JP._(_root);
 	@override late final _Translations$downloadsPage$ja_JP downloadsPage = _Translations$downloadsPage$ja_JP._(_root);
 	@override late final _Translations$loginPage$ja_JP loginPage = _Translations$loginPage$ja_JP._(_root);
+	@override late final _Translations$fanboxPage$ja_JP fanboxPage = _Translations$fanboxPage$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -863,6 +864,25 @@ class _Translations$loginPage$ja_JP extends Translations$loginPage$en_US {
 	@override String get signIn => 'ブラウザでログイン';
 	@override String get waiting => 'ブラウザでログインを完了してください';
 	@override String get reopen => 'ブラウザをもう一度開く';
+}
+
+// Path: fanboxPage
+class _Translations$fanboxPage$ja_JP extends Translations$fanboxPage$en_US {
+	_Translations$fanboxPage$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get groupFeed => 'フィード';
+	@override String get groupDiscover => '見つける';
+	@override String get groupMine => 'マイページ';
+	@override String get searchPlaceholder => 'FANBOX を検索';
+	@override String openCreator({required Object id}) => 'クリエイター @${id} を開く';
+	@override String searchCreators({required Object query}) => 'クリエイターを「${query}」で検索';
+	@override String searchTags({required Object query}) => 'タグを「${query}」で検索';
+	@override String get accountSettings => 'FANBOX アカウント設定';
+	@override String get localOnly => '保存した投稿はこの端末にのみ残ります';
+	@override String get creatorPage => 'クリエイターを開く';
 }
 
 // Path: settings.theme
@@ -2431,6 +2451,16 @@ extension on TranslationsJaJp {
 			'loginPage.signIn' => 'ブラウザでログイン',
 			'loginPage.waiting' => 'ブラウザでログインを完了してください',
 			'loginPage.reopen' => 'ブラウザをもう一度開く',
+			'fanboxPage.groupFeed' => 'フィード',
+			'fanboxPage.groupDiscover' => '見つける',
+			'fanboxPage.groupMine' => 'マイページ',
+			'fanboxPage.searchPlaceholder' => 'FANBOX を検索',
+			'fanboxPage.openCreator' => ({required Object id}) => 'クリエイター @${id} を開く',
+			'fanboxPage.searchCreators' => ({required Object query}) => 'クリエイターを「${query}」で検索',
+			'fanboxPage.searchTags' => ({required Object query}) => 'タグを「${query}」で検索',
+			'fanboxPage.accountSettings' => 'FANBOX アカウント設定',
+			'fanboxPage.localOnly' => '保存した投稿はこの端末にのみ残ります',
+			'fanboxPage.creatorPage' => 'クリエイターを開く',
 			_ => null,
 		};
 	}
