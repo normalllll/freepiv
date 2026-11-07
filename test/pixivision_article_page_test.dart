@@ -44,8 +44,12 @@ void main() {
     expect(find.byType(FrostRichText), findsOneWidget);
     expect(find.text('The works'), findsOneWidget);
     expect(find.text('Morning at the pier 1'), findsOneWidget);
-    await _scrollTo(tester, find.byType(FrostKeyValueList));
-    expect(find.text('Morning at the pier'), findsOneWidget, reason: 'the two-column table as labelled values');
+    await _scrollTo(tester, find.byType(FrostTable<List<String>>));
+    final table = tester.widget<FrostTable<List<String>>>(find.byType(FrostTable<List<String>>));
+    expect(table.shrinkWrap, isTrue, reason: 'the table runs with the text');
+    expect([for (final column in table.columns) column.label], ['Work', 'Artist']);
+    expect(find.descendant(of: find.byType(FrostTable<List<String>>), matching: find.text('Morning at the pier')), findsOneWidget);
+    expect(find.descendant(of: find.byType(FrostTable<List<String>>), matching: find.text('Sample artist')), findsOneWidget);
     await _scrollTo(tester, find.text(t.pixivision.unsupported));
     await _scrollTo(tester, find.text('#Landscape'));
     await _scrollTo(tester, find.text(t.pixivision.next));

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -454,36 +455,33 @@ class PixivisionBlock extends StatelessWidget {
   }
 }
 
-/// A table of an article. FrostTable is a lazy viewport of a finite height,
-/// so a table in the flow of the article shows as labelled values when it has
-/// two columns and as rows (first cell, the rest under it) otherwise, until
-/// Frost has an in-flow table (freepiv-20261107-table-in-flow).
+/// A table of an article, as tall as its rows, in the flow of the text; its
+/// first row heads the columns when it is all header cells.
 class _ArticleTable extends StatelessWidget {
   const _ArticleTable({required this.rows});
 
   final List<List<dom.Element>> rows;
 
-  static String _text(dom.Element cell) => cell.text.replaceAll(RegExp(r's+'), ' ').trim();
+  static String _text(dom.Element cell) => cell.text.replaceAll(RegExp(r'\s+'), ' ').trim();
 
   @override
   Widget build(BuildContext context) {
     final headed = rows.first.every((cell) => cell.localName == 'th');
     final body = [for (final row in headed ? rows.skip(1) : rows) [for (final cell in row) _text(cell)]];
-    if (body.every((row) => row.length == 2)) {
-      return FrostKeyValueList(entries: [for (final row in body) FrostKeyValue(label: row[0], value: row[1])]);
-    }
-    final header = headed ? [for (final cell in rows.first) _text(cell)] : const <String>[];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (header.isNotEmpty) FrostText(header.join(' · '), role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
-        for (final row in body)
-          FrostListRow(
-            title: row.first,
-            contentTitle: true,
-            subtitle: row.length < 2 ? null : FrostRowSubtitle(row.skip(1).where((cell) => cell.isNotEmpty).join(' · '), content: true),
+    final width = rows.map((row) => row.length).reduce(math.max);
+    final header = [for (var column = 0; column < width; column++) headed && column < rows.first.length ? _text(rows.first[column]) : ''];
+    return FrostTable<List<String>>(
+      shrinkWrap: true,
+      columns: [
+        for (final (column, label) in header.indexed)
+          FrostTableColumn(
+            label: label,
+            primary: column == 0,
+            text: (row) => column < row.length ? row[column] : '',
+            cell: (context, row) => FrostText(column < row.length ? row[column] : '', content: true),
           ),
       ],
+      rows: body,
     );
   }
 }
