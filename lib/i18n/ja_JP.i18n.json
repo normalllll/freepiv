@@ -111,7 +111,21 @@
     "listSeparator": "、",
     "retryAfter": "$seconds 秒後に再試行"
   },
-  "nativeWindow": {"minimize":"最小化","maximize":"最大化","restore":"元に戻す","close":"閉じる","illust":"イラスト","manga":"マンガ","novel":"小説","workFallback":"$type：$id","workTitle":"$type：$id · $title","relatedTitle":"関連作品 · $title","user":"ユーザー","userFallback":"ユーザー：$id","viewerTitle":"$title · $page/$total"},
+  "nativeWindow": {
+    "minimize": "最小化",
+    "maximize": "最大化",
+    "restore": "元に戻す",
+    "close": "閉じる",
+    "illust": "イラスト",
+    "manga": "マンガ",
+    "novel": "小説",
+    "workFallback": "$type：$id",
+    "workTitle": "$type：$id · $title",
+    "relatedTitle": "関連作品 · $title",
+    "user": "ユーザー",
+    "userFallback": "ユーザー：$id",
+    "viewerTitle": "$title · $page/$total"
+  },
   "discover": {
     "searchHint": "Pixiv を検索",
     "history": "検索履歴",
@@ -138,7 +152,13 @@
     "downloads": "ダウンロード",
     "about": "アプリ情報"
   },
-  "errors": {"generic": "読み込めませんでした。もう一度お試しください。", "connection": "接続を確認して、もう一度お試しください。", "session": "セッションが切れました。再度ログインしてください。", "forbidden": "このコンテンツへのアクセス権がありません。", "missing": "このコンテンツは利用できません。"},
+  "errors": {
+    "generic": "読み込めませんでした。もう一度お試しください。",
+    "connection": "接続を確認して、もう一度お試しください。",
+    "session": "セッションが切れました。再度ログインしてください。",
+    "forbidden": "このコンテンツへのアクセス権がありません。",
+    "missing": "このコンテンツは利用できません。"
+  },
   "common": {
     "viewLog": "ログを表示",
     "apply": "適用",
@@ -158,7 +178,8 @@
     "errorWithCause": "$message：$cause",
     "errorDetails": "エラーの詳細",
     "copyDetails": "詳細をコピー",
-    "detailsCopied": "エラーの詳細をコピーしました"
+    "detailsCopied": "エラーの詳細をコピーしました",
+    "refresh": "更新"
   },
   "refresh": {
     "pullToRefresh": "引っ張って更新",
@@ -842,5 +863,12 @@
     "unsupported": "このコンテンツは元の記事でご覧いただけます。",
     "userId": "User ID: $id",
     "userName": "ユーザー: $name"
+  },
+  "artworkCard": {
+    "ai": "AI",
+    "ugoira": "うごイラ",
+    "semantics": "$title（$author）",
+    "menuHeader": "$title · $author",
+    "openAuthor": "作者を開く"
   }
 }

@@ -20,7 +20,7 @@ class AppPageError extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SafeArea(bottom: false, child: FrostPageHeader(title: title == null ? null : Text(title!))),
+        SafeArea(bottom: false, child: FrostPageHeader(title: title == null ? null : FrostText(title!))),
         Expanded(
           child: error == null
               // FrostErrorContent always offers a retry; nothing retries a missing page.

@@ -111,7 +111,21 @@
     "listSeparator": "，",
     "retryAfter": "$seconds 秒后重试"
   },
-  "nativeWindow": {"minimize":"最小化","maximize":"最大化","restore":"还原","close":"关闭","illust":"插画","manga":"漫画","novel":"小说","workFallback":"$type：$id","workTitle":"$type：$id · $title","relatedTitle":"相似作品 · $title","user":"用户","userFallback":"用户：$id","viewerTitle":"$title · $page/$total"},
+  "nativeWindow": {
+    "minimize": "最小化",
+    "maximize": "最大化",
+    "restore": "还原",
+    "close": "关闭",
+    "illust": "插画",
+    "manga": "漫画",
+    "novel": "小说",
+    "workFallback": "$type：$id",
+    "workTitle": "$type：$id · $title",
+    "relatedTitle": "相似作品 · $title",
+    "user": "用户",
+    "userFallback": "用户：$id",
+    "viewerTitle": "$title · $page/$total"
+  },
   "discover": {
     "searchHint": "搜索 Pixiv",
     "history": "搜索历史",
@@ -138,7 +152,13 @@
     "downloads": "下载",
     "about": "关于"
   },
-  "errors": {"generic": "内容加载失败，请重试。", "connection": "请检查网络连接后重试。", "session": "登录已过期，请重新登录。", "forbidden": "你暂无权限查看此内容。", "missing": "此内容已不可用。"},
+  "errors": {
+    "generic": "内容加载失败，请重试。",
+    "connection": "请检查网络连接后重试。",
+    "session": "登录已过期，请重新登录。",
+    "forbidden": "你暂无权限查看此内容。",
+    "missing": "此内容已不可用。"
+  },
   "common": {
     "viewLog": "查看日志",
     "apply": "应用",
@@ -158,7 +178,8 @@
     "errorWithCause": "$message：$cause",
     "errorDetails": "错误详情",
     "copyDetails": "复制详情",
-    "detailsCopied": "已复制错误详情"
+    "detailsCopied": "已复制错误详情",
+    "refresh": "刷新"
   },
   "refresh": {
     "pullToRefresh": "下拉刷新",
@@ -842,5 +863,12 @@
     "unsupported": "此内容可在原文页面查看。",
     "userId": "User ID: $id",
     "userName": "用户: $name"
+  },
+  "artworkCard": {
+    "ai": "AI",
+    "ugoira": "动图",
+    "semantics": "$title，作者 $author",
+    "menuHeader": "$title · $author",
+    "openAuthor": "打开作者"
   }
 }

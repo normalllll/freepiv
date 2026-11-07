@@ -68,6 +68,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$richText$ja_JP richText = _Translations$richText$ja_JP._(_root);
 	@override late final _Translations$fanbox$ja_JP fanbox = _Translations$fanbox$ja_JP._(_root);
 	@override late final _Translations$pixivision$ja_JP pixivision = _Translations$pixivision$ja_JP._(_root);
+	@override late final _Translations$artworkCard$ja_JP artworkCard = _Translations$artworkCard$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -333,6 +334,7 @@ class _Translations$common$ja_JP extends Translations$common$en_US {
 	@override String get errorDetails => 'エラーの詳細';
 	@override String get copyDetails => '詳細をコピー';
 	@override String get detailsCopied => 'エラーの詳細をコピーしました';
+	@override String get refresh => '更新';
 }
 
 // Path: refresh
@@ -724,6 +726,20 @@ class _Translations$pixivision$ja_JP extends Translations$pixivision$en_US {
 	@override String get unsupported => 'このコンテンツは元の記事でご覧いただけます。';
 	@override String userId({required Object id}) => 'User ID: ${id}';
 	@override String userName({required Object name}) => 'ユーザー: ${name}';
+}
+
+// Path: artworkCard
+class _Translations$artworkCard$ja_JP extends Translations$artworkCard$en_US {
+	_Translations$artworkCard$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get ai => 'AI';
+	@override String get ugoira => 'うごイラ';
+	@override String semantics({required Object title, required Object author}) => '${title}（${author}）';
+	@override String menuHeader({required Object title, required Object author}) => '${title} · ${author}';
+	@override String get openAuthor => '作者を開く';
 }
 
 // Path: settings.theme
@@ -1646,6 +1662,7 @@ extension on TranslationsJaJp {
 			'common.errorDetails' => 'エラーの詳細',
 			'common.copyDetails' => '詳細をコピー',
 			'common.detailsCopied' => 'エラーの詳細をコピーしました',
+			'common.refresh' => '更新',
 			'refresh.pullToRefresh' => '引っ張って更新',
 			'refresh.releaseToRefresh' => '離して更新',
 			'refresh.refreshing' => '更新中',
@@ -2000,9 +2017,9 @@ extension on TranslationsJaJp {
 			'illust.toast.downloadFailed' => 'ダウンロードに失敗しました',
 			'illust.toast.copying' => ({required Object label}) => '${label}をコピーしています',
 			'illust.toast.copied' => ({required Object label}) => '${label}をコピーしました',
-			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '${label}をコピーしました：${value}',
 			_ => null,
 		} ?? switch (path) {
+			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '${label}をコピーしました：${value}',
 			'illust.toast.copyFailed' => ({required Object label}) => '${label}のコピーに失敗しました',
 			'illust.toast.openFailed' => 'Pixiv で作品を開けませんでした',
 			'illust.toast.linkCopied' => 'リンクをコピーしました',
@@ -2211,6 +2228,11 @@ extension on TranslationsJaJp {
 			'pixivision.unsupported' => 'このコンテンツは元の記事でご覧いただけます。',
 			'pixivision.userId' => ({required Object id}) => 'User ID: ${id}',
 			'pixivision.userName' => ({required Object name}) => 'ユーザー: ${name}',
+			'artworkCard.ai' => 'AI',
+			'artworkCard.ugoira' => 'うごイラ',
+			'artworkCard.semantics' => ({required Object title, required Object author}) => '${title}（${author}）',
+			'artworkCard.menuHeader' => ({required Object title, required Object author}) => '${title} · ${author}',
+			'artworkCard.openAuthor' => '作者を開く',
 			_ => null,
 		};
 	}

@@ -111,7 +111,21 @@
     "listSeparator": ", ",
     "retryAfter": "Retry in $seconds s"
   },
-  "nativeWindow": {"minimize":"Minimize","maximize":"Maximize","restore":"Restore","close":"Close","illust":"Illust","manga":"Manga","novel":"Novel","workFallback":"$type: $id","workTitle":"$type: $id · $title","relatedTitle":"Related works · $title","user":"User","userFallback":"User: $id","viewerTitle":"$title · $page/$total"},
+  "nativeWindow": {
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "close": "Close",
+    "illust": "Illust",
+    "manga": "Manga",
+    "novel": "Novel",
+    "workFallback": "$type: $id",
+    "workTitle": "$type: $id · $title",
+    "relatedTitle": "Related works · $title",
+    "user": "User",
+    "userFallback": "User: $id",
+    "viewerTitle": "$title · $page/$total"
+  },
   "discover": {
     "searchHint": "Search Pixiv",
     "history": "Recent searches",
@@ -138,7 +152,13 @@
     "downloads": "Downloads",
     "about": "About"
   },
-  "errors": {"generic": "Unable to load content. Please try again.", "connection": "Check your connection and try again.", "session": "Your session has expired. Please sign in again.", "forbidden": "You do not have access to this content.", "missing": "This content is no longer available."},
+  "errors": {
+    "generic": "Unable to load content. Please try again.",
+    "connection": "Check your connection and try again.",
+    "session": "Your session has expired. Please sign in again.",
+    "forbidden": "You do not have access to this content.",
+    "missing": "This content is no longer available."
+  },
   "common": {
     "viewLog": "View log",
     "apply": "Apply",
@@ -158,7 +178,8 @@
     "errorWithCause": "$message: $cause",
     "errorDetails": "Error details",
     "copyDetails": "Copy details",
-    "detailsCopied": "Error details copied"
+    "detailsCopied": "Error details copied",
+    "refresh": "Refresh"
   },
   "refresh": {
     "pullToRefresh": "Pull to refresh",
@@ -842,5 +863,12 @@
     "unsupported": "This content can be viewed on the original page.",
     "userId": "User ID: $id",
     "userName": "User: $name"
+  },
+  "artworkCard": {
+    "ai": "AI",
+    "ugoira": "Animation",
+    "semantics": "$title by $author",
+    "menuHeader": "$title · $author",
+    "openAuthor": "Open author"
   }
 }

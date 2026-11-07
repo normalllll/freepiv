@@ -5,6 +5,7 @@ import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
+import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 void main() {
@@ -28,6 +29,6 @@ void main() {
     final shell = tester.widget<FrostShell>(find.byType(FrostShell));
     expect(shell.selectedIndex, 0);
     expect(shell.taskEntry!.visible, isTrue);
-    expect(find.text('Sample work 1'), findsWidgets);
+    expect(find.byType(AppArtworkCard), findsWidgets);
   });
 }

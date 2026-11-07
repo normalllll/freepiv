@@ -1,6 +1,8 @@
 // Sample data for development: the sample entrypoint (tool/sample_main.dart),
 // screenshots and widget tests. Nothing in the app's own entrypoint imports
 // this file, so release builds leave it out.
+import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:freepiv/dev/sample_images.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/features/downloads/presentation/download_entry.dart';
@@ -62,7 +64,11 @@ List<Illust> sampleIllusts({int count = 24, String kind = 'illust'}) => [
       id: 90000 + index,
       title: index.isEven ? 'Sample work ${index + 1}' : 'A longer sample work title that wraps ${index + 1}',
       kind: kind,
-      imageUrls: const ImageUrls(squareMedium: '', medium: '', large: ''),
+      imageUrls: ImageUrls(
+        squareMedium: sampleImageUrl(index, width: 360, height: 360),
+        medium: sampleImageUrl(index, width: 540, height: [540, 756, 405, 675][index % 4]),
+        large: sampleImageUrl(index, width: 1000, height: [1000, 1400, 750, 1250][index % 4]),
+      ),
       caption: '',
       restrict: 0,
       user: _artist,
@@ -143,18 +149,107 @@ final sampleDownloadTasks = [
 ];
 
 /// The providers the sample app answers from sample data instead of Pixiv.
-final sampleOverrides = [
-  homeIllustSourceProvider.overrideWith((ref) {
+///
+/// Keyed by provider, so a test can replace one of them.
+final sampleOverrideMap = <Object, Override>{
+  homeIllustSourceProvider: homeIllustSourceProvider.overrideWith((ref) {
     final source = SampleIllustSource(illustType: IllustType.illust);
     ref.onDispose(source.dispose);
     return source;
   }),
-  homeMangaSourceProvider.overrideWith((ref) {
+  homeMangaSourceProvider: homeMangaSourceProvider.overrideWith((ref) {
     final source = SampleIllustSource(illustType: IllustType.manga);
     ref.onDispose(source.dispose);
     return source;
   }),
-  searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
-  downloadTasksProvider.overrideWith((ref) => Stream.value(sampleDownloadTasks)),
-  fanboxDownloadsProvider.overrideWithValue(const {}),
+  homeNovelSourceProvider: homeNovelSourceProvider.overrideWith((ref) {
+    final source = SampleNovelSource();
+    ref.onDispose(source.dispose);
+    return source;
+  }),
+  homeUserSourceProvider: homeUserSourceProvider.overrideWith((ref) {
+    final source = SampleUserSource();
+    ref.onDispose(source.dispose);
+    return source;
+  }),
+  searchTrendingTagsProvider: searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
+  downloadTasksProvider: downloadTasksProvider.overrideWith((ref) => Stream.value(sampleDownloadTasks)),
+  fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
+};
+
+final sampleOverrides = [...sampleOverrideMap.values];
+
+/// Novels by sample authors, some long-titled and in a series.
+List<Novel> sampleNovels({int count = 12}) => [
+  for (var index = 0; index < count; index++)
+    Novel(
+      id: 70000 + index,
+      title: index.isEven ? 'Sample novel ${index + 1}' : 'A rather long sample novel title that needs two lines ${index + 1}',
+      caption: 'The opening of a story about the sea, the town on its shore and the people who wait there for the boats to come back.',
+      restrict: 0,
+      xRestrict: 0,
+      isOriginal: true,
+      imageUrls: ImageUrls(
+        squareMedium: sampleImageUrl(40 + index, width: 240, height: 240),
+        medium: sampleImageUrl(40 + index, width: 240, height: 340),
+        large: '',
+      ),
+      createDate: '2026-11-01T12:00:00+09:00',
+      tags: const [
+        Tag(name: 'オリジナル', translatedName: 'original'),
+        Tag(name: '恋愛'),
+        Tag(name: 'ファンタジー'),
+      ],
+      pageCount: 3,
+      textLength: 12000 + index * 830,
+      user: _artist,
+      series: Series(id: index % 3 == 0 ? 500 : null, title: index % 3 == 0 ? 'The shore stories' : null),
+      totalBookmarks: 120 + index,
+      isBookmarked: index % 4 == 0,
+      totalView: 2000 + index * 50,
+      visible: true,
+      totalComments: 3,
+      isMuted: false,
+      isMypixivOnly: false,
+      isXRestricted: false,
+      novelAiType: 1,
+    ),
 ];
+
+/// Recommended users, each with three works.
+List<UserPreview> sampleUserPreviews({int count = 10}) {
+  final works = sampleIllusts(count: 3);
+  return [
+    for (var index = 0; index < count; index++)
+      UserPreview(
+        user: User(
+          id: 3000 + index,
+          name: index.isEven ? 'Sample creator ${index + 1}' : 'サンプルの作者 ${index + 1}',
+          account: 'sample_creator_${index + 1}',
+          profileImageUrls: ProfileImageUrls(medium: sampleImageUrl(60 + index, width: 170, height: 170)),
+          isFollowed: index % 3 == 0,
+        ),
+        illusts: works,
+        isMuted: false,
+      ),
+  ];
+}
+
+class SampleNovelSource extends HomeNovelListSource {
+  @override
+  Future<NovelPageResult> loadFirstPage() async {
+    final novels = sampleNovels();
+    return NovelPageResult(novels: novels, rankingNovels: novels.take(6).toList());
+  }
+
+  @override
+  Future<NovelPageResult> loadNextPage(String nextUrl) async => const NovelPageResult(novels: [], rankingNovels: []);
+}
+
+class SampleUserSource extends HomeUserListSource {
+  @override
+  Future<UserPageResult> loadFirstPage() async => UserPageResult(userPreviews: sampleUserPreviews());
+
+  @override
+  Future<UserPageResult> loadNextPage(String nextUrl) async => const UserPageResult(userPreviews: []);
+}

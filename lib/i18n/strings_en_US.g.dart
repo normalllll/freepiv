@@ -70,6 +70,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$richText$en_US richText = Translations$richText$en_US.internal(_root);
 	late final Translations$fanbox$en_US fanbox = Translations$fanbox$en_US.internal(_root);
 	late final Translations$pixivision$en_US pixivision = Translations$pixivision$en_US.internal(_root);
+	late final Translations$artworkCard$en_US artworkCard = Translations$artworkCard$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -335,6 +336,7 @@ class Translations$common$en_US {
 	String get errorDetails => 'Error details';
 	String get copyDetails => 'Copy details';
 	String get detailsCopied => 'Error details copied';
+	String get refresh => 'Refresh';
 }
 
 // Path: refresh
@@ -726,6 +728,20 @@ class Translations$pixivision$en_US {
 	String get unsupported => 'This content can be viewed on the original page.';
 	String userId({required Object id}) => 'User ID: ${id}';
 	String userName({required Object name}) => 'User: ${name}';
+}
+
+// Path: artworkCard
+class Translations$artworkCard$en_US {
+	Translations$artworkCard$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get ai => 'AI';
+	String get ugoira => 'Animation';
+	String semantics({required Object title, required Object author}) => '${title} by ${author}';
+	String menuHeader({required Object title, required Object author}) => '${title} · ${author}';
+	String get openAuthor => 'Open author';
 }
 
 // Path: settings.theme
@@ -1648,6 +1664,7 @@ extension on Translations {
 			'common.errorDetails' => 'Error details',
 			'common.copyDetails' => 'Copy details',
 			'common.detailsCopied' => 'Error details copied',
+			'common.refresh' => 'Refresh',
 			'refresh.pullToRefresh' => 'Pull to refresh',
 			'refresh.releaseToRefresh' => 'Release to refresh',
 			'refresh.refreshing' => 'Refreshing',
@@ -2002,9 +2019,9 @@ extension on Translations {
 			'illust.toast.downloadFailed' => 'Download failed',
 			'illust.toast.copying' => ({required Object label}) => 'Copying ${label}',
 			'illust.toast.copied' => ({required Object label}) => 'Copied ${label}',
-			'illust.toast.copiedValue' => ({required Object label, required Object value}) => 'Copied ${label}: ${value}',
 			_ => null,
 		} ?? switch (path) {
+			'illust.toast.copiedValue' => ({required Object label, required Object value}) => 'Copied ${label}: ${value}',
 			'illust.toast.copyFailed' => ({required Object label}) => 'Failed to copy ${label}',
 			'illust.toast.openFailed' => 'Could not open this work on Pixiv',
 			'illust.toast.linkCopied' => 'Link copied',
@@ -2213,6 +2230,11 @@ extension on Translations {
 			'pixivision.unsupported' => 'This content can be viewed on the original page.',
 			'pixivision.userId' => ({required Object id}) => 'User ID: ${id}',
 			'pixivision.userName' => ({required Object name}) => 'User: ${name}',
+			'artworkCard.ai' => 'AI',
+			'artworkCard.ugoira' => 'Animation',
+			'artworkCard.semantics' => ({required Object title, required Object author}) => '${title} by ${author}',
+			'artworkCard.menuHeader' => ({required Object title, required Object author}) => '${title} · ${author}',
+			'artworkCard.openAuthor' => 'Open author',
 			_ => null,
 		};
 	}

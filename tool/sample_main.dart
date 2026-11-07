@@ -8,11 +8,14 @@ import 'package:freepiv/app/window/app_window.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
+import 'package:freepiv/dev/sample_images.dart';
 import 'package:freepiv/src/rust/frb_generated.dart';
+import 'package:freepiv/ui/compositions/pixiv_image.dart';
 
 Future<void> main() async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
   await AppSettings.initialize(store: SampleSettingsStore(sampleSettings));
+  pixivImageOverride = sampleImageProvider;
   await RustLib.init();
   // Signed in, so the router opens the home page instead of the login page.
   pixivAccountNotifier.value = sampleAccount;

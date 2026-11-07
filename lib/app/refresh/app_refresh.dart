@@ -1,7 +1,11 @@
 import 'package:flutter/widgets.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/i18n/strings.g.dart';
+import 'package:frost_ui/frost_ui.dart';
 
-/// Makes [onRefresh] the page's refresh for the shell's F5 (and, later, the
-/// content's "Refresh" context menu item). Of the registered scopes, the one
+/// Makes [onRefresh] the page's refresh for the shell's F5 and for the
+/// "Refresh" item of a right-click on the page's blank space (items with
+/// their own menu, such as cards, keep theirs). Of the registered scopes, the one
 /// on the current route in the visible branch refreshes; pages hidden in
 /// another destination's branch or covered by a pushed page do not.
 class AppRefreshScope extends StatefulWidget {
@@ -48,5 +52,8 @@ class _AppRefreshScopeState extends State<AppRefreshScope> {
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) => FrostContextMenuRegion(
+    entries: [FrostMenuAction(context.t.common.refresh, leading: const FrostGlyph.icon(PivIcons.refreshCw), onSelected: widget.onRefresh)],
+    child: widget.child,
+  );
 }

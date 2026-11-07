@@ -68,6 +68,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$richText$zh_CN richText = Translations$richText$zh_CN.internal(_root);
 	@override late final Translations$fanbox$zh_CN fanbox = Translations$fanbox$zh_CN.internal(_root);
 	@override late final Translations$pixivision$zh_CN pixivision = Translations$pixivision$zh_CN.internal(_root);
+	@override late final Translations$artworkCard$zh_CN artworkCard = Translations$artworkCard$zh_CN.internal(_root);
 }
 
 // Path: downloadEntry
@@ -333,6 +334,7 @@ class Translations$common$zh_CN extends Translations$common$en_US {
 	@override String get errorDetails => '错误详情';
 	@override String get copyDetails => '复制详情';
 	@override String get detailsCopied => '已复制错误详情';
+	@override String get refresh => '刷新';
 }
 
 // Path: refresh
@@ -724,6 +726,20 @@ class Translations$pixivision$zh_CN extends Translations$pixivision$en_US {
 	@override String get unsupported => '此内容可在原文页面查看。';
 	@override String userId({required Object id}) => 'User ID: ${id}';
 	@override String userName({required Object name}) => '用户: ${name}';
+}
+
+// Path: artworkCard
+class Translations$artworkCard$zh_CN extends Translations$artworkCard$en_US {
+	Translations$artworkCard$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get ai => 'AI';
+	@override String get ugoira => '动图';
+	@override String semantics({required Object title, required Object author}) => '${title}，作者 ${author}';
+	@override String menuHeader({required Object title, required Object author}) => '${title} · ${author}';
+	@override String get openAuthor => '打开作者';
 }
 
 // Path: settings.theme
@@ -1646,6 +1662,7 @@ extension on TranslationsZhCn {
 			'common.errorDetails' => '错误详情',
 			'common.copyDetails' => '复制详情',
 			'common.detailsCopied' => '已复制错误详情',
+			'common.refresh' => '刷新',
 			'refresh.pullToRefresh' => '下拉刷新',
 			'refresh.releaseToRefresh' => '松开刷新',
 			'refresh.refreshing' => '正在刷新',
@@ -2000,9 +2017,9 @@ extension on TranslationsZhCn {
 			'illust.toast.downloadFailed' => '下载失败',
 			'illust.toast.copying' => ({required Object label}) => '正在复制${label}',
 			'illust.toast.copied' => ({required Object label}) => '已复制${label}',
-			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '已复制${label}：${value}',
 			_ => null,
 		} ?? switch (path) {
+			'illust.toast.copiedValue' => ({required Object label, required Object value}) => '已复制${label}：${value}',
 			'illust.toast.copyFailed' => ({required Object label}) => '复制${label}失败',
 			'illust.toast.openFailed' => '无法在 Pixiv 打开作品',
 			'illust.toast.linkCopied' => '已复制链接',
@@ -2211,6 +2228,11 @@ extension on TranslationsZhCn {
 			'pixivision.unsupported' => '此内容可在原文页面查看。',
 			'pixivision.userId' => ({required Object id}) => 'User ID: ${id}',
 			'pixivision.userName' => ({required Object name}) => '用户: ${name}',
+			'artworkCard.ai' => 'AI',
+			'artworkCard.ugoira' => '动图',
+			'artworkCard.semantics' => ({required Object title, required Object author}) => '${title}，作者 ${author}',
+			'artworkCard.menuHeader' => ({required Object title, required Object author}) => '${title} · ${author}',
+			'artworkCard.openAuthor' => '打开作者',
 			_ => null,
 		};
 	}
