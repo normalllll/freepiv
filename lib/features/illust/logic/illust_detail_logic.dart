@@ -116,8 +116,9 @@ class IllustRelatedListSource extends FrostCursorListSource<Illust, IllustPageRe
     return page.nextUrl;
   }
 
+  /// Pixiv can list the work itself among those like it; it is left out.
   @override
   List<Illust> itemsFromPage(IllustPageResult page) {
-    return page.illusts;
+    return [for (final illust in page.illusts) if (illust.id != illustId) illust];
   }
 }

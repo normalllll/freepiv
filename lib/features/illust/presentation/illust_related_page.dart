@@ -1,18 +1,23 @@
-import 'package:flutter/material.dart';
-import 'package:frost_ui/frost_ui.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
-import 'package:freepiv/features/illust/presentation/widgets/illust_related_waterfall.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/artwork_hero.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
-import 'package:go_router/go_router.dart';
+import 'package:freepiv/ui/compositions/artwork_card.dart';
+import 'package:freepiv/ui/compositions/pixiv_image.dart';
+import 'package:frost_data/frost_data.dart';
+import 'package:frost_ui/frost_ui.dart';
 
+/// Works like one illustration: a waterfall of cards
+/// across the whole width, under a header naming the work they are like by
+/// its thumbnail. A page that fails to load more retries in place.
 class IllustRelatedPage extends ConsumerStatefulWidget {
   const IllustRelatedPage({required this.illustId, this.sourceIllust, super.key});
 
   final int illustId;
+
+  /// The work the list is like, when the opener had it.
   final Illust? sourceIllust;
 
   @override
@@ -32,44 +37,40 @@ class _IllustRelatedPageState extends ConsumerState<IllustRelatedPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final source = ref.watch(illustRelatedWorksProvider(widget.illustId));
-    final desktop = FrostAutoScaffold.usesHorizontalLayoutOf(context);
-    return Scaffold(
-      body: SafeArea(
-        top: false,
-        child: IllustRelatedWaterfallView(
-          source: source,
-          sourceIllust: widget.sourceIllust,
-          currentIllustId: widget.illustId,
-          topPadding: 16,
-          onIllustTap: _openIllust,
-          headerSliver: desktop
-              ? const SliverToBoxAdapter(child: SizedBox.shrink())
-              : SliverAppBar(
-                  // Collapses while the list scrolls on and returns on the way back.
-                  floating: true,
-                  snap: true,
-                  backgroundColor: Colors.transparent,
-                  surfaceTintColor: Colors.transparent,
-                  flexibleSpace: const FrostPinnedChromeGlass(opacity: 1),
-                  automaticallyImplyLeading: false,
-                  leading: FrostPageHeader.leadingFor(context, onBack: _goBack),
-                  leadingWidth: 44.0,
-                  titleSpacing: 8.0,
-                  title: Text(context.t.illust.section.relatedWorks),
-                ),
+    final work = widget.sourceIllust;
+    return AppRefreshScope(
+      onRefresh: () => source.refresh(false),
+      child: FrostPinnedChrome(
+        chrome: FrostPageHeader(
+          leading: [
+            if (work != null)
+              FrostThumbnail(
+                size: FrostThumbnailSize.small,
+                semanticLabel: work.title,
+                image: AppPixivImage(url: work.imageUrls.squareMedium, aspectRatio: 1, radius: 0),
+              ),
+          ],
+          title: FrostText(t.illust.section.relatedWorks),
+        ),
+        body: FrostRefreshView(
+          onRefresh: () => source.refresh(false),
+          builder: (context, physics, locators) => FrostLoadingScrollView(
+            physics: physics,
+            slivers: [
+              const FrostChromeSpacer(),
+              ?locators.sliverHeader,
+              FrostSliverDataWaterfallGrid<Illust>(
+                source: source,
+                firstLoadSkeleton: const AppArtworkWaterfallSkeleton(),
+                empty: FrostEmptyState(icon: FrostIconSet.of(context).empty, title: t.illust.related.empty),
+                itemBuilder: (context, illust, index) => AppArtworkCard(illust: illust),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-
-  void _goBack() {
-    if (context.canPop()) {
-      context.pop();
-    } else {
-      context.go(AppLocations.illust(widget.illustId));
-    }
-  }
-
-  void _openIllust(Illust illust, ArtworkHeroTag heroTag) => openIllustDetail(context, illust, heroTag);
 }
