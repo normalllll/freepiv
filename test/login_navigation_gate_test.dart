@@ -43,7 +43,7 @@ void main() {
 
     await tester.tap(find.text(t.settings.proxy.open));
     await tester.pumpAndSettle();
-    expect(find.byType(Dialog), findsOneWidget);
+    expect(find.text(t.settings.proxy.save), findsOneWidget, reason: 'the proxy form is open');
     expect(tester.takeException(), isNull);
   });
 

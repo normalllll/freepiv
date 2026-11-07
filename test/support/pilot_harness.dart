@@ -92,9 +92,14 @@ Future<void> settlePilot(WidgetTester tester, {int frames = 12}) async {
 }
 
 /// Fails on any overflow or other framework error reported while mounted.
-void expectNoLayoutErrors(WidgetTester tester) {
+void expectNoLayoutErrors(WidgetTester tester, {String? where}) {
   final error = tester.takeException();
-  expect(error, isNull, reason: 'a layout error was reported');
+  expect(
+    error,
+    isNull,
+    reason:
+        'a layout error was reported${where == null ? '' : ' in $where'}: ${error is FlutterError ? error.diagnostics.map((node) => node.toString()).where((line) => line.contains('creator') || line.contains('overflow')).take(3).join(' | ') : error}',
+  );
 }
 
 /// Of the four interface languages, the one whose strings run longest.

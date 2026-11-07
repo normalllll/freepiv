@@ -1,500 +1,179 @@
-import 'package:freepiv/app/frost_config.dart';
-import 'package:freepiv/shared/widgets/legacy_frost.dart';
-import 'package:frost_ui/frost_ui.dart';
-import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/api/proxy.dart' as system_proxy;
+import 'package:frost_ui/frost_ui.dart';
 
-Future<void> showProxySettingsDialog(BuildContext context) {
-  return showFrostDialog<void>(context: context, builder: (context) => const ProxySettingsDialog());
+/// Asks the system for its proxy; tests answer it themselves.
+@visibleForTesting
+Future<String?> Function() systemProxyLookup = system_proxy.getSystemProxy;
+
+/// The proxy form: on or off, protocol, host and port,
+/// and on desktop the system's proxy. A wrong host or port keeps the form
+/// open with the reason; other settings never wait on it.
+Future<void> showProxySettingsDialog(BuildContext context) async {
+  final container = ProviderScope.containerOf(context, listen: false);
+  final draft = _ProxyDraft(container.read(proxySettingsProvider));
+  try {
+    await showFrostFormDialog(
+      context: context,
+      title: context.t.settings.proxy.title,
+      submitLabel: context.t.settings.proxy.save,
+      sections: [_ProxyForm(draft: draft)],
+      onSubmit: () {
+        final settings = draft.validate();
+        if (settings == null) return false;
+        try {
+          container.read(proxySettingsProvider.notifier).setProxySettings(settings);
+          FrostToast.success(t.settings.proxy.saved);
+          return true;
+        } catch (error) {
+          toastErrorWithCause(t.settings.proxy.saveFailed, error);
+          return false;
+        }
+      },
+    );
+  } finally {
+    draft.dispose();
+  }
 }
 
-class ProxySettingsDialog extends ConsumerStatefulWidget {
-  const ProxySettingsDialog({super.key});
+class _ProxyDraft extends ChangeNotifier {
+  _ProxyDraft(AppProxySettings settings)
+    : enabled = settings.enabled,
+      protocol = settings.url == null ? AppProxyProtocol.http : proxyProtocolFromUrl(settings.url!),
+      host = TextEditingController(text: settings.url == null ? '' : proxyHostFromUrl(settings.url!)),
+      port = TextEditingController(text: settings.url == null ? '' : proxyPortFromUrl(settings.url!));
 
-  @override
-  ConsumerState<ProxySettingsDialog> createState() => _ProxySettingsDialogState();
-}
+  bool enabled;
+  AppProxyProtocol protocol;
+  final TextEditingController host;
+  final TextEditingController port;
+  String? hostError;
+  String? portError;
+  bool loadingSystem = false;
 
-class _ProxySettingsDialogState extends ConsumerState<ProxySettingsDialog> {
-  late final TextEditingController _hostController;
-  late final TextEditingController _portController;
-  late bool _enabled;
-  late AppProxyProtocol _protocol;
-  bool _isFetchingSystemProxy = false;
-  String? _hostErrorText;
-  String? _portErrorText;
+  /// The dialog closed; a lookup still running drops its answer.
+  bool _disposed = false;
 
-  @override
-  void initState() {
-    super.initState();
-    final settings = ref.read(proxySettingsProvider);
-    final url = settings.url;
-    _enabled = settings.enabled;
-    _protocol = url == null ? AppProxyProtocol.http : proxyProtocolFromUrl(url);
-    _hostController = TextEditingController(text: url == null ? '' : proxyHostFromUrl(url));
-    _portController = TextEditingController(text: url == null ? '' : proxyPortFromUrl(url));
+  void change(void Function() update) {
+    update();
+    hostError = null;
+    portError = null;
+    notifyListeners();
+  }
+
+  /// The settings to save, or null after marking what is wrong.
+  AppProxySettings? validate() {
+    final labels = t.settings.proxy;
+    final rawHost = host.text.trim();
+    final rawPort = port.text.trim();
+    if (!enabled && rawHost.isEmpty && rawPort.isEmpty) return const AppProxySettings(enabled: false);
+    hostError = rawHost.isEmpty ? labels.hostRequired : (isValidProxyHostInput(rawHost) ? null : labels.invalidHost);
+    portError = rawPort.isEmpty ? labels.portRequired : (isValidProxyPortInput(rawPort) ? null : labels.invalidPort);
+    final url = hostError == null && portError == null ? normalizeProxyEndpoint(host: rawHost, port: rawPort, protocol: protocol) : null;
+    if (url == null && hostError == null && portError == null) {
+      hostError = labels.invalid;
+      portError = labels.invalid;
+    }
+    notifyListeners();
+    return url == null ? null : AppProxySettings(enabled: enabled, url: url);
+  }
+
+  Future<void> loadSystem() async {
+    final labels = t.settings.proxy;
+    loadingSystem = true;
+    notifyListeners();
+    try {
+      final proxy = await systemProxyLookup();
+      if (_disposed) return;
+      final normalized = proxy == null ? null : normalizeProxyUrl(proxy);
+      if (normalized == null) {
+        FrostToast.warning(labels.systemNotFound);
+        return;
+      }
+      change(() {
+        host.text = proxyHostFromUrl(normalized);
+        port.text = proxyPortFromUrl(normalized);
+        enabled = true;
+        protocol = proxyProtocolFromUrl(normalized);
+      });
+      FrostToast.success(labels.systemLoaded);
+    } catch (error) {
+      if (!_disposed) toastErrorWithCause(labels.systemLoadFailed, error);
+    } finally {
+      if (!_disposed) {
+        loadingSystem = false;
+        notifyListeners();
+      }
+    }
   }
 
   @override
   void dispose() {
-    _hostController.dispose();
-    _portController.dispose();
+    _disposed = true;
+    host.dispose();
+    port.dispose();
     super.dispose();
   }
-
-  @override
-  Widget build(BuildContext context) {
-    final translations = context.t;
-    final proxyTranslations = translations.settings.proxy;
-    final tokens = FrostThemeTokens.of(context);
-    final media = MediaQuery.of(context);
-    final maxHeight = media.size.height - media.viewInsets.bottom - media.padding.vertical - 32;
-
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      backgroundColor: Colors.transparent,
-      child: AnimatedPadding(
-        duration: FrostMotion.duration(context, const Duration(milliseconds: 180)),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 560, maxHeight: maxHeight.clamp(200.0, double.infinity).toDouble()),
-          child: FrostSurface(
-            role: FrostSurfaceRole.overlay,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _HeaderIcon(tokens: tokens),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(proxyTranslations.title, style: Theme.of(context).textTheme.titleLarge),
-                            const SizedBox(height: 4),
-                            Text(proxyTranslations.subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.35)),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  _ProxyPowerTile(
-                    enabled: _enabled,
-                    onChanged: (enabled) {
-                      setState(() {
-                        _enabled = enabled;
-                        _clearErrors();
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 14),
-                  _ProxyProtocolSelector(
-                    protocol: _protocol,
-                    enabled: _enabled,
-                    onChanged: (protocol) {
-                      setState(() {
-                        _protocol = protocol;
-                        _clearErrors();
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _ProxyEndpointFields(
-                    hostController: _hostController,
-                    portController: _portController,
-                    enabled: _enabled,
-                    hostErrorText: _hostErrorText,
-                    portErrorText: _portErrorText,
-                    onChanged: (_) {
-                      if (_hostErrorText != null || _portErrorText != null) {
-                        setState(_clearErrors);
-                      }
-                    },
-                  ),
-                  if (isDesktopPlatform) ...[
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: OutlinedButton.icon(
-                        onPressed: _isFetchingSystemProxy ? null : _loadSystemProxy,
-                        icon: _isFetchingSystemProxy ? SizedBox.square(dimension: 16, child: PivSkeletonBlock()) : const Icon(Icons.travel_explore_outlined),
-                        label: Text(proxyTranslations.loadSystem),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 22),
-                  Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(translations.common.cancel)),
-                      FilledButton.icon(onPressed: _save, icon: const Icon(Icons.check), label: Text(proxyTranslations.save)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _loadSystemProxy() async {
-    final translations = t.settings.proxy;
-
-    if (!isDesktopPlatform) {
-      FrostToast.warning(translations.systemUnsupported);
-      return;
-    }
-
-    setState(() {
-      _isFetchingSystemProxy = true;
-      _clearErrors();
-    });
-
-    try {
-      final proxy = await system_proxy.getSystemProxy();
-      if (!mounted) {
-        return;
-      }
-
-      final normalizedProxy = proxy == null ? null : normalizeProxyUrl(proxy);
-      if (normalizedProxy == null) {
-        FrostToast.warning(translations.systemNotFound);
-        return;
-      }
-
-      final host = proxyHostFromUrl(normalizedProxy);
-      final port = proxyPortFromUrl(normalizedProxy);
-      _hostController
-        ..text = host
-        ..selection = TextSelection.collapsed(offset: host.length);
-      _portController
-        ..text = port
-        ..selection = TextSelection.collapsed(offset: port.length);
-      setState(() {
-        _enabled = true;
-        _protocol = proxyProtocolFromUrl(normalizedProxy);
-        _clearErrors();
-      });
-      FrostToast.success(translations.systemLoaded);
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      toastErrorWithCause(translations.systemLoadFailed, error);
-    } finally {
-      if (mounted) {
-        setState(() => _isFetchingSystemProxy = false);
-      }
-    }
-  }
-
-  void _save() {
-    final translations = t.settings.proxy;
-    final rawHost = _hostController.text.trim();
-    final rawPort = _portController.text.trim();
-    final hasProxyInput = rawHost.isNotEmpty || rawPort.isNotEmpty;
-    String? normalizedUrl;
-    String? hostErrorText;
-    String? portErrorText;
-
-    if (_enabled || hasProxyInput) {
-      if (rawHost.isEmpty) {
-        hostErrorText = translations.hostRequired;
-      } else if (!isValidProxyHostInput(rawHost)) {
-        hostErrorText = translations.invalidHost;
-      }
-
-      if (rawPort.isEmpty) {
-        portErrorText = translations.portRequired;
-      } else if (!isValidProxyPortInput(rawPort)) {
-        portErrorText = translations.invalidPort;
-      }
-
-      if (hostErrorText != null || portErrorText != null) {
-        setState(() {
-          _hostErrorText = hostErrorText;
-          _portErrorText = portErrorText;
-        });
-        return;
-      }
-
-      normalizedUrl = normalizeProxyEndpoint(host: rawHost, port: rawPort, protocol: _protocol);
-      if (normalizedUrl == null) {
-        setState(() {
-          _hostErrorText = translations.invalid;
-          _portErrorText = translations.invalid;
-        });
-        return;
-      }
-    }
-
-    try {
-      ref.read(proxySettingsProvider.notifier).setProxySettings(AppProxySettings(enabled: _enabled, url: normalizedUrl));
-      FrostToast.success(translations.saved);
-      Navigator.of(context).pop();
-    } catch (error) {
-      toastErrorWithCause(translations.saveFailed, error);
-    }
-  }
-
-  void _clearErrors() {
-    _hostErrorText = null;
-    _portErrorText = null;
-  }
 }
 
-class _HeaderIcon extends StatelessWidget {
-  const _HeaderIcon({required this.tokens});
+class _ProxyForm extends StatelessWidget {
+  const _ProxyForm({required this.draft});
 
-  final FrostThemeTokens tokens;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(color: tokens.surfaceRaised, borderRadius: BorderRadius.circular(8)),
-      child: SizedBox.square(dimension: 44, child: Icon(Icons.hub_outlined, color: tokens.keyGraphicOn(tokens.surfaceRaised))),
-    );
-  }
-}
-
-class _ProxyPowerTile extends StatelessWidget {
-  const _ProxyPowerTile({required this.enabled, required this.onChanged});
-
-  final bool enabled;
-  final ValueChanged<bool> onChanged;
+  final _ProxyDraft draft;
 
   @override
   Widget build(BuildContext context) {
-    final translations = context.t.settings.proxy;
-    final tokens = FrostThemeTokens.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Material(
-      color: Colors.transparent,
-      child: FrostClickSurface(
-        shape: FrostClickShape.rounded(BorderRadius.circular(8)),
-        onTap: () => onChanged(!enabled),
-        child: AnimatedContainer(
-          duration: FrostMotion.duration(context, const Duration(milliseconds: 180)),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
-          decoration: BoxDecoration(
-            color: enabled ? tokens.surfaceRaised : tokens.surfaceMuted.withValues(alpha: 0.54),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: tokens.line.withValues(alpha: 0.35)),
-          ),
-          child: Row(
-            children: [
-              SizedBox(
-                width: FrostMetrics.selectionIndicatorWidth,
-                height: 16,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(color: enabled ? tokens.selectionLine : Colors.transparent, borderRadius: BorderRadius.circular(2)),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                enabled ? Icons.power_settings_new : Icons.power_off_outlined,
-                color: enabled ? tokens.keyGraphicOn(tokens.surfaceRaised) : colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(translations.enabled, style: Theme.of(context).textTheme.titleSmall),
-                    const SizedBox(height: 2),
-                    Text(
-                      enabled ? translations.enabledStatus : translations.disabledStatus,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-              FrostSwitch(value: enabled, onChanged: onChanged, semanticLabel: translations.enabled),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProxyProtocolSelector extends StatelessWidget {
-  const _ProxyProtocolSelector({required this.protocol, required this.enabled, required this.onChanged});
-
-  final AppProxyProtocol protocol;
-  final bool enabled;
-  final ValueChanged<AppProxyProtocol> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final translations = context.t.settings.proxy;
-
-    return AnimatedOpacity(
-      duration: FrostMotion.duration(context, const Duration(milliseconds: 160)),
-      opacity: enabled ? 1 : 0.62,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final labels = context.t.settings.proxy;
+    return ListenableBuilder(
+      listenable: draft,
+      builder: (context, _) => FrostFormSection(
         children: [
-          Text(translations.protocol, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: FrostPicker<AppProxyProtocol>.segmented(
-              label: translations.protocol,
-              value: protocol,
-              onChanged: enabled ? (selected) => onChanged(selected) : null,
+          FrostText(labels.helper, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
+          FrostListRow.toggle(title: labels.enabled, value: draft.enabled, onChanged: (value) => draft.change(() => draft.enabled = value)),
+          FrostFormRow(
+            label: FrostText(labels.protocol),
+            control: FrostPicker<AppProxyProtocol>.segmented(
+              label: labels.protocol,
+              value: draft.protocol,
               options: [
-                FrostPickerOption(
-                  value: AppProxyProtocol.http,
-                  leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.public_outlined)),
-                  label: translations.protocolHttp,
-                ),
-                FrostPickerOption(
-                  value: AppProxyProtocol.socks,
-                  leading: const FrostGlyph.icon(FrostIconData.glyph(Icons.route_outlined)),
-                  label: translations.protocolSocks,
-                ),
+                FrostPickerOption(value: AppProxyProtocol.http, label: labels.protocolHttp),
+                FrostPickerOption(value: AppProxyProtocol.socks, label: labels.protocolSocks),
               ],
+              onChanged: (value) => draft.change(() => draft.protocol = value),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProxyEndpointFields extends StatelessWidget {
-  const _ProxyEndpointFields({
-    required this.hostController,
-    required this.portController,
-    required this.enabled,
-    required this.hostErrorText,
-    required this.portErrorText,
-    required this.onChanged,
-  });
-
-  final TextEditingController hostController;
-  final TextEditingController portController;
-  final bool enabled;
-  final String? hostErrorText;
-  final String? portErrorText;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final translations = context.t.settings.proxy;
-    final colorScheme = Theme.of(context).colorScheme;
-    final hasError = hostErrorText != null || portErrorText != null;
-
-    return AnimatedOpacity(
-      duration: FrostMotion.duration(context, const Duration(milliseconds: 160)),
-      opacity: enabled ? 1 : 0.62,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final hostField = _ProxyHostField(controller: hostController, enabled: enabled, errorText: hostErrorText, onChanged: onChanged);
-              final portField = _ProxyPortField(controller: portController, enabled: enabled, errorText: portErrorText, onChanged: onChanged);
-
-              if (constraints.maxWidth < 420) {
-                return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [hostField, const SizedBox(height: 12), portField]);
-              }
-
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: hostField),
-                  const SizedBox(width: 12),
-                  SizedBox(width: 148, child: portField),
-                ],
-              );
-            },
+          FrostTextField(
+            controller: draft.host,
+            label: labels.address,
+            placeholder: labels.addressHint,
+            error: draft.hostError,
+            onChanged: (_) => draft.change(() {}),
           ),
-          if (!hasError) ...[
-            const SizedBox(height: 7),
-            Text(translations.helper, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-          ],
+          FrostTextField(
+            controller: draft.port,
+            label: labels.port,
+            placeholder: labels.portHint,
+            error: draft.portError,
+            keyboardType: TextInputType.number,
+            onChanged: (_) => draft.change(() {}),
+          ),
+          if (isDesktopPlatform)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: FrostButton.quiet(
+                label: labels.loadSystem,
+                state: draft.loadingSystem ? const FrostActionState.running() : FrostActionState.idle,
+                onPressed: draft.loadingSystem ? null : () => unawaited(draft.loadSystem()),
+              ),
+            ),
         ],
       ),
-    );
-  }
-}
-
-class _ProxyHostField extends StatelessWidget {
-  const _ProxyHostField({required this.controller, required this.enabled, required this.errorText, required this.onChanged});
-
-  final TextEditingController controller;
-  final bool enabled;
-  final String? errorText;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final translations = context.t.settings.proxy;
-
-    return TextField(
-      controller: controller,
-      enabled: enabled,
-      inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'[:\s]'))],
-      onChanged: onChanged,
-      keyboardType: TextInputType.url,
-      textInputAction: TextInputAction.next,
-      decoration: InputDecoration(
-        labelText: translations.address,
-        hintText: translations.addressHint,
-        errorText: errorText,
-        prefixIcon: const Icon(Icons.dns_outlined),
-      ),
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
-    );
-  }
-}
-
-class _ProxyPortField extends StatelessWidget {
-  const _ProxyPortField({required this.controller, required this.enabled, required this.errorText, required this.onChanged});
-
-  final TextEditingController controller;
-  final bool enabled;
-  final String? errorText;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final translations = context.t.settings.proxy;
-
-    return TextField(
-      controller: controller,
-      enabled: enabled,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      onChanged: onChanged,
-      keyboardType: TextInputType.number,
-      textInputAction: TextInputAction.done,
-      onSubmitted: (_) => FocusScope.of(context).unfocus(),
-      decoration: InputDecoration(labelText: translations.port, hintText: translations.portHint, errorText: errorText),
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
     );
   }
 }
