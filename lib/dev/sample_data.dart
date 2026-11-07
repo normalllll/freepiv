@@ -13,6 +13,7 @@ import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
+import 'package:freepiv/features/ranking/logic/ranking_logic.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/pixivision/logic.dart';
@@ -234,6 +235,7 @@ final sampleOverrideMap = <Object, Override>{
   downloadTasksProvider: downloadTasksProvider.overrideWith((ref) => Stream.value(sampleDownloadTasks)),
   fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
   newestProvider: newestProvider.overrideWith(SampleNewest.new),
+  rankingProvider: rankingProvider.overrideWith(SampleRanking.new),
 };
 
 final sampleOverrides = [...sampleOverrideMap.values];
@@ -702,4 +704,46 @@ class SampleNewestSource extends NewestListSource {
 
   @override
   Future<Object> loadNextPage(String nextUrl) async => const IllustPageResult(illusts: [], rankingIllusts: []);
+}
+
+/// Rankings answering from the sample works, whatever the mode.
+class SampleRanking extends Ranking {
+  @override
+  RankingIllustListSource createIllustSource(IllustRankingMode mode) => _SampleRankingIllusts(mode);
+
+  @override
+  RankingMangaListSource createMangaSource(MangaRankingMode mode) => _SampleRankingManga(mode);
+
+  @override
+  RankingNovelListSource createNovelSource(NovelRankingMode mode) => _SampleRankingNovels(mode);
+}
+
+class _SampleRankingIllusts extends RankingIllustListSource {
+  _SampleRankingIllusts(IllustRankingMode mode) : super(mode: mode);
+
+  @override
+  Future<IllustPageResult> loadFirstPage() async => IllustPageResult(illusts: sampleIllusts(), rankingIllusts: const []);
+
+  @override
+  Future<IllustPageResult> loadNextPage(String nextUrl) async => const IllustPageResult(illusts: [], rankingIllusts: []);
+}
+
+class _SampleRankingManga extends RankingMangaListSource {
+  _SampleRankingManga(MangaRankingMode mode) : super(mode: mode);
+
+  @override
+  Future<IllustPageResult> loadFirstPage() async => IllustPageResult(illusts: sampleIllusts(kind: 'manga'), rankingIllusts: const []);
+
+  @override
+  Future<IllustPageResult> loadNextPage(String nextUrl) async => const IllustPageResult(illusts: [], rankingIllusts: []);
+}
+
+class _SampleRankingNovels extends RankingNovelListSource {
+  _SampleRankingNovels(NovelRankingMode mode) : super(mode: mode);
+
+  @override
+  Future<NovelPageResult> loadFirstPage() async => NovelPageResult(novels: sampleNovels(), rankingNovels: const []);
+
+  @override
+  Future<NovelPageResult> loadNextPage(String nextUrl) async => const NovelPageResult(novels: [], rankingNovels: []);
 }

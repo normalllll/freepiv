@@ -18,7 +18,7 @@ import 'package:freepiv/features/me/presentation/me_page.dart';
 import 'package:freepiv/features/newest/presentation/page/newest_page.dart';
 import 'package:freepiv/features/novel/presentation/detail/novel_detail_page.dart';
 import 'package:freepiv/features/novel/presentation/reader/novel_reader_page.dart';
-import 'package:freepiv/features/ranking/presentation/ranking_work_pages.dart';
+import 'package:freepiv/features/ranking/presentation/ranking_page.dart';
 import 'package:freepiv/features/search/presentation/search_illust_result_page.dart';
 import 'package:freepiv/features/search/presentation/search_novel_result_page.dart';
 import 'package:freepiv/features/discover/page.dart';
@@ -73,14 +73,8 @@ class _RankingRoute extends StatelessWidget {
   final AppRankingKind kind;
   final String? mode;
 
-  static T? _named<T extends Enum>(List<T> values, String? name) => values.where((value) => value.name == name).firstOrNull;
-
   @override
-  Widget build(BuildContext context) => switch (kind) {
-    AppRankingKind.illust => RankingIllustPage(initialMode: _named(IllustRankingMode.values, mode)),
-    AppRankingKind.manga => RankingMangaPage(initialMode: _named(MangaRankingMode.values, mode)),
-    AppRankingKind.novel => RankingNovelPage(initialMode: _named(NovelRankingMode.values, mode)),
-  };
+  Widget build(BuildContext context) => RankingPage(kind: kind, mode: mode);
 }
 
 /// The discover page, pushed above the destination it was opened from.

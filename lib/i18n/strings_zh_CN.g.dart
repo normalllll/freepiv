@@ -497,6 +497,7 @@ class Translations$ranking$zh_CN extends Translations$ranking$en_US {
 	@override String get emptyMessage => '下拉即可重新获取排行榜。';
 	@override late final Translations$ranking$types$zh_CN types = Translations$ranking$types$zh_CN.internal(_root);
 	@override late final Translations$ranking$modes$zh_CN modes = Translations$ranking$modes$zh_CN.internal(_root);
+	@override String get r18Section => 'R-18';
 }
 
 // Path: search
@@ -2086,6 +2087,7 @@ extension on TranslationsZhCn {
 			'ranking.modes.weekOriginal' => '原创每周',
 			'ranking.modes.weekRookie' => '新人每周',
 			'ranking.modes.month' => '每月',
+			'ranking.r18Section' => 'R-18',
 			'search.placeholder' => '搜索标签、作品 ID 或用户 ID',
 			'search.submit' => '搜索',
 			'search.trendingTags' => '热门标签',
@@ -2210,9 +2212,9 @@ extension on TranslationsZhCn {
 			'illust.imageLabels.original' => '原图',
 			'illust.imageLabels.large' => '大图',
 			'illust.imageLabels.image' => '图片',
-			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下载队列：${count} 张图片',
 			_ => null,
 		} ?? switch (path) {
+			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下载队列：${count} 张图片',
 			'illust.toast.downloadComplete' => ({required Object name}) => '已保存 ${name}',
 			'illust.toast.downloadFailed' => '下载失败',
 			'illust.toast.copying' => ({required Object label}) => '正在复制${label}',

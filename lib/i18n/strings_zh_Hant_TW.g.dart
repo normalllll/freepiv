@@ -497,6 +497,7 @@ class Translations$ranking$zh_Hant_TW extends Translations$ranking$en_US {
 	@override String get emptyMessage => '下拉即可重新取得排行榜。';
 	@override late final Translations$ranking$types$zh_Hant_TW types = Translations$ranking$types$zh_Hant_TW.internal(_root);
 	@override late final Translations$ranking$modes$zh_Hant_TW modes = Translations$ranking$modes$zh_Hant_TW.internal(_root);
+	@override String get r18Section => 'R-18';
 }
 
 // Path: search
@@ -2086,6 +2087,7 @@ extension on TranslationsZhHantTw {
 			'ranking.modes.weekOriginal' => '原創每週',
 			'ranking.modes.weekRookie' => '新人每週',
 			'ranking.modes.month' => '每月',
+			'ranking.r18Section' => 'R-18',
 			'search.placeholder' => '搜尋標籤、作品 ID 或使用者 ID',
 			'search.submit' => '搜尋',
 			'search.trendingTags' => '熱門標籤',
@@ -2210,9 +2212,9 @@ extension on TranslationsZhHantTw {
 			'illust.imageLabels.original' => '原圖',
 			'illust.imageLabels.large' => '大圖',
 			'illust.imageLabels.image' => '圖片',
-			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下載佇列：${count} 張圖片',
 			_ => null,
 		} ?? switch (path) {
+			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下載佇列：${count} 張圖片',
 			'illust.toast.downloadComplete' => ({required Object name}) => '已儲存 ${name}',
 			'illust.toast.downloadFailed' => '下載失敗',
 			'illust.toast.copying' => ({required Object label}) => '正在複製${label}',

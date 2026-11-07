@@ -440,7 +440,8 @@
       "weekOriginal": "オリジナル",
       "weekRookie": "ルーキー",
       "month": "マンスリー"
-    }
+    },
+    "r18Section": "R-18"
   },
   "search": {
     "placeholder": "タグ、作品 ID、ユーザー ID を検索",

@@ -499,6 +499,7 @@ class Translations$ranking$en_US {
 	String get emptyMessage => 'Pull down to fetch the ranking again.';
 	late final Translations$ranking$types$en_US types = Translations$ranking$types$en_US.internal(_root);
 	late final Translations$ranking$modes$en_US modes = Translations$ranking$modes$en_US.internal(_root);
+	String get r18Section => 'R-18';
 }
 
 // Path: search
@@ -2088,6 +2089,7 @@ extension on Translations {
 			'ranking.modes.weekOriginal' => 'Weekly Original',
 			'ranking.modes.weekRookie' => 'Weekly Rookie',
 			'ranking.modes.month' => 'Monthly',
+			'ranking.r18Section' => 'R-18',
 			'search.placeholder' => 'Search tags, illust ID, or user ID',
 			'search.submit' => 'Search',
 			'search.trendingTags' => 'Trending Tags',
@@ -2212,9 +2214,9 @@ extension on Translations {
 			'illust.imageLabels.original' => 'original image',
 			'illust.imageLabels.large' => 'large image',
 			'illust.imageLabels.image' => 'image',
-			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} images added to the download queue',
 			_ => null,
 		} ?? switch (path) {
+			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} images added to the download queue',
 			'illust.toast.downloadComplete' => ({required Object name}) => 'Saved ${name}',
 			'illust.toast.downloadFailed' => 'Download failed',
 			'illust.toast.copying' => ({required Object label}) => 'Copying ${label}',

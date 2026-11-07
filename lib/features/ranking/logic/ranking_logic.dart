@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show protected;
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -150,11 +151,11 @@ class RankingNovelListSource extends FrostCursorListSource<Novel, NovelPageResul
 class Ranking extends _$Ranking {
   @override
   RankingState build() {
-    final illustSources = {for (final mode in IllustRankingMode.values) mode: RankingIllustListSource(mode: mode)};
+    final illustSources = {for (final mode in IllustRankingMode.values) mode: createIllustSource(mode)};
 
-    final mangaSources = {for (final mode in MangaRankingMode.values) mode: RankingMangaListSource(mode: mode)};
+    final mangaSources = {for (final mode in MangaRankingMode.values) mode: createMangaSource(mode)};
 
-    final novelSources = {for (final mode in NovelRankingMode.values) mode: RankingNovelListSource(mode: mode)};
+    final novelSources = {for (final mode in NovelRankingMode.values) mode: createNovelSource(mode)};
 
     ref.onDispose(() {
       for (final source in illustSources.values) {
@@ -179,6 +180,16 @@ class Ranking extends _$Ranking {
       novelSources: novelSources,
     );
   }
+
+  /// The ranking of each mode; sample data answers its own.
+  @protected
+  RankingIllustListSource createIllustSource(IllustRankingMode mode) => RankingIllustListSource(mode: mode);
+
+  @protected
+  RankingMangaListSource createMangaSource(MangaRankingMode mode) => RankingMangaListSource(mode: mode);
+
+  @protected
+  RankingNovelListSource createNovelSource(NovelRankingMode mode) => RankingNovelListSource(mode: mode);
 
   void setIllustMode(IllustRankingMode mode) {
     if (state.illustMode == mode) {

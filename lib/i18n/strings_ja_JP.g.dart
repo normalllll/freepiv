@@ -497,6 +497,7 @@ class _Translations$ranking$ja_JP extends Translations$ranking$en_US {
 	@override String get emptyMessage => '下に引っ張るとランキングを再取得できます。';
 	@override late final _Translations$ranking$types$ja_JP types = _Translations$ranking$types$ja_JP._(_root);
 	@override late final _Translations$ranking$modes$ja_JP modes = _Translations$ranking$modes$ja_JP._(_root);
+	@override String get r18Section => 'R-18';
 }
 
 // Path: search
@@ -2086,6 +2087,7 @@ extension on TranslationsJaJp {
 			'ranking.modes.weekOriginal' => 'オリジナル',
 			'ranking.modes.weekRookie' => 'ルーキー',
 			'ranking.modes.month' => 'マンスリー',
+			'ranking.r18Section' => 'R-18',
 			'search.placeholder' => 'タグ、作品 ID、ユーザー ID を検索',
 			'search.submit' => '検索',
 			'search.trendingTags' => '人気タグ',
@@ -2210,9 +2212,9 @@ extension on TranslationsJaJp {
 			'illust.imageLabels.original' => 'オリジナル画像',
 			'illust.imageLabels.large' => '大きい画像',
 			'illust.imageLabels.image' => '画像',
-			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} 枚の画像をダウンロードキューに追加しました',
 			_ => null,
 		} ?? switch (path) {
+			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} 枚の画像をダウンロードキューに追加しました',
 			'illust.toast.downloadComplete' => ({required Object name}) => '${name} を保存しました',
 			'illust.toast.downloadFailed' => 'ダウンロードに失敗しました',
 			'illust.toast.copying' => ({required Object label}) => '${label}をコピーしています',

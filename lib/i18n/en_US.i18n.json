@@ -440,7 +440,8 @@
       "weekOriginal": "Weekly Original",
       "weekRookie": "Weekly Rookie",
       "month": "Monthly"
-    }
+    },
+    "r18Section": "R-18"
   },
   "search": {
     "placeholder": "Search tags, illust ID, or user ID",
