@@ -1,229 +1,110 @@
-import 'package:freepiv/app/router/app_navigation.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart' show ValueListenable;
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/app/refresh/app_refresh.dart';
+import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/core/core.dart';
+import 'package:freepiv/core/services/pixiv_service.dart';
+import 'package:freepiv/core/utils/text_format.dart';
+import 'package:freepiv/features/downloads/presentation/download_entry.dart';
+import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/shared.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
+import 'package:freepiv/ui/compositions/pixiv_image.dart';
+import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
-import 'package:frost_data/frost_data.dart';
 
-class MePage extends StatefulWidget {
+/// "Me": the account card, then a list of rows to its
+/// follows and followers, and to downloads, About and settings.
+/// No works are shown: bookmarks are not always fit to show on their own.
+class MePage extends ConsumerStatefulWidget {
   const MePage({super.key});
 
   @override
-  State<MePage> createState() => _MePageState();
+  ConsumerState<MePage> createState() => _MePageState();
 }
 
-class _MePageState extends State<MePage> {
-  final _scrollController = ScrollController();
-  ValueListenable<({int index, int sequence})>? _primaryReselection;
+class _MePageState extends ConsumerState<MePage> {
+  final _scroll = ScrollController();
+  ValueListenable<({int index, int sequence})>? _reselection;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final next = FrostShellNavigationScope.maybeOf(context)?.primaryReselection;
-    if (identical(next, _primaryReselection)) return;
-    _primaryReselection?.removeListener(_handlePrimaryReselection);
-    _primaryReselection = next;
-    next?.addListener(_handlePrimaryReselection);
+    if (identical(next, _reselection)) return;
+    _reselection?.removeListener(_reselected);
+    _reselection = next?..addListener(_reselected);
   }
 
-  void _handlePrimaryReselection() {
-    final signal = _primaryReselection?.value;
-    if (signal == null || appRouteDestinations[signal.index].route != AppRoute.me || signal.sequence == 0 || !_scrollController.hasClients) return;
+  /// Selecting Me again scrolls back to the top.
+  void _reselected() {
+    final signal = _reselection?.value;
+    if (signal == null || signal.sequence == 0 || appRouteDestinations[signal.index].route != AppRoute.me || !_scroll.hasClients) return;
     final duration = FrostMotion.duration(context, FrostMotion.navigation);
     if (duration == Duration.zero) {
-      _scrollController.jumpTo(0);
+      _scroll.jumpTo(0);
     } else {
-      unawaited(_scrollController.animateTo(0, duration: duration, curve: Curves.easeOutCubic));
+      unawaited(_scroll.animateTo(0, duration: duration, curve: Curves.easeOutCubic));
     }
   }
 
   @override
   void dispose() {
-    _primaryReselection?.removeListener(_handlePrimaryReselection);
-    _scrollController.dispose();
+    _reselection?.removeListener(_reselected);
+    _scroll.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final translations = context.t;
+    final t = context.t;
+    return ValueListenableBuilder(
+      valueListenable: pixivAccountNotifier,
+      builder: (context, account, _) {
+        final userId = int.tryParse(account?.user.id ?? '');
+        final details = userId == null ? null : userDetailProvider(UserDetailArgs(userId: userId));
+        Future<void> refresh() async {
+          if (details != null) await ref.read(details.notifier).reload();
+        }
 
-    return FrostAutoScaffold(
-      builder: (context, layout, orientation, useHorizontalLayout) {
-        return Scaffold(
-          body: SafeArea(
-            child: ValueListenableBuilder<UserAccountResult?>(
-              valueListenable: pixivAccountNotifier,
-              builder: (context, account, child) {
-                return SingleChildScrollView(
-                  key: const PageStorageKey('me-overview'),
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: _MeColumns(
-                    account: [
-                      _MeAccountCard(account: account),
-                      if (account == null) ...[
-                        const SizedBox(height: 12),
-                        FilledButton.icon(
-                          onPressed: () => context.push(AppRoute.login.path),
-                          icon: const Icon(Icons.login),
-                          label: Text(translations.login.signInToPixiv),
-                        ),
-                      ],
-                    ],
-                    groups: [
-                      FrostGroupedSection(
-                        children: [
-                          _MeNavigationEntry(
-                            icon: Icons.bookmarks_outlined,
-                            title: translations.user.tabs.bookmarks,
-                            enabled: int.tryParse(account?.user.id ?? '') != null,
-                            onTap: () => context.push(AppLocations.user(account!.user.id, bookmarks: true)),
-                          ),
-                          _MeNavigationEntry(
-                            icon: Icons.person_add_alt_1_outlined,
-                            title: translations.me.following,
-                            enabled: account != null,
-                            onTap: () => context.push(AppRoute.meFollowing.path),
-                          ),
-                          _MeNavigationEntry(
-                            icon: Icons.people_outline,
-                            title: translations.me.followers,
-                            enabled: account != null,
-                            onTap: () => context.push(AppRoute.meFollowers.path),
-                          ),
-                        ],
-                      ),
-                      FrostGroupedSection(
-                        children: [
-                          _MeNavigationEntry(
-                            icon: Icons.download_outlined,
-                            title: translations.settings.downloads.tasksTitle,
-                            enabled: true,
-                            onTap: () => context.push(AppRoute.downloads.path),
-                          ),
-                          _MeNavigationEntry(icon: Icons.info_outline, title: translations.me.about, enabled: true, onTap: _openAbout),
-                          _MeNavigationEntry(icon: Icons.settings_outlined, title: translations.me.settings, enabled: true, onTap: _openSettings),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
+        return AppRefreshScope(
+          onRefresh: refresh,
+          child: FrostPinnedChrome(
+            chrome: FrostContentColumn(
+              maxWidth: FrostMetrics.readingMaxWidth,
+              child: FrostPageHeader(title: FrostText(t.navigation.me)),
+            ),
+            body: FrostRefreshView(
+              scrollController: _scroll,
+              onRefresh: () async {
+                await refresh();
+                return true;
               },
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _openSettings() {
-    context.push(AppRoute.settings.path);
-  }
-
-  void _openAbout() {
-    context.push(AppRoute.about.path);
-  }
-}
-
-class MeUserListPage extends StatefulWidget {
-  const MeUserListPage({required this.kind, super.key});
-
-  final MeUserListKind kind;
-
-  @override
-  State<MeUserListPage> createState() => _MeUserListPageState();
-}
-
-class _MeUserListPageState extends State<MeUserListPage> {
-  int? _userId;
-  _MeUserListSource? _source;
-
-  @override
-  void initState() {
-    super.initState();
-    pixivAccountNotifier.addListener(_handleAccountChanged);
-    _configureSource(pixivAccountNotifier.value);
-  }
-
-  @override
-  void didUpdateWidget(covariant MeUserListPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.kind != widget.kind) {
-      _source?.dispose();
-      _userId = null;
-      _source = null;
-      _configureSource(pixivAccountNotifier.value);
-    }
-  }
-
-  @override
-  void dispose() {
-    pixivAccountNotifier.removeListener(_handleAccountChanged);
-    _source?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final translations = context.t;
-    final title = _title(translations);
-    final emptyTitle = switch (widget.kind) {
-      MeUserListKind.following => translations.me.emptyFollowing,
-      MeUserListKind.followers => translations.me.emptyFollowers,
-    };
-    final emptyIcon = switch (widget.kind) {
-      MeUserListKind.following => Icons.person_add_disabled_outlined,
-      MeUserListKind.followers => Icons.people_outline,
-    };
-    final source = _source;
-
-    return FrostAutoScaffold(
-      builder: (context, layout, orientation, useHorizontalLayout) {
-        return Scaffold(
-          body: FrostCollapsingHeader(
-            header: FrostPageHeader(title: Text(title)),
-            child: SafeArea(
-              child: source == null
-                  ? Center(
+              builder: (context, physics, locators) => FrostLoadingScrollView(
+                controller: _scroll,
+                physics: physics,
+                slivers: [
+                  const FrostChromeSpacer(),
+                  ?locators.sliverHeader,
+                  SliverToBoxAdapter(
+                    child: FrostContentColumn(
+                      maxWidth: FrostMetrics.readingMaxWidth,
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        spacing: FrostGap.section,
                         children: [
-                          FrostEmptyState(
-                            icon: FrostIconData.glyph(Icons.account_circle_outlined),
-                            title: translations.settings.account.notSignedIn,
-                            message: translations.settings.account.signedOutSubtitle,
-                          ),
-                          FilledButton.icon(
-                            onPressed: () => context.push(AppRoute.login.path),
-                            icon: const Icon(Icons.login),
-                            label: Text(translations.login.signInToPixiv),
-                          ),
+                          if (account == null || userId == null) const _SignedOut() else _AccountCard(account: account, details: details!),
+                          ..._rows(context, userId),
                         ],
                       ),
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (useHorizontalLayout) ...[
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(4, 18, 4, 10),
-                            child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-                          ),
-                        ],
-                        Expanded(
-                          child: _MeUserListPane(source: source, emptyIcon: emptyIcon, emptyTitle: emptyTitle),
-                        ),
-                      ],
                     ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -231,115 +112,115 @@ class _MeUserListPageState extends State<MeUserListPage> {
     );
   }
 
-  void _handleAccountChanged() {
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      _configureSource(pixivAccountNotifier.value);
-    });
-  }
-
-  void _configureSource(UserAccountResult? account) {
-    final userId = int.tryParse(account?.user.id ?? '');
-    if (_userId == userId && _source?.kind == widget.kind) {
-      return;
-    }
-
-    _source?.dispose();
-    _userId = userId;
-
-    if (userId == null) {
-      _source = null;
-      return;
-    }
-
-    _source = _MeUserListSource(userId: userId, kind: widget.kind);
-  }
-
-  String _title(Translations translations) {
-    return switch (widget.kind) {
-      MeUserListKind.following => translations.me.following,
-      MeUserListKind.followers => translations.me.followers,
-    };
+  /// The ways on from "Me" as rows with chevrons: the account's own lists
+  /// (while signed in), then downloads with its count, About and settings.
+  List<Widget> _rows(BuildContext context, int? userId) {
+    final t = context.t;
+    final router = GoRouter.of(context);
+    final downloads = ref.watch(downloadActivityProvider);
+    FrostListRow row(FrostIconData icon, String label, String location, {Widget? trailing}) => FrostListRow(
+      leading: FrostGlyph.icon(icon),
+      title: label,
+      trailing: trailing,
+      accessory: FrostRowAccessory.chevron,
+      onPressed: () => unawaited(router.push(location)),
+    );
+    return [
+      if (userId != null)
+        FrostGroupedSection(
+          children: [row(PivIcons.user, t.me.following, AppRoute.meFollowing.path), row(PivIcons.users, t.me.followers, AppRoute.meFollowers.path)],
+        ),
+      FrostGroupedSection(
+        children: [
+          row(
+            PivIcons.download,
+            t.navigation.downloads,
+            AppRoute.downloads.path,
+            trailing: downloads.badge > 0 ? FrostCountBadge(count: downloads.badge, tone: downloads.badgeTone) : null,
+          ),
+          row(PivIcons.info, t.me.about, AppRoute.about.path),
+          row(PivIcons.settings, t.me.settings, AppRoute.settings.path),
+        ],
+      ),
+    ];
   }
 }
 
-class _MeAccountCard extends StatelessWidget {
-  const _MeAccountCard({required this.account});
+/// The account card: avatar, name, @account and e-mail, its counts, and the
+/// way to its own author page. The counts wait in placeholders; when they
+/// fail only the counts go.
+class _AccountCard extends ConsumerWidget {
+  const _AccountCard({required this.account, required this.details});
 
-  final UserAccountResult? account;
+  static const _inlineProfileMaxTextScale = 1.5;
+
+  final UserAccountResult account;
+  final UserDetailProvider details;
 
   @override
-  Widget build(BuildContext context) {
-    final translations = context.t;
-    final colorScheme = Theme.of(context).colorScheme;
-    final user = account?.user;
-    final userId = int.tryParse(user?.id ?? '');
-    // Name first, then the public @account, then the private e-mail as the
-    // quietest line.
-    final secondary = Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant);
-
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.t;
+    final user = account.user;
+    final avatarUrl = user.profileImageUrls.px170X170;
+    final profile = ref.watch(details);
+    final counts = profile.value?.profile;
+    final loading = profile.isLoading && counts == null;
+    final stats = [
+      if (counts != null || profile.isLoading) ...[
+        (counts == null ? '000' : formatCount(counts.totalFollowUsers), t.user.stats.following),
+        (counts == null ? '000' : formatCount(counts.totalIllusts), t.user.stats.illustrations),
+        (counts == null ? '000' : formatCount(counts.totalManga), t.user.stats.manga),
+        (counts == null ? '000' : formatCount(counts.totalNovels), t.user.stats.novels),
+      ],
+    ];
+    // Beside the name, unless large text needs that line for the name.
+    final largeText = MediaQuery.textScalerOf(context).scale(1) >= _inlineProfileMaxTextScale;
+    final profileLink = FrostButton.quiet(label: t.me.profile, onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.user(user.id))));
     return FrostSurface(
-      role: FrostSurfaceRole.glassPanel,
+      role: FrostSurfaceRole.module,
+      edge: FrostSurfaceEdge.none,
+      elevated: false,
+      borderRadius: FrostRadius.borderRadius(FrostRadius.xl),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(FrostGap.panelInset),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: FrostGap.group,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: FrostGap.group,
               children: [
-                _MeAccountAvatar(
-                  imageUrl: user?.profileImageUrls.px170X170 ?? user?.profileImageUrls.px50X50,
-                  onTap: userId == null
-                      ? null
-                      : () {
-                          context.push(AppLocations.user(userId));
-                        },
+                FrostAvatar.person(
+                  name: user.name,
+                  colorKey: user.id,
+                  size: FrostAvatarSize.large,
+                  image: avatarUrl.isEmpty ? null : pixivImageProvider(ref, avatarUrl),
                 ),
-                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: FrostGap.inline,
                     children: [
-                      Text(
-                        user?.name ?? translations.settings.account.notSignedIn,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        user == null ? translations.settings.account.signedOutSubtitle : '@${user.account}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: secondary,
-                      ),
-                      if (user != null && user.mailAddress.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          user.mailAddress,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                        ),
-                      ],
+                      FrostText(user.name, role: FrostTextRole.headline, content: true, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      FrostText('@${user.account}', tone: FrostTextTone.secondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      if (user.mailAddress.isNotEmpty)
+                        FrostText(user.mailAddress, role: FrostTextRole.footnote, tone: FrostTextTone.tertiary, maxLines: 1, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),
+                if (!largeText) profileLink,
               ],
             ),
-            const SizedBox(height: 14),
-            Align(
-              alignment: AlignmentDirectional.centerEnd,
-              child: TextButton.icon(
-                onPressed: userId == null ? null : () => context.push(AppLocations.user(userId)),
-                icon: const Icon(Icons.account_circle_outlined),
-                label: Text(translations.me.profile),
+            if (stats.isNotEmpty)
+              Wrap(
+                spacing: FrostGap.section,
+                runSpacing: FrostGap.related,
+                children: [
+                  for (final (value, caption) in stats)
+                    loading ? FrostStat.skeleton(value: value, unit: null, caption: caption) : FrostStat(value: value, caption: caption),
+                ],
               ),
-            ),
+            if (largeText) Align(alignment: AlignmentDirectional.centerEnd, child: profileLink),
           ],
         ),
       ),
@@ -347,227 +228,19 @@ class _MeAccountCard extends StatelessWidget {
   }
 }
 
-class _MeAccountAvatar extends StatelessWidget {
-  const _MeAccountAvatar({required this.imageUrl, required this.onTap});
-
-  final String? imageUrl;
-  final VoidCallback? onTap;
+/// Signed out: what the account part would hold, and the way to sign in.
+class _SignedOut extends StatelessWidget {
+  const _SignedOut();
 
   @override
   Widget build(BuildContext context) {
-    final tokens = FrostThemeTokens.of(context);
-    final imageUrl = this.imageUrl;
-
-    Widget avatar = DecoratedBox(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: tokens.line.withValues(alpha: 0.55)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(2),
-        child: SizedBox.square(
-          dimension: 58,
-          child: imageUrl == null || imageUrl.isEmpty
-              ? const _MeAccountAvatarFallback()
-              : PixivImage(
-                  url: imageUrl,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(29),
-                  placeholder: (context) => const _MeAccountAvatarFallback(),
-                  errorBuilder: (context) => const _MeAccountAvatarFallback(),
-                ),
-        ),
-      ),
-    );
-
-    final onTap = this.onTap;
-    if (onTap == null) {
-      return avatar;
-    }
-
-    avatar = Tooltip(
-      message: context.t.me.openProfile,
-      child: FrostClickSurface(shape: const FrostClickShape.circle(), onTap: onTap, child: avatar),
-    );
-
-    return Semantics(button: true, label: context.t.me.openProfile, child: avatar);
-  }
-}
-
-class _MeAccountAvatarFallback extends StatelessWidget {
-  const _MeAccountAvatarFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    return const CircleAvatar(child: Icon(Icons.account_circle_outlined, size: 32));
-  }
-}
-
-class _MeNavigationEntry extends StatelessWidget {
-  const _MeNavigationEntry({required this.icon, required this.title, required this.enabled, required this.onTap});
-
-  final IconData icon;
-  final String title;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(enabled: enabled, onTap: enabled ? onTap : null, leading: Icon(icon), title: Text(title), trailing: const Icon(Icons.chevron_right));
-  }
-}
-
-class _MeUserListPane extends StatefulWidget {
-  const _MeUserListPane({required this.source, required this.emptyIcon, required this.emptyTitle});
-
-  final _MeUserListSource source;
-  final IconData emptyIcon;
-  final String emptyTitle;
-
-  @override
-  State<_MeUserListPane> createState() => _MeUserListPaneState();
-}
-
-class _MeUserListPaneState extends State<_MeUserListPane> {
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(_ensureLoaded);
-  }
-
-  @override
-  void didUpdateWidget(covariant _MeUserListPane oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.source != widget.source) {
-      Future.microtask(_ensureLoaded);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FrostRefreshView(
-      onRefresh: () => widget.source.refresh(true),
-      builder: (context, physics, locators) {
-        return AnimatedBuilder(
-          animation: widget.source,
-          builder: (context, child) => FrostLoadStateSwitcher(phase: widget.source.phase, child: _buildPhase(context, physics, locators)),
-        );
-      },
-    );
-  }
-
-  Widget _buildPhase(BuildContext context, ScrollPhysics? physics, FrostRefreshLocators locators) {
-    final source = widget.source;
-    final lastError = source.lastError;
-
-    if (source.phase == FrostLoadPhase.loading) {
-      return FrostLoadingScrollView(physics: physics, slivers: [?locators.sliverHeader, const SliverUserPreviewerSkeletonGrid()]);
-    }
-
-    if (!source.initialized && lastError != null) {
-      return FrostSliverFillBody(
-        physics: physics,
-        sliverHeader: locators.sliverHeader,
-        child: FrostErrorContent.fromError(error: lastError, onRetry: () => source.refresh(true)),
-      );
-    }
-
-    if (source.initialized && source.items.isEmpty) {
-      return FrostSliverFillBody(
-        physics: physics,
-        sliverHeader: locators.sliverHeader,
-        child: FrostEmptyState(icon: FrostIconData.glyph(widget.emptyIcon), title: widget.emptyTitle),
-      );
-    }
-
-    return FrostLoadingScrollView(
-      physics: physics,
-      slivers: [
-        ?locators.sliverHeader,
-        SliverUserPreviewGrid(source: source),
-      ],
-    );
-  }
-
-  void _ensureLoaded() {
-    if (!mounted || widget.source.initialized || widget.source.refreshing) {
-      return;
-    }
-
-    unawaited(widget.source.refresh(true));
-  }
-}
-
-enum MeUserListKind { following, followers }
-
-class _MeUserListSource extends FrostCursorListSource<UserPreview, UserPageResult> {
-  _MeUserListSource({required this.userId, required this.kind});
-
-  final int userId;
-  final MeUserListKind kind;
-
-  @override
-  Future<UserPageResult> loadFirstPage() {
-    return switch (kind) {
-      MeUserListKind.following => pixivApi.getFollowingUserPage(userId: userId, restrict: Restrict.public),
-      MeUserListKind.followers => pixivApi.getFollowerPage(userId: userId),
-    };
-  }
-
-  @override
-  Future<UserPageResult> loadNextPage(String nextUrl) {
-    return pixivApi.getNextUserPage(url: nextUrl);
-  }
-
-  @override
-  String? nextUrlFromPage(UserPageResult page) {
-    return page.nextUrl;
-  }
-
-  @override
-  List<UserPreview> itemsFromPage(UserPageResult page) {
-    return page.userPreviews;
-  }
-}
-
-/// The account card heads the page; the entry groups follow in one column,
-/// or side by side once the content area is wide enough. The groups have the
-/// same number of rows, so side by side they share one top and bottom edge
-/// instead of leaving the account card stranded in a column of its own.
-class _MeColumns extends StatelessWidget {
-  const _MeColumns({required this.account, required this.groups});
-
-  final List<Widget> account;
-  final List<Widget> groups;
-
-  static const _sideBySideWidth = 960.0;
-
-  @override
-  Widget build(BuildContext context) {
-    return FrostContentColumn(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final sideBySide = constraints.maxWidth >= _sideBySideWidth;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ...account,
-              const SizedBox(height: 24),
-              if (sideBySide)
-                IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      for (final (index, group) in groups.indexed) ...[if (index > 0) const SizedBox(width: 24), Expanded(child: group)],
-                    ],
-                  ),
-                )
-              else
-                for (final (index, group) in groups.indexed) ...[if (index > 0) const SizedBox(height: 24), group],
-            ],
-          );
-        },
-      ),
+    final t = context.t;
+    return FrostEmptyState(
+      icon: PivIcons.user,
+      title: t.settings.account.notSignedIn,
+      message: t.settings.account.signedOutSubtitle,
+      actionLabel: t.login.signInToPixiv,
+      onAction: () => unawaited(GoRouter.of(context).push(AppRoute.login.path)),
     );
   }
 }

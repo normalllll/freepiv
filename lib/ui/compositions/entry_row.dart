@@ -18,23 +18,36 @@ class AppEntry {
 /// The row of entries the search dropdown, the discover page and "Me" share:
 /// a module tile per entry with its icon and label, and a
 /// count badge where one is given. With a pointer the tiles keep one fixed
-/// width from the start; with touch they share the row equally.
+/// width from the start; with touch they share the row equally, [touchColumns] to a row.
 class AppEntryRow extends StatelessWidget {
-  const AppEntryRow({required this.entries, super.key});
+  const AppEntryRow({required this.entries, this.touchColumns, super.key});
 
   /// The width of a tile with a pointer.
   static const pointerTileWidth = 112.0;
 
   final List<AppEntry> entries;
 
+  /// With touch, how many tiles share a row; all of them in one row when null.
+  final int? touchColumns;
+
   @override
   Widget build(BuildContext context) {
     final touch = FrostInputCapability.of(context).touch;
     final tiles = [for (final entry in entries) _EntryTile(entry: entry)];
     if (touch) {
-      return Row(
+      final columns = touchColumns ?? tiles.length;
+      return Column(
         spacing: FrostGap.related,
-        children: [for (final tile in tiles) Expanded(child: tile)],
+        children: [
+          for (var start = 0; start < tiles.length; start += columns)
+            Row(
+              spacing: FrostGap.related,
+              children: [
+                for (var index = start; index < start + columns; index++)
+                  Expanded(child: index < tiles.length ? tiles[index] : const SizedBox.shrink()),
+              ],
+            ),
+        ],
       );
     }
     return Wrap(

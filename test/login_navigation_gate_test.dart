@@ -93,11 +93,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: TranslationProvider(
-          child: MaterialApp.router(
-            theme: AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
-            routerConfig: router,
-            builder: (context, child) => FrostLayoutScope(child: child!),
-          ),
+          child: FrostApp.router(config: freepivFrostConfig, routerConfig: router, title: 'freepiv'),
         ),
       ),
     );
@@ -105,7 +101,7 @@ void main() {
     expect(find.text(t.fanbox.title), findsNothing);
 
     for (final (label, destination) in [
-      (t.settings.downloads.tasksTitle, 'Downloads destination'),
+      (t.navigation.downloads, 'Downloads destination'),
       (t.me.settings, 'Settings destination'),
       (t.me.about, 'About destination'),
     ]) {

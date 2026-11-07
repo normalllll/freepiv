@@ -20,6 +20,7 @@ class AppIdentityHeader extends StatelessWidget {
     required this.avatar,
     required this.name,
     this.subtitle,
+    this.detail,
     this.stats = const [],
     this.statsLoading = false,
     this.primary,
@@ -36,6 +37,9 @@ class AppIdentityHeader extends StatelessWidget {
   final Widget avatar;
   final String name;
   final String? subtitle;
+
+  /// A second, quieter line under [subtitle], such as the account's e-mail.
+  final String? detail;
   final List<AppIdentityStat> stats;
 
   /// Placeholders the size of the stats while they load.
@@ -68,6 +72,8 @@ class AppIdentityHeader extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: textAlign,
               ),
+            if (detail case final detail?)
+              FrostText(detail, role: FrostTextRole.footnote, tone: FrostTextTone.tertiary, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: textAlign),
             if (stats.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: FrostGap.inline),
