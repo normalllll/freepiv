@@ -11,6 +11,7 @@ import 'package:freepiv/features/me/presentation/me_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
+import 'support/test_theme.dart';
 
 void main() {
   testWidgets('signed-out application routes return to login while proxy setup remains available', (tester) async {
@@ -24,7 +25,7 @@ void main() {
       ProviderScope(
         child: TranslationProvider(
           child: MaterialApp.router(
-            theme: AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
+            theme: TestTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
             routerConfig: AppRouter.router,
             builder: (context, child) => FrostLayoutScope(child: child!),
           ),

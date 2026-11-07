@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
+import 'support/test_theme.dart';
 
 Future<void> _pumpHost(WidgetTester tester, TargetPlatform platform, {bool reduceMotion = false}) async {
   tester.view.devicePixelRatio = 1;
@@ -12,7 +13,7 @@ Future<void> _pumpHost(WidgetTester tester, TargetPlatform platform, {bool reduc
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
-        theme: AppTheme.dark(platform: platform, locale: const Locale('en')),
+        theme: TestTheme.dark(platform: platform, locale: const Locale('en')),
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(disableAnimations: reduceMotion),
           child: FrostToastHost(child: child!),

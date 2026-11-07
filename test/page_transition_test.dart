@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/frost_config.dart';
+import 'support/test_theme.dart';
 
 class _Counter extends StatefulWidget {
   const _Counter({super.key});
@@ -39,7 +39,7 @@ Future<GlobalKey<NavigatorState>> _pumpApp(WidgetTester tester, Size size) async
     ProviderScope(
       child: MaterialApp(
         navigatorKey: navigator,
-        theme: AppTheme.dark(platform: TargetPlatform.android, locale: const Locale('en')),
+        theme: TestTheme.dark(platform: TargetPlatform.android, locale: const Locale('en')),
         home: const Scaffold(body: Text('Home')),
       ),
     ),

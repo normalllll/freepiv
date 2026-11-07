@@ -13,6 +13,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'support/test_theme.dart';
 
 const _novel = Novel(
   id: 7,
@@ -82,7 +83,7 @@ void main() {
             child: MaterialApp(
               navigatorKey: navigator,
               navigatorObservers: [appRootRouteActivity],
-              theme: AppTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
+              theme: TestTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
               home: NovelReaderContent(
                 detail: const NovelDetailData(novel: _novel, webviewNovel: _text),
                 volumeKeys: ReaderVolumeKeys(channel: channel, supported: true),

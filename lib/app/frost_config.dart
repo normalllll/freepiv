@@ -221,12 +221,3 @@ abstract final class PivMetrics {
 /// error details.
 void toastErrorWithCause(String message, Object error) => FrostToast.error(t.common.errorWithCause(message: message, cause: formatPixivError(error)));
 
-/// freepiv's theme: the Frost theme built from [freepivFrostConfig], for
-/// widget tests that host pages without [FrostApp].
-abstract final class AppTheme {
-  static ThemeData light({required TargetPlatform platform, required Locale locale, FrostTone tone = FrostTone.neutral, Color? accent}) =>
-      FrostTheme.build(config: freepivFrostConfig, brightness: Brightness.light, platform: platform, locale: locale, tone: tone, accent: accent);
-
-  static ThemeData dark({required TargetPlatform platform, required Locale locale, FrostTone tone = FrostTone.neutral, Color? accent}) =>
-      FrostTheme.build(config: freepivFrostConfig, brightness: Brightness.dark, platform: platform, locale: locale, tone: tone, accent: accent);
-}

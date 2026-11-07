@@ -11,6 +11,7 @@ import 'package:freepiv/ui/compositions/fanbox_rows.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'support/test_theme.dart';
 
 FanboxPost _post(String id) => FanboxPost(
   id: id,
@@ -48,7 +49,7 @@ void main() {
           child: FrostScope(
             config: freepivFrostConfig,
             child: MaterialApp(
-              theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
+              theme: TestTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
               home: const Scaffold(
                 body: SingleChildScrollView(
                   child: Column(
@@ -97,7 +98,7 @@ void main() {
           child: FrostScope(
             config: freepivFrostConfig,
             child: MaterialApp(
-              theme: AppTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
+              theme: TestTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
               home: Scaffold(
                 body: ListView.builder(
                   controller: scroll,

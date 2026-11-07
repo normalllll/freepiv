@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
+import 'support/test_theme.dart';
 
 class _Badge implements DownloadFlightTarget {
   int landings = 0;
@@ -23,7 +23,7 @@ Future<void> _pumpApp(WidgetTester tester, {bool reduceMotion = false}) async {
     ProviderScope(
       child: MaterialApp(
         navigatorKey: AppRouter.rootNavigatorKey,
-        theme: AppTheme.dark(platform: TargetPlatform.windows, locale: const Locale('en')),
+        theme: TestTheme.dark(platform: TargetPlatform.windows, locale: const Locale('en')),
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(disableAnimations: reduceMotion),
           child: child!,
