@@ -13,6 +13,8 @@ import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
+import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'sample_main.dart' as app;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -155,6 +157,19 @@ void main() {
           AppRouter.router.go(request['value'] == 'true' ? '/login' : '/');
           await _frame();
           return jsonEncode(_state());
+        case 'destination':
+          // A destination's root page, as its navigation item opens it.
+          AppRouter.router.go(request['location']! as String);
+          await _frame();
+          return jsonEncode(_state());
+        case 'search':
+          // The title-bar search, focused with [text] typed (empty for the compact discover).
+          final session = ProviderScope.containerOf(_appContext()).read(appSearchSessionProvider);
+          final text = request['text'] as String? ?? '';
+          session.controller.value = TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
+          session.focusNode.requestFocus();
+          await _frame();
+          return jsonEncode(_state());
         case 'home':
           AppRouter.router.go('/');
           await _frame();
@@ -178,6 +193,9 @@ void main() {
 }
 
 final _errors = <String>[];
+
+/// A context inside the app's provider scope.
+BuildContext _appContext() => AppRouter.rootNavigatorKey.currentContext!;
 
 // The automation tool passes request arguments as strings.
 num _num(Object? value) => value is num ? value : num.parse('$value');
