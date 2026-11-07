@@ -219,6 +219,8 @@ final sampleOverrideMap = <Object, Override>{
   fanboxBrowseProvider: fanboxBrowseProvider.overrideWith2((_) => _SampleFanboxBrowse()),
   fanboxPostProvider: fanboxPostProvider.overrideWith((ref, id) async => sampleFanboxPosts().firstWhere((post) => post.id == id)),
   pixivisionBrowseProvider: pixivisionBrowseProvider.overrideWith2((_) => _SamplePixivision()),
+  illustDetailProvider: illustDetailProvider.overrideWith2((_) => _SampleIllustDetail()),
+  novelDetailProvider: novelDetailProvider.overrideWith2((_) => _SampleNovelDetail()),
   searchTrendingTagsProvider: searchTrendingTagsProvider.overrideWith(_SampleTrendingTags.new),
   downloadTasksProvider: downloadTasksProvider.overrideWith((ref) => Stream.value(sampleDownloadTasks)),
   fanboxDownloadsProvider: fanboxDownloadsProvider.overrideWithValue(const {}),
@@ -633,4 +635,16 @@ class _SamplePixivision extends PixivisionBrowse {
       categories: const [],
     ),
   );
+}
+
+class _SampleIllustDetail extends IllustDetail {
+  @override
+  FutureOr<Illust> build(IllustDetailArgs args) =>
+      args.illust ?? sampleIllusts().firstWhere((illust) => illust.id == args.resolvedIllustId, orElse: () => sampleIllusts().first);
+}
+
+class _SampleNovelDetail extends NovelDetail {
+  @override
+  FutureOr<Novel> build(NovelDetailArgs args) =>
+      args.novel ?? sampleNovels().firstWhere((novel) => novel.id == args.novelId, orElse: () => sampleNovels().first);
 }

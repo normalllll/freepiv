@@ -1,12 +1,17 @@
 // The sample app with the Flutter Driver hooks the flutter-ui-automation
 // tool needs (state, settle, appScreenshot, input). Debug builds only:
 // flutter build windows --debug -t tool/automation_entry.dart
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:frost_ui/frost_ui.dart' show FrostToast;
+
+import 'package:freepiv/app/router/app_router.dart';
+import 'package:freepiv/core/services/pixiv_service.dart';
+import 'package:freepiv/dev/sample_data.dart';
 
 import 'sample_main.dart' as app;
 import 'package:flutter/gestures.dart';
@@ -137,6 +142,21 @@ void main() {
             );
           }
           GestureBinding.instance.handlePointerEvent(PointerUpEvent(pointer: 9002, kind: PointerDeviceKind.mouse, device: 9, position: from + by));
+          await _frame();
+          return jsonEncode(_state());
+        case 'go':
+          // Opens a location as the app would: a push over the current page.
+          unawaited(AppRouter.router.push(request['location']! as String));
+          await _frame();
+          return jsonEncode(_state());
+        case 'signedOut':
+          // The sign-in page as a signed-out user sees it, and back.
+          pixivAccountNotifier.value = request['value'] == 'true' ? null : sampleAccount;
+          AppRouter.router.go(request['value'] == 'true' ? '/login' : '/');
+          await _frame();
+          return jsonEncode(_state());
+        case 'home':
+          AppRouter.router.go('/');
           await _frame();
           return jsonEncode(_state());
         case 'resize':
