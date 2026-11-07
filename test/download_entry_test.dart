@@ -162,12 +162,32 @@ void main() {
 
     FrostShell shell(WidgetTester tester) => tester.widget<FrostShell>(find.byType(FrostShell));
 
-    testWidgets('without records the entry is hidden', (tester) async {
+    testWidgets('without records the sidebar still has the one entry', (tester) async {
       await mount(tester, const []);
-      expect(shell(tester).taskEntry!.visible, isFalse);
+      expect(shell(tester).taskEntry!.visible, isTrue);
+      expect(find.byType(FrostShellTaskButton), findsOneWidget);
+      expect(shell(tester).secondary!.destinations.map((destination) => destination.label), isNot(contains(t.navigation.downloads)));
     });
 
-    testWidgets('the entry and the downloads destination carry the same count', (tester) async {
+    testWidgets('the floating placement builds nothing when idle, the button with activity or a flight', (tester) async {
+      late Widget idle, flying, sidebar;
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            idle = appDownloadTaskEntry(DownloadActivity.empty, revealed: false).builder(context, FrostShellTaskEntryPlacement.floating);
+            flying = appDownloadTaskEntry(DownloadActivity.empty, revealed: true).builder(context, FrostShellTaskEntryPlacement.floating);
+            sidebar = appDownloadTaskEntry(DownloadActivity.empty, revealed: false).builder(context, FrostShellTaskEntryPlacement.sidebar);
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+      expect(idle, isNot(isA<DownloadEntryButton>()));
+      expect(flying, isA<DownloadEntryButton>());
+      expect(sidebar, isA<DownloadEntryButton>());
+      expect(appDownloadTaskEntry(DownloadActivity.empty, revealed: false).visible, isTrue);
+    });
+
+    testWidgets('the entry carries the count', (tester) async {
       await mount(tester, [
         _task('b.png', status: DownloadStatus.running, saveState: SaveState.none, progress: .5),
         _task('f.png', status: DownloadStatus.failed, saveState: SaveState.none, progress: 0),
@@ -177,9 +197,6 @@ void main() {
       final button = tester.widget<FrostShellTaskButton>(find.byType(FrostShellTaskButton));
       expect(button.badge, 1);
       expect(button.badgeTone, FrostCountBadgeTone.negative);
-      final downloads = shell(tester).secondary!.destinations[appSecondaryRoutes.indexOf(AppRoute.downloads)];
-      expect(downloads.badge, 1);
-      expect(downloads.badgeTone, FrostCountBadgeTone.negative);
       expect(appDestinationIndexForPath(AppRoute.downloads.path), isNull);
     });
 
@@ -220,7 +237,12 @@ void main() {
       ('the bottom sheet at large text', const Size(390, 844), 2.5),
     ]) {
       testWidgets('$name closes before a row or See all opens the downloads page', (tester) async {
-        await mount(tester, [_task('b.png', status: DownloadStatus.running, saveState: SaveState.none, progress: .5)], size: size, textScale: textScale);
+        await mount(
+          tester,
+          [_task('b.png', status: DownloadStatus.running, saveState: SaveState.none, progress: .5)],
+          size: size,
+          textScale: textScale,
+        );
         for (final (target, location) in [
           (find.text('Summer sketches'), AppLocations.downloads(item: _work.key)),
           (find.text(t.downloadEntry.viewAll), AppRoute.downloads.path),

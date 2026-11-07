@@ -9,12 +9,15 @@ import 'package:freepiv/app/router_shell.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
+import 'package:freepiv/features/downloads/presentation/downloads_page.dart';
+import 'package:freepiv/features/fanbox/browse_page.dart';
 import 'package:freepiv/features/home/presentation/home_page.dart';
+import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// The app itself, with its router, shell wiring and sample data.
-Future<void> _mount(WidgetTester tester, {String at = '/'}) async {
-  tester.view.physicalSize = const Size(1147, 717);
+Future<void> _mount(WidgetTester tester, {String at = '/', Size size = const Size(1147, 717)}) async {
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   await AppSettings.initialize(store: SampleSettingsStore(sampleSettings));
@@ -49,6 +52,47 @@ Future<void> _push(WidgetTester tester, String location) async {
 
 FrostShell _shell(WidgetTester tester) => tester.widget<FrostShell>(find.byType(FrostShell));
 
+/// A phone: the bottom bar layout.
+const _phone = Size(390, 844);
+
+/// The route of a secondary destination's root page.
+ModalRoute<Object?> _secondaryRoute(WidgetTester tester, AppRoute route) {
+  final page = switch (route) {
+    AppRoute.downloads => DownloadsPage,
+    AppRoute.fanbox => FanboxBrowsePage,
+    _ => SettingsPage,
+  };
+  return ModalRoute.of(tester.element(find.byType(page, skipOffstage: false)))!;
+}
+
+/// Whether a page header paints [title]; the sidebar layout keeps a root
+/// page's title for screen readers only, fully transparent.
+bool _headerTitleShown(WidgetTester tester, String title) {
+  final texts = find.descendant(of: find.byType(FrostPageHeader), matching: find.text(title));
+  return texts.evaluate().any(
+    (element) => find
+        .ancestor(of: find.byElementPredicate((e) => e == element), matching: find.byWidgetPredicate((w) => w is Opacity && w.opacity == 0))
+        .evaluate()
+        .isEmpty,
+  );
+}
+
+/// Whether [title] is painted in the top row, outside any page header; that is where the
+/// shell's title row draws the visible page's title.
+bool _titleRowShown(WidgetTester tester, String title) {
+  return find.text(title).evaluate().any((element) {
+    var painted = true;
+    var inHeader = false;
+    element.visitAncestorElements((ancestor) {
+      final widget = ancestor.widget;
+      if (widget is Opacity && widget.opacity == 0) painted = false;
+      if (widget is FrostPageHeader) inHeader = true;
+      return painted;
+    });
+    return painted && !inHeader && tester.getTopLeft(find.byElementPredicate((e) => e == element)).dy < 48;
+  });
+}
+
 Future<void> _selectSecondary(WidgetTester tester, AppRoute route) async {
   _shell(tester).secondary!.onSelected(appSecondaryRoutes.indexOf(route));
   await _frames(tester);
@@ -60,12 +104,12 @@ Future<void> _escape(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('three destinations and the downloads, FANBOX and settings group', (tester) async {
+  testWidgets('three destinations and the FANBOX and settings group', (tester) async {
     await _mount(tester);
     final shell = _shell(tester);
     expect(shell.destinations.map((destination) => destination.label), ['Home', 'Activity', 'Me']);
-    expect(shell.secondary!.destinations.map((destination) => destination.label), ['Downloads', 'FANBOX', 'Settings']);
-    expect(appSecondaryRoutes, [AppRoute.downloads, AppRoute.fanbox, AppRoute.settings]);
+    expect(shell.secondary!.destinations.map((destination) => destination.label), ['FANBOX', 'Settings']);
+    expect(appSecondaryRoutes, [AppRoute.fanbox, AppRoute.settings]);
     expect(shell.atDestinationRoot, isTrue);
     expect(shell.canGoBack, isFalse);
     expect(shell.backToFirst, isNotNull);
@@ -80,7 +124,9 @@ void main() {
       await _selectSecondary(tester, AppRoute.settings);
       expect(AppRouter.currentUri.path, AppRoute.settings.path);
       expect(_shell(tester).secondary!.selectedIndex, appSecondaryRoutes.indexOf(AppRoute.settings));
-      expect(_shell(tester).selectedIndex, isNull, reason: 'settings opened from ${destination.path} highlights settings alone');
+      // The sidebar highlights settings alone because the secondary group has
+      // a selection; the bottom bar keeps the opener lit.
+      expect(_shell(tester).selectedIndex, index, reason: 'settings opened from ${destination.path} keeps its opener');
       await _push(tester, AppRoute.about.path);
       expect(_shell(tester).selectedIndex, index, reason: 'two pages up from ${destination.path}');
     }
@@ -88,15 +134,81 @@ void main() {
     expect(_shell(tester).selectedIndex, 2, reason: 'a page of Me highlights Me');
   });
 
-  testWidgets('a FANBOX page highlights FANBOX alone, and the page it was opened from takes the highlight back', (tester) async {
+  testWidgets('a FANBOX page selects FANBOX and keeps its opener, and the opener takes the highlight back', (tester) async {
     await _mount(tester);
     await _push(tester, AppLocations.fanboxPost('1001'));
     expect(_shell(tester).secondary!.selectedIndex, appSecondaryRoutes.indexOf(AppRoute.fanbox));
-    expect(_shell(tester).selectedIndex, isNull, reason: 'no primary destination next to FANBOX');
+    expect(_shell(tester).selectedIndex, 0, reason: 'the bottom bar keeps Home, which opened it');
     await _escape(tester);
     expect(AppRouter.currentUri.path, AppRoute.home.path);
     expect(_shell(tester).selectedIndex, 0);
     expect(_shell(tester).secondary!.selectedIndex, isNull);
+  });
+
+  testWidgets('in the sidebar layout a secondary destination switches in with no motion', (tester) async {
+    await _mount(tester);
+    for (final route in appSecondaryRoutes) {
+      await _go(tester, AppRoute.home.path);
+      _shell(tester).secondary!.onSelected(appSecondaryRoutes.indexOf(route));
+      await tester.pump();
+      await tester.pump();
+      expect(AppRouter.currentUri.path, route.path);
+      final top = _secondaryRoute(tester, route);
+      expect(top.animation!.status, AnimationStatus.completed, reason: '${route.path} covers Home from its first frame');
+      expect(find.byType(HomePage), findsNothing, reason: 'Home is no longer painted under ${route.path}');
+      await _frames(tester);
+    }
+  });
+
+  testWidgets('with the bottom bar a secondary destination is pushed as a detail page', (tester) async {
+    await _mount(tester, size: _phone);
+    _shell(tester).secondary!.onSelected(appSecondaryRoutes.indexOf(AppRoute.settings));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 16));
+    final top = _secondaryRoute(tester, AppRoute.settings);
+    expect(top.animation!.status, AnimationStatus.forward, reason: 'settings moves in');
+    await _frames(tester);
+    expect(top.animation!.status, AnimationStatus.completed);
+    expect(_shell(tester).selectedIndex, 0, reason: 'the bottom bar keeps Home lit under settings');
+  });
+
+  testWidgets('page headers paint no title in either layout; the title row or the bottom bar names the page', (tester) async {
+    await _mount(tester);
+    final roots = {AppRoute.home.path: 'Home', AppRoute.newest.path: 'Newest', AppRoute.me.path: 'Me'};
+    for (final MapEntry(key: path, value: title) in roots.entries) {
+      await _go(tester, path);
+      expect(_headerTitleShown(tester, title), isFalse, reason: '$path in the sidebar layout');
+      expect(_titleRowShown(tester, title), isTrue, reason: '$path in the title row');
+    }
+    for (final (route, title) in [(AppRoute.settings, 'Settings')]) {
+      await _go(tester, AppRoute.home.path);
+      await _selectSecondary(tester, route);
+      expect(_headerTitleShown(tester, title), isFalse, reason: '${route.path} in the sidebar layout');
+      await _push(tester, AppRoute.about.path);
+      expect(_headerTitleShown(tester, 'About'), isFalse, reason: 'a pushed page hands its title to the title row');
+      expect(_titleRowShown(tester, 'About'), isTrue, reason: 'the title row shows the pushed page title');
+    }
+
+    tester.view.physicalSize = _phone;
+    await _go(tester, AppRoute.me.path);
+    expect(_headerTitleShown(tester, 'Me'), isFalse, reason: 'the bottom bar names Me');
+    for (final (route, title) in [(AppRoute.settings, 'Settings')]) {
+      await _go(tester, AppRoute.home.path);
+      await _selectSecondary(tester, route);
+      expect(_headerTitleShown(tester, title), isFalse, reason: '${route.path} pushed under the bottom bar keeps Back only');
+    }
+  });
+
+  testWidgets('Downloads is a pushed page with Back, outside the secondary group, reached by the one entry', (tester) async {
+    await _mount(tester);
+    expect(_shell(tester).secondary!.destinations.map((destination) => destination.label), isNot(contains('Downloads')));
+    expect(_shell(tester).taskEntry!.visible, isTrue);
+    await _push(tester, AppRoute.downloads.path);
+    expect(AppRouter.currentUri.path, AppRoute.downloads.path);
+    expect(_shell(tester).secondary!.selectedIndex, isNull);
+    expect(_shell(tester).canGoBack, isTrue);
+    await _escape(tester);
+    expect(AppRouter.currentUri.path, AppRoute.home.path);
   });
 
   testWidgets('choosing the secondary page already on top opens nothing', (tester) async {

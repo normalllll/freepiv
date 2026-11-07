@@ -65,12 +65,14 @@ final downloadActivityProvider = Provider<DownloadActivity>((ref) {
 /// The shell's download entry ([FrostShell.taskEntry]): the sidebar's last
 /// row or the phone layout's floating button, where downloads land. Both
 /// layouts open [DownloadEntryPanel] through the entry's panel: anchored to
-/// the sidebar row, or growing from the floating button.
+/// the sidebar row, or growing from the floating button. The sidebar always
+/// has it; the floating button comes with activity or a flight on its way.
 FrostShellTaskEntry appDownloadTaskEntry(DownloadActivity activity, {required bool revealed}) => FrostShellTaskEntry(
-  builder: (context, placement) => DownloadEntryButton(placement: placement),
+  builder: (context, placement) => placement == FrostShellTaskEntryPlacement.floating && !(activity.visible || revealed)
+      ? const SizedBox.shrink()
+      : DownloadEntryButton(placement: placement),
   // The shell rebuilds this entry when the language changes.
   panel: FrostShellTaskPanel(title: t.navigation.downloads, builder: (context) => const DownloadEntryPanel()),
-  visible: activity.visible || revealed,
   initialFloatingPosition: AppSettings.downloadEntryPosition,
   onFloatingPositionChanged: (position) => AppSettings.downloadEntryPosition = position,
 );

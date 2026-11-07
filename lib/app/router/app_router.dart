@@ -84,11 +84,14 @@ class AppRouter {
             GoRoute(
               path: AppRoute.fanbox.path,
               name: AppRoute.fanbox.name,
-              builder: (context, state) => FanboxBrowsePage(
-                location: (
-                  section: FanboxSection.values.where((e) => e.name == state.uri.queryParameters[AppRouteQuery.section]).firstOrNull ?? FanboxSection.home,
-                  creatorId: state.uri.queryParameters[AppRouteQuery.creator] ?? '',
-                  query: state.uri.queryParameters[AppRouteQuery.query] ?? '',
+              pageBuilder: (context, state) => FrostDetailPage.secondaryDestination(
+                key: state.pageKey,
+                child: FanboxBrowsePage(
+                  location: (
+                    section: FanboxSection.values.where((e) => e.name == state.uri.queryParameters[AppRouteQuery.section]).firstOrNull ?? FanboxSection.home,
+                    creatorId: state.uri.queryParameters[AppRouteQuery.creator] ?? '',
+                    query: state.uri.queryParameters[AppRouteQuery.query] ?? '',
+                  ),
                 ),
               ),
             ),
@@ -224,10 +227,11 @@ class AppRouter {
 
   /// The destination to highlight for [path]: its own, or for pages any
   /// destination can open (a work, a search), the one they were opened from.
-  /// A secondary page (downloads, FANBOX, settings) belongs to no primary
-  /// destination: the shell highlights its secondary item alone.
+  /// A secondary page (FANBOX, settings) keeps the destination
+  /// that opened it: the bottom bar highlights that one, and the sidebar,
+  /// given the secondary selection, highlights the secondary item alone.
   static int? destinationIndexFor(String path) {
-    if (appSecondaryIndexForPath(path) != null) return null;
+    if (appSecondaryIndexForPath(path) != null) return _opener ?? 0;
     final byPath = appDestinationIndexForPath(path);
     if (byPath == null) return _opener ?? 0;
     _opener = byPath;

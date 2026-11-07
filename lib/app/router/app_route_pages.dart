@@ -145,14 +145,11 @@ Page<void> meFollowingPage(BuildContext context, GoRouterState state) {
 }
 
 Page<void> meFollowersPage(BuildContext context, GoRouterState state) {
-  return FrostDetailPage(
-    key: state.pageKey,
-    child: const FollowersPage(),
-  );
+  return FrostDetailPage(key: state.pageKey, child: const FollowersPage());
 }
 
 Page<void> settingsPage(BuildContext context, GoRouterState state) {
-  return FrostDetailPage(key: state.pageKey, child: const SettingsPage());
+  return FrostDetailPage.secondaryDestination(key: state.pageKey, child: const SettingsPage());
 }
 
 Page<void> aboutPage(BuildContext context, GoRouterState state) {

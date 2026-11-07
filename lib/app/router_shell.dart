@@ -14,13 +14,12 @@ import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
 /// The destinations kept off the phone's bottom bar, in order.
-const appSecondaryRoutes = [AppRoute.downloads, AppRoute.fanbox, AppRoute.settings];
+const appSecondaryRoutes = [AppRoute.fanbox, AppRoute.settings];
 
 /// The secondary destination a location belongs to.
 int? appSecondaryIndexForPath(String path) => switch (AppRoute.match(path)) {
-  AppRoute.downloads => 0,
-  AppRoute.fanbox || AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator || AppRoute.fanboxWebLogin => 1,
-  AppRoute.settings => 2,
+  AppRoute.fanbox || AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator || AppRoute.fanboxWebLogin => 0,
+  AppRoute.settings => 1,
   _ => null,
 };
 
@@ -80,16 +79,7 @@ class RouterShell extends ConsumerWidget {
         onDestinationSelected: onDestinationSelected,
         secondary: FrostShellSecondary(
           destinations: [
-            for (final route in appSecondaryRoutes)
-              route == AppRoute.downloads
-                  ? FrostNavDestination(
-                      icon: _secondaryIcon(route),
-                      label: appRouteNavigationLabel(translations, route),
-                      badge: downloads.badge,
-                      badgeTone: downloads.badgeTone,
-                      progress: downloads.progress,
-                    )
-                  : FrostNavDestination(icon: _secondaryIcon(route), label: appRouteNavigationLabel(translations, route)),
+            for (final route in appSecondaryRoutes) FrostNavDestination(icon: _secondaryIcon(route), label: appRouteNavigationLabel(translations, route)),
           ],
           selectedIndex: appSecondaryIndexForPath(path),
           onSelected: (index) => onSecondarySelected(appSecondaryRoutes[index]),
@@ -203,7 +193,6 @@ String? fallbackPathFor(String path) {
 
 FrostIconData _secondaryIcon(AppRoute route) => switch (route) {
   AppRoute.fanbox => PivIcons.heart,
-  AppRoute.downloads => PivIcons.download,
   AppRoute.settings => PivIcons.settings,
   _ => PivIcons.more,
 };
