@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs><mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+    <path d="M245 400C245 310 238 200 262 146C271 124 288 124 304 134C356 162 412 216 450 272L330 360Z" fill="#fff"/><g transform="matrix(-1 0 0 1 984 0)"><path d="M245 400C245 310 238 200 262 146C271 124 288 124 304 134C356 162 412 216 450 272L330 360Z" fill="#fff"/></g>
+    <path d="M300 330C292 276 292 226 303 192C338 214 378 250 406 288Z" fill="#000"/><g transform="matrix(-1 0 0 1 984 0)"><path d="M300 330C292 276 292 226 303 192C338 214 378 250 406 288Z" fill="#000"/></g>
+    <path d="M212 492 150 476M212 548 156 566" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round"/><path d="M798 492 860 476M798 548 854 566" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round"/>
+    <path d="M290 800V390a90 90 0 0 1 90-90H570a150 150 0 0 1 0 300H500a60 60 0 0 0-60 60V800M290 450H423" fill="none" stroke="#fff" stroke-width="90" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="570" cy="450" r="54" fill="#fff"/>
+  </mask></defs>
+  <rect width="1024" height="1024" fill="#fff" mask="url(#m)"/>
+</svg>

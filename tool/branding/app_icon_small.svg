@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="pink" gradientUnits="userSpaceOnUse" x1="300" y1="150" x2="560" y2="850">
+      <stop offset="0" stop-color="#FF7DAD"/><stop offset="1" stop-color="#FA5F9B"/>
+    </linearGradient>
+  </defs>
+  <path d="M245 400C245 310 238 200 262 146C271 124 288 124 304 134C356 162 412 216 450 272L330 360Z" fill="url(#pink)"/><g transform="matrix(-1 0 0 1 984 0)"><path d="M245 400C245 310 238 200 262 146C271 124 288 124 304 134C356 162 412 216 450 272L330 360Z" fill="url(#pink)"/></g>
+  <path d="M290 800V390a90 90 0 0 1 90-90H570a150 150 0 0 1 0 300H500a60 60 0 0 0-60 60V800M290 450H423" fill="none" stroke="url(#pink)" stroke-width="106" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="570" cy="450" r="60" fill="#2AA3F5"/>
+</svg>
