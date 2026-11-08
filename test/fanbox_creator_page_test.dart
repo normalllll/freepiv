@@ -138,10 +138,20 @@ void main() {
     await _mount(tester, plans: true);
     expect(tester.widget<FrostTabBar>(find.byType(FrostTabBar)).controller!.index, 1);
     final page = find.byType(FrostPageHeader);
-    expect(find.descendant(of: page, matching: find.text('Studio Kite')), findsNothing);
+    bool named() => tester
+        .widget<Visibility>(
+          find
+              .ancestor(
+                of: find.descendant(of: page, matching: find.text('Studio Kite')),
+                matching: find.byType(Visibility),
+              )
+              .first,
+        )
+        .visible;
+    expect(named(), isFalse);
     await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -600));
     await settlePilot(tester);
-    expect(find.descendant(of: page, matching: find.text('Studio Kite')), findsOneWidget);
+    expect(named(), isTrue);
   });
 
   testWidgets('while every post is being collected, Download all is off and says so', (tester) async {

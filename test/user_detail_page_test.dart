@@ -188,6 +188,34 @@ void main() {
     expect(outer.offset, collapsed);
   });
 
+  testWidgets('each tab keeps its own place: scrolling one leaves the others where they were', (tester) async {
+    await _mount(
+      tester,
+      detail: sampleUserDetail,
+      works: () async => IllustPageResult(illusts: sampleIllusts(count: 60), rankingIllusts: const []),
+    );
+    final nested = tester.state<NestedScrollViewState>(find.byType(NestedScrollView));
+    final outer = nested.outerController;
+    while (outer.offset < outer.position.maxScrollExtent) {
+      await tester.dragFrom(const Offset(500, 650), const Offset(0, -300));
+      await settlePilot(tester);
+    }
+    await tester.dragFrom(const Offset(500, 650), const Offset(0, -500));
+    await settlePilot(tester);
+    final place = nested.innerController.offset;
+    expect(place, greaterThan(0));
+
+    await tester.tap(_tab(t.user.tabs.manga));
+    await settlePilot(tester);
+    expect(nested.innerController.offset, 0, reason: 'the manga tab was not scrolled along');
+
+    await tester.tap(_tab(t.user.tabs.illustrations));
+    await settlePilot(tester);
+    expect(nested.innerController.offset, closeTo(place, 1), reason: 'back where it was');
+    expect(outer.offset, outer.position.maxScrollExtent, reason: 'the identity stays away');
+    expectNoLayoutErrors(tester);
+  });
+
   for (final textScale in [1.0, 2.0]) {
     testWidgets('the tabs stay pinned under the page header while the works scroll, and the works stay below them (text ×$textScale)', (tester) async {
       await _mount(tester, detail: sampleUserDetail, textScale: textScale);

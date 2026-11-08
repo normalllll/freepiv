@@ -11,10 +11,10 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
+import 'package:freepiv/ui/compositions/avatar_flight.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/identity_header.dart';
-import 'package:freepiv/ui/compositions/identity_tabs_header.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/ui/compositions/pixiv_text.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
@@ -74,18 +74,9 @@ class UserDetailContent extends ConsumerStatefulWidget {
 class _UserDetailContentState extends ConsumerState<UserDetailContent> with SingleTickerProviderStateMixin {
   late final _tabs = TabController(length: UserDetailContent.tabs.length, initialIndex: UserDetailContent.tabs.indexOf(widget.initialTab), vsync: this);
   final _outer = ScrollController();
-  final _identityKey = GlobalKey();
-  final _overlap = SliverOverlapAbsorberHandle();
-  bool _identityGone = false;
   var _bookmarks = UserBookmarkKind.illustManga;
 
   int get _userId => widget.detail.user.id;
-
-  @override
-  void initState() {
-    super.initState();
-    _outer.addListener(_scrolled);
-  }
 
   @override
   void didUpdateWidget(UserDetailContent oldWidget) {
@@ -97,16 +88,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
   void dispose() {
     _tabs.dispose();
     _outer.dispose();
-    _overlap.dispose();
     super.dispose();
-  }
-
-  /// The page header names the author only once the identity header has
-  /// scrolled away.
-  void _scrolled() {
-    final identity = _identityKey.currentContext?.size?.height ?? 0;
-    final gone = _outer.hasClients && identity > 0 && _outer.offset >= identity;
-    if (gone != _identityGone) setState(() => _identityGone = gone);
   }
 
   /// The current tab's list; Details has none.
@@ -129,35 +111,37 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
     final labels = userTabLabels(t);
     return AppRefreshScope(
       onRefresh: () async => _source(UserDetailContent.tabs[_tabs.index])?.refresh(false),
-      child: FrostPinnedChrome(
-        chrome: FrostPageHeader(title: _identityGone ? FrostText(detail.user.name) : null),
-        body: NestedScrollView(
-          controller: _outer,
-          headerSliverBuilder: (context, _) => [
-            AppIdentityTabsHeader(
-              overlap: _overlap,
-              identity: KeyedSubtree(
-                key: _identityKey,
-                child: _UserIdentity(detail: detail),
+      child: AppAvatarFlightHost(
+        controller: _outer,
+        avatar: (size) => AppUserAvatar(user: userOf(detail.user), size: size),
+        // The page header names the author only once the identity header has
+        // scrolled away.
+        child: FrostPinnedChrome(
+          chrome: AppFlightChrome(
+            child: FrostPageHeader(title: AppFlightTitle(name: detail.user.name)),
+          ),
+          body: NestedScrollView(
+            controller: _outer,
+            headerSliverBuilder: (context, _) => [
+              FrostSliverSectionsHeader(
+                lead: AppFlightLead(child: _UserIdentity(detail: detail)),
+                tabs: FrostTabBar(
+                  controller: _tabs,
+                  scrollable: true,
+                  tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: labels[kind]!)],
+                ),
               ),
-              tabs: FrostTabBar(
+            ],
+            body: ListenableBuilder(
+              listenable: _tabs,
+              builder: (context, _) => TabBarView(
                 controller: _tabs,
-                scrollable: true,
-                tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: labels[kind]!)],
-              ),
-            ),
-          ],
-          body: ListenableBuilder(
-            listenable: _tabs,
-            builder: (context, _) => TabBarView(
-              controller: _tabs,
-              children: [
-                for (final (index, kind) in UserDetailContent.tabs.indexed)
-                  FrostKeepAlive(
-                    child: FrostChromeActiveBody(
+                children: [
+                  for (final (index, kind) in UserDetailContent.tabs.indexed)
+                    FrostChromeActiveBody(
                       active: _tabs.index == index,
                       child: _UserTab(
-                        overlap: _overlap,
+                        storageKey: PageStorageKey(kind),
                         onRefresh: switch (kind) {
                           UserContentTabKind.profile => null,
                           _ => () async => _source(kind)?.refresh(false),
@@ -165,8 +149,8 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
                         slivers: _slivers(context, kind),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -248,21 +232,23 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
 /// One tab's own scroll view under the pinned header and tabs, pulling to
 /// refresh where the tab has a list.
 class _UserTab extends StatelessWidget {
-  const _UserTab({required this.overlap, required this.slivers, required this.onRefresh});
+  const _UserTab({required this.storageKey, required this.slivers, required this.onRefresh});
 
-  final SliverOverlapAbsorberHandle overlap;
+  /// Brings the tab back to where it was; the tab itself is not kept alive.
+  final Key storageKey;
   final List<Widget> slivers;
   final Future<void> Function()? onRefresh;
 
   @override
   Widget build(BuildContext context) {
     Widget view(ScrollPhysics? physics, Widget? refreshHeader) => FrostLoadingScrollView(
+      key: storageKey,
       // The NestedScrollView's inner controller: desktop platforms do not
       // hand it down on their own, and the tabs would scroll alone.
       primary: true,
       physics: physics,
       slivers: [
-        SliverOverlapInjector(handle: overlap),
+        SliverOverlapInjector(handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
         ?refreshHeader,
         ...slivers,
       ],
@@ -300,7 +286,7 @@ class _UserIdentity extends StatelessWidget {
         spacing: FrostGap.group,
         children: [
           AppIdentityHeader(
-            avatar: AppUserAvatar(user: user, size: FrostAvatarSize.xxlarge),
+            avatar: const AppFlightAvatar(),
             name: user.name,
             subtitle: '@${user.account}',
             stats: [

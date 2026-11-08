@@ -8,10 +8,10 @@ import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
+import 'package:freepiv/ui/compositions/avatar_flight.dart';
 import 'package:freepiv/ui/compositions/fanbox_image.dart';
 import 'package:freepiv/ui/compositions/fanbox_rows.dart';
 import 'package:freepiv/ui/compositions/identity_header.dart';
-import 'package:freepiv/ui/compositions/identity_tabs_header.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:frost_ui/frost_ui.dart';
 
@@ -50,31 +50,15 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
     vsync: this,
   );
   final _outer = ScrollController();
-  final _overlap = SliverOverlapAbsorberHandle();
-  final _identityKey = GlobalKey();
-  bool _identityGone = false;
 
   FanboxLocation _location(_CreatorTab tab) =>
       (section: tab == _CreatorTab.plans ? FanboxSection.creatorPlans : FanboxSection.creatorPosts, creatorId: widget.creatorId, query: '');
 
   @override
-  void initState() {
-    super.initState();
-    _outer.addListener(_scrolled);
-  }
-
-  @override
   void dispose() {
     _tabs.dispose();
     _outer.dispose();
-    _overlap.dispose();
     super.dispose();
-  }
-
-  void _scrolled() {
-    final identity = _identityKey.currentContext?.size?.height ?? 0;
-    final gone = _outer.hasClients && identity > 0 && _outer.offset >= identity;
-    if (gone != _identityGone) setState(() => _identityGone = gone);
   }
 
   Future<void> _refresh(_CreatorTab tab) async {
@@ -100,36 +84,38 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
     }
     final page = AppRefreshScope(
       onRefresh: () => _refresh(_CreatorTab.values[_tabs.index]),
-      child: FrostPinnedChrome(
-        chrome: FrostPageHeader(title: _identityGone && creator != null ? FrostText(creator.user.name) : null),
-        body: NestedScrollView(
-          controller: _outer,
-          headerSliverBuilder: (context, _) => [
-            AppIdentityTabsHeader(
-              overlap: _overlap,
-              identity: KeyedSubtree(
-                key: _identityKey,
-                child: creator == null ? const _IdentitySkeleton() : _Identity(creator: creator, loaded: state.hasValue),
+      child: AppAvatarFlightHost(
+        controller: _outer,
+        avatar: (size) => creator == null ? FrostAvatar(semanticLabel: '', size: size) : AppFanboxAvatar(user: creator.user, size: size),
+        child: FrostPinnedChrome(
+          chrome: AppFlightChrome(
+            child: FrostPageHeader(title: creator == null ? null : AppFlightTitle(name: creator.user.name)),
+          ),
+          body: NestedScrollView(
+            controller: _outer,
+            headerSliverBuilder: (context, _) => [
+              FrostSliverSectionsHeader(
+                lead: AppFlightLead(
+                  child: creator == null ? const _IdentitySkeleton() : _Identity(creator: creator, loaded: state.hasValue),
+                ),
+                tabs: FrostTabBar(
+                  controller: _tabs,
+                  scrollable: true,
+                  tabs: [
+                    FrostTab(label: t.fanbox.posts),
+                    FrostTab(label: t.fanbox.creatorPlans),
+                    FrostTab(label: t.user.tabs.profile),
+                  ],
+                ),
               ),
-              tabs: FrostTabBar(
+            ],
+            body: ListenableBuilder(
+              listenable: _tabs,
+              builder: (context, _) => TabBarView(
                 controller: _tabs,
-                scrollable: true,
-                tabs: [
-                  FrostTab(label: t.fanbox.posts),
-                  FrostTab(label: t.fanbox.creatorPlans),
-                  FrostTab(label: t.user.tabs.profile),
-                ],
-              ),
-            ),
-          ],
-          body: ListenableBuilder(
-            listenable: _tabs,
-            builder: (context, _) => TabBarView(
-              controller: _tabs,
-              children: [
-                for (final tab in _CreatorTab.values)
-                  FrostKeepAlive(
-                    child: FrostChromeActiveBody(
+                children: [
+                  for (final tab in _CreatorTab.values)
+                    FrostChromeActiveBody(
                       active: _tabs.index == tab.index,
                       child: FrostNestedRefreshView(
                         onRefresh: () async {
@@ -140,11 +126,12 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
                         builder: (context, refresh) => FrostColumnPlacement(
                           alignment: FrostColumnAlignment.start,
                           child: FrostLoadingScrollView(
+                            key: PageStorageKey(tab),
                             // Joins the NestedScrollView on desktop too.
                             primary: true,
                             physics: refresh.physics,
                             slivers: [
-                              SliverOverlapInjector(handle: _overlap),
+                              SliverOverlapInjector(handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
                               ?refresh.locators.sliverHeader,
                               ...switch (tab) {
                                 _CreatorTab.profile => [
@@ -161,8 +148,8 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -195,7 +182,7 @@ class _Identity extends ConsumerWidget {
         children: [
           Builder(
             builder: (headerContext) => AppIdentityHeader(
-              avatar: AppFanboxAvatar(user: creator.user, size: FrostAvatarSize.xxlarge),
+              avatar: const AppFlightAvatar(),
               name: creator.user.name,
               subtitle: '@${creator.creatorId}',
               primary: FanboxFollowButton(creatorId: creator.creatorId),
