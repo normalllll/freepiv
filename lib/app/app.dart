@@ -6,9 +6,10 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/app/theme/appearance_logic.dart';
-import 'package:freepiv/app/theme/transparency_logic.dart';
+import 'package:freepiv/app/theme/system_transparency.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/core/platform/platform_info.dart';
+import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -73,10 +74,11 @@ class _FreepivMaterialAppState extends ConsumerState<_FreepivMaterialApp> {
   Widget build(BuildContext context) {
     final appearance = ref.watch(appearanceProvider).settings;
     final selectedLocale = ref.watch(appLocaleProvider);
+    final background = ref.watch(backgroundSettingsProvider);
 
     return FrostScope(
       config: freepivFrostConfig,
-      reduceTransparency: ref.watch(reduceTransparencyProvider),
+      reduceTransparency: background.material == BackgroundMaterial.off,
       child: FrostApp.router(
         config: freepivFrostConfig,
         title: context.t.app.title,
@@ -94,13 +96,31 @@ class _FreepivMaterialAppState extends ConsumerState<_FreepivMaterialApp> {
               // window-wide ambient backdrop, so the window reads as one surface.
               // The window's own title stays the app name: the runner finds
               // the running instance by it, and pages carry their titles.
-              builder: (context, _) => FrostWindowHost(
-                controller: widget.windowController,
-                title: _windowTitle,
-                child: FrostAmbientBackdropHost(
-                  image: _backdropImage(resolveWindowArtwork(_windowTitles.location, _windowTitles)),
-                  child: FrostFontWarmUp(samples: _fontSamples, child: child ?? const SizedBox.shrink()),
-                ),
+              builder: (context, _) => ValueListenableBuilder<FrostWindowState>(
+                valueListenable: widget.windowController,
+                builder: (context, window, _) {
+                  // The system's preference and what it can paint override the
+                  // saved choice here, which stays as the user made it.
+                  final systemDisabled = window.reduceTransparency || MediaQuery.highContrastOf(context);
+                  final effective = switch ((systemDisabled, background.material, window.backdropAvailable)) {
+                    (true, _, _) => BackgroundMaterial.off,
+                    (false, BackgroundMaterial.mica, false) => BackgroundMaterial.ambient,
+                    (false, final material, _) => material,
+                  };
+                  return SystemTransparencyPreference(
+                    disabled: systemDisabled,
+                    child: FrostWindowHost(
+                      controller: widget.windowController,
+                      title: _windowTitle,
+                      backdrop: effective == BackgroundMaterial.mica ? FrostWindowBackdrop.mica : FrostWindowBackdrop.none,
+                      child: FrostAmbientBackdropHost(
+                        image: effective == BackgroundMaterial.ambient ? _backdropImage(resolveWindowArtwork(_windowTitles.location, _windowTitles)) : null,
+                        intensity: effective == BackgroundMaterial.off ? 0 : background.intensity / 100,
+                        child: FrostFontWarmUp(samples: _fontSamples, child: child ?? const SizedBox.shrink()),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           );

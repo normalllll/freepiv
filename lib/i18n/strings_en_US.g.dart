@@ -45,7 +45,6 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$novelText$en_US novelText = Translations$novelText$en_US.internal(_root);
 	late final Translations$signOut$en_US signOut = Translations$signOut$en_US.internal(_root);
 	late final Translations$appSearch$en_US appSearch = Translations$appSearch$en_US.internal(_root);
-	late final Translations$navigationPlacement$en_US navigationPlacement = Translations$navigationPlacement$en_US.internal(_root);
 	late final Translations$frost$en_US frost = Translations$frost$en_US.internal(_root);
 	late final Translations$nativeWindow$en_US nativeWindow = Translations$nativeWindow$en_US.internal(_root);
 	late final Translations$discover$en_US discover = Translations$discover$en_US.internal(_root);
@@ -136,19 +135,6 @@ class Translations$appSearch$en_US {
 	String get tagGroup => 'Tags';
 	String get noSuggestions => 'No suggestions';
 	String get suggestionsFailed => 'Couldn\'t load suggestions';
-}
-
-// Path: navigationPlacement
-class Translations$navigationPlacement$en_US {
-	Translations$navigationPlacement$en_US.internal(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-	String get title => 'Navigation';
-	String get automatic => 'Automatic';
-	String get bottom => 'Bottom bar';
-	String get sidebar => 'Sidebar';
 }
 
 // Path: frost
@@ -950,8 +936,12 @@ class Translations$settings$theme$en_US {
 	String get system => 'System';
 	String get light => 'Light';
 	String get dark => 'Dark';
-	String get reduceTransparency => 'Reduce transparency';
-	String get reduceTransparencyHint => 'Use solid surfaces instead of blur';
+	String get background => 'Background';
+	String get ambientBlur => 'Blur';
+	String get mica => 'Mica';
+	String get backgroundOff => 'Off';
+	String get backgroundIntensity => 'Intensity';
+	String get systemTransparencyReduced => 'System transparency is reduced';
 }
 
 // Path: settings.language
@@ -1730,10 +1720,6 @@ extension on Translations {
 			'appSearch.tagGroup' => 'Tags',
 			'appSearch.noSuggestions' => 'No suggestions',
 			'appSearch.suggestionsFailed' => 'Couldn\'t load suggestions',
-			'navigationPlacement.title' => 'Navigation',
-			'navigationPlacement.automatic' => 'Automatic',
-			'navigationPlacement.bottom' => 'Bottom bar',
-			'navigationPlacement.sidebar' => 'Sidebar',
 			'frost.retry' => 'Retry',
 			'frost.error' => 'Error',
 			'frost.errorDetails' => 'Error details',
@@ -1937,8 +1923,12 @@ extension on Translations {
 			'settings.theme.system' => 'System',
 			'settings.theme.light' => 'Light',
 			'settings.theme.dark' => 'Dark',
-			'settings.theme.reduceTransparency' => 'Reduce transparency',
-			'settings.theme.reduceTransparencyHint' => 'Use solid surfaces instead of blur',
+			'settings.theme.background' => 'Background',
+			'settings.theme.ambientBlur' => 'Blur',
+			'settings.theme.mica' => 'Mica',
+			'settings.theme.backgroundOff' => 'Off',
+			'settings.theme.backgroundIntensity' => 'Intensity',
+			'settings.theme.systemTransparencyReduced' => 'System transparency is reduced',
 			'settings.language.title' => 'Language',
 			'settings.language.systemDefault' => 'System default',
 			'settings.images.title' => 'Images',

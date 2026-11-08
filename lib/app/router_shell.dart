@@ -87,7 +87,6 @@ class RouterShell extends ConsumerWidget {
         canGoBack: canGoBack,
         onBack: onBack,
         showsMobileNavigation: true,
-        navigationPlacement: ref.watch(navigationPlacementProvider),
         initiallyExpanded: ref.read(sidebarExpandedProvider),
         onExpandedChanged: ref.read(sidebarExpandedProvider.notifier).setExpanded,
         brand: FrostShellBrand(

@@ -26,12 +26,6 @@
     "noSuggestions": "沒有建議",
     "suggestionsFailed": "無法載入建議"
   },
-  "navigationPlacement": {
-    "title": "導覽位置",
-    "automatic": "自動",
-    "bottom": "底部列",
-    "sidebar": "側欄"
-  },
   "frost": {
     "retry": "重試",
     "error": "錯誤",
@@ -257,8 +251,12 @@
       "system": "跟隨系統",
       "light": "淺色",
       "dark": "深色",
-      "reduceTransparency": "降低透明度",
-      "reduceTransparencyHint": "使用實色表面，不顯示模糊效果"
+      "background": "背景材質",
+      "ambientBlur": "環境模糊",
+      "mica": "雲母",
+      "backgroundOff": "關閉",
+      "backgroundIntensity": "強度",
+      "systemTransparencyReduced": "系統已降低透明度"
     },
     "language": {
       "title": "語言",

@@ -43,7 +43,6 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$novelText$zh_CN novelText = Translations$novelText$zh_CN.internal(_root);
 	@override late final Translations$signOut$zh_CN signOut = Translations$signOut$zh_CN.internal(_root);
 	@override late final Translations$appSearch$zh_CN appSearch = Translations$appSearch$zh_CN.internal(_root);
-	@override late final Translations$navigationPlacement$zh_CN navigationPlacement = Translations$navigationPlacement$zh_CN.internal(_root);
 	@override late final Translations$frost$zh_CN frost = Translations$frost$zh_CN.internal(_root);
 	@override late final Translations$nativeWindow$zh_CN nativeWindow = Translations$nativeWindow$zh_CN.internal(_root);
 	@override late final Translations$discover$zh_CN discover = Translations$discover$zh_CN.internal(_root);
@@ -134,19 +133,6 @@ class Translations$appSearch$zh_CN extends Translations$appSearch$en_US {
 	@override String get tagGroup => '标签补全';
 	@override String get noSuggestions => '没有建议';
 	@override String get suggestionsFailed => '无法加载建议';
-}
-
-// Path: navigationPlacement
-class Translations$navigationPlacement$zh_CN extends Translations$navigationPlacement$en_US {
-	Translations$navigationPlacement$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
-
-	final TranslationsZhCn _root; // ignore: unused_field
-
-	// Translations
-	@override String get title => '导航位置';
-	@override String get automatic => '自动';
-	@override String get bottom => '底栏';
-	@override String get sidebar => '侧栏';
 }
 
 // Path: frost
@@ -948,8 +934,12 @@ class Translations$settings$theme$zh_CN extends Translations$settings$theme$en_U
 	@override String get system => '跟随系统';
 	@override String get light => '浅色';
 	@override String get dark => '深色';
-	@override String get reduceTransparency => '减少透明度';
-	@override String get reduceTransparencyHint => '使用实色表面，不显示模糊效果';
+	@override String get background => '背景材质';
+	@override String get ambientBlur => '环境模糊';
+	@override String get mica => '云母';
+	@override String get backgroundOff => '关闭';
+	@override String get backgroundIntensity => '强度';
+	@override String get systemTransparencyReduced => '系统已降低透明度';
 }
 
 // Path: settings.language
@@ -1728,10 +1718,6 @@ extension on TranslationsZhCn {
 			'appSearch.tagGroup' => '标签补全',
 			'appSearch.noSuggestions' => '没有建议',
 			'appSearch.suggestionsFailed' => '无法加载建议',
-			'navigationPlacement.title' => '导航位置',
-			'navigationPlacement.automatic' => '自动',
-			'navigationPlacement.bottom' => '底栏',
-			'navigationPlacement.sidebar' => '侧栏',
 			'frost.retry' => '重试',
 			'frost.error' => '错误',
 			'frost.errorDetails' => '错误详情',
@@ -1935,8 +1921,12 @@ extension on TranslationsZhCn {
 			'settings.theme.system' => '跟随系统',
 			'settings.theme.light' => '浅色',
 			'settings.theme.dark' => '深色',
-			'settings.theme.reduceTransparency' => '减少透明度',
-			'settings.theme.reduceTransparencyHint' => '使用实色表面，不显示模糊效果',
+			'settings.theme.background' => '背景材质',
+			'settings.theme.ambientBlur' => '环境模糊',
+			'settings.theme.mica' => '云母',
+			'settings.theme.backgroundOff' => '关闭',
+			'settings.theme.backgroundIntensity' => '强度',
+			'settings.theme.systemTransparencyReduced' => '系统已降低透明度',
 			'settings.language.title' => '语言',
 			'settings.language.systemDefault' => '跟随系统',
 			'settings.images.title' => '图片',

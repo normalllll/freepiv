@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freepiv/app/theme/system_transparency.dart';
+import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/settings/presentation/appearance_settings_section.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
@@ -82,6 +85,78 @@ void main() {
     }
   });
 
+  testWidgets('the Language section is one row with one label and no group header', (tester) async {
+    await mountPilotPage(tester, const SettingsPage());
+    final nav = find.text(t.settings.language.title).first;
+    await tester.tap(nav);
+    await settlePilot(tester, frames: 4);
+    final picker = find.byType(FrostPicker<AppLocale?>);
+    expect(picker, findsOneWidget);
+    final row = find.ancestor(of: picker, matching: find.byType(FrostListRow));
+    expect(row, findsOneWidget);
+    final section = find.ancestor(of: row, matching: find.byType(FrostGroupedSection));
+    expect(find.descendant(of: section, matching: find.text(t.settings.language.title)), findsOneWidget);
+    expect(tester.widget<FrostGroupedSection>(section).header, isNull);
+    expectNoLayoutErrors(tester);
+  });
+
+  testWidgets('there is no navigation setting', (tester) async {
+    await mountPilotPage(tester, const SettingsPage());
+    expect(find.text('Navigation'), findsNothing);
+    expect(find.text('Bottom bar'), findsNothing);
+  });
+
+  testWidgets('the Background label is on one line at its full width', (tester) async {
+    await mountPilotPage(tester, const SettingsPage());
+    final label = find.text(t.settings.theme.background);
+    await tester.ensureVisible(label);
+    await tester.pump();
+    final line = tester.getSize(find.text(t.settings.theme.backgroundIntensity)).height;
+    expect(tester.getSize(label).height, moreOrLessEquals(line, epsilon: 6));
+    expect(tester.getSize(label).width, greaterThan(40));
+  });
+
+  testWidgets('the custom colour sliders keep their labels above them', (tester) async {
+    await mountPilotPage(tester, const SettingsPage());
+    await tester.tap(find.byWidgetPredicate((widget) => widget is FrostColorSwatch && widget.label == t.settings.theme.custom));
+    await settlePilot(tester, frames: 6);
+    final slider = find.descendant(of: find.byType(FrostDialog), matching: find.byType(FrostSlider)).first;
+    final label = find.text(t.settings.theme.hue);
+    expect(tester.getSize(label).width, greaterThan(10));
+    expect(tester.getBottomLeft(label).dy, lessThanOrEqualTo(tester.getTopLeft(slider).dy + 1));
+    expect(tester.getTopLeft(label).dx, moreOrLessEquals(tester.getTopLeft(slider).dx, epsilon: 1));
+    expectNoLayoutErrors(tester);
+  });
+
+  testWidgets('the intensity slider appears only for the blur, and its value comes back', (tester) async {
+    await mountPilotPage(tester, const SettingsPage());
+    Future<void> choose(String label) async {
+      final option = find.descendant(of: find.byType(FrostPicker<BackgroundMaterial>), matching: find.text(label));
+      await tester.ensureVisible(option);
+      await tester.pump();
+      await tester.tap(option);
+      await settlePilot(tester, frames: 30);
+    }
+
+    final slider = find.byType(FrostSlider);
+    expect(slider, findsOneWidget);
+    expect(find.text(t.settings.theme.backgroundIntensity), findsOneWidget);
+    ProviderScope.containerOf(tester.element(slider)).read(backgroundSettingsProvider.notifier).saveIntensity(40);
+    await settlePilot(tester);
+    await choose(t.settings.theme.backgroundOff);
+    expect(slider, findsNothing);
+    await choose(t.settings.theme.ambientBlur);
+    expect(tester.widget<FrostSlider>(slider).value, 40);
+    expectNoLayoutErrors(tester);
+  });
+
+  testWidgets('without the system backdrop Mica is not offered; with transparency off the section says so', (tester) async {
+    await mountPilotPage(tester, const SystemTransparencyPreference(disabled: true, child: SettingsPage()));
+    final picker = tester.widget<FrostPicker<BackgroundMaterial>>(find.byType(FrostPicker<BackgroundMaterial>));
+    expect(find.descendant(of: find.byWidget(picker), matching: find.text(t.settings.theme.mica)), findsNothing);
+    expect(find.text(t.settings.theme.systemTransparencyReduced), findsOneWidget);
+  });
+
   testWidgets('appearance offers the six presets and a custom colour', (tester) async {
     await mountPilotPage(tester, const SettingsPage());
     expect(find.byType(AppearanceSettingsSection), findsOneWidget);
@@ -98,5 +173,5 @@ void main() {
     expect(find.text(t.settings.theme.invalidHex), findsOneWidget);
   });
 
-  test('the settings strings exist in all four languages', () => expectLocalesComplete(['settings', 'navigationPlacement', 'signOut', 'fanbox']));
+  test('the settings strings exist in all four languages', () => expectLocalesComplete(['settings', 'signOut', 'fanbox']));
 }

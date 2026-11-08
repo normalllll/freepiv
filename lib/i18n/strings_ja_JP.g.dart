@@ -43,7 +43,6 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$novelText$ja_JP novelText = _Translations$novelText$ja_JP._(_root);
 	@override late final _Translations$signOut$ja_JP signOut = _Translations$signOut$ja_JP._(_root);
 	@override late final _Translations$appSearch$ja_JP appSearch = _Translations$appSearch$ja_JP._(_root);
-	@override late final _Translations$navigationPlacement$ja_JP navigationPlacement = _Translations$navigationPlacement$ja_JP._(_root);
 	@override late final _Translations$frost$ja_JP frost = _Translations$frost$ja_JP._(_root);
 	@override late final _Translations$nativeWindow$ja_JP nativeWindow = _Translations$nativeWindow$ja_JP._(_root);
 	@override late final _Translations$discover$ja_JP discover = _Translations$discover$ja_JP._(_root);
@@ -134,19 +133,6 @@ class _Translations$appSearch$ja_JP extends Translations$appSearch$en_US {
 	@override String get tagGroup => 'タグ';
 	@override String get noSuggestions => '候補はありません';
 	@override String get suggestionsFailed => '候補を読み込めませんでした';
-}
-
-// Path: navigationPlacement
-class _Translations$navigationPlacement$ja_JP extends Translations$navigationPlacement$en_US {
-	_Translations$navigationPlacement$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
-
-	final TranslationsJaJp _root; // ignore: unused_field
-
-	// Translations
-	@override String get title => 'ナビゲーション';
-	@override String get automatic => '自動';
-	@override String get bottom => '下部バー';
-	@override String get sidebar => 'サイドバー';
 }
 
 // Path: frost
@@ -948,8 +934,12 @@ class _Translations$settings$theme$ja_JP extends Translations$settings$theme$en_
 	@override String get system => '自動';
 	@override String get light => 'ライト';
 	@override String get dark => 'ダーク';
-	@override String get reduceTransparency => '透明度を下げる';
-	@override String get reduceTransparencyHint => 'ぼかしを使わず単色で表示します';
+	@override String get background => '背景';
+	@override String get ambientBlur => '環境ぼかし';
+	@override String get mica => 'マイカ';
+	@override String get backgroundOff => 'オフ';
+	@override String get backgroundIntensity => '強さ';
+	@override String get systemTransparencyReduced => 'システムで透明度を下げています';
 }
 
 // Path: settings.language
@@ -1728,10 +1718,6 @@ extension on TranslationsJaJp {
 			'appSearch.tagGroup' => 'タグ',
 			'appSearch.noSuggestions' => '候補はありません',
 			'appSearch.suggestionsFailed' => '候補を読み込めませんでした',
-			'navigationPlacement.title' => 'ナビゲーション',
-			'navigationPlacement.automatic' => '自動',
-			'navigationPlacement.bottom' => '下部バー',
-			'navigationPlacement.sidebar' => 'サイドバー',
 			'frost.retry' => '再試行',
 			'frost.error' => 'エラー',
 			'frost.errorDetails' => 'エラーの詳細',
@@ -1935,8 +1921,12 @@ extension on TranslationsJaJp {
 			'settings.theme.system' => '自動',
 			'settings.theme.light' => 'ライト',
 			'settings.theme.dark' => 'ダーク',
-			'settings.theme.reduceTransparency' => '透明度を下げる',
-			'settings.theme.reduceTransparencyHint' => 'ぼかしを使わず単色で表示します',
+			'settings.theme.background' => '背景',
+			'settings.theme.ambientBlur' => '環境ぼかし',
+			'settings.theme.mica' => 'マイカ',
+			'settings.theme.backgroundOff' => 'オフ',
+			'settings.theme.backgroundIntensity' => '強さ',
+			'settings.theme.systemTransparencyReduced' => 'システムで透明度を下げています',
 			'settings.language.title' => '言語',
 			'settings.language.systemDefault' => 'システム設定',
 			'settings.images.title' => '画像',

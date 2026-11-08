@@ -26,12 +26,6 @@
     "noSuggestions": "候補はありません",
     "suggestionsFailed": "候補を読み込めませんでした"
   },
-  "navigationPlacement": {
-    "title": "ナビゲーション",
-    "automatic": "自動",
-    "bottom": "下部バー",
-    "sidebar": "サイドバー"
-  },
   "frost": {
     "retry": "再試行",
     "error": "エラー",
@@ -257,8 +251,12 @@
       "system": "自動",
       "light": "ライト",
       "dark": "ダーク",
-      "reduceTransparency": "透明度を下げる",
-      "reduceTransparencyHint": "ぼかしを使わず単色で表示します"
+      "background": "背景",
+      "ambientBlur": "環境ぼかし",
+      "mica": "マイカ",
+      "backgroundOff": "オフ",
+      "backgroundIntensity": "強さ",
+      "systemTransparencyReduced": "システムで透明度を下げています"
     },
     "language": {
       "title": "言語",

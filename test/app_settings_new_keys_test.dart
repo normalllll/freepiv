@@ -33,7 +33,6 @@ void main() {
 
   test('a fresh install reads every new key as its default', () async {
     await _reopen(directory, () async {});
-    expect(AppSettings.navigationPlacement, FrostNavigationPlacement.automatic);
     expect(AppSettings.sidebarExpanded, isFalse);
     expect(AppSettings.windowPlacement, isNull);
     expect(AppSettings.readerFontSize, 18);
@@ -44,9 +43,8 @@ void main() {
     expect(AppSettings.downloadEntryPosition.fraction, 1);
   });
 
-  test('navigation, sidebar, reader and download entry values survive a restart', () async {
+  test('sidebar, reader and download entry values survive a restart', () async {
     await _reopen(directory, () async {
-      AppSettings.navigationPlacement = FrostNavigationPlacement.bottom;
       AppSettings.sidebarExpanded = true;
       AppSettings.readerFontSize = 22;
       AppSettings.readerLineHeight = 2;
@@ -54,7 +52,6 @@ void main() {
       AppSettings.readerVolumeKeys = true;
       AppSettings.downloadEntryPosition = const FrostFloatingEntryPosition(edge: FrostFloatingEntryEdge.start, fraction: .25);
     });
-    expect(AppSettings.navigationPlacement, FrostNavigationPlacement.bottom);
     expect(AppSettings.sidebarExpanded, isTrue);
     expect(AppSettings.readerFontSize, 22);
     expect(AppSettings.readerLineHeight, 2);
@@ -94,7 +91,6 @@ void main() {
     Hive.init(directory.path);
     final box = await Hive.openBox<dynamic>(AppSettings.boxName);
     await box.putAll({
-      'navigationPlacement': 'floating',
       'sidebarExpanded': 'yes',
       'windowPlacement': {'rect': 'nowhere'},
       'readerFontSize': 3,
@@ -102,7 +98,6 @@ void main() {
       'downloadEntryPosition': {'edge': 'start', 'fraction': 4},
     });
     await AppSettings.initialize(store: HiveAppSettingsStore(box));
-    expect(AppSettings.navigationPlacement, FrostNavigationPlacement.automatic);
     expect(AppSettings.sidebarExpanded, isFalse);
     expect(AppSettings.windowPlacement, isNull);
     expect(AppSettings.readerFontSize, 18);
@@ -114,17 +109,90 @@ void main() {
     await _reopen(directory, () async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
-      container.read(navigationPlacementProvider.notifier).setPlacement(FrostNavigationPlacement.sidebar);
       container.read(sidebarExpandedProvider.notifier).setExpanded(true);
       container.read(readerSettingsProvider.notifier)
         ..setTextSize(20)
         ..setVolumeKeys(true);
-      expect(container.read(navigationPlacementProvider), FrostNavigationPlacement.sidebar);
       expect(container.read(readerSettingsProvider).textSize, 20);
     });
-    expect(AppSettings.navigationPlacement, FrostNavigationPlacement.sidebar);
     expect(AppSettings.sidebarExpanded, isTrue);
     expect(AppSettings.readerFontSize, 20);
     expect(AppSettings.readerVolumeKeys, isTrue);
+  });
+
+  group('the background material', () {
+    Future<Map<String, dynamic>> stored(Directory directory, Map<String, dynamic> values) async {
+      Hive.init(directory.path);
+      final box = await Hive.openBox<dynamic>(AppSettings.boxName);
+      await box.putAll(values);
+      await AppSettings.initialize(store: HiveAppSettingsStore(box));
+      return {for (final key in box.keys) key as String: box.get(key)};
+    }
+
+    test('reduced transparency becomes Off and the old key goes', () async {
+      final box = await stored(directory, {'reduceTransparency': true});
+      expect(AppSettings.backgroundMaterial, BackgroundMaterial.off);
+      expect(box['backgroundMaterial'], 'off');
+      expect(box.containsKey('reduceTransparency'), isFalse);
+    });
+
+    test('with nothing stored it is the blur at full intensity', () async {
+      await stored(directory, {});
+      expect(AppSettings.backgroundMaterial, BackgroundMaterial.ambient);
+      expect(AppSettings.backgroundIntensity, 100);
+    });
+
+    test('reduce transparency switched off leaves the blur, and the old key goes', () async {
+      final box = await stored(directory, {'reduceTransparency': false});
+      expect(AppSettings.backgroundMaterial, BackgroundMaterial.ambient);
+      expect(box.containsKey('reduceTransparency'), isFalse);
+    });
+
+    test('a chosen material wins over the old key', () async {
+      await stored(directory, {'reduceTransparency': true, 'backgroundMaterial': 'mica'});
+      expect(AppSettings.backgroundMaterial, BackgroundMaterial.mica);
+    });
+
+    test('invalid values fall back', () async {
+      await stored(directory, {'backgroundMaterial': 'glass', 'backgroundIntensity': 7});
+      expect(AppSettings.backgroundMaterial, BackgroundMaterial.ambient);
+      expect(AppSettings.backgroundIntensity, 100);
+      for (final value in [5, 105, 33, '50']) {
+        await Hive.close();
+        await stored(directory, {'backgroundMaterial': 'off', 'backgroundIntensity': value});
+        expect(AppSettings.backgroundIntensity, 100, reason: '$value');
+      }
+    });
+
+    test('material and intensity survive a restart; intensity is kept to its scale', () async {
+      await _reopen(directory, () async {
+        AppSettings.backgroundMaterial = BackgroundMaterial.mica;
+        AppSettings.backgroundIntensity = 43;
+      });
+      expect(AppSettings.backgroundMaterial, BackgroundMaterial.mica);
+      expect(AppSettings.backgroundIntensity, 45);
+    });
+
+    test('a stored navigation placement is dropped without an error', () async {
+      final box = await stored(directory, {'navigationPlacement': 'bottom', 'sidebarExpanded': true});
+      expect(box.containsKey('navigationPlacement'), isFalse);
+      expect(AppSettings.sidebarExpanded, isTrue);
+    });
+
+    test('moving the slider previews without saving; letting go saves', () async {
+      await _reopen(directory, () async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+        final notifier = container.read(backgroundSettingsProvider.notifier);
+        notifier.previewIntensity(62);
+        expect(container.read(backgroundSettingsProvider).intensity, 60);
+        expect(AppSettings.backgroundIntensity, 100);
+        notifier.saveIntensity(62);
+        expect(AppSettings.backgroundIntensity, 60);
+        notifier.setMaterial(BackgroundMaterial.off);
+        notifier.setMaterial(BackgroundMaterial.ambient);
+        expect(container.read(backgroundSettingsProvider).intensity, 60, reason: 'kept across another material');
+      });
+    });
   });
 }

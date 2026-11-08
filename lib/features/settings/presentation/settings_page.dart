@@ -4,12 +4,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
-import 'package:freepiv/app/theme/transparency_logic.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/fanbox/login_logic.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/fanbox/login_panel.dart';
 import 'package:freepiv/features/settings/presentation/appearance_settings_section.dart';
+import 'package:freepiv/features/settings/presentation/background_settings_section.dart';
 import 'package:freepiv/features/settings/presentation/pixiv_sign_out.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -36,42 +36,22 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       () => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: FrostGap.section,
-        children: [
-          const AppearanceSettingsSection(),
-          FrostGroupedSection(
-            children: [
-              FrostListRow.toggle(
-                title: t.settings.theme.reduceTransparency,
-                subtitle: FrostRowSubtitle(t.settings.theme.reduceTransparencyHint),
-                value: ref.watch(reduceTransparencyProvider),
-                onChanged: (value) => ref.read(reduceTransparencyProvider.notifier).setEnabled(value),
-              ),
-              FrostSettingsSelectTile<FrostNavigationPlacement>(
-                title: t.navigationPlacement.title,
-                value: ref.watch(navigationPlacementProvider),
-                items: [
-                  FrostPickerOption(value: FrostNavigationPlacement.automatic, label: t.navigationPlacement.automatic),
-                  FrostPickerOption(value: FrostNavigationPlacement.bottom, label: t.navigationPlacement.bottom),
-                  FrostPickerOption(value: FrostNavigationPlacement.sidebar, label: t.navigationPlacement.sidebar),
-                ],
-                onChanged: ref.read(navigationPlacementProvider.notifier).setPlacement,
-              ),
-            ],
-          ),
-        ],
+        children: [const AppearanceSettingsSection(), const BackgroundSettingsSection()],
       ),
       () => FrostGroupedSection(
-        header: t.settings.language.title,
         children: [
-          FrostPicker<AppLocale?>.menu(
-            label: t.settings.language.title,
-            value: ref.watch(appLocaleProvider),
-            options: [
-              FrostPickerOption(value: null, label: t.settings.language.systemDefault),
-              // Each language is named in itself, so a wrong pick can always be undone.
-              for (final entry in languageOptionNames.entries) FrostPickerOption(value: entry.key, label: entry.value),
-            ],
-            onChanged: (locale) => unawaited(ref.read(appLocaleProvider.notifier).setLocale(locale)),
+          FrostListRow(
+            title: t.settings.language.title,
+            trailing: FrostPicker<AppLocale?>.menu(
+              label: t.settings.language.title,
+              value: ref.watch(appLocaleProvider),
+              options: [
+                FrostPickerOption(value: null, label: t.settings.language.systemDefault),
+                // Each language is named in itself, so a wrong pick can always be undone.
+                for (final entry in languageOptionNames.entries) FrostPickerOption(value: entry.key, label: entry.value),
+              ],
+              onChanged: (locale) => unawaited(ref.read(appLocaleProvider.notifier).setLocale(locale)),
+            ),
           ),
         ],
       ),

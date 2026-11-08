@@ -26,12 +26,6 @@
     "noSuggestions": "没有建议",
     "suggestionsFailed": "无法加载建议"
   },
-  "navigationPlacement": {
-    "title": "导航位置",
-    "automatic": "自动",
-    "bottom": "底栏",
-    "sidebar": "侧栏"
-  },
   "frost": {
     "retry": "重试",
     "error": "错误",
@@ -257,8 +251,12 @@
       "system": "跟随系统",
       "light": "浅色",
       "dark": "深色",
-      "reduceTransparency": "减少透明度",
-      "reduceTransparencyHint": "使用实色表面，不显示模糊效果"
+      "background": "背景材质",
+      "ambientBlur": "环境模糊",
+      "mica": "云母",
+      "backgroundOff": "关闭",
+      "backgroundIntensity": "强度",
+      "systemTransparencyReduced": "系统已降低透明度"
     },
     "language": {
       "title": "语言",

@@ -50,6 +50,10 @@ class AppProxySettings {
   }
 }
 
+/// What the window is painted with. The system's accessibility preferences
+/// override it when painting; the choice stays as saved.
+enum BackgroundMaterial { ambient, mica, off }
+
 abstract interface class AppSettingsStore {
   Map<String, dynamic> load();
 
@@ -105,7 +109,8 @@ class AppSettings {
   static const _accountSessionKey = 'accountSession';
   static const _themeModeKey = 'themeMode';
   static const _appearanceKey = 'appearance';
-  static const _reduceTransparencyKey = 'reduceTransparency';
+  static const _backgroundMaterialKey = 'backgroundMaterial';
+  static const _backgroundIntensityKey = 'backgroundIntensity';
   static const _localeCodeKey = 'localeCode';
   static const _previewImageQualityKey = 'previewImageQuality';
   static const _viewerImageQualityKey = 'viewerImageQuality';
@@ -114,7 +119,6 @@ class AppSettings {
   static const _maxConcurrentDownloadsKey = 'maxConcurrentDownloads';
   static const _proxyEnabledKey = 'proxyEnabled';
   static const _proxyUrlKey = 'proxyUrl';
-  static const _navigationPlacementKey = 'navigationPlacement';
   static const _sidebarExpandedKey = 'sidebarExpanded';
   static const _windowPlacementKey = 'windowPlacement';
   static const _readerFontSizeKey = 'readerFontSize';
@@ -122,6 +126,14 @@ class AppSettings {
   static const _readerAutoScrollSpeedKey = 'readerAutoScrollSpeed';
   static const _readerVolumeKeysKey = 'readerVolumeKeys';
   static const _downloadEntryPositionKey = 'downloadEntryPosition';
+
+  static const defaultBackgroundIntensity = 100;
+  static const minBackgroundIntensity = 10;
+  static const backgroundIntensityStep = 5;
+
+  /// Keys of settings that no longer exist; a stored value is dropped.
+  static const _retiredKeys = {_legacyReduceTransparencyKey, 'navigationPlacement'};
+  static const _legacyReduceTransparencyKey = 'reduceTransparency';
 
   static const defaultLocaleCode = 'en-US';
   static const supportedLocaleCodes = {'en-US', 'zh-CN', 'zh-Hant-TW', 'ja-JP'};
@@ -137,7 +149,8 @@ class AppSettings {
     _accountSessionKey,
     _themeModeKey,
     _appearanceKey,
-    _reduceTransparencyKey,
+    _backgroundMaterialKey,
+    _backgroundIntensityKey,
     _localeCodeKey,
     _previewImageQualityKey,
     _viewerImageQualityKey,
@@ -146,7 +159,6 @@ class AppSettings {
     _maxConcurrentDownloadsKey,
     _proxyEnabledKey,
     _proxyUrlKey,
-    _navigationPlacementKey,
     _sidebarExpandedKey,
     _windowPlacementKey,
     _readerFontSizeKey,
@@ -195,9 +207,19 @@ class AppSettings {
     _values[_appearanceKey] = record;
   }
 
-  static bool get reduceTransparency => _values[_reduceTransparencyKey] == true;
+  static BackgroundMaterial get backgroundMaterial => _enumSetting(_backgroundMaterialKey, BackgroundMaterial.values, BackgroundMaterial.ambient);
 
-  static set reduceTransparency(bool value) => _write(_reduceTransparencyKey, value);
+  static set backgroundMaterial(BackgroundMaterial value) => _write(_backgroundMaterialKey, value.name);
+
+  /// How strongly the blurred artwork shows, as a percentage.
+  static int get backgroundIntensity => _values[_backgroundIntensityKey] as int? ?? defaultBackgroundIntensity;
+
+  static set backgroundIntensity(int value) => _write(_backgroundIntensityKey, normalizeBackgroundIntensity(value.toDouble()));
+
+  /// [value] on the intensity scale: a whole step, within its range.
+  static int normalizeBackgroundIntensity(double value) => value.isFinite
+      ? ((value / backgroundIntensityStep).round() * backgroundIntensityStep).clamp(minBackgroundIntensity, defaultBackgroundIntensity)
+      : defaultBackgroundIntensity;
 
   static String? get localeCode {
     final value = _values[_localeCodeKey];
@@ -289,12 +311,6 @@ class AppSettings {
     _write(_proxyUrlKey, value == null ? null : normalizeProxyUrl(value));
   }
 
-  /// The navigation placement the user chose; automatic follows the window.
-  static FrostNavigationPlacement get navigationPlacement =>
-      _enumSetting(_navigationPlacementKey, FrostNavigationPlacement.values, FrostNavigationPlacement.automatic);
-
-  static set navigationPlacement(FrostNavigationPlacement value) => _write(_navigationPlacementKey, value.name);
-
   static bool get sidebarExpanded => _values[_sidebarExpandedKey] == true;
 
   static set sidebarExpanded(bool value) => _write(_sidebarExpandedKey, value);
@@ -330,9 +346,23 @@ class AppSettings {
   static Future<void> initialize({AppSettingsStore? store}) async {
     _store = store ?? await HiveAppSettingsStore.open();
 
+    final stored = _activeStore.load();
     _values
       ..clear()
-      ..addAll(_filterSettings(_activeStore.load()));
+      ..addAll(_filterSettings(stored));
+    await _migrate(stored);
+  }
+
+  /// Reduce transparency became the Off background; retired keys are removed
+  /// so they do not stay in the box.
+  static Future<void> _migrate(Map<String, dynamic> stored) async {
+    if (stored[_legacyReduceTransparencyKey] == true && !_values.containsKey(_backgroundMaterialKey)) {
+      _values[_backgroundMaterialKey] = BackgroundMaterial.off.name;
+      await _activeStore.write(_backgroundMaterialKey, BackgroundMaterial.off.name);
+    }
+    for (final key in _retiredKeys) {
+      if (stored.containsKey(key)) await _activeStore.write(key, null);
+    }
   }
 
   static void _write(String key, dynamic value) {
@@ -365,7 +395,8 @@ class AppSettings {
       _accountSessionKey => _accountSessionFromJson(value) != null,
       _themeModeKey => value is int && value >= 0 && value <= 2,
       _appearanceKey => value is Map && value['version'] == 1,
-      _reduceTransparencyKey => value is bool,
+      _backgroundMaterialKey => _isEnumSettingValue(value, BackgroundMaterial.values),
+      _backgroundIntensityKey => value is int && _isValidBackgroundIntensity(value),
       _localeCodeKey => value is String && supportedLocaleCodes.contains(value),
       _previewImageQualityKey => _isEnumSettingValue(value, PreviewImageQuality.values),
       _viewerImageQualityKey => _isEnumSettingValue(value, ViewerImageQuality.values),
@@ -374,7 +405,6 @@ class AppSettings {
       _maxConcurrentDownloadsKey => value is int && _isValidMaxConcurrentDownloads(value),
       _proxyEnabledKey => value is bool,
       _proxyUrlKey => value is String && normalizeProxyUrl(value) != null,
-      _navigationPlacementKey => _isEnumSettingValue(value, FrostNavigationPlacement.values),
       _sidebarExpandedKey || _readerVolumeKeysKey => value is bool,
       _windowPlacementKey => _windowPlacementFrom(value) != null,
       _readerFontSizeKey => _inRange(value, readerFontSizeRange),
@@ -427,6 +457,9 @@ class AppSettings {
   }
 
   static double _clampRange(double value, ({double min, double max, double fallback}) range) => value.clamp(range.min, range.max).toDouble();
+
+  static bool _isValidBackgroundIntensity(int value) =>
+      value >= minBackgroundIntensity && value <= defaultBackgroundIntensity && value % backgroundIntensityStep == 0;
 
   static bool _isValidMaxConcurrentDownloads(int value) {
     return value >= minConcurrentDownloads && value <= maxConcurrentDownloadsLimit;

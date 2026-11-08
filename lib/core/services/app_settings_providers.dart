@@ -6,7 +6,6 @@ import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:flutter/foundation.dart';
-import 'package:frost_ui/frost_ui.dart';
 
 final appLocaleProvider = NotifierProvider<AppLocaleNotifier, AppLocale?>(AppLocaleNotifier.new);
 
@@ -20,7 +19,7 @@ final maxConcurrentDownloadsProvider = NotifierProvider<MaxConcurrentDownloadsNo
 
 final proxySettingsProvider = NotifierProvider<AppProxySettingsNotifier, AppProxySettings>(AppProxySettingsNotifier.new);
 
-final navigationPlacementProvider = NotifierProvider<NavigationPlacementNotifier, FrostNavigationPlacement>(NavigationPlacementNotifier.new);
+final backgroundSettingsProvider = NotifierProvider<BackgroundSettingsNotifier, BackgroundSettings>(BackgroundSettingsNotifier.new);
 
 final sidebarExpandedProvider = NotifierProvider<SidebarExpandedNotifier, bool>(SidebarExpandedNotifier.new);
 
@@ -164,14 +163,26 @@ AppLocale _appLocaleFromCode(String code) {
   }
 }
 
-class NavigationPlacementNotifier extends Notifier<FrostNavigationPlacement> {
-  @override
-  FrostNavigationPlacement build() => AppSettings.navigationPlacement;
+/// What the window is painted with and how strongly.
+typedef BackgroundSettings = ({BackgroundMaterial material, int intensity});
 
-  void setPlacement(FrostNavigationPlacement placement) {
-    if (state == placement) return;
-    state = placement;
-    AppSettings.navigationPlacement = placement;
+class BackgroundSettingsNotifier extends Notifier<BackgroundSettings> {
+  @override
+  BackgroundSettings build() => (material: AppSettings.backgroundMaterial, intensity: AppSettings.backgroundIntensity);
+
+  void setMaterial(BackgroundMaterial material) {
+    if (state.material == material) return;
+    state = (material: material, intensity: state.intensity);
+    AppSettings.backgroundMaterial = material;
+  }
+
+  /// Shows [value] while the slider moves, without saving it.
+  void previewIntensity(double value) => state = (material: state.material, intensity: AppSettings.normalizeBackgroundIntensity(value));
+
+  /// Saves [value] when the slider is let go.
+  void saveIntensity(double value) {
+    previewIntensity(value);
+    AppSettings.backgroundIntensity = state.intensity;
   }
 }
 

@@ -26,12 +26,6 @@
     "noSuggestions": "No suggestions",
     "suggestionsFailed": "Couldn't load suggestions"
   },
-  "navigationPlacement": {
-    "title": "Navigation",
-    "automatic": "Automatic",
-    "bottom": "Bottom bar",
-    "sidebar": "Sidebar"
-  },
   "frost": {
     "retry": "Retry",
     "error": "Error",
@@ -257,8 +251,12 @@
       "system": "System",
       "light": "Light",
       "dark": "Dark",
-      "reduceTransparency": "Reduce transparency",
-      "reduceTransparencyHint": "Use solid surfaces instead of blur"
+      "background": "Background",
+      "ambientBlur": "Blur",
+      "mica": "Mica",
+      "backgroundOff": "Off",
+      "backgroundIntensity": "Intensity",
+      "systemTransparencyReduced": "System transparency is reduced"
     },
     "language": {
       "title": "Language",
