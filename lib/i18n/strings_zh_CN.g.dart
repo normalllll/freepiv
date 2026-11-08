@@ -1571,6 +1571,7 @@ class Translations$illust$comments$zh_CN extends Translations$illust$comments$en
 	@override String get moreAvailable => '还有更多评论';
 	@override String get hasReplies => '有回复';
 	@override String get open => '打开评论';
+	@override String get write => '写评论';
 	@override String get discardDraftTitle => '离开评论？';
 	@override String get discardDraftMessage => '尚未发送的评论将会丢失。';
 	@override String get continueEditing => '继续编辑';
@@ -2265,6 +2266,7 @@ extension on TranslationsZhCn {
 			'illust.comments.moreAvailable' => '还有更多评论',
 			'illust.comments.hasReplies' => '有回复',
 			'illust.comments.open' => '打开评论',
+			'illust.comments.write' => '写评论',
 			'illust.comments.discardDraftTitle' => '离开评论？',
 			'illust.comments.discardDraftMessage' => '尚未发送的评论将会丢失。',
 			'illust.comments.continueEditing' => '继续编辑',

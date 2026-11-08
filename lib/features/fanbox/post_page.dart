@@ -560,6 +560,7 @@ class _Comments extends ConsumerWidget {
               alignment: AlignmentDirectional.centerStart,
               child: FrostButton.quiet(
                 label: t.fanbox.loadMore,
+                edgeAlignment: FrostButtonEdgeAlignment.start,
                 state: busy ? const FrostActionState.running() : FrostActionState.idle,
                 onPressed: busy ? null : () => unawaited(ref.read(fanboxOperationProvider(scope).notifier).run(() => ref.read(fanboxCommentsProvider(postId).notifier).loadMore())),
               ),

@@ -36,7 +36,14 @@ class _NoComments extends IllustComments {
   Future<CommentPageResult> build(int illustId) async => const CommentPageResult(comments: []);
 }
 
-Illust _work({String title = 'Sample work', String author = 'Sample artist', List<Tag> tags = const [Tag(name: 'landscape')], int pages = 1}) {
+Illust _work({
+  String title = 'Sample work',
+  String author = 'Sample artist',
+  List<Tag> tags = const [Tag(name: 'landscape')],
+  int pages = 1,
+  int comments = 6,
+  bool bookmarked = false,
+}) {
   final base = sampleIllusts(count: 1).single;
   return Illust(
     id: base.id,
@@ -63,10 +70,10 @@ Illust _work({String title = 'Sample work', String author = 'Sample artist', Lis
     metaPages: const [],
     totalView: 1000,
     totalBookmarks: 20,
-    isBookmarked: false,
+    isBookmarked: bookmarked,
     visible: true,
     isMuted: false,
-    totalComments: 6,
+    totalComments: comments,
     illustAiType: 2,
   );
 }
@@ -107,7 +114,9 @@ void main() {
   });
 
   for (final (size, textScale) in [(desktopSize, 1.0), (desktopSize, 2.0), (phoneSize, 1.0), (phoneSize, 2.0)]) {
-    testWidgets('loading: the skeleton has the loaded info column\'s blocks in order, where they will be (${size.width.toInt()} wide, text ×$textScale)', (tester) async {
+    testWidgets('loading: the skeleton has the loaded info column\'s blocks in order, where they will be (${size.width.toInt()} wide, text ×$textScale)', (
+      tester,
+    ) async {
       // An ordinary work: a one-line title, two short tags, no caption, three
       // one-line comments, the shape the skeleton stands for.
       final work = _ordinary();
@@ -119,7 +128,14 @@ void main() {
         await settlePilot(tester, frames: 3);
         final origin = tester.getTopLeft(find.byKey(IllustInfoBlocks.heading)).dy;
         return {
-          for (final key in [IllustInfoBlocks.heading, IllustInfoBlocks.tabs, IllustInfoBlocks.about, IllustInfoBlocks.comments, IllustInfoBlocks.works, IllustInfoBlocks.related])
+          for (final key in [
+            IllustInfoBlocks.heading,
+            IllustInfoBlocks.tabs,
+            IllustInfoBlocks.about,
+            IllustInfoBlocks.comments,
+            IllustInfoBlocks.works,
+            IllustInfoBlocks.related,
+          ])
             if (find.byKey(key).evaluate().isNotEmpty) key: tester.getTopLeft(find.byKey(key)).dy - origin,
         };
       }
@@ -174,16 +190,40 @@ void main() {
     await tester.scrollUntilVisible(find.byType(IllustRelatedPreview), 300, scrollable: _scroller('illust-info'));
   });
 
-  for (final (state, comments) in [('without comments', () => _NoComments()), ('with failed comments', () => _FailingComments())]) {
-    testWidgets('$state the comments page, where the first comment is written, is still one tap away', (tester) async {
+  testWidgets('with comments counted but none loaded, and with failed comments, the entry to all of them stays', (tester) async {
+    for (final comments in [() => _NoComments(), () => _FailingComments()]) {
       await _mount(tester, illust: _work(), overrides: {illustCommentsProvider: illustCommentsProvider.overrideWith2((_) => comments())});
       final open = find.text(t.illustDetail.allComments(count: 6));
       await tester.ensureVisible(open);
       await tester.tap(open);
       await settlePilot(tester);
       expect(openedLocations, contains(AppLocations.illustComments(_work().id)));
-    });
-  }
+    }
+  });
+
+  testWidgets('with no comments: the empty line, then Write a comment at its edge, opening the comments page', (tester) async {
+    await _mount(tester, illust: _work(comments: 0), overrides: {illustCommentsProvider: illustCommentsProvider.overrideWith2((_) => _NoComments())});
+    expect(find.text(t.illust.comments.open), findsNothing);
+    final empty = find.text(t.illust.comments.empty);
+    final write = find.text(t.illust.comments.write);
+    expect(empty, findsOneWidget);
+    expect(write, findsOneWidget);
+    await tester.ensureVisible(write);
+    await tester.pump();
+    expect(tester.getTopLeft(write).dy, greaterThan(tester.getBottomLeft(empty).dy - 1), reason: 'below the empty line');
+    expect(tester.getTopLeft(write).dx, moreOrLessEquals(tester.getTopLeft(empty).dx, epsilon: 0.5), reason: 'the words share the text edge');
+    await tester.tap(write);
+    await settlePilot(tester);
+    expect(openedLocations, contains(AppLocations.illustComments(_work().id)));
+  });
+
+  testWidgets('with no comments but a failed preview the plain entry stays', (tester) async {
+    await _mount(tester, illust: _work(comments: 0), overrides: {illustCommentsProvider: illustCommentsProvider.overrideWith2((_) => _FailingComments())});
+    final open = find.text(t.illust.comments.open);
+    await tester.ensureVisible(open);
+    expect(open, findsOneWidget);
+    expect(find.text(t.illust.comments.write), findsNothing);
+  });
 
   testWidgets('a long title, author name and tags fit at double text size, wide and narrow', (tester) async {
     final work = _work(
@@ -266,7 +306,10 @@ Illust _ordinary() {
     caption: '',
     restrict: 0,
     user: base.user,
-    tags: const [Tag(name: 'sky'), Tag(name: 'landscape')],
+    tags: const [
+      Tag(name: 'sky'),
+      Tag(name: 'landscape'),
+    ],
     tools: const [],
     createDate: base.createDate,
     pageCount: 1,

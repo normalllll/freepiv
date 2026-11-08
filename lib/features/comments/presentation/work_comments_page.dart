@@ -306,6 +306,7 @@ abstract final class _RepliesFooter {
     return FrostButton.quiet(
       key: const ValueKey('comment-replies-action'),
       label: label,
+      edgeAlignment: FrostButtonEdgeAlignment.start,
       size: FrostControlSize.compact,
       state: source.busy ? const FrostActionState.running() : FrostActionState.idle,
       onPressed: source.busy ? null : () => unawaited(source.initialized ? source.loadMore() : source.refresh(true)),

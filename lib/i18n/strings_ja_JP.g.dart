@@ -1571,6 +1571,7 @@ class _Translations$illust$comments$ja_JP extends Translations$illust$comments$e
 	@override String get moreAvailable => 'さらにコメントがあります';
 	@override String get hasReplies => '返信があります';
 	@override String get open => 'コメントを開く';
+	@override String get write => 'コメントを書く';
 	@override String get discardDraftTitle => 'コメントを閉じますか？';
 	@override String get discardDraftMessage => '送信していないコメントは失われます。';
 	@override String get continueEditing => '編集を続ける';
@@ -2265,6 +2266,7 @@ extension on TranslationsJaJp {
 			'illust.comments.moreAvailable' => 'さらにコメントがあります',
 			'illust.comments.hasReplies' => '返信があります',
 			'illust.comments.open' => 'コメントを開く',
+			'illust.comments.write' => 'コメントを書く',
 			'illust.comments.discardDraftTitle' => 'コメントを閉じますか？',
 			'illust.comments.discardDraftMessage' => '送信していないコメントは失われます。',
 			'illust.comments.continueEditing' => '編集を続ける',

@@ -23,7 +23,14 @@ final pixivCommentAssets = PixivCommentAssets.load();
 /// (opening their page), the text with its emoji or the stamp, and a footer
 /// of the time and Reply. The signed-in user's own comment has Delete in its
 /// menu.
-FrostThreadItem appCommentItem(BuildContext context, Comment comment, {required PixivCommentAssets assets, VoidCallback? onReply, VoidCallback? onDelete, Widget? actions}) {
+FrostThreadItem appCommentItem(
+  BuildContext context,
+  Comment comment, {
+  required PixivCommentAssets assets,
+  VoidCallback? onReply,
+  VoidCallback? onDelete,
+  Widget? actions,
+}) {
   final t = context.t;
   return FrostThreadItem(
     avatar: AppUserAvatar(user: comment.user, size: FrostAvatarSize.small),
@@ -134,11 +141,20 @@ class AppCommentsPreview extends StatelessWidget {
         Align(
           alignment: AlignmentDirectional.centerStart,
           child: FrostButton.quiet(
-            label: total == null || total == 0 ? t.illust.comments.open : t.illustDetail.allComments(count: total),
+            label: entryLabel(t, total, noComments: value.value?.comments.isEmpty ?? false, failed: value.hasError),
+            edgeAlignment: FrostButtonEdgeAlignment.start,
             onPressed: () => unawaited(GoRouter.of(context).push(location, extra: total)),
           ),
         ),
       ],
     );
+  }
+
+  /// The way to the comments page: to all of them, to write the first one
+  /// when there are none, or plainly to the page when the count is unknown
+  /// or the preview failed.
+  static String entryLabel(Translations t, int? total, {bool noComments = false, bool failed = false}) {
+    if (total != null && total > 0) return t.illustDetail.allComments(count: total);
+    return !failed && (total == 0 || noComments) ? t.illust.comments.write : t.illust.comments.open;
   }
 }

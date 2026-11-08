@@ -451,6 +451,7 @@ class _DownloadItemFilesViewState extends State<DownloadItemFilesView> {
               alignment: AlignmentDirectional.centerStart,
               child: FrostButton.quiet(
                 label: labels.showAll(count: queued.length),
+                edgeAlignment: FrostButtonEdgeAlignment.start,
                 onPressed: () => setState(() => _allQueued = true),
               ),
             ),

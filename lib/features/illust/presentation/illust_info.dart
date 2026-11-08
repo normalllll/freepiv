@@ -266,6 +266,7 @@ class _IllustAboutState extends State<IllustAbout> {
               if (hidden > 0)
                 FrostButton.quiet(
                   label: _allTags ? t.illust.tags.showLess : t.illust.tags.showMore(count: hidden),
+                  edgeAlignment: FrostButtonEdgeAlignment.start,
                   onPressed: () => setState(() => _allTags = !_allTags),
                 ),
             ],
@@ -516,7 +517,7 @@ class IllustCommentsLoading extends StatelessWidget {
         _bones(
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: FrostButton.quiet(label: total == null || total == 0 ? t.illust.comments.open : t.illustDetail.allComments(count: total), onPressed: () {}),
+            child: FrostButton.quiet(label: AppCommentsPreview.entryLabel(t, total), edgeAlignment: FrostButtonEdgeAlignment.start, onPressed: () {}),
           ),
         ),
       ],

@@ -1573,6 +1573,7 @@ class Translations$illust$comments$en_US {
 	String get moreAvailable => 'More comments available';
 	String get hasReplies => 'Has replies';
 	String get open => 'Open comments';
+	String get write => 'Write a comment';
 	String get discardDraftTitle => 'Leave this comment?';
 	String get discardDraftMessage => 'Your unsent comment will be lost.';
 	String get continueEditing => 'Continue editing';
@@ -2267,6 +2268,7 @@ extension on Translations {
 			'illust.comments.moreAvailable' => 'More comments available',
 			'illust.comments.hasReplies' => 'Has replies',
 			'illust.comments.open' => 'Open comments',
+			'illust.comments.write' => 'Write a comment',
 			'illust.comments.discardDraftTitle' => 'Leave this comment?',
 			'illust.comments.discardDraftMessage' => 'Your unsent comment will be lost.',
 			'illust.comments.continueEditing' => 'Continue editing',

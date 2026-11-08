@@ -1571,6 +1571,7 @@ class Translations$illust$comments$zh_Hant_TW extends Translations$illust$commen
 	@override String get moreAvailable => '還有更多留言';
 	@override String get hasReplies => '有回覆';
 	@override String get open => '開啟留言';
+	@override String get write => '撰寫留言';
 	@override String get discardDraftTitle => '離開留言？';
 	@override String get discardDraftMessage => '尚未送出的留言將會遺失。';
 	@override String get continueEditing => '繼續編輯';
@@ -2265,6 +2266,7 @@ extension on TranslationsZhHantTw {
 			'illust.comments.moreAvailable' => '還有更多留言',
 			'illust.comments.hasReplies' => '有回覆',
 			'illust.comments.open' => '開啟留言',
+			'illust.comments.write' => '撰寫留言',
 			'illust.comments.discardDraftTitle' => '離開留言？',
 			'illust.comments.discardDraftMessage' => '尚未送出的留言將會遺失。',
 			'illust.comments.continueEditing' => '繼續編輯',

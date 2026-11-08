@@ -226,8 +226,11 @@ Widget _wideLayout(BuildContext context, {required Widget stage, required List<W
             key: const ValueKey('illust-info'),
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.all(FrostGap.section),
-                sliver: SliverList.list(children: info),
+                padding: const EdgeInsets.symmetric(vertical: FrostGap.section),
+                sliver: FrostSliverContentColumn(
+                  maxWidth: IllustDetailContent.infoWidth,
+                  sliver: SliverList.list(children: info),
+                ),
               ),
             ],
           ),
