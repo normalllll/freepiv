@@ -65,14 +65,14 @@ void main() {
     final bar = tester.widget<FrostTabBar>(find.byType(FrostTabBar));
     expect(bar.tabs.map((tab) => tab.label), [t.downloadsPage.all, t.downloadsPage.inProgress, t.settings.downloads.completed]);
     expect(bar.controller!.index, 0, reason: 'All by default');
-    List<String?> rows() => tester.widgetList<DownloadItemRow>(find.byType(DownloadItemRow)).map((row) => row.item.source.title).toList();
+    List<String?> rows() => tester.widgetList<DownloadItemCard>(find.byType(DownloadItemCard)).map((row) => row.item.source.title).toList();
     expect(rows(), ['Work 2', 'Work 1', 'Work 3'], reason: 'what is in progress, then what is done');
     await tester.tap(find.text(t.downloadsPage.inProgress).last);
     await settlePilot(tester);
     expect(rows(), ['Work 2', 'Work 1']);
     await tester.tap(find.text(t.settings.downloads.completed));
     await settlePilot(tester);
-    expect(tester.widgetList<DownloadItemRow>(find.byType(DownloadItemRow)).map((row) => row.item.source.title), ['Work 3']);
+    expect(tester.widgetList<DownloadItemCard>(find.byType(DownloadItemCard)).map((row) => row.item.source.title), ['Work 3']);
   });
 
   testWidgets('empty: each tab says there is nothing', (tester) async {
@@ -94,7 +94,7 @@ void main() {
   testWidgets('loading: placeholder rows stand in', (tester) async {
     await _mount(tester, StreamController<List<DownloadTaskSnapshot>>().stream);
     expect(find.byType(FrostListRow), findsWidgets);
-    expect(find.byType(DownloadItemRow), findsNothing);
+    expect(find.byType(DownloadItemCard), findsNothing);
   });
 
   testWidgets('error: records that could not be read offer a retry', (tester) async {
@@ -112,7 +112,7 @@ void main() {
     await settlePilot(tester, frames: 3);
     expect(find.byType(FrostCompactMessage), findsOneWidget);
     expect(find.descendant(of: find.byType(FrostCompactMessage), matching: find.text(t.common.retry)), findsOneWidget);
-    expect(tester.widgetList<DownloadItemRow>(find.byType(DownloadItemRow)).map((row) => row.item.source.title), ['Work 1']);
+    expect(tester.widgetList<DownloadItemCard>(find.byType(DownloadItemCard)).map((row) => row.item.source.title), ['Work 1']);
   });
 
   testWidgets('partial failure: a failed file shows its error in the open item while the others keep going', (tester) async {
@@ -141,9 +141,9 @@ void main() {
       focus: location.queryParameters[AppRouteQuery.item],
     );
     expect(tester.widget<FrostTabBar>(find.byType(FrostTabBar)).controller!.index, 0, reason: 'All, where every item is');
-    final rows = find.byType(DownloadItemRow).hitTestable();
-    expect(tester.widgetList<DownloadItemRow>(rows).map((row) => row.item.source.title), ['Work 1', 'Work 3']);
-    expect(tester.widgetList<DownloadItemRow>(rows).map((row) => row.open), [false, true], reason: 'the item is open');
+    final rows = find.byType(DownloadItemCard).hitTestable();
+    expect(tester.widgetList<DownloadItemCard>(rows).map((row) => row.item.source.title), ['Work 1', 'Work 3']);
+    expect(tester.widgetList<DownloadItemCard>(rows).map((row) => row.open), [false, true], reason: 'the item is open');
     expect(find.byType(DownloadItemFilesView).hitTestable(), findsOneWidget);
   });
 

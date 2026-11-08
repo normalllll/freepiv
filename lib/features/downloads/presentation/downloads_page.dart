@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/core/platform/local_files.dart';
 import 'package:freepiv/features/downloads/logic.dart';
 import 'package:freepiv/features/downloads/presentation/download_entry.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
@@ -15,12 +16,10 @@ import 'package:freepiv/ui/compositions/sectioned_page.dart';
 import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
-import 'package:path/path.dart' as p;
-import 'package:url_launcher/url_launcher.dart';
 
 /// The downloads page: All (the default: what is in
 /// progress, then what is done), In progress (failed and cancelled first,
-/// then collecting, downloading and queued) and Completed (by day). Each item opens in place to its files. Sync is one tap in the
+/// then collecting, downloading and queued) and Completed (by day). Each item is a card that opens in place to its files. Sync is one tap in the
 /// header (F5 and pulling down sync too); More retries every failure or
 /// clears what is done. Deleting a record never deletes the saved file.
 class DownloadsPage extends ConsumerStatefulWidget {
@@ -175,7 +174,7 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage> with SingleTicker
     if (items.isEmpty) return [_empty(context, context.t.downloadsPage.nothingDone)];
     return [
       if (items.any((item) => item.state != DownloadItemState.completed)) ...[
-        _column(SliverToBoxAdapter(child: FrostSectionHeader(title: context.t.downloadsPage.inProgress))),
+        _heading(context.t.downloadsPage.inProgress),
         ..._inProgress(context, items),
       ],
       if (items.any((item) => item.state == DownloadItemState.completed)) ..._completed(context, items),
@@ -228,7 +227,7 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage> with SingleTicker
     }
     return [
       for (final MapEntry(key: day, value: dayItems) in days.entries) ...[
-        _column(SliverToBoxAdapter(child: FrostSectionHeader(title: formatPixivDate(day.toIso8601String())))),
+        _heading(formatPixivDate(day.toIso8601String())),
         for (final item in dayItems) ..._item(context, item),
       ],
     ];
@@ -236,31 +235,35 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage> with SingleTicker
 
   Widget _column(Widget sliver) => FrostSliverContentColumn(maxWidth: double.infinity, sliver: sliver);
 
+  /// A group's title, as far from its first card as the cards are apart.
+  Widget _heading(String title) => _column(
+    SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
+        child: FrostSectionHeader(title: title),
+      ),
+    ),
+  );
+
   Widget _empty(BuildContext context, String title) => SliverFillRemaining(
     hasScrollBody: false,
     child: FrostEmptyState(icon: PivIcons.download, title: title, message: context.t.settings.downloads.noTasksMessage),
   );
 
-  /// An item's row, and its files while open.
-  List<Widget> _item(BuildContext context, DownloadItem item) {
-    final open = _open.contains(item.key);
-    return [
-      _column(
-        SliverToBoxAdapter(
+  /// An item's card, its files inside it while open.
+  List<Widget> _item(BuildContext context, DownloadItem item) => [
+    _column(
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: FrostGap.related),
           child: KeyedSubtree(
             key: item.key == widget.focusItem ? _focusKey : ValueKey(item.key),
-            child: DownloadItemRow(item: item, open: open, onPressed: () => _toggle(item.key)),
+            child: DownloadItemCard(item: item, open: _open.contains(item.key), onPressed: () => _toggle(item.key)),
           ),
         ),
       ),
-      _column(
-        FrostSliverExpand(
-          expanded: open,
-          sliver: SliverToBoxAdapter(child: DownloadItemFilesView(item: item)),
-        ),
-      ),
-    ];
-  }
+    ),
+  ];
 }
 
 /// Runs a download action; a failure says so in a toast.
@@ -282,16 +285,17 @@ FrostTaskStatus _status(DownloadItemState state) => switch (state) {
 /// A source's picture: FANBOX through its session, Pixivision with its
 /// referrer, the rest as Pixiv images.
 class DownloadThumbnail extends StatelessWidget {
-  const DownloadThumbnail({required this.source, required this.url, super.key});
+  const DownloadThumbnail({required this.source, required this.url, this.size = FrostThumbnailSize.small, super.key});
 
   final DownloadSource source;
   final String? url;
+  final FrostThumbnailSize size;
 
   static const _pixivisionReferer = {'Referer': 'https://www.pixivision.net/'};
 
   @override
   Widget build(BuildContext context) => FrostThumbnail(
-    size: FrostThumbnailSize.small,
+    size: size,
     semanticLabel: source.title ?? '',
     image: switch (source) {
       FanboxSource() => AppFanboxImage(url: url, aspectRatio: 1, radius: 0),
@@ -301,21 +305,38 @@ class DownloadThumbnail extends StatelessWidget {
   );
 }
 
-/// One item: its picture, name, kind or author, progress or state, and one
-/// action (cancel, retry or clear); its menu opens the source, the folder
-/// (desktop) or deletes the records. Touch rows swipe to the same actions.
-class DownloadItemRow extends ConsumerWidget {
-  const DownloadItemRow({required this.item, required this.open, required this.onPressed, super.key});
+/// A saved file's path, or null while it has none.
+String? _savedPath(DownloadTaskSnapshot task) => task.localPath?.isNotEmpty ?? false ? task.localPath : null;
+
+String _twoDigits(int value) => value.toString().padLeft(2, '0');
+
+/// When something was asked for, in local time.
+String downloadTimeLabel(DateTime time) {
+  final local = time.toLocal();
+  return '${local.year}-${_twoDigits(local.month)}-${_twoDigits(local.day)} ${_twoDigits(local.hour)}:${_twoDigits(local.minute)}';
+}
+
+/// One item as a card: its picture, name, a line of what it is and where it
+/// stands, and its files inside the same card once open. A finished item has
+/// Open, Show in folder (desktop) and Open work; anything else its one action.
+/// The same actions and Delete are in More and the context menu; touch swipes
+/// to the main ones.
+class DownloadItemCard extends ConsumerWidget {
+  const DownloadItemCard({required this.item, required this.open, required this.onPressed, super.key});
 
   final DownloadItem item;
   final bool open;
   final VoidCallback onPressed;
+
+  /// Narrower cards put the finished item's buttons under its text.
+  static const buttonsBesideFrom = 720.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.t;
     final labels = t.settings.downloads;
     final source = item.source;
+    final router = GoRouter.of(context);
     final author = source.subtitle?.trim() ?? '';
     final kind = switch (source) {
       NovelSource() => t.nativeWindow.novel,
@@ -323,19 +344,20 @@ class DownloadItemRow extends ConsumerWidget {
       FanboxSource() => 'FANBOX',
       ArtworkSource() || StandaloneSource() => null,
     };
-    final count = item.tasks.length > 1
-        ? labels.filesProgress(done: item.completed, total: item.total)
-        : item.onlyTask == null
-        ? null
-        : downloadBytesLabel(item.onlyTask!);
+    final size = item.tasks.fold<int>(0, (sum, task) => sum + task.receivedBytes);
     final detail = [
       ?kind,
       if (author.isNotEmpty) author,
+      if (item.tasks.length > 1) labels.filesCount(count: item.tasks.length),
+      if (size > 0) formatByteSize(size),
+      downloadTimeLabel(item.askedAt),
       ?switch (item.state) {
         DownloadItemState.collecting => labels.collectingPosts(count: item.collectedPosts ?? 0),
         DownloadItemState.failed => labels.filesFailed(count: item.failed),
         DownloadItemState.cancelled => labels.cancelled,
-        _ => count,
+        // One file's progress is its bar.
+        DownloadItemState.active => item.total > 1 ? labels.filesProgress(done: item.completed, total: item.total) : null,
+        DownloadItemState.completed => labels.saved,
       },
     ].join(' · ');
     final primary = switch (item.state) {
@@ -352,27 +374,19 @@ class DownloadItemRow extends ConsumerWidget {
         icon: PivIcons.refreshCw,
         onPressed: () => unawaited(runDownloadAction(() => retryDownloadItem(item))),
       ),
-      DownloadItemState.completed => FrostTaskAction(
-        label: labels.clearItem,
-        icon: PivIcons.trash,
-        onPressed: () => unawaited(runDownloadAction(() => deleteDownloadItem(item))),
-      ),
+      DownloadItemState.completed => null,
     };
-    final savedPath = item.tasks.map((task) => task.localPath).whereType<String>().where((path) => path.isNotEmpty).firstOrNull;
+    final saved = isDesktopPlatform ? item.tasks.map(_savedPath).nonNulls.firstOrNull : null;
+    final actions = <({String label, FrostIconData icon, VoidCallback onPressed})>[
+      if (saved != null) ...[
+        (label: labels.open, icon: PivIcons.externalLink, onPressed: () => unawaited(runDownloadAction(() => openLocalFile(saved)))),
+        (label: labels.showInFolder, icon: PivIcons.folder, onPressed: () => unawaited(runDownloadAction(() => revealLocalFile(saved)))),
+      ],
+      if (source is! StandaloneSource) (label: labels.openWork, icon: PivIcons.images, onPressed: () => openDownloadSource(router, source)),
+    ];
     final menu = <FrostMenuEntry>[
       FrostMenuAction(open ? labels.collapseItem : labels.expandItem, onSelected: onPressed),
-      if (source is! StandaloneSource)
-        FrostMenuAction(
-          labels.openSource,
-          leading: const FrostGlyph.icon(PivIcons.externalLink),
-          onSelected: () => openDownloadSource(GoRouter.of(context), source),
-        ),
-      if (isDesktopPlatform && savedPath != null)
-        FrostMenuAction(
-          labels.openFolder,
-          leading: const FrostGlyph.icon(PivIcons.folder),
-          onSelected: () => unawaited(runDownloadAction(() => launchUrl(Uri.file(p.dirname(savedPath))))),
-        ),
+      for (final action in actions) FrostMenuAction(action.label, leading: FrostGlyph.icon(action.icon), onSelected: action.onPressed),
       FrostMenuAction(
         labels.deleteItem,
         leading: const FrostGlyph.icon(PivIcons.trash),
@@ -380,35 +394,77 @@ class DownloadItemRow extends ConsumerWidget {
         onSelected: () => unawaited(runDownloadAction(() => deleteDownloadItem(item))),
       ),
     ];
-    final row = FrostTaskRow(
-      title: downloadItemTitle(item),
-      contentTitle: true,
-      status: _status(item.state),
-      progress: item.state == DownloadItemState.active ? item.progress : null,
-      detail: detail,
-      thumbnail: DownloadThumbnail(source: source, url: source.thumbnailUrl ?? item.onlyTask?.thumbnailUrl),
-      actions: [primary],
-      onPressed: onPressed,
-      contextMenu: menu,
+    final more = FrostMenuAnchor(
+      entries: menu,
+      builder: (context, focusNode, toggle) =>
+          FrostButton.icon(icon: PivIcons.more, label: FrostScope.labelsOf(context).more, size: FrostControlSize.compact, onPressed: toggle),
     );
-    return FrostSwipeActions(
-      showsPointerActions: false,
-      trailing: [
-        FrostSwipeAction(label: primary.label, icon: primary.icon, onPressed: primary.onPressed),
-        FrostSwipeAction(
-          label: labels.deleteItem,
-          icon: PivIcons.trash,
-          tone: FrostSwipeTone.destructive,
-          onPressed: () => unawaited(runDownloadAction(() => deleteDownloadItem(item))),
-        ),
-      ],
-      child: row,
+    final buttons = item.state == DownloadItemState.completed
+        ? [for (final action in actions) FrostButton(label: action.label, icon: action.icon, size: FrostControlSize.compact, onPressed: action.onPressed)]
+        : const <Widget>[];
+    return FrostSurface(
+      role: FrostSurfaceRole.module,
+      edge: FrostSurfaceEdge.none,
+      elevated: false,
+      borderRadius: BorderRadius.circular(FrostRadius.lg),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final beside = constraints.maxWidth >= buttonsBesideFrom;
+          final inset = FrostGap.of(context).rowInset;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              FrostSwipeActions(
+                showsPointerActions: false,
+                trailing: [
+                  if (primary case final primary?) FrostSwipeAction(label: primary.label, icon: primary.icon, onPressed: primary.onPressed),
+                  FrostSwipeAction(
+                    label: labels.deleteItem,
+                    icon: PivIcons.trash,
+                    tone: FrostSwipeTone.destructive,
+                    onPressed: () => unawaited(runDownloadAction(() => deleteDownloadItem(item))),
+                  ),
+                ],
+                child: FrostTaskRow(
+                  title: downloadItemTitle(item),
+                  contentTitle: true,
+                  status: _status(item.state),
+                  progress: item.state == DownloadItemState.active ? item.progress : null,
+                  detail: detail,
+                  // The inset is the card's, inside the row so its highlight fills the card.
+                  thumbnail: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
+                    child: DownloadThumbnail(source: source, url: source.thumbnailUrl ?? item.onlyTask?.thumbnailUrl, size: FrostThumbnailSize.regular),
+                  ),
+                  actions: [?primary],
+                  trailing: Row(mainAxisSize: MainAxisSize.min, spacing: FrostGap.inline, children: [if (beside) ...buttons, more]),
+                  onPressed: onPressed,
+                  contextMenu: menu,
+                ),
+              ),
+              if (!beside && buttons.isNotEmpty)
+                Padding(
+                  padding: EdgeInsetsDirectional.only(start: inset, end: inset, bottom: FrostGap.related),
+                  child: Wrap(spacing: FrostGap.inline, runSpacing: FrostGap.inline, alignment: WrapAlignment.end, children: buttons),
+                ),
+              FrostPresence(
+                visible: open,
+                effect: FrostPresenceEffect.expand,
+                alignment: AlignmentDirectional.topStart,
+                child: DownloadItemFilesView(item: item),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
 
-/// An item's files: failed and going in full, the first queued ones with a
-/// way to the rest, finished ones folded; a FANBOX creator's by post.
+/// An item's files, flat inside its card: failed and going in full, the first
+/// queued ones with a way to the rest; a finished item lists its files, one
+/// still going folds the finished ones under a row. A FANBOX creator's by post.
 class DownloadItemFilesView extends StatefulWidget {
   const DownloadItemFilesView({required this.item, super.key});
 
@@ -429,7 +485,16 @@ class _DownloadItemFilesViewState extends State<DownloadItemFilesView> {
   Widget build(BuildContext context) {
     final labels = context.t.settings.downloads;
     final parts = widget.item.parts;
+    final finished = widget.item.state == DownloadItemState.completed;
+    final inset = EdgeInsets.symmetric(horizontal: FrostGap.of(context).rowInset);
+    Widget lines(Iterable<Widget> rows) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final row in rows) ...[const FrostDivider(), row],
+      ],
+    );
     Widget files(List<DownloadTaskSnapshot> tasks) {
+      if (finished) return lines([for (final task in tasks) DownloadFileRow(task: task)]);
       final failed = tasks.where((task) => task.needsRetry || task.status == DownloadStatus.cancelled).toList();
       final going = tasks
           .where((task) => task.status == DownloadStatus.running || task.saveState == SaveState.saving || task.saveState == SaveState.pending)
@@ -437,12 +502,12 @@ class _DownloadItemFilesViewState extends State<DownloadItemFilesView> {
       final queued = tasks.where((task) => task.status == DownloadStatus.queued || task.status == DownloadStatus.paused).toList();
       final done = tasks.where((task) => !failed.contains(task) && !going.contains(task) && !queued.contains(task)).toList();
       final shownQueued = _allQueued ? queued : queued.take(DownloadItemFilesView.queuedShown).toList();
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (final task in [...failed, ...going, ...shownQueued]) DownloadFileRow(task: task),
-          if (shownQueued.length < queued.length)
-            Align(
+      return lines([
+        for (final task in [...failed, ...going, ...shownQueued]) DownloadFileRow(task: task),
+        if (shownQueued.length < queued.length)
+          Padding(
+            padding: inset,
+            child: Align(
               alignment: AlignmentDirectional.centerStart,
               child: FrostButton.quiet(
                 label: labels.showAll(count: queued.length),
@@ -450,36 +515,38 @@ class _DownloadItemFilesViewState extends State<DownloadItemFilesView> {
                 onPressed: () => setState(() => _allQueued = true),
               ),
             ),
-          if (done.isNotEmpty)
-            FrostSectionHeader.collapsible(
-              title: '${labels.saved} · ${done.length}',
-              expanded: _doneOpen,
-              onExpansionChanged: (open) => setState(() => _doneOpen = open),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [for (final task in done) DownloadFileRow(task: task)],
-              ),
-            ),
-        ],
-      );
+          ),
+        if (done.isNotEmpty)
+          FrostListRow(
+            title: '${labels.saved} · ${done.length}',
+            accessory: FrostRowAccessory.chevron,
+            onPressed: () => setState(() => _doneOpen = !_doneOpen),
+          ),
+        if (done.isNotEmpty && _doneOpen)
+          for (final task in done) DownloadFileRow(task: task),
+      ]);
     }
 
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(start: FrostGap.section, bottom: FrostGap.related),
-      child: parts.length == 1 && parts.single.$1 == null
-          ? files(widget.item.tasks)
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final (part, tasks) in parts) ...[FrostSectionHeader(title: part?.title ?? ''), files(tasks)],
-              ],
-            ),
+    if (parts.length == 1 && parts.single.$1 == null) return files(widget.item.tasks);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final (part, tasks) in parts) ...[
+          const FrostDivider(),
+          Padding(
+            padding: inset,
+            child: FrostSectionHeader(title: part?.title ?? ''),
+          ),
+          files(tasks),
+        ],
+      ],
     );
   }
 }
 
-/// One file: its name, state or error, retry or cancel, and a menu to read
-/// its log or delete its record.
+/// One file: its name, size and state or error; on desktop Open and Show in
+/// folder once saved, otherwise retry or cancel; a menu to read its log or
+/// delete its record.
 class DownloadFileRow extends StatelessWidget {
   const DownloadFileRow({required this.task, super.key});
 
@@ -500,13 +567,18 @@ class DownloadFileRow extends StatelessWidget {
     };
     final retryable = (task.needsRetry || task.status == DownloadStatus.cancelled) && !isGeneratedDownload(task.origin);
     final cancellable = task.status == DownloadStatus.queued || task.status == DownloadStatus.running;
+    final saved = isDesktopPlatform && task.isCompleted ? _savedPath(task) : null;
     return FrostTaskRow(
       title: task.filename,
       contentTitle: true,
       status: status,
       progress: task.status == DownloadStatus.running ? task.progress.clamp(0, 1).toDouble() : null,
-      detail: [downloadTaskStatusLabel(task), if (error.isNotEmpty) error else downloadBytesLabel(task)].join(' · '),
+      detail: [downloadBytesLabel(task), if (error.isNotEmpty) error else downloadTaskStatusLabel(task)].join(' · '),
       actions: [
+        if (saved != null) ...[
+          FrostTaskAction(label: labels.open, icon: PivIcons.externalLink, onPressed: () => unawaited(runDownloadAction(() => openLocalFile(saved)))),
+          FrostTaskAction(label: labels.showInFolder, icon: PivIcons.folder, onPressed: () => unawaited(runDownloadAction(() => revealLocalFile(saved)))),
+        ],
         if (retryable)
           FrostTaskAction(label: t.common.retry, icon: PivIcons.refreshCw, onPressed: () => unawaited(runDownloadAction(() => downloadManager.retry(task.id)))),
         if (cancellable)
@@ -605,26 +677,36 @@ String downloadBytesLabel(DownloadTaskSnapshot task) {
   return '$received / ${formatByteSize(total)}';
 }
 
-/// The list while the records are read: a day's heading, then task rows with
+/// The list while the records are read: a day's heading, then cards with
 /// their picture.
 class _DownloadsSkeleton extends StatelessWidget {
   const _DownloadsSkeleton();
 
   @override
   Widget build(BuildContext context) {
-    final rows = appSkeletonCount(context, shortestExtent: FrostControlSize.regular.height(context));
+    final cards = appSkeletonCount(context, shortestExtent: FrostControlSize.regular.height(context));
     return appBones(
       Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: FrostGap.related,
         children: [
           const FrostSectionHeader(title: '2026-01-01'),
-          for (var index = 0; index < rows; index++)
-            FrostTaskRow(
-              title: 'A work title',
-              status: FrostTaskStatus.completed,
-              detail: 'Sample artist',
-              thumbnail: FrostThumbnail(size: FrostThumbnailSize.small, semanticLabel: '', image: FrostMediaFrame.skeleton(aspectRatio: 1, radius: 0)),
-              actions: [FrostTaskAction(icon: PivIcons.folder, label: 'Open', onPressed: () {})],
+          for (var index = 0; index < cards; index++)
+            FrostSurface(
+              role: FrostSurfaceRole.module,
+              edge: FrostSurfaceEdge.none,
+              elevated: false,
+              borderRadius: BorderRadius.circular(FrostRadius.lg),
+              child: FrostTaskRow(
+                title: 'A work title',
+                status: FrostTaskStatus.completed,
+                detail: 'Sample artist · 2026-01-01 12:00',
+                thumbnail: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
+                  child: FrostThumbnail(semanticLabel: '', image: FrostMediaFrame.skeleton(aspectRatio: 1, radius: 0)),
+                ),
+                actions: [FrostTaskAction(icon: PivIcons.folder, label: 'Open', onPressed: () {})],
+              ),
             ),
         ],
       ),

@@ -320,9 +320,10 @@
       "collectingPosts": "投稿を収集中 · $count 件読み込み済み",
       "moreItems": "ほか $count 件",
       "showAll": "$count 件すべて表示",
-      "openSource": "元のページを開く",
-      "openFolder": "フォルダを開く",
-      "clearItem": "クリア",
+      "open": "開く",
+      "showInFolder": "フォルダーで表示",
+      "openWork": "作品を開く",
+      "filesCount": "$count 個のファイル",
       "deleteItem": "記録を削除",
       "expandItem": "ファイルを表示",
       "collapseItem": "ファイルを隠す"

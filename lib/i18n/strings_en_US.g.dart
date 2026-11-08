@@ -1026,9 +1026,10 @@ class Translations$settings$downloads$en_US {
 	String collectingPosts({required Object count}) => 'Collecting posts · ${count} read';
 	String moreItems({required Object count}) => '${count} more';
 	String showAll({required Object count}) => 'Show all ${count}';
-	String get openSource => 'Open page';
-	String get openFolder => 'Open folder';
-	String get clearItem => 'Clear';
+	String get open => 'Open';
+	String get showInFolder => 'Show in folder';
+	String get openWork => 'Open work';
+	String filesCount({required Object count}) => '${count} files';
 	String get deleteItem => 'Delete records';
 	String get expandItem => 'Show files';
 	String get collapseItem => 'Hide files';
@@ -1986,9 +1987,10 @@ extension on Translations {
 			'settings.downloads.collectingPosts' => ({required Object count}) => 'Collecting posts · ${count} read',
 			'settings.downloads.moreItems' => ({required Object count}) => '${count} more',
 			'settings.downloads.showAll' => ({required Object count}) => 'Show all ${count}',
-			'settings.downloads.openSource' => 'Open page',
-			'settings.downloads.openFolder' => 'Open folder',
-			'settings.downloads.clearItem' => 'Clear',
+			'settings.downloads.open' => 'Open',
+			'settings.downloads.showInFolder' => 'Show in folder',
+			'settings.downloads.openWork' => 'Open work',
+			'settings.downloads.filesCount' => ({required Object count}) => '${count} files',
 			'settings.downloads.deleteItem' => 'Delete records',
 			'settings.downloads.expandItem' => 'Show files',
 			'settings.downloads.collapseItem' => 'Hide files',
@@ -2212,9 +2214,9 @@ extension on Translations {
 			'illust.contextMenu.copyLink' => 'Copy work link',
 			'illust.contextMenu.openOriginal' => 'Open on Pixiv',
 			'illust.imageLabels.original' => 'original image',
-			'illust.imageLabels.large' => 'large image',
 			_ => null,
 		} ?? switch (path) {
+			'illust.imageLabels.large' => 'large image',
 			'illust.imageLabels.image' => 'image',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} images added to the download queue',
 			'illust.toast.downloadComplete' => ({required Object name}) => 'Saved ${name}',

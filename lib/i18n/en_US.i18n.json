@@ -320,9 +320,10 @@
       "collectingPosts": "Collecting posts · $count read",
       "moreItems": "$count more",
       "showAll": "Show all $count",
-      "openSource": "Open page",
-      "openFolder": "Open folder",
-      "clearItem": "Clear",
+      "open": "Open",
+      "showInFolder": "Show in folder",
+      "openWork": "Open work",
+      "filesCount": "$count files",
       "deleteItem": "Delete records",
       "expandItem": "Show files",
       "collapseItem": "Hide files"

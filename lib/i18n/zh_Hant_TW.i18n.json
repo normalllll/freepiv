@@ -320,9 +320,10 @@
       "collectingPosts": "正在收集文章 · 已讀取 $count 篇",
       "moreItems": "還有 $count 項",
       "showAll": "顯示全部 $count 個",
-      "openSource": "開啟原頁面",
-      "openFolder": "開啟所在資料夾",
-      "clearItem": "清除",
+      "open": "開啟",
+      "showInFolder": "在資料夾中顯示",
+      "openWork": "開啟作品",
+      "filesCount": "$count 個檔案",
       "deleteItem": "刪除記錄",
       "expandItem": "顯示檔案",
       "collapseItem": "收起檔案"

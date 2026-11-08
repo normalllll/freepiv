@@ -1024,9 +1024,10 @@ class Translations$settings$downloads$zh_CN extends Translations$settings$downlo
 	@override String collectingPosts({required Object count}) => '正在收集文章 · 已读取 ${count} 篇';
 	@override String moreItems({required Object count}) => '还有 ${count} 项';
 	@override String showAll({required Object count}) => '显示全部 ${count} 个';
-	@override String get openSource => '打开原页面';
-	@override String get openFolder => '打开所在文件夹';
-	@override String get clearItem => '清除';
+	@override String get open => '打开';
+	@override String get showInFolder => '在文件夹中显示';
+	@override String get openWork => '打开作品';
+	@override String filesCount({required Object count}) => '${count} 个文件';
 	@override String get deleteItem => '删除记录';
 	@override String get expandItem => '显示文件';
 	@override String get collapseItem => '收起文件';
@@ -1984,9 +1985,10 @@ extension on TranslationsZhCn {
 			'settings.downloads.collectingPosts' => ({required Object count}) => '正在收集文章 · 已读取 ${count} 篇',
 			'settings.downloads.moreItems' => ({required Object count}) => '还有 ${count} 项',
 			'settings.downloads.showAll' => ({required Object count}) => '显示全部 ${count} 个',
-			'settings.downloads.openSource' => '打开原页面',
-			'settings.downloads.openFolder' => '打开所在文件夹',
-			'settings.downloads.clearItem' => '清除',
+			'settings.downloads.open' => '打开',
+			'settings.downloads.showInFolder' => '在文件夹中显示',
+			'settings.downloads.openWork' => '打开作品',
+			'settings.downloads.filesCount' => ({required Object count}) => '${count} 个文件',
 			'settings.downloads.deleteItem' => '删除记录',
 			'settings.downloads.expandItem' => '显示文件',
 			'settings.downloads.collapseItem' => '收起文件',
@@ -2210,9 +2212,9 @@ extension on TranslationsZhCn {
 			'illust.contextMenu.copyLink' => '复制作品链接',
 			'illust.contextMenu.openOriginal' => '在 Pixiv 打开',
 			'illust.imageLabels.original' => '原图',
-			'illust.imageLabels.large' => '大图',
 			_ => null,
 		} ?? switch (path) {
+			'illust.imageLabels.large' => '大图',
 			'illust.imageLabels.image' => '图片',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下载队列：${count} 张图片',
 			'illust.toast.downloadComplete' => ({required Object name}) => '已保存 ${name}',

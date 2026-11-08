@@ -1024,9 +1024,10 @@ class _Translations$settings$downloads$ja_JP extends Translations$settings$downl
 	@override String collectingPosts({required Object count}) => '投稿を収集中 · ${count} 件読み込み済み';
 	@override String moreItems({required Object count}) => 'ほか ${count} 件';
 	@override String showAll({required Object count}) => '${count} 件すべて表示';
-	@override String get openSource => '元のページを開く';
-	@override String get openFolder => 'フォルダを開く';
-	@override String get clearItem => 'クリア';
+	@override String get open => '開く';
+	@override String get showInFolder => 'フォルダーで表示';
+	@override String get openWork => '作品を開く';
+	@override String filesCount({required Object count}) => '${count} 個のファイル';
 	@override String get deleteItem => '記録を削除';
 	@override String get expandItem => 'ファイルを表示';
 	@override String get collapseItem => 'ファイルを隠す';
@@ -1984,9 +1985,10 @@ extension on TranslationsJaJp {
 			'settings.downloads.collectingPosts' => ({required Object count}) => '投稿を収集中 · ${count} 件読み込み済み',
 			'settings.downloads.moreItems' => ({required Object count}) => 'ほか ${count} 件',
 			'settings.downloads.showAll' => ({required Object count}) => '${count} 件すべて表示',
-			'settings.downloads.openSource' => '元のページを開く',
-			'settings.downloads.openFolder' => 'フォルダを開く',
-			'settings.downloads.clearItem' => 'クリア',
+			'settings.downloads.open' => '開く',
+			'settings.downloads.showInFolder' => 'フォルダーで表示',
+			'settings.downloads.openWork' => '作品を開く',
+			'settings.downloads.filesCount' => ({required Object count}) => '${count} 個のファイル',
 			'settings.downloads.deleteItem' => '記録を削除',
 			'settings.downloads.expandItem' => 'ファイルを表示',
 			'settings.downloads.collapseItem' => 'ファイルを隠す',
@@ -2210,9 +2212,9 @@ extension on TranslationsJaJp {
 			'illust.contextMenu.copyLink' => '作品リンクをコピー',
 			'illust.contextMenu.openOriginal' => 'Pixiv で開く',
 			'illust.imageLabels.original' => 'オリジナル画像',
-			'illust.imageLabels.large' => '大きい画像',
 			_ => null,
 		} ?? switch (path) {
+			'illust.imageLabels.large' => '大きい画像',
 			'illust.imageLabels.image' => '画像',
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} 枚の画像をダウンロードキューに追加しました',
 			'illust.toast.downloadComplete' => ({required Object name}) => '${name} を保存しました',
