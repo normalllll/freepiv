@@ -98,7 +98,7 @@ class IllustAuthorLine extends StatelessWidget {
   }
 }
 
-/// Bookmark as the page's one solid button, then download, copy link and
+/// Bookmark, solid once the work is bookmarked, then download, copy link and
 /// More.
 class IllustActionBar extends ConsumerWidget {
   const IllustActionBar({required this.info, super.key});
@@ -120,9 +120,9 @@ class IllustActionBar extends ConsumerWidget {
           initiallyBookmarked: illust.isBookmarked,
           builder: (context, bookmarked, toggle) {
             final count = illust.totalBookmarks + (bookmarked && !illust.isBookmarked ? 1 : 0) - (!bookmarked && illust.isBookmarked ? 1 : 0);
-            return FrostButton.prominent(
+            return AppDetailBookmarkButton(
+              bookmarked: bookmarked,
               label: t.illustDetail.bookmarkCount(count: formatCount(count)),
-              icon: bookmarked ? PivIcons.heartFilled : PivIcons.heart,
               tooltip: bookmarked ? t.illust.tooltip.removeBookmark : t.illust.tooltip.addBookmark,
               onPressed: toggle,
             );
@@ -434,7 +434,10 @@ Illust illustPlaceholder({int id = 0}) => Illust(
   caption: '',
   restrict: 0,
   user: _placeholderUser,
-  tags: const [Tag(name: 'original'), Tag(name: 'landscape')],
+  tags: const [
+    Tag(name: 'original'),
+    Tag(name: 'landscape'),
+  ],
   tools: const [],
   createDate: '2026-01-01T00:00:00+09:00',
   pageCount: 1,
@@ -452,7 +455,12 @@ Illust illustPlaceholder({int id = 0}) => Illust(
   illustAiType: 1,
 );
 
-const _placeholderUser = User(id: 0, name: 'Sample artist', account: 'sample', profileImageUrls: ProfileImageUrls(medium: ''));
+const _placeholderUser = User(
+  id: 0,
+  name: 'Sample artist',
+  account: 'sample',
+  profileImageUrls: ProfileImageUrls(medium: ''),
+);
 
 /// [child], a real layout, painted as bones: nothing in it can be pressed,
 /// focused or read.
@@ -469,7 +477,11 @@ class IllustInfoHeadingSkeleton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final illust = illustPlaceholder();
     final pages = artworkPages(illust, ref.watch(viewerImageQualityProvider), ref.watch(previewImageQualityProvider));
-    return _bones(IllustInfoHeading(info: IllustInfoContext(illust: illust, pages: pages, page: 0)));
+    return _bones(
+      IllustInfoHeading(
+        info: IllustInfoContext(illust: illust, pages: pages, page: 0),
+      ),
+    );
   }
 }
 

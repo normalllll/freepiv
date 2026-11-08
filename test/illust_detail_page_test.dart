@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
@@ -97,7 +98,7 @@ Future<void> _mount(
 Finder _scroller(String key) => find.descendant(of: find.byKey(ValueKey(key)), matching: find.byType(Scrollable)).first;
 
 void main() {
-  testWidgets('a work handed over by a list shows at once: stage, the one solid Bookmark, comments, the author\'s works and related works', (tester) async {
+  testWidgets('a work handed over by a list shows at once: stage, Bookmark, comments, the author\'s works and related works', (tester) async {
     await _mount(tester, illust: _work());
     expect(find.byType(IllustInfoHeading), findsOneWidget);
     expect(find.widgetWithText(FrostButton, 'Bookmark 20'), findsOneWidget);
@@ -223,6 +224,34 @@ void main() {
     await tester.ensureVisible(open);
     expect(open, findsOneWidget);
     expect(find.text(t.illust.comments.write), findsNothing);
+  });
+
+  testWidgets('Bookmark is neutral with an outline heart, and accent solid with a filled heart once bookmarked', (tester) async {
+    Color? labelColor(String label) =>
+        tester.widget<RichText>(find.descendant(of: find.widgetWithText(FrostButton, label), matching: find.byType(RichText)).last).text.style?.color;
+
+    await mountPilotPage(
+      tester,
+      Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FrostButton.prominent(label: 'solid', onPressed: () {}),
+            FrostButton(label: 'neutral', onPressed: () {}),
+          ],
+        ),
+      ),
+    );
+    final solid = labelColor('solid'), neutral = labelColor('neutral');
+    expect(solid, isNot(neutral));
+
+    await _mount(tester, illust: _work());
+    expect(tester.widget<FrostButton>(find.widgetWithText(FrostButton, 'Bookmark 20')).icon, PivIcons.heart);
+    expect(labelColor('Bookmark 20'), neutral);
+
+    await _mount(tester, illust: _work(bookmarked: true));
+    expect(tester.widget<FrostButton>(find.widgetWithText(FrostButton, 'Bookmark 20')).icon, PivIcons.heartFilled);
+    expect(labelColor('Bookmark 20'), solid);
   });
 
   testWidgets('a long title, author name and tags fit at double text size, wide and narrow', (tester) async {

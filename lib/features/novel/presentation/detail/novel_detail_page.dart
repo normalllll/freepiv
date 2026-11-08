@@ -150,9 +150,9 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
                         workId: _novel.id,
                         initiallyBookmarked: _novel.isBookmarked,
                         novel: true,
-                        builder: (context, bookmarked, toggle) => FrostButton.outlined(
+                        builder: (context, bookmarked, toggle) => AppDetailBookmarkButton(
+                          bookmarked: bookmarked,
                           label: bookmarked ? t.novelDetail.bookmarked : t.novelDetail.bookmark,
-                          icon: bookmarked ? PivIcons.heartFilled : PivIcons.heart,
                           onPressed: toggle,
                         ),
                       ),

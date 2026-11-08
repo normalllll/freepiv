@@ -89,6 +89,23 @@ class AppRowBookmarkButton extends StatelessWidget {
   );
 }
 
+/// The bookmark button of a work's detail page: a neutral button with an
+/// outline heart, an accent solid one with a filled heart once bookmarked, so
+/// it reads like the hearts on the cards.
+class AppDetailBookmarkButton extends StatelessWidget {
+  const AppDetailBookmarkButton({required this.bookmarked, required this.label, this.tooltip, this.onPressed, super.key});
+
+  final bool bookmarked;
+  final String label;
+  final String? tooltip;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) => bookmarked
+      ? FrostButton.prominent(label: label, icon: PivIcons.heartFilled, tooltip: tooltip, onPressed: onPressed)
+      : FrostButton(label: label, icon: PivIcons.heart, tooltip: tooltip, onPressed: onPressed);
+}
+
 /// A user's follow state and its toggle (public; optimistic, rolled back on
 /// failure with a toast). Draws nothing for the signed-in user.
 class AppFollowBuilder extends ConsumerWidget {
