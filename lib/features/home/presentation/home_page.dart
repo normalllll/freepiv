@@ -212,15 +212,7 @@ List<Widget> _novelSlivers(BuildContext context, HomeNovelListSource source) {
         _ => const SliverToBoxAdapter(),
       },
     ),
-    FrostSliverContentColumn(
-      maxWidth: FrostMetrics.readingMaxWidth,
-      sliver: FrostSliverDataList<Novel>(
-        source: source,
-        firstLoadSkeleton: const AppNovelRowsSkeleton(),
-        empty: _emptyFeed(context),
-        itemBuilder: (context, novel, index) => AppNovelRow(novel: novel),
-      ),
-    ),
+    AppSliverNovelGrid(source: source, empty: _emptyFeed(context)),
   ];
 }
 

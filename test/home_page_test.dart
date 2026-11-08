@@ -138,7 +138,7 @@ void main() {
     expect(find.text(t.home.rankings), findsOneWidget);
     expect(find.text(t.home.recommended), findsOneWidget);
     expect(find.descendant(of: find.byType(FrostShelf), matching: find.byType(AppArtworkCardSkeleton)), findsWidgets);
-    expect(find.descendant(of: find.byType(AppNovelRowsSkeleton), matching: find.byType(AppNovelRow)), findsWidgets);
+    expect(find.descendant(of: find.byType(AppNovelCardsSkeleton), matching: find.byType(AppNovelCard)), findsWidgets);
     await tester.tap(find.text(t.home.users).first);
     await settlePilot(tester);
     expect(find.descendant(of: find.byType(AppUserCardsSkeleton), matching: find.byType(AppUserCard)), findsWidgets);
