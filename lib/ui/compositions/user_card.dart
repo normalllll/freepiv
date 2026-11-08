@@ -3,7 +3,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
@@ -14,10 +13,12 @@ import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
 /// Narrowest a user card may be: room for the name, Follow and three works.
-const _minTileWidth = 340.0;
+const _minTileWidth = 380.0;
 
-/// Works across the top of a card at most. The strip always has the height
-/// of this many square works; fewer share its width.
+/// Columns of user cards at most, however wide the window.
+const _maxColumns = 5;
+
+/// Works across the top of a card at most; slots without a work stay empty.
 const _slots = 3;
 
 const _padding = FrostGap.related;
@@ -29,9 +30,6 @@ const _lineGap = 2.0;
 /// The size a card's avatar is drawn at, and its height in the row.
 const _avatarSize = FrostAvatarSize.large;
 const _avatarExtent = 40.0;
-
-/// The tallest target Frost gives a button, on touch.
-const _followExtent = 44.0;
 
 /// Follow moves under the name on a card narrower than this inside, or at
 /// [_stackedTextScale] and above, so the name is never squeezed.
@@ -45,23 +43,19 @@ double _line(BuildContext context, FrostTextRole role) {
   return MediaQuery.textScalerOf(context).scale(style.fontSize!) * style.height!;
 }
 
-double _stripExtent(double inner) => (inner - _stripGap * (_slots - 1)) / _slots;
-
 double _identityExtent(BuildContext context) =>
     math.max(_avatarExtent, _line(context, FrostTextRole.headline) + _lineGap + _line(context, FrostTextRole.footnote));
 
-/// How tall a card [width] wide is, from the metrics it lays out with, so
-/// every card in a grid row has its height whatever works its user has.
-double appUserCardHeight(BuildContext context, double width) {
-  final inner = width - _padding * 2;
-  final identity = _identityExtent(context);
-  final details = _stacked(context, inner) ? identity + _identityGap + _followExtent : math.max(identity, _followExtent);
-  return (_padding * 2 + _stripExtent(inner) + _sectionGap + details).ceilToDouble();
-}
+/// Columns of user cards across [crossAxisExtent]: as many as keep a card
+/// [_minTileWidth] wide, one on a phone, [_maxColumns] at most.
+int _columns(BuildContext context, double crossAxisExtent) =>
+    math.min(_maxColumns, FrostSliverDataGrid.geometry(context, crossAxisExtent, minTileWidth: _minTileWidth).columns);
 
-/// A user in a grid: their latest works across the top,
-/// then avatar, name and @account with Follow at the end, under them when
-/// the card is narrow. The card opens the user, a work opens that work.
+/// A user in a waterfall, as tall as what they have to
+/// show: up to three square works across the top, faint empty tiles where
+/// there are fewer and no strip at all without works, then avatar, name and
+/// @account with Follow at the end, under them when the card is narrow. The
+/// card opens the user, a work opens that work.
 class AppUserCard extends StatelessWidget {
   const AppUserCard({required this.preview, super.key});
 
@@ -71,6 +65,7 @@ class AppUserCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = preview.user;
     final radius = BorderRadius.circular(FrostRadius.lg);
+    final works = preview.illusts.take(_slots).toList(growable: false);
     return FrostSurface(
       role: FrostSurfaceRole.module,
       edge: FrostSurfaceEdge.none,
@@ -81,49 +76,48 @@ class AppUserCard extends StatelessWidget {
         onTap: () => unawaited(GoRouter.of(context).push(AppLocations.user(user.id))),
         child: Padding(
           padding: const EdgeInsets.all(_padding),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final inner = constraints.maxWidth;
-              final stacked = _stacked(context, inner);
-              final identity = SizedBox(
-                height: _identityExtent(context),
-                child: Row(
-                  spacing: _identityGap,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: _sectionGap,
+            children: [
+              if (works.isNotEmpty)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: _stripGap,
                   children: [
-                    AppUserAvatar(user: user, size: _avatarSize),
-                    Expanded(child: _Names(user: user)),
-                    if (!stacked) AppFollowButton(user: user, prominent: false),
+                    for (var slot = 0; slot < _slots; slot++)
+                      Expanded(
+                        child: slot < works.length ? AppArtworkCard.tile(illust: works[slot]) : FrostMediaFrame(aspectRatio: 1, child: const SizedBox.expand()),
+                      ),
                   ],
                 ),
-              );
-              final details = Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: _identityGap,
-                children: [
-                  identity,
-                  if (stacked)
-                    Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: AppFollowButton(user: user, prominent: false),
-                    ),
-                ],
-              );
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: _sectionGap,
-                children: [
-                  SizedBox(
-                    height: _stripExtent(inner),
-                    child: _Works(works: preview.illusts.take(_slots).toList(growable: false), width: inner, height: _stripExtent(inner)),
-                  ),
-                  // In a grid the height comes from [appUserCardHeight].
-                  if (constraints.hasBoundedHeight) Expanded(child: details) else details,
-                ],
-              );
-            },
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final stacked = _stacked(context, constraints.maxWidth);
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: _identityGap,
+                    children: [
+                      Row(
+                        spacing: _identityGap,
+                        children: [
+                          AppUserAvatar(user: user, size: _avatarSize),
+                          Expanded(child: _Names(user: user)),
+                          if (!stacked) AppFollowButton(user: user, prominent: false),
+                        ],
+                      ),
+                      if (stacked)
+                        Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: AppFollowButton(user: user, prominent: false),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ),
@@ -138,7 +132,7 @@ class _Names extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-    mainAxisAlignment: MainAxisAlignment.center,
+    mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
     spacing: _lineGap,
     children: [
@@ -154,42 +148,7 @@ class _Names extends StatelessWidget {
   );
 }
 
-/// The strip of works: each fills its share of the width at the strip's
-/// height, or a quiet note where the user has none.
-class _Works extends StatelessWidget {
-  const _Works({required this.works, required this.width, required this.height});
-
-  final List<Illust> works;
-  final double width, height;
-
-  @override
-  Widget build(BuildContext context) {
-    if (works.isEmpty) {
-      return Center(
-        child: FrostText(
-          context.t.user.noPublicWorks,
-          role: FrostTextRole.footnote,
-          tone: FrostTextTone.secondary,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-      );
-    }
-    final slot = (width - _stripGap * (works.length - 1)) / works.length;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: _stripGap,
-      children: [
-        for (final illust in works)
-          Expanded(
-            child: AppArtworkCard.tile(illust: illust, tileRatio: slot / height),
-          ),
-      ],
-    );
-  }
-}
-
-/// Users as a responsive grid of equal cards, with its skeleton.
+/// Users as a waterfall of cards, with its skeleton.
 class AppSliverUserGrid extends StatelessWidget {
   const AppSliverUserGrid({required this.source, this.empty, super.key});
 
@@ -197,46 +156,42 @@ class AppSliverUserGrid extends StatelessWidget {
   final Widget? empty;
 
   @override
-  Widget build(BuildContext context) => FrostSliverDataGrid<UserPreview>(
-    source: source,
-    firstLoadSkeleton: const AppUserCardsSkeleton(),
-    empty: empty,
-    minTileWidth: _minTileWidth,
-    tileHeight: appUserCardHeight,
-    itemBuilder: (context, preview, index) => AppUserCard(preview: preview),
+  Widget build(BuildContext context) => SliverLayoutBuilder(
+    builder: (context, constraints) => FrostSliverDataWaterfallGrid<UserPreview>(
+      source: source,
+      firstLoadSkeleton: const AppUserCardsSkeleton(),
+      empty: empty,
+      preferredTileWidth: _minTileWidth,
+      columns: _columns(context, constraints.crossAxisExtent),
+      maxColumns: _maxColumns,
+      itemBuilder: (context, preview, index) => AppUserCard(preview: preview),
+    ),
   );
 }
 
-/// [AppSliverUserGrid] while it loads: real cards painted as bones in the
-/// same columns, running past the bottom of the window.
+/// [AppSliverUserGrid] while it loads: real cards painted as bones in the same
+/// columns, tall and short together, running past the bottom of the window.
 class AppUserCardsSkeleton extends StatelessWidget {
   const AppUserCardsSkeleton({super.key});
+
+  /// Works on each placeholder card in turn.
+  static const _works = [3, 3, 0, 3, 1, 3, 0, 2];
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final layout = FrostSliverDataGrid.geometry(context, constraints.maxWidth, minTileWidth: _minTileWidth);
-      final height = appUserCardHeight(context, layout.tileWidth);
-      final rows = appSkeletonCount(context, shortestExtent: height);
-      final preview = userPreviewPlaceholder();
-      return Padding(
-        padding: layout.padding,
-        child: appBones(
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: FrostGap.grid,
-            children: [
-              for (var row = 0; row < rows; row++)
-                SizedBox(
-                  height: height,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    spacing: FrostGap.grid,
-                    children: [for (var column = 0; column < layout.columns; column++) Expanded(child: AppUserCard(preview: preview))],
-                  ),
-                ),
-            ],
-          ),
+      final columns = _columns(context, constraints.maxWidth);
+      final previews = {for (final works in _works) works: userPreviewPlaceholder(works: works)};
+      final shortest = _identityExtent(context) + _padding * 2 + FrostGap.grid;
+      return appBones(
+        FrostWaterfallGrid<int>(
+          items: List.generate(appSkeletonCount(context, shortestExtent: shortest, perRow: columns), (index) => index),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          preferredTileWidth: _minTileWidth,
+          columns: columns,
+          maxColumns: _maxColumns,
+          itemBuilder: (context, _, index) => AppUserCard(preview: previews[_works[index % _works.length]]!),
         ),
       );
     },

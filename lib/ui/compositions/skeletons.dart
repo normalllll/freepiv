@@ -109,8 +109,8 @@ Novel novelPlaceholder({int id = 0}) => Novel(
 
 /// A user in a list, with works beside their name, painted as bones while
 /// the real one loads.
-UserPreview userPreviewPlaceholder() => UserPreview(
+UserPreview userPreviewPlaceholder({int works = 3}) => UserPreview(
   user: appPlaceholderUser,
-  illusts: [for (var id = 0; id < 3; id++) illustPlaceholder(id: id)],
+  illusts: [for (var id = 0; id < works; id++) illustPlaceholder(id: id)],
   isMuted: false,
 );

@@ -43,11 +43,11 @@ List<Widget> artworkRestrictionBadges(BuildContext context, Illust illust) {
 /// corner marks, then the title and the author with the bookmark button at
 /// the end of that text.
 class AppArtworkCard extends ConsumerWidget {
-  const AppArtworkCard({required this.illust, this.rank, this.square = false, super.key}) : tile = false, tileRatio = 1;
+  const AppArtworkCard({required this.illust, this.rank, this.square = false, super.key}) : tile = false;
 
   /// A small square of the work in a strip (a work's "Recent works"): the
   /// image with its corner marks, without the title, author and bookmark.
-  const AppArtworkCard.tile({required this.illust, this.tileRatio = 1, super.key}) : rank = null, square = true, tile = true;
+  const AppArtworkCard.tile({required this.illust, super.key}) : rank = null, square = true, tile = true;
 
   final Illust illust;
 
@@ -60,14 +60,11 @@ class AppArtworkCard extends ConsumerWidget {
   /// The image alone, see [AppArtworkCard.tile].
   final bool tile;
 
-  /// A tile's width to its height: square unless it shares a strip.
-  final double tileRatio;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.t;
     final url = illustPreviewImageUrl(illust.imageUrls, ref.watch(previewImageQualityProvider));
-    final ratio = tile ? tileRatio : (square ? 1.0 : artworkAspectRatio(illust));
+    final ratio = square ? 1.0 : artworkAspectRatio(illust);
     final topStart = [if (rank case final rank?) FrostBadge(label: '$rank', tone: FrostBadgeTone.onMedia), ...artworkRestrictionBadges(context, illust)];
     final ugoira = illust.kind == 'ugoira';
     Widget card(FrostMediaHeroTag? tag) {
