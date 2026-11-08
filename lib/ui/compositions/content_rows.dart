@@ -6,7 +6,6 @@ import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
-import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
@@ -24,44 +23,6 @@ class AppUserAvatar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final url = user.profileImageUrls.medium;
     return FrostAvatar.person(name: user.name, colorKey: '${user.id}', size: size, image: url.isEmpty ? null : pixivImageProvider(ref, url));
-  }
-}
-
-/// A user in a list, the same row on the home page,
-/// search results, an author's following and the following list: avatar,
-/// name, @account, up to three works where there is room, and Follow, which
-/// never opens the row.
-class AppUserRow extends StatelessWidget {
-  const AppUserRow({required this.preview, super.key});
-
-  final UserPreview preview;
-
-  /// Narrower rows leave the works out.
-  static const worksFrom = 520.0;
-
-  @override
-  Widget build(BuildContext context) {
-    final user = preview.user;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final works = constraints.maxWidth >= worksFrom ? preview.illusts.take(3).toList() : const <Illust>[];
-        return FrostListRow(
-          title: user.name,
-          contentTitle: true,
-          subtitle: FrostRowSubtitle('@${user.account}'),
-          leading: FrostLeading.custom(AppUserAvatar(user: user)),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: FrostGap.related,
-            children: [
-              for (final illust in works) AppArtworkThumbnail(illust: illust),
-              AppFollowButton(user: user, prominent: false),
-            ],
-          ),
-          onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.user(user.id))),
-        );
-      },
-    );
   }
 }
 
@@ -185,26 +146,6 @@ class AppNovelRowsSkeleton extends StatelessWidget {
       Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [for (var index = 0; index < rows; index++) AppNovelRow(novel: novel, showAuthor: showAuthor)],
-      ),
-    );
-  }
-}
-
-/// First-load placeholders for a list of users: [AppUserRow].
-class AppUserRowsSkeleton extends StatelessWidget {
-  const AppUserRowsSkeleton({this.count, super.key});
-
-  /// Null fills the window; a number is for a short fixed preview.
-  final int? count;
-
-  @override
-  Widget build(BuildContext context) {
-    final preview = userPreviewPlaceholder();
-    final rows = count ?? appSkeletonCount(context, shortestExtent: FrostControlSize.regular.height(context));
-    return appBones(
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [for (var index = 0; index < rows; index++) AppUserRow(preview: preview)],
       ),
     );
   }

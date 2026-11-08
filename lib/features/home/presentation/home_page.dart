@@ -14,6 +14,7 @@ import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/destination_header.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/ui/compositions/sectioned_page.dart';
+import 'package:freepiv/ui/compositions/user_card.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -223,17 +224,7 @@ List<Widget> _novelSlivers(BuildContext context, HomeNovelListSource source) {
   ];
 }
 
-List<Widget> _userSlivers(BuildContext context, HomeUserListSource source) => [
-  FrostSliverContentColumn(
-    maxWidth: FrostMetrics.readingMaxWidth,
-    sliver: FrostSliverDataList<UserPreview>(
-      source: source,
-      firstLoadSkeleton: const AppUserRowsSkeleton(),
-      empty: _emptyFeed(context),
-      itemBuilder: (context, preview, index) => AppUserRow(preview: preview),
-    ),
-  ),
-];
+List<Widget> _userSlivers(BuildContext context, HomeUserListSource source) => [AppSliverUserGrid(source: source, empty: _emptyFeed(context))];
 
 /// A ranked novel in the ranking shelf: its cover with the rank, then its
 /// title and author with the bookmark button.

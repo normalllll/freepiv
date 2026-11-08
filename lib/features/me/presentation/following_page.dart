@@ -10,7 +10,7 @@ import 'package:freepiv/features/me/logic/me_logic.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
+import 'package:freepiv/ui/compositions/user_card.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -81,14 +81,9 @@ class _AccountUserList extends ConsumerWidget {
                 slivers: [
                   const FrostChromeSpacer(),
                   ?locators.sliverHeader,
-                  FrostSliverContentColumn(
-                    maxWidth: FrostMetrics.readingMaxWidth,
-                    sliver: FrostSliverDataList<UserPreview>(
-                      source: users,
-                      firstLoadSkeleton: const AppUserRowsSkeleton(),
-                      empty: FrostEmptyState(icon: PivIcons.users, title: emptyTitle),
-                      itemBuilder: (context, preview, index) => AppUserRow(preview: preview),
-                    ),
+                  AppSliverUserGrid(
+                    source: users,
+                    empty: FrostEmptyState(icon: PivIcons.users, title: emptyTitle),
                   ),
                 ],
               ),

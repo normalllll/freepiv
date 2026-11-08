@@ -109,14 +109,7 @@ void main() {
       expectNoLayoutErrors(tester);
     });
 
-    testWidgets('a user row with works and Follow', (tester) async {
-      await mountPair(tester, AppUserRow(preview: userPreviewPlaceholder()), const AppUserRowsSkeleton(count: 1));
-      expect(height(tester, 'bones', AppUserRow), height(tester, 'real', AppUserRow));
-      expect(find.descendant(of: find.byKey(const ValueKey('bones')), matching: find.byType(AppArtworkThumbnail)), findsNWidgets(3));
-      expectNoLayoutErrors(tester);
-    });
-
-    testWidgets('novel and user skeletons fill a taller window', (tester) async {
+    testWidgets('novel skeletons fill a taller window', (tester) async {
       Future<int> rows(Widget skeleton, Type row, Size size) async {
         await mountPilotPage(tester, SingleChildScrollView(child: skeleton), size: size);
         return find.byType(row, skipOffstage: false).evaluate().length;
@@ -124,7 +117,6 @@ void main() {
 
       final tall = Size(desktopSize.width, desktopSize.height * 2);
       expect(await rows(const AppNovelRowsSkeleton(), AppNovelRow, tall), greaterThan(await rows(const AppNovelRowsSkeleton(), AppNovelRow, desktopSize)));
-      expect(await rows(const AppUserRowsSkeleton(), AppUserRow, tall), greaterThan(await rows(const AppUserRowsSkeleton(), AppUserRow, desktopSize)));
     });
   });
 

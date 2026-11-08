@@ -9,6 +9,7 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/sectioned_page.dart';
+import 'package:freepiv/ui/compositions/user_card.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
 
@@ -188,16 +189,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
         ),
       ],
       SearchType.user => [
-        FrostSliverContentColumn(
-          maxWidth: FrostMetrics.readingMaxWidth,
-          sliver: FrostSliverDataList<UserPreview>(
-            key: ValueKey(('user', _keyword)),
-            source: ref.watch(searchUserResultSourceProvider(_keyword)),
-            firstLoadSkeleton: const AppUserRowsSkeleton(),
-            empty: empty(t.search.empty.users),
-            itemBuilder: (context, preview, index) => AppUserRow(preview: preview),
-          ),
-        ),
+        AppSliverUserGrid(key: ValueKey(('user', _keyword)), source: ref.watch(searchUserResultSourceProvider(_keyword)), empty: empty(t.search.empty.users)),
       ],
     };
   }

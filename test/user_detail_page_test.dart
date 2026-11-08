@@ -13,6 +13,7 @@ import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/identity_header.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
+import 'package:freepiv/ui/compositions/user_card.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import 'support/pilot_harness.dart';
@@ -148,7 +149,7 @@ void main() {
     await _mount(tester, detail: sampleUserDetail);
     await tester.tap(_tab(t.user.tabs.following));
     await settlePilot(tester);
-    expect(find.byType(AppUserRow), findsWidgets);
+    expect(find.byType(AppUserCard), findsWidgets);
   });
 
   group('every tab starts at the tab bar\'s left edge', () {
@@ -169,7 +170,7 @@ void main() {
       await show(tester, t.user.tabs.novels);
       expect(tester.getTopLeft(find.byType(AppNovelRow).first).dx, left, reason: 'the novels');
       await show(tester, t.user.tabs.following);
-      expect(tester.getTopLeft(find.byType(AppUserRow).first).dx, left, reason: 'the following list');
+      expect(tester.getTopLeft(find.byType(AppUserCard).first).dx, left, reason: 'the following list');
       await show(tester, t.user.tabs.profile);
       expect(tester.getTopLeft(find.byType(UserProfileDetails)).dx, left, reason: 'the details');
       expectNoLayoutErrors(tester);

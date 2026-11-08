@@ -12,6 +12,7 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
+import 'package:freepiv/ui/compositions/user_card.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import 'support/pilot_harness.dart';
@@ -140,7 +141,7 @@ void main() {
     expect(find.descendant(of: find.byType(AppNovelRowsSkeleton), matching: find.byType(AppNovelRow)), findsWidgets);
     await tester.tap(find.text(t.home.users).first);
     await settlePilot(tester);
-    expect(find.descendant(of: find.byType(AppUserRowsSkeleton), matching: find.byType(AppUserRow)), findsWidgets);
+    expect(find.descendant(of: find.byType(AppUserCardsSkeleton), matching: find.byType(AppUserCard)), findsWidgets);
     expectNoLayoutErrors(tester);
   });
 
@@ -219,7 +220,7 @@ void main() {
     await mountPilotPage(
       tester,
       _column(
-        AppUserRow(
+        AppUserCard(
           preview: UserPreview(
             user: User(
               id: 1,

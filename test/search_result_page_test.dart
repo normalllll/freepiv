@@ -8,7 +8,7 @@ import 'package:freepiv/features/search/presentation/search_result_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
+import 'package:freepiv/ui/compositions/user_card.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import 'support/pilot_harness.dart';
@@ -39,7 +39,7 @@ void main() {
     await tester.tap(find.text(t.search.type.user));
     await settlePilot(tester);
     final users = sampleUserPreviews(count: 6);
-    expect(tester.widget<AppUserRow>(find.byType(AppUserRow).first).preview.user.id, users.first.user.id);
+    expect(tester.widget<AppUserCard>(find.byType(AppUserCard).first).preview.user.id, users.first.user.id);
     expect(find.text(users.first.user.name), findsOneWidget);
     final filter = tester.widgetList<FrostButton>(find.byType(FrostButton)).firstWhere((button) => button.label == t.common.filter);
     expect(filter.onPressed, isNull, reason: 'users have no filters');

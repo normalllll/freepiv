@@ -9,8 +9,7 @@ import 'package:freepiv/features/me/presentation/following_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
-import 'package:frost_ui/frost_ui.dart';
+import 'package:freepiv/ui/compositions/user_card.dart';
 
 import 'support/pilot_harness.dart';
 
@@ -48,14 +47,12 @@ UserPreview _long(UserPreview preview) => UserPreview(
 );
 
 void main() {
-  testWidgets('the signed-in account\'s followers fill the reading column as user rows', (tester) async {
+  testWidgets('the signed-in account\'s followers fill the grid as user cards', (tester) async {
     await _mount(tester, () async => UserPageResult(userPreviews: sampleUserPreviews(count: 3)));
     expect(find.text(t.me.followers), findsOneWidget);
     expect(_askedFor, [int.parse(sampleAccount.user.id)]);
-    expect(find.byType(AppUserRow), findsNWidgets(3));
-    final row = tester.getRect(find.byType(AppUserRow).first);
-    expect(row.width, lessThanOrEqualTo(FrostMetrics.readingMaxWidth));
-    expect(row.center.dx, moreOrLessEquals(desktopSize.width / 2, epsilon: 1));
+    expect(find.byType(AppUserCard), findsNWidgets(3));
+    expect(tester.getTopLeft(find.byType(AppUserCard).at(1)).dy, tester.getTopLeft(find.byType(AppUserCard).first).dy, reason: 'side by side');
   });
 
   testWidgets('empty, loading, failed and signed-out lists each say so', (tester) async {
@@ -64,7 +61,7 @@ void main() {
 
     final never = Completer<UserPageResult>();
     await _mount(tester, () => never.future);
-    expect(find.byType(AppUserRowsSkeleton), findsOneWidget);
+    expect(find.byType(AppUserCardsSkeleton), findsOneWidget);
 
     var attempts = 0;
     await _mount(tester, () async {
@@ -73,7 +70,7 @@ void main() {
     });
     await tester.tap(find.text(t.common.retry));
     await settlePilot(tester);
-    expect(find.byType(AppUserRow), findsNWidgets(2));
+    expect(find.byType(AppUserCard), findsNWidgets(2));
 
     pixivAccountNotifier.value = null;
     await _mount(tester, () async => const UserPageResult(userPreviews: []), signedIn: false);
@@ -88,7 +85,7 @@ void main() {
       size: phoneSize,
       textScale: 2,
     );
-    expect(find.byType(AppUserRow), findsWidgets);
+    expect(find.byType(AppUserCard), findsWidgets);
     expectNoLayoutErrors(tester);
   });
 }

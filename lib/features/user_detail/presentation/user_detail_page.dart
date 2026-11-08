@@ -18,6 +18,7 @@ import 'package:freepiv/ui/compositions/identity_tabs_header.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/ui/compositions/pixiv_text.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
+import 'package:freepiv/ui/compositions/user_card.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -234,13 +235,9 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
         },
       ],
       UserContentTabKind.following => [
-        column(
-          FrostSliverDataList<UserPreview>(
-            source: ref.watch(userFollowingUsersProvider(userId: _userId)),
-            firstLoadSkeleton: const AppUserRowsSkeleton(),
-            empty: empty(t.user.empty.following),
-            itemBuilder: (context, preview, index) => AppUserRow(preview: preview),
-          ),
+        AppSliverUserGrid(
+          source: ref.watch(userFollowingUsersProvider(userId: _userId)),
+          empty: empty(t.user.empty.following),
         ),
       ],
       UserContentTabKind.profile => [column(SliverToBoxAdapter(child: UserProfileDetails(detail: widget.detail)))],

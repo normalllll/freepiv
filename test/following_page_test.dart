@@ -10,8 +10,8 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
+import 'package:freepiv/ui/compositions/user_card.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import 'support/pilot_harness.dart';
@@ -49,16 +49,16 @@ Future<void> _mount(WidgetTester tester, Future<UserPageResult> Function() first
     );
 
 void main() {
-  testWidgets('a work in a row flies into the work it opens', (tester) async {
+  testWidgets('a work on a card flies into the work it opens', (tester) async {
     final previews = sampleUserPreviews(count: 2);
     await _mount(tester, () async => UserPageResult(userPreviews: previews));
-    final thumbnail = find.byType(AppArtworkThumbnail).first;
+    final thumbnail = find.descendant(of: find.byType(AppUserCard).first, matching: find.byType(AppArtworkCard)).first;
     expect(
       find.descendant(of: thumbnail, matching: find.byType(FrostMediaHero)),
       findsOneWidget,
       reason: 'the hero the detail stage receives',
     );
-    expect(tester.widget<AppArtworkThumbnail>(thumbnail).illust.id, previews.first.illusts.first.id);
+    expect(tester.widget<AppArtworkCard>(thumbnail).illust.id, previews.first.illusts.first.id);
     await tester.tap(thumbnail);
     await settlePilot(tester);
     expect(openedLocations.single, AppLocations.illust(previews.first.illusts.first.id));
@@ -66,7 +66,7 @@ void main() {
 
   testWidgets('followed users are rows; Follow does not open the row', (tester) async {
     await _mount(tester, () async => UserPageResult(userPreviews: sampleUserPreviews(count: 4)));
-    expect(find.byType(AppUserRow), findsNWidgets(4));
+    expect(find.byType(AppUserCard), findsNWidgets(4));
     await tester.tap(find.byType(AppFollowButton).first);
     await settlePilot(tester);
     expect(openedLocations, isEmpty);
@@ -83,7 +83,7 @@ void main() {
   testWidgets('loading', (tester) async {
     final never = Completer<UserPageResult>();
     await _mount(tester, () => never.future);
-    expect(find.byType(AppUserRowsSkeleton), findsOneWidget);
+    expect(find.byType(AppUserCardsSkeleton), findsOneWidget);
   });
 
   testWidgets('error', (tester) async {
