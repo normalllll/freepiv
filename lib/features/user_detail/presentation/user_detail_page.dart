@@ -125,14 +125,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
   Widget build(BuildContext context) {
     final t = context.t;
     final detail = widget.detail;
-    final labels = {
-      UserContentTabKind.illust: t.user.tabs.illustrations,
-      UserContentTabKind.manga: t.user.tabs.manga,
-      UserContentTabKind.novel: t.user.tabs.novels,
-      UserContentTabKind.bookmarks: t.user.tabs.bookmarks,
-      UserContentTabKind.following: t.user.tabs.following,
-      UserContentTabKind.profile: t.user.tabs.profile,
-    };
+    final labels = userTabLabels(t);
     return AppRefreshScope(
       onRefresh: () async => _source(UserDetailContent.tabs[_tabs.index])?.refresh(false),
       child: FrostPinnedChrome(
@@ -189,7 +182,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
       empty: empty(emptyTitle),
       itemBuilder: (context, illust, index) => AppArtworkCard(illust: illust),
     );
-    Widget column(Widget sliver) => FrostSliverContentColumn(maxWidth: FrostMetrics.readingMaxWidth, sliver: sliver);
+    Widget column(Widget sliver) => FrostSliverContentColumn(maxWidth: double.infinity, sliver: sliver);
     return switch (kind) {
       UserContentTabKind.illust => [works(IllustType.illust, t.user.empty.illustrations)],
       UserContentTabKind.manga => [works(IllustType.manga, t.user.empty.manga)],
@@ -197,7 +190,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
         column(
           FrostSliverDataList<Novel>(
             source: ref.watch(userNovelsProvider(userId: _userId)),
-            firstLoadSkeleton: const AppRowsSkeleton(),
+            firstLoadSkeleton: const AppNovelRowsSkeleton(showAuthor: false),
             empty: empty(t.user.empty.novels),
             itemBuilder: (context, novel, index) => AppNovelRow(novel: novel, showAuthor: false),
           ),
@@ -233,7 +226,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
           UserBookmarkKind.novel => column(
             FrostSliverDataList<Novel>(
               source: ref.watch(userNovelBookmarksProvider(userId: _userId)),
-              firstLoadSkeleton: const AppRowsSkeleton(),
+              firstLoadSkeleton: const AppNovelRowsSkeleton(),
               empty: empty(t.user.empty.bookmarkNovels),
               itemBuilder: (context, novel, index) => AppNovelRow(novel: novel),
             ),
@@ -244,7 +237,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
         column(
           FrostSliverDataList<UserPreview>(
             source: ref.watch(userFollowingUsersProvider(userId: _userId)),
-            firstLoadSkeleton: const AppRowsSkeleton(),
+            firstLoadSkeleton: const AppUserRowsSkeleton(),
             empty: empty(t.user.empty.following),
             itemBuilder: (context, preview, index) => AppUserRow(preview: preview),
           ),
@@ -395,10 +388,32 @@ class UserProfileDetails extends StatelessWidget {
   }
 }
 
+Map<UserContentTabKind, String> userTabLabels(Translations t) => {
+  UserContentTabKind.illust: t.user.tabs.illustrations,
+  UserContentTabKind.manga: t.user.tabs.manga,
+  UserContentTabKind.novel: t.user.tabs.novels,
+  UserContentTabKind.bookmarks: t.user.tabs.bookmarks,
+  UserContentTabKind.following: t.user.tabs.following,
+  UserContentTabKind.profile: t.user.tabs.profile,
+};
+
 /// While an author known only by their id loads: the identity header and a
 /// feed at their size.
-class _UserDetailSkeleton extends StatelessWidget {
+class _UserDetailSkeleton extends StatefulWidget {
   const _UserDetailSkeleton();
+
+  @override
+  State<_UserDetailSkeleton> createState() => _UserDetailSkeletonState();
+}
+
+class _UserDetailSkeletonState extends State<_UserDetailSkeleton> with SingleTickerProviderStateMixin {
+  late final _tabs = TabController(length: UserDetailContent.tabs.length, vsync: this);
+
+  @override
+  void dispose() {
+    _tabs.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => FrostPinnedChrome(
@@ -419,6 +434,18 @@ class _UserDetailSkeleton extends StatelessWidget {
                 AppIdentityStat(value: '000', caption: '        '),
               ],
             ).frostSkeleton(true),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: IgnorePointer(
+            child: FrostContentColumn(
+              maxWidth: double.infinity,
+              child: FrostTabBar(
+                controller: _tabs,
+                scrollable: true,
+                tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: userTabLabels(context.t)[kind]!)],
+              ),
+            ),
           ),
         ),
         const SliverToBoxAdapter(child: AppArtworkWaterfallSkeleton()),

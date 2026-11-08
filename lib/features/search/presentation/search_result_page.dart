@@ -181,7 +181,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
           sliver: FrostSliverDataList<Novel>(
             key: ValueKey(('novel', _keyword)),
             source: ref.watch(searchNovelResultSourceProvider(SearchResultRequest(keyword: _keyword, filter: filter))),
-            firstLoadSkeleton: const AppRowsSkeleton(),
+            firstLoadSkeleton: const AppNovelRowsSkeleton(),
             empty: empty(t.search.empty.novels),
             itemBuilder: (context, novel, index) => AppNovelRow(novel: novel),
           ),
@@ -193,7 +193,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
           sliver: FrostSliverDataList<UserPreview>(
             key: ValueKey(('user', _keyword)),
             source: ref.watch(searchUserResultSourceProvider(_keyword)),
-            firstLoadSkeleton: const AppRowsSkeleton(),
+            firstLoadSkeleton: const AppUserRowsSkeleton(),
             empty: empty(t.search.empty.users),
             itemBuilder: (context, preview, index) => AppUserRow(preview: preview),
           ),

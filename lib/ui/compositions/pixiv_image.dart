@@ -5,6 +5,7 @@ import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// Pixiv's image hosts serve only requests coming from pixiv.net.
@@ -87,6 +88,7 @@ class _AppPixivImageState extends ConsumerState<AppPixivImage> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.url.isEmpty && AppBonesScope.active(context)) return FrostMediaFrame.skeleton(aspectRatio: widget.aspectRatio, radius: widget.radius);
     if (widget.url.isEmpty) {
       return FrostMediaFrame(aspectRatio: widget.aspectRatio, radius: widget.radius, semanticLabel: widget.semanticLabel, child: const SizedBox.expand());
     }

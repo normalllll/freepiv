@@ -7,6 +7,7 @@ import 'package:freepiv/features/fanbox/fanbox_actions.dart' show fanboxImageHea
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// A FANBOX image in a Frost media frame, fetched with the FANBOX session
@@ -28,6 +29,7 @@ class _AppFanboxImageState extends ConsumerState<AppFanboxImage> {
 
   @override
   Widget build(BuildContext context) {
+    if (AppBonesScope.active(context)) return FrostMediaFrame.skeleton(aspectRatio: widget.aspectRatio, radius: widget.radius);
     final url = widget.url ?? '';
     final uri = Uri.tryParse(url);
     final placeholder = FrostMediaFrame(aspectRatio: widget.aspectRatio, radius: widget.radius, child: const SizedBox.expand());

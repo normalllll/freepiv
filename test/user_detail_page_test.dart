@@ -104,7 +104,7 @@ void main() {
     await _mount(tester, id: 2000, load: () => never.future);
     expect(find.byType(AppIdentityHeader), findsOneWidget);
     expect(find.byType(AppArtworkWaterfallSkeleton), findsOneWidget);
-    expect(find.byType(FrostTabBar), findsNothing);
+    expect(find.byType(FrostTabBar), findsOneWidget);
   });
 
   testWidgets('error: a failed load offers a retry over the page', (tester) async {
@@ -149,6 +149,31 @@ void main() {
     await tester.tap(_tab(t.user.tabs.following));
     await settlePilot(tester);
     expect(find.byType(AppUserRow), findsWidgets);
+  });
+
+  group('every tab starts at the tab bar\'s left edge', () {
+    const wide = Size(1700, 900);
+    double edge(WidgetTester tester) => tester.getTopLeft(_tab(t.user.tabs.illustrations)).dx;
+
+    Future<void> show(WidgetTester tester, String label) async {
+      await tester.tap(_tab(label));
+      await settlePilot(tester);
+    }
+
+    testWidgets('works, Bookmarks picker, Novels, Following and Details', (tester) async {
+      await _mount(tester, detail: sampleUserDetail, size: wide);
+      final left = edge(tester);
+      expect(tester.getTopLeft(find.byType(AppArtworkCard).first).dx, left, reason: 'the waterfall');
+      await show(tester, t.user.tabs.bookmarks);
+      expect(tester.getTopLeft(find.byType(FrostPicker<UserBookmarkKind>)).dx, left, reason: 'the picker');
+      await show(tester, t.user.tabs.novels);
+      expect(tester.getTopLeft(find.byType(AppNovelRow).first).dx, left, reason: 'the novels');
+      await show(tester, t.user.tabs.following);
+      expect(tester.getTopLeft(find.byType(AppUserRow).first).dx, left, reason: 'the following list');
+      await show(tester, t.user.tabs.profile);
+      expect(tester.getTopLeft(find.byType(UserProfileDetails)).dx, left, reason: 'the details');
+      expectNoLayoutErrors(tester);
+    });
   });
 
   testWidgets('switching tabs keeps a scrolled-away identity header away', (tester) async {

@@ -798,8 +798,9 @@ class _ReaderBlock extends ConsumerWidget {
     return switch (block) {
       NovelTextParagraph(:final text) => ReaderParagraph(text: text, typesetting: typesetting),
       NovelTextChapter(:final title) => ReaderChapterTitle(title: title, typesetting: typesetting, first: first),
+      // The paragraph above already ends with the gap.
       NovelTextPageBreak() => Padding(
-        padding: EdgeInsets.symmetric(vertical: typesetting.paragraphGap),
+        padding: EdgeInsets.only(bottom: typesetting.paragraphGap),
         child: const FrostDivider(),
       ),
       // Taps on an illustration or its button act on it, not on the bars.

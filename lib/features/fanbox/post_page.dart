@@ -11,10 +11,10 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:freepiv/ui/compositions/composer_bar.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/fanbox_image.dart';
 import 'package:freepiv/ui/compositions/fanbox_rows.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:frost_ui/social.dart';
 import 'package:html/parser.dart' as html;
@@ -95,11 +95,17 @@ class _FanboxPostDetailPageState extends ConsumerState<FanboxPostDetailPage> {
     );
     final children = post == null
         ? [
-            KeyedSubtree(key: _headKey, child: _Head(title: title, summary: widget.summary)),
+            KeyedSubtree(
+              key: _headKey,
+              child: _Head(title: title, summary: widget.summary),
+            ),
             const _BodySkeleton(),
           ]
         : [
-            KeyedSubtree(key: _headKey, child: _Head(title: title, post: post)),
+            KeyedSubtree(
+              key: _headKey,
+              child: _Head(title: title, post: post),
+            ),
             if (post.isRestricted) ...[
               FrostInlineBanner(
                 tone: FrostBannerTone.info,
@@ -223,7 +229,13 @@ class _Head extends ConsumerWidget {
             Wrap(
               spacing: FrostGap.inline,
               runSpacing: FrostGap.inline,
-              children: [for (final tag in shown.tags) FrostTag(label: '#$tag', onPressed: () => openFanboxTag(context, tag, creatorId: shown.creatorId))],
+              children: [
+                for (final tag in shown.tags)
+                  FrostTag(
+                    label: '#$tag',
+                    onPressed: () => openFanboxTag(context, tag, creatorId: shown.creatorId),
+                  ),
+              ],
             ),
         ],
         if (cover != null && cover.isNotEmpty)
@@ -283,7 +295,9 @@ class _PostActions extends ConsumerWidget {
                 onPressed: post.isLiked || operation.isLoading
                     ? null
                     : () async {
-                        final success = await ref.read(fanboxOperationProvider(scope).notifier).run(() async => (await ref.read(fanboxApiProvider.future)).likePost(postId: post.id));
+                        final success = await ref
+                            .read(fanboxOperationProvider(scope).notifier)
+                            .run(() async => (await ref.read(fanboxApiProvider.future)).likePost(postId: post.id));
                         if (success) {
                           ref.invalidate(fanboxPostProvider(post.id));
                           ref.invalidate(fanboxBrowseProvider);
@@ -344,12 +358,19 @@ class FanboxPlansList extends ConsumerWidget {
       AsyncValue(:final value?) when value.isEmpty => FrostText(t.fanbox.noPlans, tone: FrostTextTone.secondary),
       AsyncValue(:final value?) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (final plan in value) FanboxPlanRow(plan: plan),
-        ],
+        children: [for (final plan in value) FanboxPlanRow(plan: plan)],
       ),
-      AsyncValue(:final error?) => FrostCompactMessage.error(error: error, actionLabel: t.fanbox.retry, onAction: () => ref.invalidate(fanboxPlansProvider(creatorId))),
-      _ => const AppRowsSkeleton(count: 2),
+      AsyncValue(:final error?) => FrostCompactMessage.error(
+        error: error,
+        actionLabel: t.fanbox.retry,
+        onAction: () => ref.invalidate(fanboxPlansProvider(creatorId)),
+      ),
+      _ => appBones(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [for (var index = 0; index < _planRows; index++) const FanboxPlanRow(plan: _planPlaceholder)],
+        ),
+      ),
     };
   }
 }
@@ -539,7 +560,12 @@ class _Comments extends ConsumerWidget {
               leading: FrostGlyph.icon(FrostIconSet.of(context).delete),
               destructive: true,
               onSelected: () async {
-                final confirmed = await showFrostConfirm(context: context, title: t.fanbox.deleteConfirm, confirmLabel: t.fanbox.deleteComment, destructive: true);
+                final confirmed = await showFrostConfirm(
+                  context: context,
+                  title: t.fanbox.deleteConfirm,
+                  confirmLabel: t.fanbox.deleteComment,
+                  destructive: true,
+                );
                 if (confirmed) await run((api) => api.deleteComment(commentId: comment.id));
               },
             ),
@@ -562,7 +588,10 @@ class _Comments extends ConsumerWidget {
                 label: t.fanbox.loadMore,
                 edgeAlignment: FrostButtonEdgeAlignment.start,
                 state: busy ? const FrostActionState.running() : FrostActionState.idle,
-                onPressed: busy ? null : () => unawaited(ref.read(fanboxOperationProvider(scope).notifier).run(() => ref.read(fanboxCommentsProvider(postId).notifier).loadMore())),
+                onPressed: busy
+                    ? null
+                    : () =>
+                          unawaited(ref.read(fanboxOperationProvider(scope).notifier).run(() => ref.read(fanboxCommentsProvider(postId).notifier).loadMore())),
               ),
             ),
         ],
@@ -574,7 +603,18 @@ class _Comments extends ConsumerWidget {
           FrostCompactMessage.error(error: error, actionLabel: t.fanbox.retry, onAction: () => ref.invalidate(fanboxCommentsProvider(postId))),
         ],
       ),
-      _ => const AppRowsSkeleton(count: 3),
+      _ => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          FrostSectionHeader(title: t.fanbox.comments),
+          appBones(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [for (var index = 0; index < _commentRows; index++) FrostThread(item: _commentPlaceholder(t))],
+            ),
+          ),
+        ],
+      ),
     };
   }
 }
@@ -656,3 +696,26 @@ class _CommentComposerState extends ConsumerState<_CommentComposer> {
     );
   }
 }
+
+// A creator offers few plans, and comments start well below the fold.
+const _planRows = 2;
+const _commentRows = 3;
+
+const _planPlaceholder = FanboxPlan(
+  id: '',
+  creatorId: '',
+  user: FanboxUser(id: '', name: 'Creator name'),
+  title: 'A plan title',
+  description: 'What supporters of this plan receive each month.',
+  fee: 500,
+);
+
+/// A post's comment, like and reply included, to paint as bones.
+FrostThreadItem _commentPlaceholder(Translations t) => FrostThreadItem(
+  avatar: const FrostAvatar(semanticLabel: '', size: FrostAvatarSize.small),
+  author: 'Sample reader',
+  body: const FrostText('A comment of usual length', content: true),
+  time: '2026-01-01',
+  like: FrostThreadAction(icon: PivIcons.heart, label: t.fanbox.like, count: '0', onPressed: () {}),
+  reply: FrostThreadAction(icon: PivIcons.messageCircle, label: t.fanbox.reply, onPressed: () {}),
+);

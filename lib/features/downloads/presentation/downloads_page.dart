@@ -9,10 +9,10 @@ import 'package:freepiv/features/downloads/logic.dart';
 import 'package:freepiv/features/downloads/presentation/download_entry.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/fanbox_image.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/ui/compositions/sectioned_page.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
@@ -146,12 +146,7 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage> with SingleTicker
               ),
             ];
           }
-          return [
-            const FrostSliverContentColumn(
-              maxWidth: double.infinity,
-              sliver: SliverToBoxAdapter(child: AppRowsSkeleton()),
-            ),
-          ];
+          return [_column(const SliverToBoxAdapter(child: _DownloadsSkeleton()))];
         }
         _reveal();
         return [
@@ -608,4 +603,31 @@ String downloadBytesLabel(DownloadTaskSnapshot task) {
     return received;
   }
   return '$received / ${formatByteSize(total)}';
+}
+
+/// The list while the records are read: a day's heading, then task rows with
+/// their picture.
+class _DownloadsSkeleton extends StatelessWidget {
+  const _DownloadsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = appSkeletonCount(context, shortestExtent: FrostControlSize.regular.height(context));
+    return appBones(
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const FrostSectionHeader(title: '2026-01-01'),
+          for (var index = 0; index < rows; index++)
+            FrostTaskRow(
+              title: 'A work title',
+              status: FrostTaskStatus.completed,
+              detail: 'Sample artist',
+              thumbnail: FrostThumbnail(size: FrostThumbnailSize.small, semanticLabel: '', image: FrostMediaFrame.skeleton(aspectRatio: 1, radius: 0)),
+              actions: [FrostTaskAction(icon: PivIcons.folder, label: 'Open', onPressed: () {})],
+            ),
+        ],
+      ),
+    );
+  }
 }

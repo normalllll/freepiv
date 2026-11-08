@@ -115,7 +115,7 @@ List<Widget> _feedSlivers(BuildContext context, NewestListSource source) {
         maxWidth: FrostMetrics.readingMaxWidth,
         sliver: FrostSliverDataList<NewestItem>(
           source: source,
-          firstLoadSkeleton: const AppRowsSkeleton(),
+          firstLoadSkeleton: const AppNovelRowsSkeleton(),
           empty: empty,
           itemBuilder: (context, item, index) => switch (item) {
             NewestNovel(:final novel) => AppNovelRow(novel: novel),

@@ -83,7 +83,7 @@ void main() {
   testWidgets('loading', (tester) async {
     final never = Completer<UserPageResult>();
     await _mount(tester, () => never.future);
-    expect(find.byType(AppRowsSkeleton), findsOneWidget);
+    expect(find.byType(AppUserRowsSkeleton), findsOneWidget);
   });
 
   testWidgets('error', (tester) async {

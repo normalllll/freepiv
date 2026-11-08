@@ -8,7 +8,6 @@ import 'package:freepiv/features/fanbox/browse_page.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/fanbox_rows.dart';
 import 'package:frost_ui/frost_ui.dart';
 
@@ -153,8 +152,7 @@ void main() {
   testWidgets('loading', (tester) async {
     final never = Completer<FanboxCollection>();
     await _mount(tester, load: (_) => never.future);
-    expect(find.byType(AppRowsSkeleton), findsOneWidget);
-    expect(find.byType(AppFanboxPostCard), findsNothing);
+    expect(find.byType(FanboxCollectionSkeleton), findsOneWidget);
     expect(find.text(sampleFanboxPosts().first.title), findsNothing);
   });
 

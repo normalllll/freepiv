@@ -193,7 +193,7 @@ List<Widget> _wideInfo({required Widget heading, required Widget about, required
   KeyedSubtree(key: IllustInfoBlocks.about, child: about),
   const SizedBox(height: FrostGap.section),
   KeyedSubtree(key: IllustInfoBlocks.comments, child: comments),
-  const SizedBox(height: FrostGap.section),
+  // The works bring the gap above them, as they may be absent.
   KeyedSubtree(key: IllustInfoBlocks.works, child: works),
   const SizedBox(height: FrostGap.section),
   KeyedSubtree(key: IllustInfoBlocks.related, child: related),
@@ -258,7 +258,7 @@ List<Widget> _narrowInfo({
   const SizedBox(height: FrostGap.group),
   if (!comments) ...[
     KeyedSubtree(key: IllustInfoBlocks.about, child: about),
-    const SizedBox(height: FrostGap.section),
+    // The works bring the gap above them, as they may be absent.
     KeyedSubtree(key: IllustInfoBlocks.works, child: works),
     const SizedBox(height: FrostGap.section),
     KeyedSubtree(key: IllustInfoBlocks.related, child: related),

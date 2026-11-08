@@ -15,6 +15,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart' show FanboxNotice, FanboxPost, FanboxUser;
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/fanbox_rows.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -181,7 +182,7 @@ class _FanboxBrowsePageState extends ConsumerState<FanboxBrowsePage> {
           AsyncValue(hasValue: true, value: null) => const _Centred(child: FanboxLoginPanel()),
           AsyncValue(hasValue: true) => FanboxCollectionFeed(key: ValueKey(_location), location: _location),
           AsyncValue(:final error?) => FrostErrorContent.fromError(error: error, onRetry: () => ref.invalidate(fanboxSessionProvider)),
-          _ => const _FeedSkeleton(),
+          _ => _Centred(child: FanboxCollectionSkeleton(section: _location.section)),
         },
       ),
     );
@@ -203,13 +204,6 @@ class _Centred extends StatelessWidget {
       ),
     ],
   );
-}
-
-class _FeedSkeleton extends StatelessWidget {
-  const _FeedSkeleton();
-
-  @override
-  Widget build(BuildContext context) => const _Centred(child: AppRowsSkeleton());
 }
 
 /// One FANBOX collection: posts as cards, creators, plans, tags, notices and
@@ -239,13 +233,13 @@ class FanboxCollectionFeed extends ConsumerWidget {
 }
 
 /// The slivers of one FANBOX collection, for a page's own scroll view.
-List<Widget> fanboxCollectionSlivers(BuildContext context, WidgetRef ref, FanboxLocation location) {
+List<Widget> fanboxCollectionSlivers(BuildContext context, WidgetRef ref, FanboxLocation location, {double maxWidth = FrostMetrics.readingMaxWidth}) {
   final t = context.t;
   final provider = fanboxBrowseProvider(location);
   final state = ref.watch(provider);
   final data = state.value;
   final entries = data?.entries ?? const <FanboxEntry>[];
-  Widget column(Widget sliver) => FrostSliverContentColumn(maxWidth: FrostMetrics.readingMaxWidth, sliver: sliver);
+  Widget column(Widget sliver) => FrostSliverContentColumn(maxWidth: maxWidth, sliver: sliver);
   return [
     if (location.section == FanboxSection.bookmarks)
       column(
@@ -259,7 +253,7 @@ List<Widget> fanboxCollectionSlivers(BuildContext context, WidgetRef ref, Fanbox
               hasScrollBody: false,
               child: FrostErrorContent.fromError(error: state.error!, onRetry: () => ref.invalidate(provider)),
             )
-          : column(const SliverToBoxAdapter(child: AppRowsSkeleton()))
+          : column(SliverToBoxAdapter(child: FanboxCollectionSkeleton(section: location.section)))
     else if (entries.isEmpty && !data.hasMore && data.error == null)
       SliverFillRemaining(
         hasScrollBody: false,
@@ -386,5 +380,30 @@ class _PostCardSkeleton extends StatelessWidget {
   );
 
   @override
-  Widget build(BuildContext context) => AppFanboxPostCard(post: _post, onOpen: () {}, onCreator: () {}).frostSkeleton(true);
+  Widget build(BuildContext context) => appBones(AppFanboxPostCard(post: _post, onOpen: () {}, onCreator: () {}));
+}
+
+/// A FANBOX collection while it loads: post cards where it lists posts, rows
+/// where it lists creators, plans, tags, notices or messages.
+class FanboxCollectionSkeleton extends StatelessWidget {
+  const FanboxCollectionSkeleton({required this.section, super.key});
+
+  final FanboxSection section;
+
+  /// The sections that list posts.
+  static const _posts = {FanboxSection.home, FanboxSection.supporting, FanboxSection.tag, FanboxSection.creatorPosts, FanboxSection.bookmarks};
+
+  /// A post card is never shorter than this.
+  static const _shortestCard = 160.0;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_posts.contains(section)) return const AppRowsSkeleton();
+    final cards = appSkeletonCount(context, shortestExtent: _shortestCard);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: FrostGap.related,
+      children: [for (var index = 0; index < cards; index++) const _PostCardSkeleton()],
+    );
+  }
 }

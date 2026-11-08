@@ -14,7 +14,6 @@ import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/composer_bar.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:frost_ui/social.dart';
@@ -219,16 +218,13 @@ class _WorkCommentsPageState extends ConsumerState<WorkCommentsPage> {
                             maxWidth: FrostMetrics.readingMaxWidth,
                             sliver: FrostSliverDataList<Comment>(
                               source: _source,
-                              firstLoadSkeleton: const AppRowsSkeleton(),
+                              firstLoadSkeleton: const AppCommentRowsSkeleton(),
                               empty: FrostEmptyState(icon: PivIcons.messageCircle, title: t.commentsPage.empty),
                               itemBuilder: (context, comment, index) {
                                 if (!comment.hasReplies) return thread(comment);
                                 // The thread follows its replies as they load and change.
                                 final replies = _repliesOf(comment);
-                                return StreamBuilder(
-                                  stream: replies.rebuild,
-                                  builder: (context, _) => thread(comment),
-                                );
+                                return StreamBuilder(stream: replies.rebuild, builder: (context, _) => thread(comment));
                               },
                             ),
                           ),

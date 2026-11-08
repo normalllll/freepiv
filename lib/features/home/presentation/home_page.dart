@@ -118,40 +118,78 @@ const _rankingTiles = 6;
 const _rankingTileMin = 120.0;
 const _rankingTileMax = 180.0;
 
+// A ranked novel's cover against the cover in a row of the list.
+const _novelTileScale = 1.5;
+
 Widget _emptyFeed(BuildContext context) =>
     FrostEmptyState(icon: FrostIconSet.of(context).empty, title: context.t.home.emptyTitle, message: context.t.home.emptyMessage);
 
-List<Widget> _artworkSlivers(BuildContext context, HomeIllustListSource source, AppRankingKind kind) {
+/// The ranking shelf of [kind] and the Recommended title above an artwork
+/// feed, with bones for tiles while [ranking] is null.
+Widget _artworkHead(BuildContext context, AppRankingKind kind, {List<Illust>? ranking}) {
   final t = context.t;
+  return SliverMainAxisGroup(
+    slivers: [
+      SliverToBoxAdapter(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final extent = FrostShelf.fillingExtent(width: constraints.maxWidth, count: _rankingTiles, min: _rankingTileMin, max: _rankingTileMax);
+            return FrostShelf(
+              title: t.home.rankings,
+              action: FrostButton.quiet(
+                label: t.home.seeMore,
+                onPressed: () => GoRouter.of(context).push(AppLocations.ranking(kind: kind)),
+              ),
+              itemCount: ranking?.length ?? (constraints.maxWidth / extent).ceil(),
+              itemExtent: extent,
+              height: extent + AppArtworkCardFooter.extentOf(context),
+              itemBuilder: (context, index) =>
+                  ranking == null ? const AppArtworkCardSkeleton(aspectRatio: 1) : AppArtworkCard(illust: ranking[index], rank: index + 1, square: true),
+            );
+          },
+        ),
+      ),
+      SliverToBoxAdapter(child: AppBrowseSectionHeader(title: t.home.recommended)),
+    ],
+  );
+}
+
+/// The novels' ranking shelf and the Recommended title above their list, with
+/// bones for covers while [ranking] is null.
+Widget _novelHead(BuildContext context, {List<Novel>? ranking}) {
+  final t = context.t;
+  const extent = AppNovelRow.coverWidth * _novelTileScale;
+  return SliverMainAxisGroup(
+    slivers: [
+      SliverToBoxAdapter(
+        child: LayoutBuilder(
+          builder: (context, constraints) => FrostShelf(
+            title: t.home.rankings,
+            action: FrostButton.quiet(
+              label: t.home.seeMore,
+              onPressed: () => GoRouter.of(context).push(AppLocations.ranking(kind: AppRankingKind.novel)),
+            ),
+            itemCount: ranking?.length ?? (constraints.maxWidth / extent).ceil(),
+            itemExtent: extent,
+            height: extent / AppNovelRow.coverRatio + AppArtworkCardFooter.extentOf(context),
+            itemBuilder: (context, index) =>
+                ranking == null ? const AppArtworkCardSkeleton(aspectRatio: AppNovelRow.coverRatio) : _NovelCover(novel: ranking[index], rank: index + 1),
+          ),
+        ),
+      ),
+      SliverToBoxAdapter(child: AppBrowseSectionHeader(title: t.home.recommended)),
+    ],
+  );
+}
+
+List<Widget> _artworkSlivers(BuildContext context, HomeIllustListSource source, AppRankingKind kind) {
   return [
     StreamBuilder(
       stream: source.rebuild,
-      builder: (context, _) {
-        final ranking = source.rankingIllusts;
-        if (source.phase != FrostLoadPhase.content || ranking.isEmpty) return const SliverToBoxAdapter();
-        return SliverMainAxisGroup(
-          slivers: [
-            SliverToBoxAdapter(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final extent = FrostShelf.fillingExtent(width: constraints.maxWidth, count: _rankingTiles, min: _rankingTileMin, max: _rankingTileMax);
-                  return FrostShelf(
-                    title: t.home.rankings,
-                    action: FrostButton.quiet(
-                      label: t.home.seeMore,
-                      onPressed: () => GoRouter.of(context).push(AppLocations.ranking(kind: kind)),
-                    ),
-                    itemCount: ranking.length,
-                    itemExtent: extent,
-                    height: extent + AppArtworkCardFooter.extentOf(context),
-                    itemBuilder: (context, index) => AppArtworkCard(illust: ranking[index], rank: index + 1, square: true),
-                  );
-                },
-              ),
-            ),
-            SliverToBoxAdapter(child: AppBrowseSectionHeader(title: t.home.recommended)),
-          ],
-        );
+      builder: (context, _) => switch ((source.phase, source.rankingIllusts)) {
+        (FrostLoadPhase.loading, _) => _artworkHead(context, kind),
+        (FrostLoadPhase.content, final ranking) when ranking.isNotEmpty => _artworkHead(context, kind, ranking: ranking),
+        _ => const SliverToBoxAdapter(),
       },
     ),
     FrostSliverDataWaterfallGrid<Illust>(
@@ -164,38 +202,20 @@ List<Widget> _artworkSlivers(BuildContext context, HomeIllustListSource source, 
 }
 
 List<Widget> _novelSlivers(BuildContext context, HomeNovelListSource source) {
-  final t = context.t;
   return [
     StreamBuilder(
       stream: source.rebuild,
-      builder: (context, _) {
-        final ranking = source.rankingNovels;
-        if (source.phase != FrostLoadPhase.content || ranking.isEmpty) return const SliverToBoxAdapter();
-        return SliverMainAxisGroup(
-          slivers: [
-            SliverToBoxAdapter(
-              child: FrostShelf(
-                title: t.home.rankings,
-                action: FrostButton.quiet(
-                  label: t.home.seeMore,
-                  onPressed: () => GoRouter.of(context).push(AppLocations.ranking(kind: AppRankingKind.novel)),
-                ),
-                itemCount: ranking.length,
-                itemExtent: AppNovelRow.coverWidth * 1.5,
-                height: AppNovelRow.coverWidth * 1.5 * 1.414 + AppArtworkCardFooter.extentOf(context),
-                itemBuilder: (context, index) => _NovelCover(novel: ranking[index], rank: index + 1),
-              ),
-            ),
-            SliverToBoxAdapter(child: AppBrowseSectionHeader(title: t.home.recommended)),
-          ],
-        );
+      builder: (context, _) => switch ((source.phase, source.rankingNovels)) {
+        (FrostLoadPhase.loading, _) => _novelHead(context),
+        (FrostLoadPhase.content, final ranking) when ranking.isNotEmpty => _novelHead(context, ranking: ranking),
+        _ => const SliverToBoxAdapter(),
       },
     ),
     FrostSliverContentColumn(
       maxWidth: FrostMetrics.readingMaxWidth,
       sliver: FrostSliverDataList<Novel>(
         source: source,
-        firstLoadSkeleton: const AppRowsSkeleton(),
+        firstLoadSkeleton: const AppNovelRowsSkeleton(),
         empty: _emptyFeed(context),
         itemBuilder: (context, novel, index) => AppNovelRow(novel: novel),
       ),
@@ -208,7 +228,7 @@ List<Widget> _userSlivers(BuildContext context, HomeUserListSource source) => [
     maxWidth: FrostMetrics.readingMaxWidth,
     sliver: FrostSliverDataList<UserPreview>(
       source: source,
-      firstLoadSkeleton: const AppRowsSkeleton(),
+      firstLoadSkeleton: const AppUserRowsSkeleton(),
       empty: _emptyFeed(context),
       itemBuilder: (context, preview, index) => AppUserRow(preview: preview),
     ),
@@ -225,8 +245,8 @@ class _NovelCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FrostMediaCard(
-    media: AppPixivImage(url: novel.imageUrls.medium, aspectRatio: 1 / 1.414, radius: 0),
-    aspectRatio: 1 / 1.414,
+    media: AppPixivImage(url: novel.imageUrls.medium, aspectRatio: AppNovelRow.coverRatio, radius: 0),
+    aspectRatio: AppNovelRow.coverRatio,
     topStart: FrostBadge(label: '$rank', tone: FrostBadgeTone.onMedia),
     footer: AppArtworkCardFooter(
       title: novel.title,

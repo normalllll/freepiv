@@ -85,7 +85,7 @@ class _AccountUserList extends ConsumerWidget {
                     maxWidth: FrostMetrics.readingMaxWidth,
                     sliver: FrostSliverDataList<UserPreview>(
                       source: users,
-                      firstLoadSkeleton: const AppRowsSkeleton(),
+                      firstLoadSkeleton: const AppUserRowsSkeleton(),
                       empty: FrostEmptyState(icon: PivIcons.users, title: emptyTitle),
                       itemBuilder: (context, preview, index) => AppUserRow(preview: preview),
                     ),

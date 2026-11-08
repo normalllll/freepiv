@@ -24,6 +24,7 @@ import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/ui/compositions/pixiv_text.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -167,7 +168,6 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
                         FrostButton.quiet(label: t.common.retry, onPressed: () => unawaited(ref.read(novelTextProvider(_novel.id).notifier).reload())),
                       ],
                     ),
-                  const SizedBox(height: FrostGap.section),
                   _NovelAbout(novel: _novel, caption: webview?.caption),
                   _NovelImages(novel: _novel, imageUrls: novelExtraImageUrls(_novel, webview)),
                   const SizedBox(height: FrostGap.section),
@@ -188,7 +188,7 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
               maxWidth: FrostMetrics.readingMaxWidth,
               sliver: FrostSliverDataList<Novel>(
                 source: related,
-                firstLoadSkeleton: const AppRowsSkeleton(count: 3),
+                firstLoadSkeleton: const AppNovelRowsSkeleton(),
                 empty: FrostText(t.novelDetail.noRelated, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
                 itemBuilder: (context, novel, index) => AppNovelRow(novel: novel),
               ),
@@ -263,7 +263,8 @@ void _openImages(BuildContext context, Novel novel, List<String> urls, int index
   ),
 );
 
-/// The caption and the tags, which search novels.
+/// The caption and the tags, which search novels, with the gap above them; a
+/// novel with neither leaves nothing.
 class _NovelAbout extends StatelessWidget {
   const _NovelAbout({required this.novel, required this.caption});
 
@@ -273,24 +274,28 @@ class _NovelAbout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = plainTextFromHtml(caption?.trim().isNotEmpty ?? false ? caption! : novel.caption).trim();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: FrostGap.group,
-      children: [
-        if (text.isNotEmpty) AppPixivText(caption?.trim().isNotEmpty ?? false ? caption! : novel.caption),
-        if (novel.tags.isNotEmpty)
-          FrostWrap(
-            children: [
-              for (final tag in novel.tags)
-                FrostTag(
-                  label: '#${tag.name}',
-                  detail: tag.translatedName,
-                  style: FrostTagStyle.topic,
-                  onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.tagSearch(tag.name, kind: AppSearchKind.novel))),
-                ),
-            ],
-          ),
-      ],
+    if (text.isEmpty && novel.tags.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: FrostGap.section),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: FrostGap.group,
+        children: [
+          if (text.isNotEmpty) AppPixivText(caption?.trim().isNotEmpty ?? false ? caption! : novel.caption),
+          if (novel.tags.isNotEmpty)
+            FrostWrap(
+              children: [
+                for (final tag in novel.tags)
+                  FrostTag(
+                    label: '#${tag.name}',
+                    detail: tag.translatedName,
+                    style: FrostTagStyle.topic,
+                    onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.tagSearch(tag.name, kind: AppSearchKind.novel))),
+                  ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }
@@ -344,6 +349,7 @@ class _AuthorNovels extends ConsumerWidget {
       value: ref.watch(provider),
       onRetry: () => unawaited(ref.read(provider.notifier).reload()),
       failed: t.illust.works.failed,
+      skeleton: const AppNovelRowsSkeleton(count: shown, showAuthor: false),
       action: FrostButton.quiet(label: t.home.seeMore, onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.user(novel.user.id)))),
       builder: (page) {
         final others = page.novels.where((other) => other.id != novel.id).take(shown).toList();
@@ -358,28 +364,40 @@ class _NovelDetailSkeleton extends StatelessWidget {
   const _NovelDetailSkeleton();
 
   @override
-  Widget build(BuildContext context) => FrostPinnedChrome(
-    chrome: const FrostPageHeader(),
-    body: FrostLoadingScrollView(
-      slivers: [
-        const FrostChromeSpacer(),
-        FrostSliverContentColumn(
-          maxWidth: FrostMetrics.readingMaxWidth,
-          sliver: SliverToBoxAdapter(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: FrostGap.group,
-              children: [
-                SizedBox(
-                  width: _NovelHead.coverWidth,
-                  child: FrostMediaFrame.skeleton(aspectRatio: 1 / 1.414),
+  Widget build(BuildContext context) {
+    final t = context.t;
+    return FrostPinnedChrome(
+      chrome: const FrostPageHeader(),
+      body: FrostLoadingScrollView(
+        slivers: [
+          const FrostChromeSpacer(),
+          FrostSliverContentColumn(
+            maxWidth: FrostMetrics.readingMaxWidth,
+            sliver: SliverToBoxAdapter(
+              child: appBones(
+                DownloadSourceScope(
+                  source: novelDownloadSource(novelPlaceholder()),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: FrostGap.group,
+                    children: [
+                      _NovelHead(novel: novelPlaceholder()),
+                      Wrap(
+                        spacing: FrostGap.related,
+                        runSpacing: FrostGap.related,
+                        children: [
+                          FrostButton.prominent(label: t.novel.detail.startReading, icon: PivIcons.newspaper, onPressed: () {}),
+                          AppDetailBookmarkButton(bookmarked: false, label: t.novelDetail.bookmark, onPressed: () {}),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                const Expanded(child: AppRowsSkeleton(count: 3, subtitle: false)),
-              ],
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }

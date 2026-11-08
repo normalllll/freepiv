@@ -64,7 +64,7 @@ void main() {
 
     final never = Completer<UserPageResult>();
     await _mount(tester, () => never.future);
-    expect(find.byType(AppRowsSkeleton), findsOneWidget);
+    expect(find.byType(AppUserRowsSkeleton), findsOneWidget);
 
     var attempts = 0;
     await _mount(tester, () async {
@@ -82,7 +82,12 @@ void main() {
   });
 
   testWidgets('long names fit a phone at double text size', (tester) async {
-    await _mount(tester, () async => UserPageResult(userPreviews: [for (final preview in sampleUserPreviews(count: 3)) _long(preview)]), size: phoneSize, textScale: 2);
+    await _mount(
+      tester,
+      () async => UserPageResult(userPreviews: [for (final preview in sampleUserPreviews(count: 3)) _long(preview)]),
+      size: phoneSize,
+      textScale: 2,
+    );
     expect(find.byType(AppUserRow), findsWidgets);
     expectNoLayoutErrors(tester);
   });

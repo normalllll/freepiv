@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/dev/sample_data.dart';
+import 'package:freepiv/features/fanbox/fanbox_plans.dart';
 import 'package:freepiv/features/fanbox/creator_page.dart';
 import 'package:freepiv/features/fanbox/fanbox_actions.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
@@ -46,6 +47,17 @@ void main() {
   testWidgets('the identity avatar is 72 across', (tester) async {
     await _mount(tester);
     expect(tester.getSize(find.descendant(of: find.byType(AppIdentityHeader), matching: find.byType(FrostAvatar)).first), const Size(72, 72));
+  });
+
+  testWidgets('every tab starts at the tab bar\'s left edge', (tester) async {
+    await _mount(tester, size: const Size(1700, 900));
+    final left = tester.getTopLeft(find.descendant(of: find.byType(FrostTabBar), matching: find.text(t.fanbox.posts))).dx;
+    expect(tester.getTopLeft(find.byType(AppFanboxPostCard).first).dx, left, reason: 'the posts');
+    await _showTab(tester, t.fanbox.creatorPlans);
+    expect(tester.getTopLeft(find.byType(FanboxPlanRow).first).dx, left, reason: 'the plans');
+    await _showTab(tester, t.user.tabs.profile);
+    expect(tester.getTopLeft(find.byType(FrostGroupedSection).first).dx, left, reason: 'the details');
+    expectNoLayoutErrors(tester);
   });
 
   testWidgets('the tabs stay pinned under the page header while the posts scroll', (tester) async {

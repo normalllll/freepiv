@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:freepiv/features/pixivision/navigation.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
-import 'package:freepiv/ui/compositions/skeleton_fill.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// Pixivision serves its images only to requests coming from its own pages.
@@ -43,6 +43,16 @@ class AppPixivisionCard extends StatelessWidget {
   }
 }
 
+/// An article to lay out and paint as bones while the real ones load.
+const articleSummaryPlaceholder = ArticleSummary(
+  id: 0,
+  title: 'An article title over two lines, as long as the usual ones are, and a little over',
+  url: '',
+  publishDate: '2026-11-07',
+  category: ArticleLink(title: 'Illustration', url: ''),
+  tags: [],
+);
+
 /// First-load placeholders the size of the article cards.
 class AppPixivisionCardsSkeleton extends StatelessWidget {
   const AppPixivisionCardsSkeleton({this.count, super.key});
@@ -58,7 +68,7 @@ class AppPixivisionCardsSkeleton extends StatelessWidget {
       items: List.generate(count ?? appWaterfallSkeletonCount(context, width: constraints.maxWidth, widestRatio: _ratio, footerExtent: 0), (index) => index),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemBuilder: (context, _, index) => FrostMediaCard.skeleton(aspectRatio: _ratio, footer: 'An article title over two lines · 2026-11-07'),
+      itemBuilder: (context, _, index) => appBones(const AppPixivisionCard(article: articleSummaryPlaceholder)),
     ),
   );
 }

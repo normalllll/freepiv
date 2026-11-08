@@ -56,8 +56,12 @@ class RankingPage extends ConsumerStatefulWidget {
 }
 
 class _RankingPageState extends ConsumerState<RankingPage> with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(length: AppRankingKind.values.length, initialIndex: widget.kind.index, animationDuration: FrostMotion.navigation, vsync: this)
-    ..addListener(_kindChanged);
+  late final _tabs = TabController(
+    length: AppRankingKind.values.length,
+    initialIndex: widget.kind.index,
+    animationDuration: FrostMotion.navigation,
+    vsync: this,
+  )..addListener(_kindChanged);
 
   /// The kind shown last; the kind shown next takes its mode where it has it.
   late AppRankingKind _shown = widget.kind;
@@ -184,7 +188,7 @@ class _RankingPageState extends ConsumerState<RankingPage> with SingleTickerProv
               maxWidth: FrostMetrics.readingMaxWidth,
               sliver: FrostSliverDataList<Novel>(
                 source: source as FrostListSource<Novel>,
-                firstLoadSkeleton: const AppRowsSkeleton(),
+                firstLoadSkeleton: const AppNovelRowsSkeleton(),
                 empty: empty,
                 itemBuilder: (context, novel, index) => AppNovelRow(novel: novel, rank: index + 1),
               ),

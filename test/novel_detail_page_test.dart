@@ -161,8 +161,8 @@ void main() {
   testWidgets('loading: a novel known only by its id shows the head at its size', (tester) async {
     final never = Completer<Novel>();
     await _mount(tester, id: 7, overrides: {novelDetailProvider: novelDetailProvider.overrideWith2((_) => _Detail(() => never.future))});
-    expect(find.byType(FrostMediaFrame), findsWidgets);
-    expect(find.text(t.novel.detail.startReading), findsNothing);
+    expect(find.byType(FrostThumbnail), findsOneWidget);
+    expect(find.text('A novel'), findsNothing);
   });
 
   testWidgets('error: a failed load offers a retry; a missing novel says so', (tester) async {

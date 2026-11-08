@@ -12,6 +12,7 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/loading_section.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:frost_ui/social.dart';
 import 'package:go_router/go_router.dart';
@@ -124,6 +125,7 @@ class AppCommentsPreview extends StatelessWidget {
           value: value,
           onRetry: onRetry,
           failed: t.illust.comments.failed,
+          skeleton: const AppCommentRowsSkeleton(count: shown),
           builder: (page) {
             if (page.comments.isEmpty) return FrostText(t.illust.comments.empty, role: FrostTextRole.footnote, tone: FrostTextTone.secondary);
             return FutureBuilder(
@@ -156,5 +158,26 @@ class AppCommentsPreview extends StatelessWidget {
   static String entryLabel(Translations t, int? total, {bool noComments = false, bool failed = false}) {
     if (total != null && total > 0) return t.illustDetail.allComments(count: total);
     return !failed && (total == 0 || noComments) ? t.illust.comments.write : t.illust.comments.open;
+  }
+}
+
+/// First-load placeholders for comments: real comment rows painted as bones.
+class AppCommentRowsSkeleton extends StatelessWidget {
+  const AppCommentRowsSkeleton({this.count, super.key});
+
+  /// Null fills the window; a number is for a short fixed preview.
+  final int? count;
+
+  static final _comment = Comment(id: 0, comment: 'A comment of usual length', date: '2026-01-01T12:00:00+09:00', user: appPlaceholderUser, hasReplies: false);
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = count ?? appSkeletonCount(context, shortestExtent: FrostControlSize.regular.height(context));
+    return appBones(
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [for (var index = 0; index < rows; index++) FrostThread(item: appCommentItem(context, _comment, assets: PixivCommentAssets.empty))],
+      ),
+    );
   }
 }

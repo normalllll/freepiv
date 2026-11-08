@@ -97,7 +97,8 @@ class _AppSectionedPageState extends State<AppSectionedPage> {
   }
 }
 
-/// A section heading in a browse page, at the browse inset.
+/// A section heading in a browse page, at the browse inset, over a Frost grid
+/// whose own top padding completes the gap under the title.
 class AppBrowseSectionHeader extends StatelessWidget {
   const AppBrowseSectionHeader({required this.title, this.actionLabel, this.onAction, super.key});
 
@@ -108,7 +109,7 @@ class AppBrowseSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) => Padding(
-      padding: FrostMetrics.sectionTitlePadding(constraints.maxWidth),
+      padding: FrostMetrics.sectionTitlePadding(constraints.maxWidth).copyWith(bottom: FrostGap.related - FrostGap.inline),
       child: FrostSectionHeader(title: title, actionLabel: actionLabel, onAction: onAction),
     ),
   );

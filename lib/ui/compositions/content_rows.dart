@@ -8,7 +8,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
-import 'package:freepiv/ui/compositions/skeleton_fill.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -77,6 +77,9 @@ class AppNovelRow extends StatelessWidget {
   final bool showAuthor;
 
   static const coverWidth = 72.0;
+
+  /// The width of a cover to its height.
+  static const coverRatio = 1 / 1.414;
   static const _shownTags = 3;
 
   @override
@@ -94,7 +97,7 @@ class AppNovelRow extends StatelessWidget {
           children: [
             SizedBox(
               width: coverWidth,
-              child: AppPixivImage(url: novel.imageUrls.medium, aspectRatio: 1 / 1.414, radius: FrostRadius.md),
+              child: AppPixivImage(url: novel.imageUrls.medium, aspectRatio: coverRatio, radius: FrostRadius.md),
             ),
             Expanded(
               child: Column(
@@ -164,4 +167,45 @@ class AppRowsSkeleton extends StatelessWidget {
         FrostListRow.skeleton(title: 'Sample user name', icon: true, subtitle: subtitle ? '@sample_account' : null, value: null),
     ],
   );
+}
+
+/// First-load placeholders for a list of novels: [AppNovelRow] with its cover.
+class AppNovelRowsSkeleton extends StatelessWidget {
+  const AppNovelRowsSkeleton({this.count, this.showAuthor = true, super.key});
+
+  /// Null fills the window; a number is for a short fixed preview.
+  final int? count;
+  final bool showAuthor;
+
+  @override
+  Widget build(BuildContext context) {
+    final novel = novelPlaceholder();
+    final rows = count ?? appSkeletonCount(context, shortestExtent: AppNovelRow.coverWidth / AppNovelRow.coverRatio);
+    return appBones(
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [for (var index = 0; index < rows; index++) AppNovelRow(novel: novel, showAuthor: showAuthor)],
+      ),
+    );
+  }
+}
+
+/// First-load placeholders for a list of users: [AppUserRow].
+class AppUserRowsSkeleton extends StatelessWidget {
+  const AppUserRowsSkeleton({this.count, super.key});
+
+  /// Null fills the window; a number is for a short fixed preview.
+  final int? count;
+
+  @override
+  Widget build(BuildContext context) {
+    final preview = userPreviewPlaceholder();
+    final rows = count ?? appSkeletonCount(context, shortestExtent: FrostControlSize.regular.height(context));
+    return appBones(
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [for (var index = 0; index < rows; index++) AppUserRow(preview: preview)],
+      ),
+    );
+  }
 }

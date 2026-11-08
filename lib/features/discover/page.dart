@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -12,8 +13,9 @@ import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_box.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/entry_row.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
+import 'package:freepiv/features/pixivision/article_card.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
@@ -143,7 +145,8 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
               ],
               column(
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: FrostGap.section),
+                  // The gap above only divides them from the history.
+                  padding: EdgeInsets.only(top: history.isEmpty ? 0 : FrostGap.section, bottom: FrostGap.section),
                   child: AppEntryRow(entries: discoverEntries(t, (location) => unawaited(GoRouter.of(context).push(location)))),
                 ),
               ),
@@ -160,7 +163,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                   actionLabel: t.common.retry,
                   onAction: () => unawaited(ref.read(searchTrendingTagsProvider.notifier).reload()),
                 ),
-                _ => const AppRowsSkeleton(count: 2, subtitle: false),
+                _ => const _TrendingSkeleton(),
               }),
               column(
                 Padding(
@@ -179,12 +182,15 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                     minItemWidth: DiscoverPage.articleTileWidth,
                     children: [
                       for (final article in shown)
-                        DiscoverArticleCard(article: article, onPressed: () => unawaited(openPixivisionLink(context, article.url, summary: article))),
+                        DiscoverArticleCard(
+                          article: article,
+                          onPressed: () => unawaited(openPixivisionLink(context, article.url, summary: article)),
+                        ),
                     ],
                   ),
                 },
                 AsyncValue(:final error?) => FrostCompactMessage.error(error: error, actionLabel: t.common.retry, onAction: () => ref.invalidate(pixivision)),
-                _ => const AppRowsSkeleton(count: 1, subtitle: false),
+                _ => const _ArticlesSkeleton(),
               }),
             ],
           ),
@@ -192,4 +198,38 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
       ),
     );
   }
+}
+
+/// The trending tags while they load: the same grid of square cards.
+class _TrendingSkeleton extends StatelessWidget {
+  const _TrendingSkeleton();
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final tiles = appSkeletonCount(
+        context,
+        shortestExtent: DiscoverPage.tagTileWidth,
+        perRow: math.max(1, (constraints.maxWidth / DiscoverPage.tagTileWidth).floor()),
+      );
+      return FrostGrid(
+        minItemWidth: DiscoverPage.tagTileWidth,
+        aspectRatio: 1,
+        children: [for (var index = 0; index < tiles; index++) FrostMediaCard.skeleton(aspectRatio: 1, footer: null)],
+      );
+    },
+  );
+}
+
+/// The Pixivision picks while they load: the same grid of article cards.
+class _ArticlesSkeleton extends StatelessWidget {
+  const _ArticlesSkeleton();
+
+  @override
+  Widget build(BuildContext context) => appBones(
+    FrostGrid(
+      minItemWidth: DiscoverPage.articleTileWidth,
+      children: [for (var index = 0; index < discoverArticleCount; index++) DiscoverArticleCard(article: articleSummaryPlaceholder)],
+    ),
+  );
 }

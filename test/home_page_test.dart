@@ -30,6 +30,24 @@ class _Feed extends HomeIllustListSource {
   Future<IllustPageResult> loadNextPage(String nextUrl) => next!();
 }
 
+/// Novels that are still on their way.
+class _NeverNovels extends HomeNovelListSource {
+  @override
+  Future<NovelPageResult> loadFirstPage() => Completer<NovelPageResult>().future;
+
+  @override
+  Future<NovelPageResult> loadNextPage(String nextUrl) => Completer<NovelPageResult>().future;
+}
+
+/// Users that are still on their way.
+class _NeverUsers extends HomeUserListSource {
+  @override
+  Future<UserPageResult> loadFirstPage() => Completer<UserPageResult>().future;
+
+  @override
+  Future<UserPageResult> loadNextPage(String nextUrl) => Completer<UserPageResult>().future;
+}
+
 Future<void> _mountFeed(WidgetTester tester, HomeIllustListSource source, {Size size = desktopSize}) => mountPilotPage(
   tester,
   const HomePage(),
@@ -72,6 +90,58 @@ void main() {
     await _mountFeed(tester, _Feed(() => never.future));
     expect(find.byType(AppArtworkWaterfallSkeleton), findsOneWidget);
     expect(find.byType(AppArtworkCard), findsNothing);
+  });
+
+  for (final size in [desktopSize, const Size(1800, 1100), phoneSize]) {
+    testWidgets('loading: the Home skeleton has the loaded page\'s titles, shelf and columns at $size', (tester) async {
+      final answer = Completer<IllustPageResult>();
+      await _mountFeed(tester, _Feed(() => answer.future), size: size);
+      expect(find.text(t.home.rankings), findsOneWidget);
+      expect(find.text(t.home.seeMore), findsOneWidget);
+      expect(find.text(t.home.recommended), findsOneWidget);
+      final shelf = find.descendant(of: find.byType(FrostShelf), matching: find.byType(AppArtworkCardSkeleton));
+      expect(shelf, findsWidgets);
+      final grid = find.descendant(of: find.byType(AppArtworkWaterfallSkeleton), matching: find.byType(AppArtworkCardSkeleton));
+
+      Offset at(String label) => tester.getTopLeft(find.text(label));
+      final (rankings, seeMore, recommended) = (at(t.home.rankings), at(t.home.seeMore), at(t.home.recommended));
+      final tile = tester.getRect(shelf.first);
+      final card = tester.getRect(grid.first);
+
+      answer.complete(IllustPageResult(illusts: sampleIllusts(count: 12), rankingIllusts: sampleIllusts(count: 10)));
+      await settlePilot(tester);
+      expect(find.byType(AppArtworkCardSkeleton), findsNothing);
+      expect(at(t.home.rankings), rankings);
+      expect(at(t.home.seeMore), seeMore);
+      expect(at(t.home.recommended), recommended);
+      final tiles = find.descendant(of: find.byType(FrostShelf), matching: find.byType(AppArtworkCard));
+      expect(tester.getRect(tiles.first), tile);
+      final cards = find.byWidgetPredicate((widget) => widget is AppArtworkCard && !widget.square);
+      final loaded = tester.getRect(cards.first);
+      expect((loaded.left, loaded.top, loaded.width), (card.left, card.top, card.width), reason: 'the same column edges and start');
+      expectNoLayoutErrors(tester);
+    });
+  }
+
+  testWidgets('loading: the Novels tab has its shelf of covers and novel rows, the Users tab its user rows', (tester) async {
+    await mountPilotPage(
+      tester,
+      const HomePage(),
+      overrides: {
+        homeNovelSourceProvider: homeNovelSourceProvider.overrideWith((ref) => _NeverNovels()),
+        homeUserSourceProvider: homeUserSourceProvider.overrideWith((ref) => _NeverUsers()),
+      },
+    );
+    await tester.tap(find.text(t.home.novels).first);
+    await settlePilot(tester);
+    expect(find.text(t.home.rankings), findsOneWidget);
+    expect(find.text(t.home.recommended), findsOneWidget);
+    expect(find.descendant(of: find.byType(FrostShelf), matching: find.byType(AppArtworkCardSkeleton)), findsWidgets);
+    expect(find.descendant(of: find.byType(AppNovelRowsSkeleton), matching: find.byType(AppNovelRow)), findsWidgets);
+    await tester.tap(find.text(t.home.users).first);
+    await settlePilot(tester);
+    expect(find.descendant(of: find.byType(AppUserRowsSkeleton), matching: find.byType(AppUserRow)), findsWidgets);
+    expectNoLayoutErrors(tester);
   });
 
   testWidgets('error: a feed that never loaded offers a retry over the page', (tester) async {

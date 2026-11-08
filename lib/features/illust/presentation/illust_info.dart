@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
-import 'package:freepiv/features/comments/domain/pixiv_comment_assets.dart';
 import 'package:freepiv/features/comments/presentation/comment_thread_item.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
@@ -17,9 +16,9 @@ import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/loading_section.dart';
 import 'package:freepiv/ui/compositions/pixiv_text.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'package:frost_ui/social.dart' show FrostThread;
 import 'package:go_router/go_router.dart';
 
 /// What the info column acts on: the work, its pages and the page on stage.
@@ -328,6 +327,10 @@ class IllustAuthorWorks extends ConsumerWidget {
 
   static const tileExtent = 120.0;
 
+  /// The space above the shelf, part of it so that an author with no other
+  /// works leaves no gap behind.
+  static const gapAbove = EdgeInsets.only(top: FrostGap.section);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.t;
@@ -338,23 +341,29 @@ class IllustAuthorWorks extends ConsumerWidget {
           data: (page) {
             final works = page.illusts.where((work) => work.id != illust.id).toList();
             if (works.isEmpty) return const SizedBox.shrink();
-            return FrostShelf(
-              title: t.illust.section.recentWorks,
-              inset: 0,
-              action: FrostButton.quiet(label: t.home.seeMore, onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.user(illust.user.id)))),
-              itemCount: works.length,
-              itemExtent: tileExtent,
-              height: tileExtent,
-              itemBuilder: (context, index) => AppArtworkCard.tile(illust: works[index]),
+            return Padding(
+              padding: gapAbove,
+              child: FrostShelf(
+                title: t.illust.section.recentWorks,
+                inset: 0,
+                action: FrostButton.quiet(label: t.home.seeMore, onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.user(illust.user.id)))),
+                itemCount: works.length,
+                itemExtent: tileExtent,
+                height: tileExtent,
+                itemBuilder: (context, index) => AppArtworkCard.tile(illust: works[index]),
+              ),
             );
           },
           loading: () => const IllustAuthorWorksLoading(),
-          error: (error, _) => AppLoadingSection(
-            title: t.illust.section.recentWorks,
-            value: AsyncError<void>(error, StackTrace.empty),
-            onRetry: () => unawaited(ref.read(provider.notifier).reload()),
-            failed: t.illust.works.failed,
-            builder: (_) => const SizedBox(),
+          error: (error, _) => Padding(
+            padding: gapAbove,
+            child: AppLoadingSection(
+              title: t.illust.section.recentWorks,
+              value: AsyncError<void>(error, StackTrace.empty),
+              onRetry: () => unawaited(ref.read(provider.notifier).reload()),
+              failed: t.illust.works.failed,
+              builder: (_) => const SizedBox(),
+            ),
           ),
         );
   }
@@ -405,7 +414,7 @@ class _IllustRelatedPreviewState extends ConsumerState<IllustRelatedPreview> {
             ],
           ),
           _ when source.initialized => FrostText(t.illust.related.empty, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
-          _ => const AppArtworkWaterfallSkeleton(count: 4, padding: EdgeInsets.zero),
+          _ => const AppArtworkWaterfallSkeleton(count: IllustRelatedPreview.shown, padding: EdgeInsets.zero),
         };
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -424,50 +433,6 @@ class _IllustRelatedPreviewState extends ConsumerState<IllustRelatedPreview> {
   }
 }
 
-/// A work of usual size standing in while the real one loads. Only its
-/// geometry is ever seen: everything built from it is painted as bones.
-Illust illustPlaceholder({int id = 0}) => Illust(
-  id: id,
-  title: 'A work title',
-  kind: 'illust',
-  imageUrls: const ImageUrls(squareMedium: '', medium: '', large: ''),
-  caption: '',
-  restrict: 0,
-  user: _placeholderUser,
-  tags: const [
-    Tag(name: 'original'),
-    Tag(name: 'landscape'),
-  ],
-  tools: const [],
-  createDate: '2026-01-01T00:00:00+09:00',
-  pageCount: 1,
-  width: 1000,
-  height: 1000,
-  sanityLevel: 2,
-  xRestrict: 0,
-  metaSinglePage: const MetaSinglePage(),
-  metaPages: const [],
-  totalView: 1000,
-  totalBookmarks: 100,
-  isBookmarked: false,
-  visible: true,
-  isMuted: false,
-  illustAiType: 1,
-);
-
-const _placeholderUser = User(
-  id: 0,
-  name: 'Sample artist',
-  account: 'sample',
-  profileImageUrls: ProfileImageUrls(medium: ''),
-);
-
-/// [child], a real layout, painted as bones: nothing in it can be pressed,
-/// focused or read.
-Widget _bones(Widget child) => ExcludeSemantics(
-  child: IgnorePointer(child: ExcludeFocus(child: child.frostSkeleton(true))),
-);
-
 /// The heading (title, author line, actions, meta line) of a work not yet
 /// loaded, laid out as [IllustInfoHeading] lays out the loaded one.
 class IllustInfoHeadingSkeleton extends ConsumerWidget {
@@ -477,7 +442,7 @@ class IllustInfoHeadingSkeleton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final illust = illustPlaceholder();
     final pages = artworkPages(illust, ref.watch(viewerImageQualityProvider), ref.watch(previewImageQualityProvider));
-    return _bones(
+    return appBones(
       IllustInfoHeading(
         info: IllustInfoContext(illust: illust, pages: pages, page: 0),
       ),
@@ -490,7 +455,7 @@ class IllustAboutSkeleton extends StatelessWidget {
   const IllustAboutSkeleton({super.key});
 
   @override
-  Widget build(BuildContext context) => _bones(IllustAbout(illust: illustPlaceholder()));
+  Widget build(BuildContext context) => appBones(IllustAbout(illust: illustPlaceholder()));
 }
 
 /// The comments section while its comments load: the same header, comment
@@ -499,8 +464,6 @@ class IllustCommentsLoading extends StatelessWidget {
   const IllustCommentsLoading({this.total, super.key});
 
   final int? total;
-
-  static final _comment = Comment(id: 0, comment: 'A comment of usual length', date: '2026-01-01T12:00:00+09:00', user: _placeholderUser, hasReplies: false);
 
   @override
   Widget build(BuildContext context) {
@@ -516,17 +479,9 @@ class IllustCommentsLoading extends StatelessWidget {
           onRetry: () {},
           failed: '',
           builder: (_) => const SizedBox.shrink(),
-          skeleton: _bones(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (var index = 0; index < AppCommentsPreview.shown; index++)
-                  FrostThread(item: appCommentItem(context, _comment, assets: PixivCommentAssets.empty)),
-              ],
-            ),
-          ),
+          skeleton: const AppCommentRowsSkeleton(count: AppCommentsPreview.shown),
         ),
-        _bones(
+        appBones(
           Align(
             alignment: AlignmentDirectional.centerStart,
             child: FrostButton.quiet(label: AppCommentsPreview.entryLabel(t, total), edgeAlignment: FrostButtonEdgeAlignment.start, onPressed: () {}),
@@ -546,15 +501,18 @@ class IllustAuthorWorksLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    return IgnorePointer(
-      child: FrostShelf(
-        title: t.illust.section.recentWorks,
-        inset: 0,
-        action: _bones(FrostButton.quiet(label: t.home.seeMore, onPressed: () {})),
-        itemCount: tiles,
-        itemExtent: IllustAuthorWorks.tileExtent,
-        height: IllustAuthorWorks.tileExtent,
-        itemBuilder: (context, index) => FrostMediaCard.skeleton(aspectRatio: 1, footer: null),
+    return Padding(
+      padding: IllustAuthorWorks.gapAbove,
+      child: IgnorePointer(
+        child: FrostShelf(
+          title: t.illust.section.recentWorks,
+          inset: 0,
+          action: appBones(FrostButton.quiet(label: t.home.seeMore, onPressed: () {})),
+          itemCount: tiles,
+          itemExtent: IllustAuthorWorks.tileExtent,
+          height: IllustAuthorWorks.tileExtent,
+          itemBuilder: (context, index) => FrostMediaCard.skeleton(aspectRatio: 1, footer: null),
+        ),
       ),
     );
   }
@@ -570,7 +528,7 @@ class IllustRelatedLoading extends StatelessWidget {
     spacing: FrostGap.related,
     children: [
       FrostSectionHeader(title: context.t.illust.section.relatedWorks),
-      const AppArtworkWaterfallSkeleton(count: 4, padding: EdgeInsets.zero),
+      const AppArtworkWaterfallSkeleton(count: IllustRelatedPreview.shown, padding: EdgeInsets.zero),
     ],
   );
 }

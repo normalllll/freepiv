@@ -6,6 +6,7 @@ import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
+import 'package:freepiv/features/comments/presentation/comment_thread_item.dart';
 import 'package:freepiv/features/comments/presentation/work_comments_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -147,7 +148,7 @@ void main() {
   testWidgets('loading shows rows at their size; the input bar and long names fit a phone at double text size', (tester) async {
     final never = Completer<CommentPageResult>();
     await _mount(tester, _Comments(() => never.future), size: phoneSize, textScale: 2);
-    expect(find.byType(FrostThread), findsNothing);
+    expect(find.byType(AppCommentRowsSkeleton), findsOneWidget);
     expectNoLayoutErrors(tester);
     await _mount(
       tester,

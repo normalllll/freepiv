@@ -7,8 +7,8 @@ import 'package:freepiv/features/pixivision/logic.dart';
 import 'package:freepiv/features/pixivision/navigation.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/sectioned_page.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
 
@@ -176,16 +176,13 @@ class _TagDirectory extends ConsumerWidget {
         ),
         AsyncValue(:final value?) => SliverList.list(
           children: [
-            for (final group in value.groups) ...[
-              FrostSectionHeader(title: group.name),
-              _TagNodes(nodes: group.nodes),
-            ],
+            for (final group in value.groups) ...[FrostSectionHeader(title: group.name), _TagNodes(nodes: group.nodes)],
           ],
         ),
         AsyncValue(:final error?) => SliverToBoxAdapter(
           child: FrostErrorContent.fromError(error: error, onRetry: () => ref.invalidate(pixivisionTagsProvider(language))),
         ),
-        _ => const SliverToBoxAdapter(child: AppRowsSkeleton(subtitle: false)),
+        _ => const SliverToBoxAdapter(child: _TagDirectorySkeleton()),
       },
     );
   }
@@ -215,10 +212,33 @@ class _TagNodes extends StatelessWidget {
         ],
       ),
       for (final node in nodes)
-        if (node.children.isNotEmpty) ...[
-          FrostText(node.name, role: FrostTextRole.headline),
-          _TagNodes(nodes: node.children),
-        ],
+        if (node.children.isNotEmpty) ...[FrostText(node.name, role: FrostTextRole.headline), _TagNodes(nodes: node.children)],
     ],
+  );
+}
+
+/// The tag directory while it loads: groups under headings, tags in a wrap.
+class _TagDirectorySkeleton extends StatelessWidget {
+  const _TagDirectorySkeleton();
+
+  static const _groups = 3;
+  static const _tags = ['Illustration', 'Characters', 'Landscape', 'Manga', 'Original', 'Cosplay', 'Game'];
+
+  @override
+  Widget build(BuildContext context) => appBones(
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: FrostGap.related,
+      children: [
+        for (var group = 0; group < _groups; group++) ...[
+          const FrostSectionHeader(title: 'A group of tags'),
+          Wrap(
+            spacing: FrostGap.inline,
+            runSpacing: FrostGap.inline,
+            children: [for (final tag in _tags) FrostTag(label: tag, detail: '00', onPressed: () {})],
+          ),
+        ],
+      ],
+    ),
   );
 }

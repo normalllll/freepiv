@@ -8,7 +8,6 @@ import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
-import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/fanbox_image.dart';
 import 'package:freepiv/ui/compositions/fanbox_rows.dart';
 import 'package:freepiv/ui/compositions/identity_header.dart';
@@ -137,25 +136,28 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
                           await _refresh(tab);
                           return true;
                         },
-                        builder: (context, refresh) => FrostLoadingScrollView(
-                          // Joins the NestedScrollView on desktop too.
-                          primary: true,
-                          physics: refresh.physics,
-                          slivers: [
-                            SliverOverlapInjector(handle: _overlap),
-                            ?refresh.locators.sliverHeader,
-                            ...switch (tab) {
-                              _CreatorTab.profile => [
-                                FrostSliverContentColumn(
-                                  maxWidth: FrostMetrics.readingMaxWidth,
-                                  sliver: SliverToBoxAdapter(
-                                    child: creator == null ? const AppRowsSkeleton(count: 3) : _Profile(creator: creator),
+                        // Every tab starts at the tab bar's left edge.
+                        builder: (context, refresh) => FrostColumnPlacement(
+                          alignment: FrostColumnAlignment.start,
+                          child: FrostLoadingScrollView(
+                            // Joins the NestedScrollView on desktop too.
+                            primary: true,
+                            physics: refresh.physics,
+                            slivers: [
+                              SliverOverlapInjector(handle: _overlap),
+                              ?refresh.locators.sliverHeader,
+                              ...switch (tab) {
+                                _CreatorTab.profile => [
+                                  FrostSliverContentColumn(
+                                    maxWidth: double.infinity,
+                                    sliver: SliverToBoxAdapter(child: creator == null ? const _ProfileSkeleton() : _Profile(creator: creator)),
                                   ),
-                                ),
-                              ],
-                              _ => fanboxCollectionSlivers(context, ref, _location(tab)),
-                            },
-                          ],
+                                ],
+                                _CreatorTab.plans => fanboxCollectionSlivers(context, ref, _location(tab), maxWidth: double.infinity),
+                                _ => fanboxCollectionSlivers(context, ref, _location(tab)),
+                              },
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -239,6 +241,43 @@ class _IdentitySkeleton extends StatelessWidget {
   ).frostSkeleton(true);
 }
 
+/// The creator's tags while they load.
+class _TagsSkeleton extends StatelessWidget {
+  const _TagsSkeleton();
+
+  static const _tags = ['#illustration', '#process', '#sketch', '#works'];
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+    spacing: FrostGap.inline,
+    runSpacing: FrostGap.inline,
+    children: [for (final tag in _tags) FrostTag.skeleton(label: tag)],
+  );
+}
+
+/// The creator's links and tags, laid out as [_Profile], while the creator loads.
+class _ProfileSkeleton extends StatelessWidget {
+  const _ProfileSkeleton();
+
+  static const _links = 2;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    spacing: FrostGap.group,
+    children: [
+      FrostGroupedSection(
+        children: [
+          for (var index = 0; index < _links; index++)
+            FrostListRow.skeleton(title: 'example.com', icon: true, subtitle: 'https://example.com/creator', value: null),
+        ],
+      ),
+      FrostSectionHeader(title: context.t.fanbox.searchTags),
+      const _TagsSkeleton(),
+    ],
+  );
+}
+
 /// The creator's links, profile pictures and tags.
 class _Profile extends ConsumerWidget {
   const _Profile({required this.creator});
@@ -291,14 +330,20 @@ class _Profile extends ConsumerWidget {
           AsyncValue(:final value?) => Wrap(
             spacing: FrostGap.inline,
             runSpacing: FrostGap.inline,
-            children: [for (final tag in value) FrostTag(label: '#${tag.name}', onPressed: () => openFanboxTag(context, tag.name, creatorId: creator.creatorId))],
+            children: [
+              for (final tag in value)
+                FrostTag(
+                  label: '#${tag.name}',
+                  onPressed: () => openFanboxTag(context, tag.name, creatorId: creator.creatorId),
+                ),
+            ],
           ),
           AsyncValue(:final error?) => FrostCompactMessage.error(
             error: error,
             actionLabel: t.fanbox.retry,
             onAction: () => ref.invalidate(fanboxTagsProvider(creator.creatorId)),
           ),
-          _ => const AppRowsSkeleton(count: 1, subtitle: false),
+          _ => const _TagsSkeleton(),
         },
         if (creator.profileLinks.isEmpty && creator.profileImages.isEmpty && creator.description.trim().isEmpty)
           FrostText(t.fanbox.empty, tone: FrostTextTone.secondary),
@@ -354,7 +399,11 @@ class _FanCard extends ConsumerWidget {
         ),
         null => FrostText(t.fanbox.empty, tone: FrostTextTone.secondary),
       },
-      AsyncValue(:final error?) => FrostCompactMessage.error(error: error, actionLabel: t.fanbox.retry, onAction: () => ref.invalidate(fanboxSupportProvider(creatorId))),
+      AsyncValue(:final error?) => FrostCompactMessage.error(
+        error: error,
+        actionLabel: t.fanbox.retry,
+        onAction: () => ref.invalidate(fanboxSupportProvider(creatorId)),
+      ),
       _ => const FrostMediaFrame(aspectRatio: _cardRatio, child: SizedBox.expand()),
     };
   }

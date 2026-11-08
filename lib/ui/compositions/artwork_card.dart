@@ -11,7 +11,7 @@ import 'package:freepiv/features/illust/presentation/artwork_actions.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
-import 'package:freepiv/ui/compositions/skeleton_fill.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
