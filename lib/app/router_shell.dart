@@ -107,6 +107,7 @@ class RouterShell extends ConsumerWidget {
         // pages that offer a search carry the same session in their header
         // otherwise.
         titleBarSearch: const AppTitleBarSearch(),
+        titleBarSearchPlacement: FrostCaptionSearchPlacement.end,
         routeDepth: routeDepth,
         backToFirst: FrostShellBackToFirst(label: translations.navigation.backToFirst, icon: PivIcons.home, onPressed: onBackToFirst),
         taskEntry: appDownloadTaskEntry(downloads, revealed: revealed),
