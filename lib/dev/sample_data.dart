@@ -12,7 +12,9 @@ import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
+import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/me/logic/me_logic.dart';
+import 'package:freepiv/features/series/logic.dart';
 import 'package:freepiv/shared/logic/bookmark_options_logic.dart';
 import 'package:freepiv/shared/logic/user_follow_logic.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
@@ -263,6 +265,9 @@ final sampleOverrideMap = <Object, Override>{
     (ref, key) async => const WorkBookmarkOptions(restrict: Restrict.public, chosen: {'landscape'}, tags: ['landscape', 'オリジナル', 'girl', 'reference', 'wallpaper']),
   ),
   userFollowRestrictProvider: userFollowRestrictProvider.overrideWith((ref, args) async => Restrict.public),
+  novelSeriesWorksProvider: novelSeriesWorksProvider.overrideWith2((_) => _SampleNovelSeries()),
+  mangaSeriesWorksProvider: mangaSeriesWorksProvider.overrideWith2((_) => _SampleMangaSeries()),
+  watchlistEntriesProvider: watchlistEntriesProvider.overrideWith2((_) => _SampleWatchlist()),
 };
 
 final sampleOverrides = [...sampleOverrideMap.values];
@@ -497,6 +502,108 @@ class _SampleUserFollowingNotifier extends UserFollowingUsers {
   @override
   UserFollowingListSource build({required int userId, Restrict restrict = Restrict.public}) {
     final source = _SampleUserFollowing(userId: userId);
+    ref.onDispose(source.dispose);
+    return source;
+  }
+}
+
+/// A finished novel series of eight episodes.
+NovelSeriesPageResult sampleNovelSeries(int seriesId) {
+  final novels = sampleNovels(count: 8);
+  return NovelSeriesPageResult(
+    novelSeriesDetail: NovelSeriesDetail(
+      id: seriesId,
+      title: 'The traveller under the stars',
+      caption: 'A journey told one lighthouse at a time.',
+      isOriginal: true,
+      isConcluded: true,
+      contentCount: novels.length,
+      totalCharacterCount: 184000,
+      displayText: '',
+      novelAiType: 0,
+      watchlistAdded: false,
+      user: novels.first.user,
+    ),
+    novelSeriesFirstNovel: novels.first,
+    novelSeriesLatestNovel: novels.last,
+    novels: novels,
+  );
+}
+
+/// A manga series of twelve works.
+IllustSeriesPageResult sampleMangaSeries(int seriesId) {
+  final works = sampleIllusts(count: 12, kind: 'manga');
+  return IllustSeriesPageResult(
+    illustSeriesDetail: IllustSeriesDetail(
+      createDate: '2026-11-01T00:00:00+09:00',
+      seriesWorkCount: works.length,
+      width: 1000,
+      height: 1414,
+      coverImageUrls: SeriesCoverImageUrls(medium: works.first.imageUrls.medium),
+      watchlistAdded: true,
+      id: seriesId,
+      title: 'A town by the sea',
+      caption: 'Small days, drawn weekly.',
+      user: works.first.user,
+    ),
+    illustSeriesFirstIllust: works.first,
+    illusts: works,
+  );
+}
+
+/// Series the sample account follows up, the last one hidden by Pixiv.
+List<WatchlistSeries> sampleWatchlist() {
+  final works = sampleIllusts(count: 2);
+  return [
+    WatchlistSeries(id: 1, title: 'The traveller under the stars', url: works.first.imageUrls.medium, user: works.first.user, publishedContentCount: 12, lastPublishedContentDatetime: '2026-11-01T00:00:00+09:00'),
+    WatchlistSeries(id: 2, title: 'A town by the sea', url: works.last.imageUrls.medium, user: works.last.user, publishedContentCount: 8, lastPublishedContentDatetime: '2026-10-24T00:00:00+09:00'),
+    const WatchlistSeries(id: 3, title: '', maskText: '', publishedContentCount: 0),
+  ];
+}
+
+class _SampleNovelSeriesSource extends NovelSeriesSource {
+  _SampleNovelSeriesSource({required super.seriesId});
+
+  @override
+  Future<NovelSeriesPageResult> fetchFirstPage() async => sampleNovelSeries(seriesId);
+}
+
+class _SampleNovelSeries extends NovelSeriesWorks {
+  @override
+  NovelSeriesSource build(int seriesId) {
+    final source = _SampleNovelSeriesSource(seriesId: seriesId);
+    ref.onDispose(source.dispose);
+    return source;
+  }
+}
+
+class _SampleMangaSeriesSource extends MangaSeriesSource {
+  _SampleMangaSeriesSource({required super.seriesId});
+
+  @override
+  Future<IllustSeriesPageResult> fetchFirstPage() async => sampleMangaSeries(seriesId);
+}
+
+class _SampleMangaSeries extends MangaSeriesWorks {
+  @override
+  MangaSeriesSource build(int seriesId) {
+    final source = _SampleMangaSeriesSource(seriesId: seriesId);
+    ref.onDispose(source.dispose);
+    return source;
+  }
+}
+
+class _SampleWatchlistSource extends WatchlistSource {
+  _SampleWatchlistSource({required super.kind});
+
+  @override
+  Future<WatchlistPageResult> loadFirstPage() async => WatchlistPageResult(series: sampleWatchlist());
+}
+
+class _SampleWatchlist extends WatchlistEntries {
+  @override
+  WatchlistSource build(AppSeriesKind kind) {
+    final source = _SampleWatchlistSource(kind: kind);
     ref.onDispose(source.dispose);
     return source;
   }

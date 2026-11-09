@@ -14,6 +14,7 @@ import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
 import 'package:freepiv/features/novel/presentation/reader/novel_reading_session.dart';
+import 'package:freepiv/features/series/series_widgets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
@@ -141,6 +142,11 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
                     key: _headKey,
                     child: _NovelHead(novel: _novel),
                   ),
+                  if (_novel.series case Series(:final id?, :final title?))
+                    Padding(
+                      padding: const EdgeInsets.only(top: FrostGap.related),
+                      child: AppSeriesLink(kind: AppSeriesKind.novel, seriesId: id, title: title),
+                    ),
                   const SizedBox(height: FrostGap.group),
                   Wrap(
                     spacing: FrostGap.related,
@@ -242,7 +248,6 @@ class _NovelHead extends ConsumerWidget {
                   t.novel.detail.totalChars(count: formatCount(novel.textLength)),
                   formatPixivDate(novel.createDate),
                   t.novelDetail.bookmarks(count: formatCount(novel.totalBookmarks)),
-                  ?novel.series.title,
                 ],
               ),
             ],

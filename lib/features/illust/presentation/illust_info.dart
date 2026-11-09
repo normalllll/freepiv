@@ -12,6 +12,7 @@ import 'package:freepiv/features/illust/logic/ugoira_playback.dart';
 import 'package:freepiv/features/illust/presentation/artwork_actions.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/features/series/series_widgets.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/bookmark_options.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
@@ -53,6 +54,7 @@ class IllustInfoHeading extends StatelessWidget {
         IllustAuthorLine(user: illust.user),
         IllustActionBar(info: info),
         IllustMetaLine(illust: illust),
+        if (illust.series case Series(:final id?, :final title?)) AppSeriesLink(kind: AppSeriesKind.manga, seriesId: id, title: title),
       ],
     );
   }

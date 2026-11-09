@@ -126,10 +126,6 @@ class _MePageState extends ConsumerState<MePage> {
       onPressed: () => unawaited(router.push(location)),
     );
     return [
-      if (userId != null)
-        FrostGroupedSection(
-          children: [row(PivIcons.user, t.me.following, AppRoute.meFollowing.path), row(PivIcons.users, t.me.followers, AppRoute.meFollowers.path)],
-        ),
       FrostGroupedSection(
         children: [
           row(

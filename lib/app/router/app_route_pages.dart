@@ -15,6 +15,8 @@ import 'package:freepiv/features/illust/presentation/illust_related_page.dart';
 import 'package:freepiv/features/login/presentation/login_page.dart';
 import 'package:freepiv/features/me/presentation/following_page.dart';
 import 'package:freepiv/features/me/presentation/me_page.dart';
+import 'package:freepiv/features/series/series_page.dart';
+import 'package:freepiv/features/series/watchlist_page.dart';
 import 'package:freepiv/features/newest/presentation/page/newest_page.dart';
 import 'package:freepiv/features/novel/presentation/detail/novel_detail_page.dart';
 import 'package:freepiv/features/novel/presentation/reader/novel_reader_page.dart';
@@ -146,6 +148,23 @@ Page<void> meFollowingPage(BuildContext context, GoRouterState state) {
 
 Page<void> meFollowersPage(BuildContext context, GoRouterState state) {
   return FrostDetailPage(key: state.pageKey, child: const FollowersPage());
+}
+
+Page<void> meWatchlistPage(BuildContext context, GoRouterState state) {
+  return FrostDetailPage(key: state.pageKey, child: const WatchlistPage());
+}
+
+Page<void> mangaSeriesPage(BuildContext context, GoRouterState state) => _seriesPage(state, AppSeriesKind.manga);
+
+Page<void> novelSeriesPage(BuildContext context, GoRouterState state) => _seriesPage(state, AppSeriesKind.novel);
+
+Page<void> _seriesPage(GoRouterState state, AppSeriesKind kind) {
+  final id = int.tryParse(state.pathParameters[AppRouteParam.id] ?? '');
+  if (id == null) return _missingRoutePage(key: state.pageKey, message: t.common.notFound);
+  return FrostDetailPage(
+    key: state.pageKey,
+    child: SeriesPage(kind: kind, seriesId: id),
+  );
 }
 
 Page<void> settingsPage(BuildContext context, GoRouterState state) {
