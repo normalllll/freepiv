@@ -185,7 +185,7 @@ String? fallbackPathFor(String path) {
     AppRoute.novelReader || AppRoute.novelComments when id != null => AppLocations.novel(id),
     AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator || AppRoute.fanboxWebLogin => AppRoute.fanbox.path,
     AppRoute.pixivisionBrowse || AppRoute.pixivisionArticle => AppRoute.pixivision.path,
-    AppRoute.meFollowing || AppRoute.meFollowers => AppRoute.me.path,
+    AppRoute.meFollowing || AppRoute.meFollowers || AppRoute.meWatchlist || AppRoute.meProfileEdit || AppRoute.meWorkspaceEdit => AppRoute.me.path,
     AppRoute.searchIllustResult || AppRoute.searchNovelResult || AppRoute.searchUserResult || AppRoute.tagSearch => AppRoute.discover.path,
     _ => AppRoute.home.path,
   };

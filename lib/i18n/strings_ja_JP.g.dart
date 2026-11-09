@@ -78,6 +78,12 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$loginPage$ja_JP loginPage = _Translations$loginPage$ja_JP._(_root);
 	@override late final _Translations$fanboxPage$ja_JP fanboxPage = _Translations$fanboxPage$ja_JP._(_root);
 	@override late final _Translations$discoverPage$ja_JP discoverPage = _Translations$discoverPage$ja_JP._(_root);
+	@override late final _Translations$privacy$ja_JP privacy = _Translations$privacy$ja_JP._(_root);
+	@override late final _Translations$bookmarkOptions$ja_JP bookmarkOptions = _Translations$bookmarkOptions$ja_JP._(_root);
+	@override late final _Translations$series$ja_JP series = _Translations$series$ja_JP._(_root);
+	@override late final _Translations$watchlist$ja_JP watchlist = _Translations$watchlist$ja_JP._(_root);
+	@override late final _Translations$profileEdit$ja_JP profileEdit = _Translations$profileEdit$ja_JP._(_root);
+	@override late final _Translations$workspaceEdit$ja_JP workspaceEdit = _Translations$workspaceEdit$ja_JP._(_root);
 }
 
 // Path: downloadEntry
@@ -416,6 +422,9 @@ class _Translations$me$ja_JP extends Translations$me$en_US {
 	@override String get emptyFollowers => 'フォロワーはいません';
 	@override String get about => 'このアプリについて';
 	@override String get settings => '設定';
+	@override String get watchlist => '追いかけ中のシリーズ';
+	@override String get editProfile => 'プロフィール編集';
+	@override String get workspace => '作業環境';
 }
 
 // Path: about
@@ -588,6 +597,7 @@ class _Translations$follow$ja_JP extends Translations$follow$en_US {
 	@override String get tooltipUnfollow => 'フォロー解除';
 	@override String get followed => 'フォロー中';
 	@override String get follow => 'フォロー';
+	@override String get restrictTitle => 'フォローの公開範囲';
 }
 
 // Path: richText
@@ -885,6 +895,123 @@ class _Translations$discoverPage$ja_JP extends Translations$discoverPage$en_US {
 	@override String get noArticles => '現在記事はありません';
 }
 
+// Path: privacy
+class _Translations$privacy$ja_JP extends Translations$privacy$en_US {
+	_Translations$privacy$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get label => '公開範囲';
+	@override String get public => '公開';
+	@override String get private => '非公開';
+}
+
+// Path: bookmarkOptions
+class _Translations$bookmarkOptions$ja_JP extends Translations$bookmarkOptions$en_US {
+	_Translations$bookmarkOptions$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'ブックマーク設定';
+	@override String get tags => 'タグ';
+	@override String get addTag => 'タグを入力して Enter';
+	@override String get noTags => '選べるタグはまだありません';
+	@override String get remove => 'ブックマークを解除';
+	@override String get save => '保存';
+	@override String get failed => 'ブックマークを保存できませんでした';
+	@override String get loadFailed => 'ブックマーク情報を読み込めませんでした';
+}
+
+// Path: series
+class _Translations$series$ja_JP extends Translations$series$en_US {
+	_Translations$series$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'シリーズ';
+	@override String link({required Object title}) => 'シリーズ · ${title}';
+	@override String episodes({required Object count}) => '全${count}話';
+	@override String get concluded => '完結';
+	@override String get ongoing => '連載中';
+	@override String get watch => '追いかける';
+	@override String get watching => '追いかけ中';
+	@override String get watchFailed => '追いかけ設定を変更できませんでした';
+	@override String get startFromFirst => '第1話から読む';
+	@override String get empty => 'このシリーズにはまだ作品がありません';
+}
+
+// Path: watchlist
+class _Translations$watchlist$ja_JP extends Translations$watchlist$en_US {
+	_Translations$watchlist$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '追いかけ中のシリーズ';
+	@override String get manga => 'マンガ';
+	@override String get novels => '小説';
+	@override String get emptyManga => '追いかけ中のマンガはありません';
+	@override String get emptyNovels => '追いかけ中の小説はありません';
+	@override String get unavailable => 'このシリーズは表示できません';
+	@override String updated({required Object date}) => '${date} 更新';
+}
+
+// Path: profileEdit
+class _Translations$profileEdit$ja_JP extends Translations$profileEdit$en_US {
+	_Translations$profileEdit$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'プロフィール編集';
+	@override String get name => 'ニックネーム';
+	@override String get nameRequired => 'ニックネームを入力してください';
+	@override String get gender => '性別';
+	@override String get genderUnknown => '未設定';
+	@override String get genderMale => '男性';
+	@override String get genderFemale => '女性';
+	@override String get birthday => '誕生日';
+	@override String get birthdayNotSet => '未設定';
+	@override String get region => '地域';
+	@override String get country => '国';
+	@override String get job => '職業';
+	@override String get website => 'ウェブサイト';
+	@override String get twitter => 'Twitter';
+	@override String get bio => '自己紹介';
+	@override String get save => '保存';
+	@override String get saved => '保存しました';
+	@override String get failed => '保存できませんでした';
+	@override String get discardTitle => '変更を破棄しますか？';
+	@override String get discardMessage => '変更はまだ保存されていません。';
+	@override String get discard => '破棄';
+	@override String get keepEditing => '編集を続ける';
+}
+
+// Path: workspaceEdit
+class _Translations$workspaceEdit$ja_JP extends Translations$workspaceEdit$en_US {
+	_Translations$workspaceEdit$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '作業環境';
+	@override String get pc => 'コンピュータ';
+	@override String get monitor => 'モニター';
+	@override String get tool => 'ソフト';
+	@override String get scanner => 'スキャナー';
+	@override String get tablet => 'タブレット';
+	@override String get mouse => 'マウス';
+	@override String get printer => 'プリンター';
+	@override String get desktop => '机の上にあるもの';
+	@override String get music => '作業中の音楽';
+	@override String get desk => '机';
+	@override String get chair => '椅子';
+	@override String get comment => 'その他';
+}
+
 // Path: settings.theme
 class _Translations$settings$theme$ja_JP extends Translations$settings$theme$en_US {
 	_Translations$settings$theme$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
@@ -1082,6 +1209,9 @@ class _Translations$settings$account$ja_JP extends Translations$settings$account
 	@override String get signedOutSubtitle => 'ログインすると Pixiv アカウントが表示されます';
 	@override String get notSignedIn => '未ログイン';
 	@override String get signOut => 'ログアウト';
+	@override String get showAi => 'AI 生成作品を表示';
+	@override String get showAiHelp => 'この設定は pixiv アカウントに保存されます';
+	@override String get showAiFailed => '設定を変更できませんでした';
 }
 
 // Path: ranking.types
@@ -1662,6 +1792,12 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 	@override String get previousChapter => '前の章';
 	@override String get nextChapter => '次の章';
 	@override String progressValue({required Object percent}) => '${percent}%';
+	@override String get markerSet => 'ここにしおりを挟む';
+	@override String get markerMenu => 'しおり';
+	@override String markerJump({required Object page}) => 'しおりへ移動（${page} ページ）';
+	@override String get markerUpdate => '現在の位置に更新';
+	@override String get markerRemove => 'しおりを外す';
+	@override String get markerFailed => 'しおりを変更できませんでした';
 }
 
 // Path: illustDetail.ugoira
@@ -2023,6 +2159,9 @@ extension on TranslationsJaJp {
 			'settings.account.signedOutSubtitle' => 'ログインすると Pixiv アカウントが表示されます',
 			'settings.account.notSignedIn' => '未ログイン',
 			'settings.account.signOut' => 'ログアウト',
+			'settings.account.showAi' => 'AI 生成作品を表示',
+			'settings.account.showAiHelp' => 'この設定は pixiv アカウントに保存されます',
+			'settings.account.showAiFailed' => '設定を変更できませんでした',
 			'me.profile' => 'プロフィール',
 			'me.openProfile' => 'プロフィールを開く',
 			'me.following' => 'フォロー中',
@@ -2031,6 +2170,9 @@ extension on TranslationsJaJp {
 			'me.emptyFollowers' => 'フォロワーはいません',
 			'me.about' => 'このアプリについて',
 			'me.settings' => '設定',
+			'me.watchlist' => '追いかけ中のシリーズ',
+			'me.editProfile' => 'プロフィール編集',
+			'me.workspace' => '作業環境',
 			'about.title' => 'このアプリについて',
 			'about.appName' => 'freepiv',
 			'about.subtitle' => 'Pixiv コンテンツを閲覧するための軽量クライアントです。現在のバージョン確認、更新チェック、プロジェクトのダウンロードページへの移動ができます。',
@@ -2204,14 +2346,14 @@ extension on TranslationsJaJp {
 			'newest.empty.everyone' => '新着作品はまだありません',
 			'illust.contextMenu.download' => 'ダウンロード',
 			'illust.contextMenu.downloadAll' => 'すべてダウンロード',
+			_ => null,
+		} ?? switch (path) {
 			'illust.contextMenu.copyImage' => '画像をコピーする',
 			'illust.contextMenu.copyLink' => '作品リンクをコピー',
 			'illust.contextMenu.openOriginal' => 'Pixiv で開く',
 			'illust.imageLabels.original' => 'オリジナル画像',
 			'illust.imageLabels.large' => '大きい画像',
 			'illust.imageLabels.image' => '画像',
-			_ => null,
-		} ?? switch (path) {
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} 枚の画像をダウンロードキューに追加しました',
 			'illust.toast.downloadComplete' => ({required Object name}) => '${name} を保存しました',
 			'illust.toast.downloadFailed' => 'ダウンロードに失敗しました',
@@ -2320,10 +2462,17 @@ extension on TranslationsJaJp {
 			'novel.reader.previousChapter' => '前の章',
 			'novel.reader.nextChapter' => '次の章',
 			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',
+			'novel.reader.markerSet' => 'ここにしおりを挟む',
+			'novel.reader.markerMenu' => 'しおり',
+			'novel.reader.markerJump' => ({required Object page}) => 'しおりへ移動（${page} ページ）',
+			'novel.reader.markerUpdate' => '現在の位置に更新',
+			'novel.reader.markerRemove' => 'しおりを外す',
+			'novel.reader.markerFailed' => 'しおりを変更できませんでした',
 			'follow.tooltipFollow' => 'ユーザーをフォロー',
 			'follow.tooltipUnfollow' => 'フォロー解除',
 			'follow.followed' => 'フォロー中',
 			'follow.follow' => 'フォロー',
+			'follow.restrictTitle' => 'フォローの公開範囲',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
 			'richText.illustId' => ({required Object id}) => 'イラスト ID：${id}',
 			'richText.userId' => ({required Object id}) => 'ユーザー ID：${id}',
@@ -2499,6 +2648,69 @@ extension on TranslationsJaJp {
 			'fanboxPage.noComments' => 'コメントはまだありません',
 			'fanboxPage.collecting' => '投稿を収集中',
 			'discoverPage.noArticles' => '現在記事はありません',
+			'privacy.label' => '公開範囲',
+			'privacy.public' => '公開',
+			'privacy.private' => '非公開',
+			'bookmarkOptions.title' => 'ブックマーク設定',
+			'bookmarkOptions.tags' => 'タグ',
+			'bookmarkOptions.addTag' => 'タグを入力して Enter',
+			'bookmarkOptions.noTags' => '選べるタグはまだありません',
+			'bookmarkOptions.remove' => 'ブックマークを解除',
+			'bookmarkOptions.save' => '保存',
+			'bookmarkOptions.failed' => 'ブックマークを保存できませんでした',
+			'bookmarkOptions.loadFailed' => 'ブックマーク情報を読み込めませんでした',
+			'series.title' => 'シリーズ',
+			'series.link' => ({required Object title}) => 'シリーズ · ${title}',
+			'series.episodes' => ({required Object count}) => '全${count}話',
+			'series.concluded' => '完結',
+			'series.ongoing' => '連載中',
+			'series.watch' => '追いかける',
+			'series.watching' => '追いかけ中',
+			'series.watchFailed' => '追いかけ設定を変更できませんでした',
+			'series.startFromFirst' => '第1話から読む',
+			'series.empty' => 'このシリーズにはまだ作品がありません',
+			'watchlist.title' => '追いかけ中のシリーズ',
+			'watchlist.manga' => 'マンガ',
+			'watchlist.novels' => '小説',
+			'watchlist.emptyManga' => '追いかけ中のマンガはありません',
+			'watchlist.emptyNovels' => '追いかけ中の小説はありません',
+			'watchlist.unavailable' => 'このシリーズは表示できません',
+			'watchlist.updated' => ({required Object date}) => '${date} 更新',
+			'profileEdit.title' => 'プロフィール編集',
+			'profileEdit.name' => 'ニックネーム',
+			'profileEdit.nameRequired' => 'ニックネームを入力してください',
+			'profileEdit.gender' => '性別',
+			'profileEdit.genderUnknown' => '未設定',
+			'profileEdit.genderMale' => '男性',
+			'profileEdit.genderFemale' => '女性',
+			'profileEdit.birthday' => '誕生日',
+			'profileEdit.birthdayNotSet' => '未設定',
+			'profileEdit.region' => '地域',
+			'profileEdit.country' => '国',
+			'profileEdit.job' => '職業',
+			'profileEdit.website' => 'ウェブサイト',
+			'profileEdit.twitter' => 'Twitter',
+			'profileEdit.bio' => '自己紹介',
+			'profileEdit.save' => '保存',
+			'profileEdit.saved' => '保存しました',
+			'profileEdit.failed' => '保存できませんでした',
+			'profileEdit.discardTitle' => '変更を破棄しますか？',
+			'profileEdit.discardMessage' => '変更はまだ保存されていません。',
+			'profileEdit.discard' => '破棄',
+			'profileEdit.keepEditing' => '編集を続ける',
+			'workspaceEdit.title' => '作業環境',
+			'workspaceEdit.pc' => 'コンピュータ',
+			'workspaceEdit.monitor' => 'モニター',
+			'workspaceEdit.tool' => 'ソフト',
+			'workspaceEdit.scanner' => 'スキャナー',
+			'workspaceEdit.tablet' => 'タブレット',
+			'workspaceEdit.mouse' => 'マウス',
+			'workspaceEdit.printer' => 'プリンター',
+			'workspaceEdit.desktop' => '机の上にあるもの',
+			'workspaceEdit.music' => '作業中の音楽',
+			'workspaceEdit.desk' => '机',
+			'workspaceEdit.chair' => '椅子',
+			'workspaceEdit.comment' => 'その他',
 			_ => null,
 		};
 	}

@@ -363,7 +363,10 @@
       "title": "Account",
       "signedOutSubtitle": "Sign in to show your Pixiv account",
       "notSignedIn": "Not signed in",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "showAi": "Show AI-generated works",
+      "showAiHelp": "This setting is saved to your pixiv account",
+      "showAiFailed": "Could not change the setting"
     }
   },
   "me": {
@@ -374,7 +377,10 @@
     "emptyFollowing": "No following users",
     "emptyFollowers": "No followers",
     "about": "About",
-    "settings": "Settings"
+    "settings": "Settings",
+    "watchlist": "Follow-ups",
+    "editProfile": "Edit profile",
+    "workspace": "Workspace"
   },
   "about": {
     "title": "About",
@@ -752,14 +758,21 @@
       "chapterNumber": "Chapter $number",
       "previousChapter": "Previous chapter",
       "nextChapter": "Next chapter",
-      "progressValue": "$percent%"
+      "progressValue": "$percent%",
+      "markerSet": "Bookmark this place",
+      "markerMenu": "Reading bookmark",
+      "markerJump": "Go to bookmark (section ${page})",
+      "markerUpdate": "Move here",
+      "markerRemove": "Remove bookmark",
+      "markerFailed": "Could not change the bookmark"
     }
   },
   "follow": {
     "tooltipFollow": "Follow user",
     "tooltipUnfollow": "Unfollow",
     "followed": "Following",
-    "follow": "Follow"
+    "follow": "Follow",
+    "restrictTitle": "Follow as"
   },
   "richText": {
     "twitterUser": "Twitter: $username",
@@ -967,5 +980,80 @@
   },
   "discoverPage": {
     "noArticles": "No articles right now"
+  },
+  "privacy": {
+    "label": "Visibility",
+    "public": "Public",
+    "private": "Private"
+  },
+  "bookmarkOptions": {
+    "title": "Bookmark options",
+    "tags": "Tags",
+    "addTag": "Add a tag and press Enter",
+    "noTags": "No tags to choose from yet",
+    "remove": "Remove bookmark",
+    "save": "Save",
+    "failed": "Could not save the bookmark",
+    "loadFailed": "Could not load the bookmark"
+  },
+  "series": {
+    "title": "Series",
+    "link": "Series · ${title}",
+    "episodes": "${count} episodes",
+    "concluded": "Completed",
+    "ongoing": "Ongoing",
+    "watch": "Follow up",
+    "watching": "Following up",
+    "watchFailed": "Could not change the follow-up",
+    "startFromFirst": "Start from episode 1",
+    "empty": "This series has no works yet"
+  },
+  "watchlist": {
+    "title": "Follow-ups",
+    "manga": "Manga",
+    "novels": "Novels",
+    "emptyManga": "No manga series followed up yet",
+    "emptyNovels": "No novel series followed up yet",
+    "unavailable": "This series cannot be shown",
+    "updated": "Updated ${date}"
+  },
+  "profileEdit": {
+    "title": "Edit profile",
+    "name": "Nickname",
+    "nameRequired": "Enter a nickname",
+    "gender": "Gender",
+    "genderUnknown": "Not specified",
+    "genderMale": "Male",
+    "genderFemale": "Female",
+    "birthday": "Birthday",
+    "birthdayNotSet": "Not set",
+    "region": "Region",
+    "country": "Country",
+    "job": "Occupation",
+    "website": "Website",
+    "twitter": "Twitter",
+    "bio": "Bio",
+    "save": "Save",
+    "saved": "Saved",
+    "failed": "Could not save",
+    "discardTitle": "Discard your changes?",
+    "discardMessage": "Your changes have not been saved.",
+    "discard": "Discard",
+    "keepEditing": "Keep editing"
+  },
+  "workspaceEdit": {
+    "title": "Workspace",
+    "pc": "Computer",
+    "monitor": "Monitor",
+    "tool": "Software",
+    "scanner": "Scanner",
+    "tablet": "Tablet",
+    "mouse": "Mouse",
+    "printer": "Printer",
+    "desktop": "On the desk",
+    "music": "Music",
+    "desk": "Desk",
+    "chair": "Chair",
+    "comment": "Other"
   }
 }

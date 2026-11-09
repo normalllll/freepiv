@@ -363,7 +363,10 @@
       "title": "帳號",
       "signedOutSubtitle": "登入後顯示 Pixiv 帳號",
       "notSignedIn": "尚未登入",
-      "signOut": "登出"
+      "signOut": "登出",
+      "showAi": "顯示 AI 作品",
+      "showAiHelp": "這項設定會同步到你的 pixiv 帳號",
+      "showAiFailed": "設定修改失敗"
     }
   },
   "me": {
@@ -374,7 +377,10 @@
     "emptyFollowing": "尚無關注使用者",
     "emptyFollowers": "尚無粉絲",
     "about": "關於",
-    "settings": "設定"
+    "settings": "設定",
+    "watchlist": "我的追更",
+    "editProfile": "編輯資料",
+    "workspace": "工作環境"
   },
   "about": {
     "title": "關於",
@@ -752,14 +758,21 @@
       "chapterNumber": "第 $number 章",
       "previousChapter": "上一章",
       "nextChapter": "下一章",
-      "progressValue": "$percent%"
+      "progressValue": "$percent%",
+      "markerSet": "在這裡加書籤",
+      "markerMenu": "閱讀書籤",
+      "markerJump": "跳到書籤（第 ${page} 段）",
+      "markerUpdate": "更新到目前位置",
+      "markerRemove": "移除書籤",
+      "markerFailed": "書籤操作失敗"
     }
   },
   "follow": {
     "tooltipFollow": "關注使用者",
     "tooltipUnfollow": "取消關注",
     "followed": "已關注",
-    "follow": "關注"
+    "follow": "關注",
+    "restrictTitle": "追蹤方式"
   },
   "richText": {
     "twitterUser": "Twitter：$username",
@@ -967,5 +980,80 @@
   },
   "discoverPage": {
     "noArticles": "暫時沒有文章"
+  },
+  "privacy": {
+    "label": "公開範圍",
+    "public": "公開",
+    "private": "私密"
+  },
+  "bookmarkOptions": {
+    "title": "收藏選項",
+    "tags": "標籤",
+    "addTag": "新增標籤，按 Enter 確認",
+    "noTags": "還沒有可選的標籤",
+    "remove": "移除收藏",
+    "save": "儲存",
+    "failed": "收藏儲存失敗",
+    "loadFailed": "收藏資訊載入失敗"
+  },
+  "series": {
+    "title": "系列",
+    "link": "系列 · ${title}",
+    "episodes": "${count} 話",
+    "concluded": "已完結",
+    "ongoing": "連載中",
+    "watch": "追更",
+    "watching": "追更中",
+    "watchFailed": "追更操作失敗",
+    "startFromFirst": "從第 1 話開始",
+    "empty": "這個系列還沒有作品"
+  },
+  "watchlist": {
+    "title": "我的追更",
+    "manga": "漫畫",
+    "novels": "小說",
+    "emptyManga": "還沒有追更的漫畫",
+    "emptyNovels": "還沒有追更的小說",
+    "unavailable": "此系列暫時無法顯示",
+    "updated": "${date} 更新"
+  },
+  "profileEdit": {
+    "title": "編輯資料",
+    "name": "暱稱",
+    "nameRequired": "請輸入暱稱",
+    "gender": "性別",
+    "genderUnknown": "未指定",
+    "genderMale": "男",
+    "genderFemale": "女",
+    "birthday": "生日",
+    "birthdayNotSet": "未設定",
+    "region": "地區",
+    "country": "國家",
+    "job": "職業",
+    "website": "網站",
+    "twitter": "Twitter",
+    "bio": "簡介",
+    "save": "儲存",
+    "saved": "已儲存",
+    "failed": "儲存失敗",
+    "discardTitle": "放棄這些修改？",
+    "discardMessage": "修改還沒有儲存。",
+    "discard": "放棄",
+    "keepEditing": "繼續編輯"
+  },
+  "workspaceEdit": {
+    "title": "工作環境",
+    "pc": "電腦",
+    "monitor": "顯示器",
+    "tool": "軟體",
+    "scanner": "掃描器",
+    "tablet": "繪圖板",
+    "mouse": "滑鼠",
+    "printer": "印表機",
+    "desktop": "桌面上的物品",
+    "music": "作畫時聽的音樂",
+    "desk": "桌子",
+    "chair": "椅子",
+    "comment": "其他"
   }
 }

@@ -27,6 +27,9 @@ enum AppRoute {
   login('/login'),
   meFollowing('/me/following'),
   meFollowers('/me/followers'),
+  meWatchlist('/me/watchlist'),
+  meProfileEdit('/me/profile'),
+  meWorkspaceEdit('/me/workspace'),
   about('/about'),
   settings('/settings'),
   downloads('/downloads'),
@@ -37,6 +40,8 @@ enum AppRoute {
   novelDetail('/novel/:${AppRouteParam.id}'),
   novelReader('/novel/:${AppRouteParam.id}/read'),
   novelComments('/novel/:${AppRouteParam.id}/comments'),
+  mangaSeries('/series/manga/:${AppRouteParam.id}'),
+  novelSeries('/series/novel/:${AppRouteParam.id}'),
   userDetail('/user/:${AppRouteParam.id}');
 
   const AppRoute(this.path);
@@ -118,6 +123,9 @@ enum AppSearchKind { illust, novel, user }
 /// What a ranking lists.
 enum AppRankingKind { illust, manga, novel }
 
+/// What a series collects.
+enum AppSeriesKind { manga, novel }
+
 /// Locations to navigate to, built from [AppRoute].
 abstract final class AppLocations {
   static String illust(Object id) => AppRoute.illustDetail._location(parameters: {AppRouteParam.id: id});
@@ -131,6 +139,11 @@ abstract final class AppLocations {
   static String novelReader(Object id) => AppRoute.novelReader._location(parameters: {AppRouteParam.id: id});
 
   static String novelComments(Object id) => AppRoute.novelComments._location(parameters: {AppRouteParam.id: id});
+
+  static String series(AppSeriesKind kind, Object id) => switch (kind) {
+    AppSeriesKind.manga => AppRoute.mangaSeries._location(parameters: {AppRouteParam.id: id}),
+    AppSeriesKind.novel => AppRoute.novelSeries._location(parameters: {AppRouteParam.id: id}),
+  };
 
   /// An author's page, on their public bookmarks when [bookmarks] is set.
   static String user(Object id, {bool bookmarks = false}) =>

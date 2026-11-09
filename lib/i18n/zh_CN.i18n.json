@@ -363,7 +363,10 @@
       "title": "账号",
       "signedOutSubtitle": "登录后显示 Pixiv 账号",
       "notSignedIn": "未登录",
-      "signOut": "退出登录"
+      "signOut": "退出登录",
+      "showAi": "显示 AI 作品",
+      "showAiHelp": "这项设置会同步到你的 pixiv 账号",
+      "showAiFailed": "设置修改失败"
     }
   },
   "me": {
@@ -374,7 +377,10 @@
     "emptyFollowing": "暂无关注用户",
     "emptyFollowers": "暂无粉丝",
     "about": "关于",
-    "settings": "设置"
+    "settings": "设置",
+    "watchlist": "我的追更",
+    "editProfile": "编辑资料",
+    "workspace": "工作环境"
   },
   "about": {
     "title": "关于",
@@ -752,14 +758,21 @@
       "chapterNumber": "第 $number 章",
       "previousChapter": "上一章",
       "nextChapter": "下一章",
-      "progressValue": "$percent%"
+      "progressValue": "$percent%",
+      "markerSet": "在这里加书签",
+      "markerMenu": "阅读书签",
+      "markerJump": "跳到书签（第 ${page} 段）",
+      "markerUpdate": "更新到当前位置",
+      "markerRemove": "移除书签",
+      "markerFailed": "书签操作失败"
     }
   },
   "follow": {
     "tooltipFollow": "关注用户",
     "tooltipUnfollow": "取消关注",
     "followed": "已关注",
-    "follow": "关注"
+    "follow": "关注",
+    "restrictTitle": "关注方式"
   },
   "richText": {
     "twitterUser": "Twitter：$username",
@@ -967,5 +980,80 @@
   },
   "discoverPage": {
     "noArticles": "暂时没有文章"
+  },
+  "privacy": {
+    "label": "公开范围",
+    "public": "公开",
+    "private": "私密"
+  },
+  "bookmarkOptions": {
+    "title": "收藏选项",
+    "tags": "标签",
+    "addTag": "添加新标签，回车确认",
+    "noTags": "还没有可选的标签",
+    "remove": "移除收藏",
+    "save": "保存",
+    "failed": "收藏保存失败",
+    "loadFailed": "收藏信息加载失败"
+  },
+  "series": {
+    "title": "系列",
+    "link": "系列 · ${title}",
+    "episodes": "${count} 话",
+    "concluded": "已完结",
+    "ongoing": "连载中",
+    "watch": "追更",
+    "watching": "追更中",
+    "watchFailed": "追更操作失败",
+    "startFromFirst": "从第 1 话开始",
+    "empty": "这个系列还没有作品"
+  },
+  "watchlist": {
+    "title": "我的追更",
+    "manga": "漫画",
+    "novels": "小说",
+    "emptyManga": "还没有追更的漫画",
+    "emptyNovels": "还没有追更的小说",
+    "unavailable": "此系列暂时无法显示",
+    "updated": "${date} 更新"
+  },
+  "profileEdit": {
+    "title": "编辑资料",
+    "name": "昵称",
+    "nameRequired": "请输入昵称",
+    "gender": "性别",
+    "genderUnknown": "未指定",
+    "genderMale": "男",
+    "genderFemale": "女",
+    "birthday": "生日",
+    "birthdayNotSet": "未设置",
+    "region": "地区",
+    "country": "国家",
+    "job": "职业",
+    "website": "网站",
+    "twitter": "Twitter",
+    "bio": "简介",
+    "save": "保存",
+    "saved": "已保存",
+    "failed": "保存失败",
+    "discardTitle": "放弃这些修改？",
+    "discardMessage": "修改还没有保存。",
+    "discard": "放弃",
+    "keepEditing": "继续编辑"
+  },
+  "workspaceEdit": {
+    "title": "工作环境",
+    "pc": "电脑",
+    "monitor": "显示器",
+    "tool": "软件",
+    "scanner": "扫描仪",
+    "tablet": "数位板",
+    "mouse": "鼠标",
+    "printer": "打印机",
+    "desktop": "桌面上的物品",
+    "music": "作画时听的音乐",
+    "desk": "桌子",
+    "chair": "椅子",
+    "comment": "其他"
   }
 }

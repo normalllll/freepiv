@@ -80,6 +80,12 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$loginPage$en_US loginPage = Translations$loginPage$en_US.internal(_root);
 	late final Translations$fanboxPage$en_US fanboxPage = Translations$fanboxPage$en_US.internal(_root);
 	late final Translations$discoverPage$en_US discoverPage = Translations$discoverPage$en_US.internal(_root);
+	late final Translations$privacy$en_US privacy = Translations$privacy$en_US.internal(_root);
+	late final Translations$bookmarkOptions$en_US bookmarkOptions = Translations$bookmarkOptions$en_US.internal(_root);
+	late final Translations$series$en_US series = Translations$series$en_US.internal(_root);
+	late final Translations$watchlist$en_US watchlist = Translations$watchlist$en_US.internal(_root);
+	late final Translations$profileEdit$en_US profileEdit = Translations$profileEdit$en_US.internal(_root);
+	late final Translations$workspaceEdit$en_US workspaceEdit = Translations$workspaceEdit$en_US.internal(_root);
 }
 
 // Path: downloadEntry
@@ -418,6 +424,9 @@ class Translations$me$en_US {
 	String get emptyFollowers => 'No followers';
 	String get about => 'About';
 	String get settings => 'Settings';
+	String get watchlist => 'Follow-ups';
+	String get editProfile => 'Edit profile';
+	String get workspace => 'Workspace';
 }
 
 // Path: about
@@ -590,6 +599,7 @@ class Translations$follow$en_US {
 	String get tooltipUnfollow => 'Unfollow';
 	String get followed => 'Following';
 	String get follow => 'Follow';
+	String get restrictTitle => 'Follow as';
 }
 
 // Path: richText
@@ -887,6 +897,123 @@ class Translations$discoverPage$en_US {
 	String get noArticles => 'No articles right now';
 }
 
+// Path: privacy
+class Translations$privacy$en_US {
+	Translations$privacy$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get label => 'Visibility';
+	String get public => 'Public';
+	String get private => 'Private';
+}
+
+// Path: bookmarkOptions
+class Translations$bookmarkOptions$en_US {
+	Translations$bookmarkOptions$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Bookmark options';
+	String get tags => 'Tags';
+	String get addTag => 'Add a tag and press Enter';
+	String get noTags => 'No tags to choose from yet';
+	String get remove => 'Remove bookmark';
+	String get save => 'Save';
+	String get failed => 'Could not save the bookmark';
+	String get loadFailed => 'Could not load the bookmark';
+}
+
+// Path: series
+class Translations$series$en_US {
+	Translations$series$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Series';
+	String link({required Object title}) => 'Series · ${title}';
+	String episodes({required Object count}) => '${count} episodes';
+	String get concluded => 'Completed';
+	String get ongoing => 'Ongoing';
+	String get watch => 'Follow up';
+	String get watching => 'Following up';
+	String get watchFailed => 'Could not change the follow-up';
+	String get startFromFirst => 'Start from episode 1';
+	String get empty => 'This series has no works yet';
+}
+
+// Path: watchlist
+class Translations$watchlist$en_US {
+	Translations$watchlist$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Follow-ups';
+	String get manga => 'Manga';
+	String get novels => 'Novels';
+	String get emptyManga => 'No manga series followed up yet';
+	String get emptyNovels => 'No novel series followed up yet';
+	String get unavailable => 'This series cannot be shown';
+	String updated({required Object date}) => 'Updated ${date}';
+}
+
+// Path: profileEdit
+class Translations$profileEdit$en_US {
+	Translations$profileEdit$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Edit profile';
+	String get name => 'Nickname';
+	String get nameRequired => 'Enter a nickname';
+	String get gender => 'Gender';
+	String get genderUnknown => 'Not specified';
+	String get genderMale => 'Male';
+	String get genderFemale => 'Female';
+	String get birthday => 'Birthday';
+	String get birthdayNotSet => 'Not set';
+	String get region => 'Region';
+	String get country => 'Country';
+	String get job => 'Occupation';
+	String get website => 'Website';
+	String get twitter => 'Twitter';
+	String get bio => 'Bio';
+	String get save => 'Save';
+	String get saved => 'Saved';
+	String get failed => 'Could not save';
+	String get discardTitle => 'Discard your changes?';
+	String get discardMessage => 'Your changes have not been saved.';
+	String get discard => 'Discard';
+	String get keepEditing => 'Keep editing';
+}
+
+// Path: workspaceEdit
+class Translations$workspaceEdit$en_US {
+	Translations$workspaceEdit$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Workspace';
+	String get pc => 'Computer';
+	String get monitor => 'Monitor';
+	String get tool => 'Software';
+	String get scanner => 'Scanner';
+	String get tablet => 'Tablet';
+	String get mouse => 'Mouse';
+	String get printer => 'Printer';
+	String get desktop => 'On the desk';
+	String get music => 'Music';
+	String get desk => 'Desk';
+	String get chair => 'Chair';
+	String get comment => 'Other';
+}
+
 // Path: settings.theme
 class Translations$settings$theme$en_US {
 	Translations$settings$theme$en_US.internal(this._root);
@@ -1084,6 +1211,9 @@ class Translations$settings$account$en_US {
 	String get signedOutSubtitle => 'Sign in to show your Pixiv account';
 	String get notSignedIn => 'Not signed in';
 	String get signOut => 'Sign out';
+	String get showAi => 'Show AI-generated works';
+	String get showAiHelp => 'This setting is saved to your pixiv account';
+	String get showAiFailed => 'Could not change the setting';
 }
 
 // Path: ranking.types
@@ -1664,6 +1794,12 @@ class Translations$novel$reader$en_US {
 	String get previousChapter => 'Previous chapter';
 	String get nextChapter => 'Next chapter';
 	String progressValue({required Object percent}) => '${percent}%';
+	String get markerSet => 'Bookmark this place';
+	String get markerMenu => 'Reading bookmark';
+	String markerJump({required Object page}) => 'Go to bookmark (section ${page})';
+	String get markerUpdate => 'Move here';
+	String get markerRemove => 'Remove bookmark';
+	String get markerFailed => 'Could not change the bookmark';
 }
 
 // Path: illustDetail.ugoira
@@ -2025,6 +2161,9 @@ extension on Translations {
 			'settings.account.signedOutSubtitle' => 'Sign in to show your Pixiv account',
 			'settings.account.notSignedIn' => 'Not signed in',
 			'settings.account.signOut' => 'Sign out',
+			'settings.account.showAi' => 'Show AI-generated works',
+			'settings.account.showAiHelp' => 'This setting is saved to your pixiv account',
+			'settings.account.showAiFailed' => 'Could not change the setting',
 			'me.profile' => 'My profile',
 			'me.openProfile' => 'Open profile',
 			'me.following' => 'My following',
@@ -2033,6 +2172,9 @@ extension on Translations {
 			'me.emptyFollowers' => 'No followers',
 			'me.about' => 'About',
 			'me.settings' => 'Settings',
+			'me.watchlist' => 'Follow-ups',
+			'me.editProfile' => 'Edit profile',
+			'me.workspace' => 'Workspace',
 			'about.title' => 'About',
 			'about.appName' => 'freepiv',
 			'about.subtitle' => 'A lightweight client for browsing Pixiv content. Check the current version, look for updates, and open the project download page here.',
@@ -2206,14 +2348,14 @@ extension on Translations {
 			'newest.empty.everyone' => 'No new works yet',
 			'illust.contextMenu.download' => 'Download',
 			'illust.contextMenu.downloadAll' => 'Download all',
+			_ => null,
+		} ?? switch (path) {
 			'illust.contextMenu.copyImage' => 'Copy image',
 			'illust.contextMenu.copyLink' => 'Copy work link',
 			'illust.contextMenu.openOriginal' => 'Open on Pixiv',
 			'illust.imageLabels.original' => 'original image',
 			'illust.imageLabels.large' => 'large image',
 			'illust.imageLabels.image' => 'image',
-			_ => null,
-		} ?? switch (path) {
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} images added to the download queue',
 			'illust.toast.downloadComplete' => ({required Object name}) => 'Saved ${name}',
 			'illust.toast.downloadFailed' => 'Download failed',
@@ -2322,10 +2464,17 @@ extension on Translations {
 			'novel.reader.previousChapter' => 'Previous chapter',
 			'novel.reader.nextChapter' => 'Next chapter',
 			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',
+			'novel.reader.markerSet' => 'Bookmark this place',
+			'novel.reader.markerMenu' => 'Reading bookmark',
+			'novel.reader.markerJump' => ({required Object page}) => 'Go to bookmark (section ${page})',
+			'novel.reader.markerUpdate' => 'Move here',
+			'novel.reader.markerRemove' => 'Remove bookmark',
+			'novel.reader.markerFailed' => 'Could not change the bookmark',
 			'follow.tooltipFollow' => 'Follow user',
 			'follow.tooltipUnfollow' => 'Unfollow',
 			'follow.followed' => 'Following',
 			'follow.follow' => 'Follow',
+			'follow.restrictTitle' => 'Follow as',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter: ${username}',
 			'richText.illustId' => ({required Object id}) => 'Illust ID: ${id}',
 			'richText.userId' => ({required Object id}) => 'User ID: ${id}',
@@ -2501,6 +2650,69 @@ extension on Translations {
 			'fanboxPage.noComments' => 'No comments yet',
 			'fanboxPage.collecting' => 'Collecting posts',
 			'discoverPage.noArticles' => 'No articles right now',
+			'privacy.label' => 'Visibility',
+			'privacy.public' => 'Public',
+			'privacy.private' => 'Private',
+			'bookmarkOptions.title' => 'Bookmark options',
+			'bookmarkOptions.tags' => 'Tags',
+			'bookmarkOptions.addTag' => 'Add a tag and press Enter',
+			'bookmarkOptions.noTags' => 'No tags to choose from yet',
+			'bookmarkOptions.remove' => 'Remove bookmark',
+			'bookmarkOptions.save' => 'Save',
+			'bookmarkOptions.failed' => 'Could not save the bookmark',
+			'bookmarkOptions.loadFailed' => 'Could not load the bookmark',
+			'series.title' => 'Series',
+			'series.link' => ({required Object title}) => 'Series · ${title}',
+			'series.episodes' => ({required Object count}) => '${count} episodes',
+			'series.concluded' => 'Completed',
+			'series.ongoing' => 'Ongoing',
+			'series.watch' => 'Follow up',
+			'series.watching' => 'Following up',
+			'series.watchFailed' => 'Could not change the follow-up',
+			'series.startFromFirst' => 'Start from episode 1',
+			'series.empty' => 'This series has no works yet',
+			'watchlist.title' => 'Follow-ups',
+			'watchlist.manga' => 'Manga',
+			'watchlist.novels' => 'Novels',
+			'watchlist.emptyManga' => 'No manga series followed up yet',
+			'watchlist.emptyNovels' => 'No novel series followed up yet',
+			'watchlist.unavailable' => 'This series cannot be shown',
+			'watchlist.updated' => ({required Object date}) => 'Updated ${date}',
+			'profileEdit.title' => 'Edit profile',
+			'profileEdit.name' => 'Nickname',
+			'profileEdit.nameRequired' => 'Enter a nickname',
+			'profileEdit.gender' => 'Gender',
+			'profileEdit.genderUnknown' => 'Not specified',
+			'profileEdit.genderMale' => 'Male',
+			'profileEdit.genderFemale' => 'Female',
+			'profileEdit.birthday' => 'Birthday',
+			'profileEdit.birthdayNotSet' => 'Not set',
+			'profileEdit.region' => 'Region',
+			'profileEdit.country' => 'Country',
+			'profileEdit.job' => 'Occupation',
+			'profileEdit.website' => 'Website',
+			'profileEdit.twitter' => 'Twitter',
+			'profileEdit.bio' => 'Bio',
+			'profileEdit.save' => 'Save',
+			'profileEdit.saved' => 'Saved',
+			'profileEdit.failed' => 'Could not save',
+			'profileEdit.discardTitle' => 'Discard your changes?',
+			'profileEdit.discardMessage' => 'Your changes have not been saved.',
+			'profileEdit.discard' => 'Discard',
+			'profileEdit.keepEditing' => 'Keep editing',
+			'workspaceEdit.title' => 'Workspace',
+			'workspaceEdit.pc' => 'Computer',
+			'workspaceEdit.monitor' => 'Monitor',
+			'workspaceEdit.tool' => 'Software',
+			'workspaceEdit.scanner' => 'Scanner',
+			'workspaceEdit.tablet' => 'Tablet',
+			'workspaceEdit.mouse' => 'Mouse',
+			'workspaceEdit.printer' => 'Printer',
+			'workspaceEdit.desktop' => 'On the desk',
+			'workspaceEdit.music' => 'Music',
+			'workspaceEdit.desk' => 'Desk',
+			'workspaceEdit.chair' => 'Chair',
+			'workspaceEdit.comment' => 'Other',
 			_ => null,
 		};
 	}

@@ -78,6 +78,12 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$loginPage$zh_Hant_TW loginPage = Translations$loginPage$zh_Hant_TW.internal(_root);
 	@override late final Translations$fanboxPage$zh_Hant_TW fanboxPage = Translations$fanboxPage$zh_Hant_TW.internal(_root);
 	@override late final Translations$discoverPage$zh_Hant_TW discoverPage = Translations$discoverPage$zh_Hant_TW.internal(_root);
+	@override late final Translations$privacy$zh_Hant_TW privacy = Translations$privacy$zh_Hant_TW.internal(_root);
+	@override late final Translations$bookmarkOptions$zh_Hant_TW bookmarkOptions = Translations$bookmarkOptions$zh_Hant_TW.internal(_root);
+	@override late final Translations$series$zh_Hant_TW series = Translations$series$zh_Hant_TW.internal(_root);
+	@override late final Translations$watchlist$zh_Hant_TW watchlist = Translations$watchlist$zh_Hant_TW.internal(_root);
+	@override late final Translations$profileEdit$zh_Hant_TW profileEdit = Translations$profileEdit$zh_Hant_TW.internal(_root);
+	@override late final Translations$workspaceEdit$zh_Hant_TW workspaceEdit = Translations$workspaceEdit$zh_Hant_TW.internal(_root);
 }
 
 // Path: downloadEntry
@@ -416,6 +422,9 @@ class Translations$me$zh_Hant_TW extends Translations$me$en_US {
 	@override String get emptyFollowers => '尚無粉絲';
 	@override String get about => '關於';
 	@override String get settings => '設定';
+	@override String get watchlist => '我的追更';
+	@override String get editProfile => '編輯資料';
+	@override String get workspace => '工作環境';
 }
 
 // Path: about
@@ -588,6 +597,7 @@ class Translations$follow$zh_Hant_TW extends Translations$follow$en_US {
 	@override String get tooltipUnfollow => '取消關注';
 	@override String get followed => '已關注';
 	@override String get follow => '關注';
+	@override String get restrictTitle => '追蹤方式';
 }
 
 // Path: richText
@@ -885,6 +895,123 @@ class Translations$discoverPage$zh_Hant_TW extends Translations$discoverPage$en_
 	@override String get noArticles => '暫時沒有文章';
 }
 
+// Path: privacy
+class Translations$privacy$zh_Hant_TW extends Translations$privacy$en_US {
+	Translations$privacy$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get label => '公開範圍';
+	@override String get public => '公開';
+	@override String get private => '私密';
+}
+
+// Path: bookmarkOptions
+class Translations$bookmarkOptions$zh_Hant_TW extends Translations$bookmarkOptions$en_US {
+	Translations$bookmarkOptions$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '收藏選項';
+	@override String get tags => '標籤';
+	@override String get addTag => '新增標籤，按 Enter 確認';
+	@override String get noTags => '還沒有可選的標籤';
+	@override String get remove => '移除收藏';
+	@override String get save => '儲存';
+	@override String get failed => '收藏儲存失敗';
+	@override String get loadFailed => '收藏資訊載入失敗';
+}
+
+// Path: series
+class Translations$series$zh_Hant_TW extends Translations$series$en_US {
+	Translations$series$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '系列';
+	@override String link({required Object title}) => '系列 · ${title}';
+	@override String episodes({required Object count}) => '${count} 話';
+	@override String get concluded => '已完結';
+	@override String get ongoing => '連載中';
+	@override String get watch => '追更';
+	@override String get watching => '追更中';
+	@override String get watchFailed => '追更操作失敗';
+	@override String get startFromFirst => '從第 1 話開始';
+	@override String get empty => '這個系列還沒有作品';
+}
+
+// Path: watchlist
+class Translations$watchlist$zh_Hant_TW extends Translations$watchlist$en_US {
+	Translations$watchlist$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '我的追更';
+	@override String get manga => '漫畫';
+	@override String get novels => '小說';
+	@override String get emptyManga => '還沒有追更的漫畫';
+	@override String get emptyNovels => '還沒有追更的小說';
+	@override String get unavailable => '此系列暫時無法顯示';
+	@override String updated({required Object date}) => '${date} 更新';
+}
+
+// Path: profileEdit
+class Translations$profileEdit$zh_Hant_TW extends Translations$profileEdit$en_US {
+	Translations$profileEdit$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '編輯資料';
+	@override String get name => '暱稱';
+	@override String get nameRequired => '請輸入暱稱';
+	@override String get gender => '性別';
+	@override String get genderUnknown => '未指定';
+	@override String get genderMale => '男';
+	@override String get genderFemale => '女';
+	@override String get birthday => '生日';
+	@override String get birthdayNotSet => '未設定';
+	@override String get region => '地區';
+	@override String get country => '國家';
+	@override String get job => '職業';
+	@override String get website => '網站';
+	@override String get twitter => 'Twitter';
+	@override String get bio => '簡介';
+	@override String get save => '儲存';
+	@override String get saved => '已儲存';
+	@override String get failed => '儲存失敗';
+	@override String get discardTitle => '放棄這些修改？';
+	@override String get discardMessage => '修改還沒有儲存。';
+	@override String get discard => '放棄';
+	@override String get keepEditing => '繼續編輯';
+}
+
+// Path: workspaceEdit
+class Translations$workspaceEdit$zh_Hant_TW extends Translations$workspaceEdit$en_US {
+	Translations$workspaceEdit$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '工作環境';
+	@override String get pc => '電腦';
+	@override String get monitor => '顯示器';
+	@override String get tool => '軟體';
+	@override String get scanner => '掃描器';
+	@override String get tablet => '繪圖板';
+	@override String get mouse => '滑鼠';
+	@override String get printer => '印表機';
+	@override String get desktop => '桌面上的物品';
+	@override String get music => '作畫時聽的音樂';
+	@override String get desk => '桌子';
+	@override String get chair => '椅子';
+	@override String get comment => '其他';
+}
+
 // Path: settings.theme
 class Translations$settings$theme$zh_Hant_TW extends Translations$settings$theme$en_US {
 	Translations$settings$theme$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
@@ -1082,6 +1209,9 @@ class Translations$settings$account$zh_Hant_TW extends Translations$settings$acc
 	@override String get signedOutSubtitle => '登入後顯示 Pixiv 帳號';
 	@override String get notSignedIn => '尚未登入';
 	@override String get signOut => '登出';
+	@override String get showAi => '顯示 AI 作品';
+	@override String get showAiHelp => '這項設定會同步到你的 pixiv 帳號';
+	@override String get showAiFailed => '設定修改失敗';
 }
 
 // Path: ranking.types
@@ -1662,6 +1792,12 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 	@override String get previousChapter => '上一章';
 	@override String get nextChapter => '下一章';
 	@override String progressValue({required Object percent}) => '${percent}%';
+	@override String get markerSet => '在這裡加書籤';
+	@override String get markerMenu => '閱讀書籤';
+	@override String markerJump({required Object page}) => '跳到書籤（第 ${page} 段）';
+	@override String get markerUpdate => '更新到目前位置';
+	@override String get markerRemove => '移除書籤';
+	@override String get markerFailed => '書籤操作失敗';
 }
 
 // Path: illustDetail.ugoira
@@ -2023,6 +2159,9 @@ extension on TranslationsZhHantTw {
 			'settings.account.signedOutSubtitle' => '登入後顯示 Pixiv 帳號',
 			'settings.account.notSignedIn' => '尚未登入',
 			'settings.account.signOut' => '登出',
+			'settings.account.showAi' => '顯示 AI 作品',
+			'settings.account.showAiHelp' => '這項設定會同步到你的 pixiv 帳號',
+			'settings.account.showAiFailed' => '設定修改失敗',
 			'me.profile' => '個人主頁',
 			'me.openProfile' => '開啟個人頁',
 			'me.following' => '我的關注',
@@ -2031,6 +2170,9 @@ extension on TranslationsZhHantTw {
 			'me.emptyFollowers' => '尚無粉絲',
 			'me.about' => '關於',
 			'me.settings' => '設定',
+			'me.watchlist' => '我的追更',
+			'me.editProfile' => '編輯資料',
+			'me.workspace' => '工作環境',
 			'about.title' => '關於',
 			'about.appName' => 'freepiv',
 			'about.subtitle' => '用於瀏覽 Pixiv 內容的輕量客戶端。你可以在這裡查看目前版本、檢查更新並開啟專案下載頁面。',
@@ -2204,14 +2346,14 @@ extension on TranslationsZhHantTw {
 			'newest.empty.everyone' => '還沒有新作品',
 			'illust.contextMenu.download' => '下載',
 			'illust.contextMenu.downloadAll' => '下載全部',
+			_ => null,
+		} ?? switch (path) {
 			'illust.contextMenu.copyImage' => '複製圖像',
 			'illust.contextMenu.copyLink' => '複製作品連結',
 			'illust.contextMenu.openOriginal' => '在 Pixiv 開啟',
 			'illust.imageLabels.original' => '原圖',
 			'illust.imageLabels.large' => '大圖',
 			'illust.imageLabels.image' => '圖片',
-			_ => null,
-		} ?? switch (path) {
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下載佇列：${count} 張圖片',
 			'illust.toast.downloadComplete' => ({required Object name}) => '已儲存 ${name}',
 			'illust.toast.downloadFailed' => '下載失敗',
@@ -2320,10 +2462,17 @@ extension on TranslationsZhHantTw {
 			'novel.reader.previousChapter' => '上一章',
 			'novel.reader.nextChapter' => '下一章',
 			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',
+			'novel.reader.markerSet' => '在這裡加書籤',
+			'novel.reader.markerMenu' => '閱讀書籤',
+			'novel.reader.markerJump' => ({required Object page}) => '跳到書籤（第 ${page} 段）',
+			'novel.reader.markerUpdate' => '更新到目前位置',
+			'novel.reader.markerRemove' => '移除書籤',
+			'novel.reader.markerFailed' => '書籤操作失敗',
 			'follow.tooltipFollow' => '關注使用者',
 			'follow.tooltipUnfollow' => '取消關注',
 			'follow.followed' => '已關注',
 			'follow.follow' => '關注',
+			'follow.restrictTitle' => '追蹤方式',
 			'richText.twitterUser' => ({required Object username}) => 'Twitter：${username}',
 			'richText.illustId' => ({required Object id}) => '插畫 ID：${id}',
 			'richText.userId' => ({required Object id}) => '使用者 ID：${id}',
@@ -2499,6 +2648,69 @@ extension on TranslationsZhHantTw {
 			'fanboxPage.noComments' => '還沒有留言',
 			'fanboxPage.collecting' => '正在收集貼文',
 			'discoverPage.noArticles' => '暫時沒有文章',
+			'privacy.label' => '公開範圍',
+			'privacy.public' => '公開',
+			'privacy.private' => '私密',
+			'bookmarkOptions.title' => '收藏選項',
+			'bookmarkOptions.tags' => '標籤',
+			'bookmarkOptions.addTag' => '新增標籤，按 Enter 確認',
+			'bookmarkOptions.noTags' => '還沒有可選的標籤',
+			'bookmarkOptions.remove' => '移除收藏',
+			'bookmarkOptions.save' => '儲存',
+			'bookmarkOptions.failed' => '收藏儲存失敗',
+			'bookmarkOptions.loadFailed' => '收藏資訊載入失敗',
+			'series.title' => '系列',
+			'series.link' => ({required Object title}) => '系列 · ${title}',
+			'series.episodes' => ({required Object count}) => '${count} 話',
+			'series.concluded' => '已完結',
+			'series.ongoing' => '連載中',
+			'series.watch' => '追更',
+			'series.watching' => '追更中',
+			'series.watchFailed' => '追更操作失敗',
+			'series.startFromFirst' => '從第 1 話開始',
+			'series.empty' => '這個系列還沒有作品',
+			'watchlist.title' => '我的追更',
+			'watchlist.manga' => '漫畫',
+			'watchlist.novels' => '小說',
+			'watchlist.emptyManga' => '還沒有追更的漫畫',
+			'watchlist.emptyNovels' => '還沒有追更的小說',
+			'watchlist.unavailable' => '此系列暫時無法顯示',
+			'watchlist.updated' => ({required Object date}) => '${date} 更新',
+			'profileEdit.title' => '編輯資料',
+			'profileEdit.name' => '暱稱',
+			'profileEdit.nameRequired' => '請輸入暱稱',
+			'profileEdit.gender' => '性別',
+			'profileEdit.genderUnknown' => '未指定',
+			'profileEdit.genderMale' => '男',
+			'profileEdit.genderFemale' => '女',
+			'profileEdit.birthday' => '生日',
+			'profileEdit.birthdayNotSet' => '未設定',
+			'profileEdit.region' => '地區',
+			'profileEdit.country' => '國家',
+			'profileEdit.job' => '職業',
+			'profileEdit.website' => '網站',
+			'profileEdit.twitter' => 'Twitter',
+			'profileEdit.bio' => '簡介',
+			'profileEdit.save' => '儲存',
+			'profileEdit.saved' => '已儲存',
+			'profileEdit.failed' => '儲存失敗',
+			'profileEdit.discardTitle' => '放棄這些修改？',
+			'profileEdit.discardMessage' => '修改還沒有儲存。',
+			'profileEdit.discard' => '放棄',
+			'profileEdit.keepEditing' => '繼續編輯',
+			'workspaceEdit.title' => '工作環境',
+			'workspaceEdit.pc' => '電腦',
+			'workspaceEdit.monitor' => '顯示器',
+			'workspaceEdit.tool' => '軟體',
+			'workspaceEdit.scanner' => '掃描器',
+			'workspaceEdit.tablet' => '繪圖板',
+			'workspaceEdit.mouse' => '滑鼠',
+			'workspaceEdit.printer' => '印表機',
+			'workspaceEdit.desktop' => '桌面上的物品',
+			'workspaceEdit.music' => '作畫時聽的音樂',
+			'workspaceEdit.desk' => '桌子',
+			'workspaceEdit.chair' => '椅子',
+			'workspaceEdit.comment' => '其他',
 			_ => null,
 		};
 	}

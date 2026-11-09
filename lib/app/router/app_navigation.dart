@@ -18,7 +18,7 @@ class AppRouteDestination {
 const appRouteDestinations = <AppRouteDestination>[
   AppRouteDestination(route: AppRoute.home, icon: PivIcons.home),
   AppRouteDestination(route: AppRoute.newest, icon: PivIcons.activity),
-  AppRouteDestination(route: AppRoute.me, icon: PivIcons.user, owns: {AppRoute.meFollowing, AppRoute.meFollowers}),
+  AppRouteDestination(route: AppRoute.me, icon: PivIcons.user, owns: {AppRoute.meFollowing, AppRoute.meFollowers, AppRoute.meWatchlist, AppRoute.meProfileEdit, AppRoute.meWorkspaceEdit}),
 ];
 
 /// Whether [path] is a destination's root page.
@@ -65,6 +65,10 @@ String appRouteLabel(Translations translations, AppRoute route) {
     AppRoute.login => translations.login.title,
     AppRoute.meFollowing => translations.me.following,
     AppRoute.meFollowers => translations.me.followers,
+    AppRoute.meWatchlist => translations.me.watchlist,
+    AppRoute.meProfileEdit => translations.me.editProfile,
+    AppRoute.meWorkspaceEdit => translations.me.workspace,
+    AppRoute.mangaSeries || AppRoute.novelSeries => translations.series.title,
     AppRoute.originalImageViewer ||
     AppRoute.illustDetail ||
     AppRoute.illustRelated ||

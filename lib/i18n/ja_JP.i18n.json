@@ -363,7 +363,10 @@
       "title": "アカウント",
       "signedOutSubtitle": "ログインすると Pixiv アカウントが表示されます",
       "notSignedIn": "未ログイン",
-      "signOut": "ログアウト"
+      "signOut": "ログアウト",
+      "showAi": "AI 生成作品を表示",
+      "showAiHelp": "この設定は pixiv アカウントに保存されます",
+      "showAiFailed": "設定を変更できませんでした"
     }
   },
   "me": {
@@ -374,7 +377,10 @@
     "emptyFollowing": "フォロー中のユーザーはいません",
     "emptyFollowers": "フォロワーはいません",
     "about": "このアプリについて",
-    "settings": "設定"
+    "settings": "設定",
+    "watchlist": "追いかけ中のシリーズ",
+    "editProfile": "プロフィール編集",
+    "workspace": "作業環境"
   },
   "about": {
     "title": "このアプリについて",
@@ -752,14 +758,21 @@
       "chapterNumber": "第 $number 章",
       "previousChapter": "前の章",
       "nextChapter": "次の章",
-      "progressValue": "$percent%"
+      "progressValue": "$percent%",
+      "markerSet": "ここにしおりを挟む",
+      "markerMenu": "しおり",
+      "markerJump": "しおりへ移動（${page} ページ）",
+      "markerUpdate": "現在の位置に更新",
+      "markerRemove": "しおりを外す",
+      "markerFailed": "しおりを変更できませんでした"
     }
   },
   "follow": {
     "tooltipFollow": "ユーザーをフォロー",
     "tooltipUnfollow": "フォロー解除",
     "followed": "フォロー中",
-    "follow": "フォロー"
+    "follow": "フォロー",
+    "restrictTitle": "フォローの公開範囲"
   },
   "richText": {
     "twitterUser": "Twitter：$username",
@@ -967,5 +980,80 @@
   },
   "discoverPage": {
     "noArticles": "現在記事はありません"
+  },
+  "privacy": {
+    "label": "公開範囲",
+    "public": "公開",
+    "private": "非公開"
+  },
+  "bookmarkOptions": {
+    "title": "ブックマーク設定",
+    "tags": "タグ",
+    "addTag": "タグを入力して Enter",
+    "noTags": "選べるタグはまだありません",
+    "remove": "ブックマークを解除",
+    "save": "保存",
+    "failed": "ブックマークを保存できませんでした",
+    "loadFailed": "ブックマーク情報を読み込めませんでした"
+  },
+  "series": {
+    "title": "シリーズ",
+    "link": "シリーズ · ${title}",
+    "episodes": "全${count}話",
+    "concluded": "完結",
+    "ongoing": "連載中",
+    "watch": "追いかける",
+    "watching": "追いかけ中",
+    "watchFailed": "追いかけ設定を変更できませんでした",
+    "startFromFirst": "第1話から読む",
+    "empty": "このシリーズにはまだ作品がありません"
+  },
+  "watchlist": {
+    "title": "追いかけ中のシリーズ",
+    "manga": "マンガ",
+    "novels": "小説",
+    "emptyManga": "追いかけ中のマンガはありません",
+    "emptyNovels": "追いかけ中の小説はありません",
+    "unavailable": "このシリーズは表示できません",
+    "updated": "${date} 更新"
+  },
+  "profileEdit": {
+    "title": "プロフィール編集",
+    "name": "ニックネーム",
+    "nameRequired": "ニックネームを入力してください",
+    "gender": "性別",
+    "genderUnknown": "未設定",
+    "genderMale": "男性",
+    "genderFemale": "女性",
+    "birthday": "誕生日",
+    "birthdayNotSet": "未設定",
+    "region": "地域",
+    "country": "国",
+    "job": "職業",
+    "website": "ウェブサイト",
+    "twitter": "Twitter",
+    "bio": "自己紹介",
+    "save": "保存",
+    "saved": "保存しました",
+    "failed": "保存できませんでした",
+    "discardTitle": "変更を破棄しますか？",
+    "discardMessage": "変更はまだ保存されていません。",
+    "discard": "破棄",
+    "keepEditing": "編集を続ける"
+  },
+  "workspaceEdit": {
+    "title": "作業環境",
+    "pc": "コンピュータ",
+    "monitor": "モニター",
+    "tool": "ソフト",
+    "scanner": "スキャナー",
+    "tablet": "タブレット",
+    "mouse": "マウス",
+    "printer": "プリンター",
+    "desktop": "机の上にあるもの",
+    "music": "作業中の音楽",
+    "desk": "机",
+    "chair": "椅子",
+    "comment": "その他"
   }
 }
