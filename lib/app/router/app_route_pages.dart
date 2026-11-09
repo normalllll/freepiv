@@ -15,6 +15,7 @@ import 'package:freepiv/features/illust/presentation/illust_related_page.dart';
 import 'package:freepiv/features/login/presentation/login_page.dart';
 import 'package:freepiv/features/me/presentation/following_page.dart';
 import 'package:freepiv/features/me/presentation/me_page.dart';
+import 'package:freepiv/features/me/presentation/account_edit_pages.dart';
 import 'package:freepiv/features/series/series_page.dart';
 import 'package:freepiv/features/series/watchlist_page.dart';
 import 'package:freepiv/features/newest/presentation/page/newest_page.dart';
@@ -152,6 +153,14 @@ Page<void> meFollowersPage(BuildContext context, GoRouterState state) {
 
 Page<void> meWatchlistPage(BuildContext context, GoRouterState state) {
   return FrostDetailPage(key: state.pageKey, child: const WatchlistPage());
+}
+
+Page<void> meProfileEditPage(BuildContext context, GoRouterState state) {
+  return FrostDetailPage(key: state.pageKey, child: const ProfileEditPage());
+}
+
+Page<void> meWorkspaceEditPage(BuildContext context, GoRouterState state) {
+  return FrostDetailPage(key: state.pageKey, child: const WorkspaceEditPage());
 }
 
 Page<void> mangaSeriesPage(BuildContext context, GoRouterState state) => _seriesPage(state, AppSeriesKind.manga);

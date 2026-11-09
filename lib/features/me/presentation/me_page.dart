@@ -126,6 +126,18 @@ class _MePageState extends ConsumerState<MePage> {
       onPressed: () => unawaited(router.push(location)),
     );
     return [
+      if (userId != null)
+        FrostGroupedSection(
+          children: [
+            row(PivIcons.user, t.me.following, AppRoute.meFollowing.path),
+            row(PivIcons.users, t.me.followers, AppRoute.meFollowers.path),
+            row(PivIcons.clock, t.me.watchlist, AppRoute.meWatchlist.path),
+          ],
+        ),
+      if (userId != null)
+        FrostGroupedSection(
+          children: [row(PivIcons.smile, t.me.editProfile, AppRoute.meProfileEdit.path), row(PivIcons.folder, t.me.workspace, AppRoute.meWorkspaceEdit.path)],
+        ),
       FrostGroupedSection(
         children: [
           row(

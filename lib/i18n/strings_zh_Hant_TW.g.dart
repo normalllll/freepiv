@@ -974,7 +974,7 @@ class Translations$profileEdit$zh_Hant_TW extends Translations$profileEdit$en_US
 	@override String get genderMale => '男';
 	@override String get genderFemale => '女';
 	@override String get birthday => '生日';
-	@override String get birthdayNotSet => '未設定';
+	@override String get notSet => '未設定';
 	@override String get region => '地區';
 	@override String get country => '國家';
 	@override String get job => '職業';
@@ -2684,7 +2684,7 @@ extension on TranslationsZhHantTw {
 			'profileEdit.genderMale' => '男',
 			'profileEdit.genderFemale' => '女',
 			'profileEdit.birthday' => '生日',
-			'profileEdit.birthdayNotSet' => '未設定',
+			'profileEdit.notSet' => '未設定',
 			'profileEdit.region' => '地區',
 			'profileEdit.country' => '國家',
 			'profileEdit.job' => '職業',

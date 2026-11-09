@@ -9,6 +9,7 @@ import 'package:freepiv/core/downloads/platform/macos_folder_access.dart';
 import 'package:freepiv/features/fanbox/login_logic.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/fanbox/login_panel.dart';
+import 'package:freepiv/features/me/logic/account_edit_logic.dart';
 import 'package:freepiv/features/settings/presentation/appearance_settings_section.dart';
 import 'package:freepiv/features/settings/presentation/background_settings_section.dart';
 import 'package:freepiv/features/settings/presentation/pixiv_sign_out.dart';
@@ -229,6 +230,33 @@ class _DownloadSettings extends ConsumerWidget {
 
 /// The Pixiv account, signed out only after a confirmation, and the FANBOX
 /// session: connect, update it, or sign out of it.
+/// Whether Pixiv shows AI-generated works; off until the setting has been read.
+class _AiShowRow extends ConsumerWidget {
+  const _AiShowRow({required this.accountId});
+
+  final String accountId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.t.settings.account;
+    final show = ref.watch(aiShowSettingProvider(accountId)).value;
+    Future<void> change(bool value) async {
+      try {
+        await ref.read(aiShowSettingProvider(accountId).notifier).set(value);
+      } catch (error) {
+        if (pixivAccountNotifier.value?.user.id == accountId) toastErrorWithCause(t.showAiFailed, error);
+      }
+    }
+
+    return FrostListRow.toggle(
+      title: t.showAi,
+      subtitle: FrostRowSubtitle(t.showAiHelp),
+      value: show ?? false,
+      onChanged: show == null ? null : (value) => unawaited(change(value)),
+    );
+  }
+}
+
 class _AccountSettings extends ConsumerWidget {
   const _AccountSettings();
 
@@ -253,6 +281,7 @@ class _AccountSettings extends ConsumerWidget {
                 contentTitle: account != null,
                 subtitle: FrostRowSubtitle(account == null ? t.settings.account.signedOutSubtitle : '@${account.user.account}'),
               ),
+              if (account != null) _AiShowRow(accountId: account.user.id),
               if (account != null) FrostListRow(title: t.settings.account.signOut, destructive: true, onPressed: () => unawaited(confirmPixivSignOut(context))),
             ],
           ),

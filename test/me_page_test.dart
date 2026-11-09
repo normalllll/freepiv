@@ -55,7 +55,7 @@ void main() {
 
   testWidgets('every entry is a row with a chevron, one under another, and opens its page; downloads count what needs attention', (tester) async {
     await _mount(tester);
-    final labels = [t.me.following, t.me.followers, t.navigation.downloads, t.me.about, t.me.settings];
+    final labels = [t.me.following, t.me.followers, t.me.watchlist, t.me.editProfile, t.me.workspace, t.navigation.downloads, t.me.about, t.me.settings];
     expect(_rows(tester), labels);
     final rows = tester.widgetList<FrostListRow>(find.byType(FrostListRow)).toList();
     final tops = [for (final label in labels) tester.getTopLeft(find.widgetWithText(FrostListRow, label)).dy];
@@ -66,7 +66,16 @@ void main() {
     );
     expect((badge.count, badge.tone), (1, FrostCountBadgeTone.negative), reason: 'the sample downloads have one failure');
     expect(rows, hasLength(labels.length));
-    final expected = [AppRoute.meFollowing.path, AppRoute.meFollowers.path, AppRoute.downloads.path, AppRoute.about.path, AppRoute.settings.path];
+    final expected = [
+      AppRoute.meFollowing.path,
+      AppRoute.meFollowers.path,
+      AppRoute.meWatchlist.path,
+      AppRoute.meProfileEdit.path,
+      AppRoute.meWorkspaceEdit.path,
+      AppRoute.downloads.path,
+      AppRoute.about.path,
+      AppRoute.settings.path,
+    ];
     for (final (index, location) in expected.indexed) {
       await _mount(tester);
       await tester.tap(find.text(labels[index]));
@@ -84,7 +93,7 @@ void main() {
     await _mount(tester, details: () async => throw StateError('offline'));
     expect(find.byType(FrostStat), findsNothing);
     expect(find.text(sampleAccount.user.name), findsOneWidget);
-    expect(_rows(tester), hasLength(5));
+    expect(_rows(tester), hasLength(8));
   });
 
   testWidgets('signed out: the way to sign in, and the entries that need no account', (tester) async {

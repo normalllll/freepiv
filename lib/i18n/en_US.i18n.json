@@ -1026,7 +1026,7 @@
     "genderMale": "Male",
     "genderFemale": "Female",
     "birthday": "Birthday",
-    "birthdayNotSet": "Not set",
+    "notSet": "Not set",
     "region": "Region",
     "country": "Country",
     "job": "Occupation",

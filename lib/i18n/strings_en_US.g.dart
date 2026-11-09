@@ -976,7 +976,7 @@ class Translations$profileEdit$en_US {
 	String get genderMale => 'Male';
 	String get genderFemale => 'Female';
 	String get birthday => 'Birthday';
-	String get birthdayNotSet => 'Not set';
+	String get notSet => 'Not set';
 	String get region => 'Region';
 	String get country => 'Country';
 	String get job => 'Occupation';
@@ -2686,7 +2686,7 @@ extension on Translations {
 			'profileEdit.genderMale' => 'Male',
 			'profileEdit.genderFemale' => 'Female',
 			'profileEdit.birthday' => 'Birthday',
-			'profileEdit.birthdayNotSet' => 'Not set',
+			'profileEdit.notSet' => 'Not set',
 			'profileEdit.region' => 'Region',
 			'profileEdit.country' => 'Country',
 			'profileEdit.job' => 'Occupation',

@@ -974,7 +974,7 @@ class _Translations$profileEdit$ja_JP extends Translations$profileEdit$en_US {
 	@override String get genderMale => '男性';
 	@override String get genderFemale => '女性';
 	@override String get birthday => '誕生日';
-	@override String get birthdayNotSet => '未設定';
+	@override String get notSet => '未設定';
 	@override String get region => '地域';
 	@override String get country => '国';
 	@override String get job => '職業';
@@ -2684,7 +2684,7 @@ extension on TranslationsJaJp {
 			'profileEdit.genderMale' => '男性',
 			'profileEdit.genderFemale' => '女性',
 			'profileEdit.birthday' => '誕生日',
-			'profileEdit.birthdayNotSet' => '未設定',
+			'profileEdit.notSet' => '未設定',
 			'profileEdit.region' => '地域',
 			'profileEdit.country' => '国',
 			'profileEdit.job' => '職業',

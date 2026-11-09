@@ -974,7 +974,7 @@ class Translations$profileEdit$zh_CN extends Translations$profileEdit$en_US {
 	@override String get genderMale => '男';
 	@override String get genderFemale => '女';
 	@override String get birthday => '生日';
-	@override String get birthdayNotSet => '未设置';
+	@override String get notSet => '未设置';
 	@override String get region => '地区';
 	@override String get country => '国家';
 	@override String get job => '职业';
@@ -2684,7 +2684,7 @@ extension on TranslationsZhCn {
 			'profileEdit.genderMale' => '男',
 			'profileEdit.genderFemale' => '女',
 			'profileEdit.birthday' => '生日',
-			'profileEdit.birthdayNotSet' => '未设置',
+			'profileEdit.notSet' => '未设置',
 			'profileEdit.region' => '地区',
 			'profileEdit.country' => '国家',
 			'profileEdit.job' => '职业',

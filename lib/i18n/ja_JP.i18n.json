@@ -1026,7 +1026,7 @@
     "genderMale": "男性",
     "genderFemale": "女性",
     "birthday": "誕生日",
-    "birthdayNotSet": "未設定",
+    "notSet": "未設定",
     "region": "地域",
     "country": "国",
     "job": "職業",

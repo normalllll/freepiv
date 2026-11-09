@@ -13,6 +13,7 @@ import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
 import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/features/me/logic/account_edit_logic.dart';
 import 'package:freepiv/features/me/logic/me_logic.dart';
 import 'package:freepiv/features/series/logic.dart';
 import 'package:freepiv/shared/logic/bookmark_options_logic.dart';
@@ -268,6 +269,9 @@ final sampleOverrideMap = <Object, Override>{
   novelSeriesWorksProvider: novelSeriesWorksProvider.overrideWith2((_) => _SampleNovelSeries()),
   mangaSeriesWorksProvider: mangaSeriesWorksProvider.overrideWith2((_) => _SampleMangaSeries()),
   watchlistEntriesProvider: watchlistEntriesProvider.overrideWith2((_) => _SampleWatchlist()),
+  aiShowSettingProvider: aiShowSettingProvider.overrideWith2((_) => _SampleAiShow()),
+  editableUserDetailProvider: editableUserDetailProvider.overrideWith((ref, userId) async => sampleUserDetail),
+  profilePresetsProvider: profilePresetsProvider.overrideWith((ref) async => sampleProfilePresets),
 };
 
 final sampleOverrides = [...sampleOverrideMap.values];
@@ -405,9 +409,9 @@ final sampleUserDetail = UserDetailResult(
   profile: const UserProfile(
     webpage: 'https://example.com',
     gender: '',
-    birth: '',
+    birth: '1997-04-12',
     birthDay: '04-12',
-    birthYear: 0,
+    birthYear: 1997,
     region: 'Kanagawa',
     addressId: 0,
     countryCode: '',
@@ -561,6 +565,15 @@ List<WatchlistSeries> sampleWatchlist() {
   ];
 }
 
+const sampleProfilePresets = ProfilePresets(
+  addresses: [
+    ProfileAddressPreset(id: 14, name: 'Kanagawa', isGlobal: false),
+    ProfileAddressPreset(id: 48, name: 'Overseas', isGlobal: true),
+  ],
+  countries: [ProfileCountryPreset(code: 'JP', name: 'Japan'), ProfileCountryPreset(code: 'TW', name: 'Taiwan')],
+  jobs: [ProfileJobPreset(id: 0, name: 'Not specified'), ProfileJobPreset(id: 3, name: 'Illustrator')],
+);
+
 class _SampleNovelSeriesSource extends NovelSeriesSource {
   _SampleNovelSeriesSource({required super.seriesId});
 
@@ -607,6 +620,11 @@ class _SampleWatchlist extends WatchlistEntries {
     ref.onDispose(source.dispose);
     return source;
   }
+}
+
+class _SampleAiShow extends AiShowSetting {
+  @override
+  Future<bool> build(String accountId) async => true;
 }
 
 WebviewNovel sampleNovelText(int novelId) => WebviewNovel(
