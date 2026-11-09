@@ -52,9 +52,14 @@ class IllustStage extends ConsumerWidget {
   /// Buttons over the stage's corners (the narrow layout's Back and More).
   final Widget? overlay;
 
+  /// Dots fit this many pages; past it the page number is a badge that opens
+  /// a way to jump, which dots and swiping alone cannot offer at 100 pages.
+  static const _dotsMaxPages = 10;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final playback = this.playback;
+    final jumps = playback == null && pages.length > _dotsMaxPages;
     final Widget pagesView = playback != null
         ? _UgoiraStage(illust: illust, page: pages.first, playback: playback)
         : FrostPager(
@@ -62,7 +67,7 @@ class IllustStage extends ConsumerWidget {
             controller: pager,
             initialPage: page,
             onPageChanged: onPageChanged,
-            showsIndicator: pages.length > 1,
+            showsIndicator: pages.length > 1 && !jumps,
             indicatorPlacement: FrostPageIndicatorPlacement.overlay,
             itemBuilder: (context, index) =>
                 _StagePage(illust: illust, index: index, pages: pages, heroTag: index == 0 ? heroTag : null, onTap: () => onOpenViewer(index)),
@@ -70,7 +75,21 @@ class IllustStage extends ConsumerWidget {
     return Column(
       children: [
         Expanded(
-          child: Stack(fit: StackFit.expand, children: [pagesView, ?overlay]),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              pagesView,
+              if (jumps)
+                // Over the page's corner, clear of the overlay's Back and More.
+                PositionedDirectional(
+                  top: overlay == null ? 0 : null,
+                  bottom: overlay == null ? null : 0,
+                  end: 0,
+                  child: _PageJumpBadge(page: page, count: pages.length, onJump: pager.jumpTo),
+                ),
+              ?overlay,
+            ],
+          ),
         ),
         if (strip && playback == null && pages.length > 1)
           Padding(
@@ -86,6 +105,66 @@ class IllustStage extends ConsumerWidget {
       ],
     );
   }
+}
+
+/// The page number of a long work, matching the count on its card; opens the
+/// page jump.
+class _PageJumpBadge extends StatelessWidget {
+  const _PageJumpBadge({required this.page, required this.count, required this.onJump});
+
+  static const _panelWidth = 300.0;
+
+  final int page;
+  final int count;
+  final ValueChanged<int> onJump;
+
+  @override
+  Widget build(BuildContext context) => FrostPopover(
+    title: context.t.illust.pageJump,
+    maxWidth: _panelWidth,
+    builder: (context, focusNode, toggle) => FrostClickSurface(
+      focusNode: focusNode,
+      onTap: toggle,
+      // A finger-sized target around a small badge.
+      child: Padding(
+        padding: const EdgeInsets.all(FrostGap.related),
+        child: FrostBadge(label: '${page + 1} / $count', icon: PivIcons.images, tone: FrostBadgeTone.onMedia),
+      ),
+    ),
+    contentBuilder: (context, close) => SizedBox(
+      width: _panelWidth,
+      child: _PageJumpPanel(page: page, count: count, onJump: onJump),
+    ),
+  );
+}
+
+/// A slider through the pages. Dragging only changes the number shown: the
+/// page turns once, on release, so a drag loads no page on the way.
+class _PageJumpPanel extends StatefulWidget {
+  const _PageJumpPanel({required this.page, required this.count, required this.onJump});
+
+  final int page;
+  final int count;
+  final ValueChanged<int> onJump;
+
+  @override
+  State<_PageJumpPanel> createState() => _PageJumpPanelState();
+}
+
+class _PageJumpPanelState extends State<_PageJumpPanel> {
+  late double _value = widget.page.toDouble();
+
+  @override
+  Widget build(BuildContext context) => FrostSlider(
+    key: const ValueKey('illust-page-jump'),
+    value: _value,
+    max: widget.count - 1,
+    divisions: widget.count - 1,
+    semanticLabel: context.t.illust.pageJump,
+    valueLabel: (value) => '${value.round() + 1} / ${widget.count}',
+    onChanged: (value) => setState(() => _value = value),
+    onChangeEnd: (value) => widget.onJump(value.round()),
+  );
 }
 
 /// The menu of a page: download it or every page, copy it (desktop), copy

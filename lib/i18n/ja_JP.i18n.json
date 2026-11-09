@@ -614,6 +614,7 @@
     }
   },
   "illust": {
+    "pageJump": "ページへ移動",
     "contextMenu": {
       "download": "ダウンロード",
       "downloadAll": "すべてダウンロード",

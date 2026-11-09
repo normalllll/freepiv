@@ -614,6 +614,7 @@
     }
   },
   "illust": {
+    "pageJump": "跳转页码",
     "contextMenu": {
       "download": "下载",
       "downloadAll": "下载全部",

@@ -614,6 +614,7 @@
     }
   },
   "illust": {
+    "pageJump": "Go to page",
     "contextMenu": {
       "download": "Download",
       "downloadAll": "Download all",

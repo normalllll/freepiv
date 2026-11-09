@@ -561,6 +561,7 @@ class _Translations$illust$ja_JP extends Translations$illust$en_US {
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
+	@override String get pageJump => 'ページへ移動';
 	@override late final _Translations$illust$contextMenu$ja_JP contextMenu = _Translations$illust$contextMenu$ja_JP._(_root);
 	@override late final _Translations$illust$imageLabels$ja_JP imageLabels = _Translations$illust$imageLabels$ja_JP._(_root);
 	@override late final _Translations$illust$toast$ja_JP toast = _Translations$illust$toast$ja_JP._(_root);
@@ -2344,10 +2345,11 @@ extension on TranslationsJaJp {
 			'newest.empty.privateFollows' => '非公開フォローの新着はありません',
 			'newest.empty.mypixiv' => 'マイピクの新着はありません',
 			'newest.empty.everyone' => '新着作品はまだありません',
+			'illust.pageJump' => 'ページへ移動',
 			'illust.contextMenu.download' => 'ダウンロード',
-			'illust.contextMenu.downloadAll' => 'すべてダウンロード',
 			_ => null,
 		} ?? switch (path) {
+			'illust.contextMenu.downloadAll' => 'すべてダウンロード',
 			'illust.contextMenu.copyImage' => '画像をコピーする',
 			'illust.contextMenu.copyLink' => '作品リンクをコピー',
 			'illust.contextMenu.openOriginal' => 'Pixiv で開く',

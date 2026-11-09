@@ -561,6 +561,7 @@ class Translations$illust$zh_Hant_TW extends Translations$illust$en_US {
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
+	@override String get pageJump => '跳轉頁碼';
 	@override late final Translations$illust$contextMenu$zh_Hant_TW contextMenu = Translations$illust$contextMenu$zh_Hant_TW.internal(_root);
 	@override late final Translations$illust$imageLabels$zh_Hant_TW imageLabels = Translations$illust$imageLabels$zh_Hant_TW.internal(_root);
 	@override late final Translations$illust$toast$zh_Hant_TW toast = Translations$illust$toast$zh_Hant_TW.internal(_root);
@@ -2344,10 +2345,11 @@ extension on TranslationsZhHantTw {
 			'newest.empty.privateFollows' => '非公開追蹤的人還沒有新作品',
 			'newest.empty.mypixiv' => '好P友還沒有新作品',
 			'newest.empty.everyone' => '還沒有新作品',
+			'illust.pageJump' => '跳轉頁碼',
 			'illust.contextMenu.download' => '下載',
-			'illust.contextMenu.downloadAll' => '下載全部',
 			_ => null,
 		} ?? switch (path) {
+			'illust.contextMenu.downloadAll' => '下載全部',
 			'illust.contextMenu.copyImage' => '複製圖像',
 			'illust.contextMenu.copyLink' => '複製作品連結',
 			'illust.contextMenu.openOriginal' => '在 Pixiv 開啟',

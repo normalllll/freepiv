@@ -563,6 +563,7 @@ class Translations$illust$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+	String get pageJump => 'Go to page';
 	late final Translations$illust$contextMenu$en_US contextMenu = Translations$illust$contextMenu$en_US.internal(_root);
 	late final Translations$illust$imageLabels$en_US imageLabels = Translations$illust$imageLabels$en_US.internal(_root);
 	late final Translations$illust$toast$en_US toast = Translations$illust$toast$en_US.internal(_root);
@@ -2346,10 +2347,11 @@ extension on Translations {
 			'newest.empty.privateFollows' => 'Nothing new from your private follows',
 			'newest.empty.mypixiv' => 'Nothing new from your My pixiv friends',
 			'newest.empty.everyone' => 'No new works yet',
+			'illust.pageJump' => 'Go to page',
 			'illust.contextMenu.download' => 'Download',
-			'illust.contextMenu.downloadAll' => 'Download all',
 			_ => null,
 		} ?? switch (path) {
+			'illust.contextMenu.downloadAll' => 'Download all',
 			'illust.contextMenu.copyImage' => 'Copy image',
 			'illust.contextMenu.copyLink' => 'Copy work link',
 			'illust.contextMenu.openOriginal' => 'Open on Pixiv',

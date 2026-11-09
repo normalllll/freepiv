@@ -561,6 +561,7 @@ class Translations$illust$zh_CN extends Translations$illust$en_US {
 	final TranslationsZhCn _root; // ignore: unused_field
 
 	// Translations
+	@override String get pageJump => '跳转页码';
 	@override late final Translations$illust$contextMenu$zh_CN contextMenu = Translations$illust$contextMenu$zh_CN.internal(_root);
 	@override late final Translations$illust$imageLabels$zh_CN imageLabels = Translations$illust$imageLabels$zh_CN.internal(_root);
 	@override late final Translations$illust$toast$zh_CN toast = Translations$illust$toast$zh_CN.internal(_root);
@@ -2344,10 +2345,11 @@ extension on TranslationsZhCn {
 			'newest.empty.privateFollows' => '非公开关注的人还没有新作品',
 			'newest.empty.mypixiv' => '好P友还没有新作品',
 			'newest.empty.everyone' => '还没有新作品',
+			'illust.pageJump' => '跳转页码',
 			'illust.contextMenu.download' => '下载',
-			'illust.contextMenu.downloadAll' => '下载全部',
 			_ => null,
 		} ?? switch (path) {
+			'illust.contextMenu.downloadAll' => '下载全部',
 			'illust.contextMenu.copyImage' => '复制图片',
 			'illust.contextMenu.copyLink' => '复制作品链接',
 			'illust.contextMenu.openOriginal' => '在 Pixiv 打开',
