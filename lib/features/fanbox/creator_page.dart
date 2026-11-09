@@ -88,9 +88,7 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
         controller: _outer,
         avatar: (size) => creator == null ? FrostAvatar(semanticLabel: '', size: size) : AppFanboxAvatar(user: creator.user, size: size),
         child: FrostPinnedChrome(
-          chrome: AppFlightChrome(
-            child: FrostPageHeader(title: creator == null ? null : AppFlightTitle(name: creator.user.name)),
-          ),
+          chrome: AppFlightChrome(title: creator == null ? null : AppFlightTitle(name: creator.user.name)),
           body: NestedScrollView(
             controller: _outer,
             headerSliverBuilder: (context, _) => [

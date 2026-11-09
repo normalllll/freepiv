@@ -26,6 +26,8 @@ AppAvatarFlight _flight(WidgetTester tester) => AppAvatarFlight.of(tester.elemen
 
 Future<void> _scrollTo(WidgetTester tester, double offset) async {
   _outer(tester).jumpTo(offset);
+  // The header's title comes with the first frame away from the top.
+  await tester.pump();
   await tester.pump();
 }
 
@@ -44,8 +46,8 @@ void main() {
       final flight = _flight(tester);
       expect(flight.phase.value, AppAvatarFlightPhase.identity);
       expect(_shown(tester, _large), isTrue);
-      expect(_shown(tester, _slot), isFalse, reason: 'only the real one at the start');
-      expect(_shown(tester, _name), isFalse);
+      expect(_slot, findsNothing, reason: 'the header holds nothing at the top');
+      expect(_name, findsNothing);
 
       final sticks = _outer(tester).position.maxScrollExtent;
       await _scrollTo(tester, sticks * .8);

@@ -117,9 +117,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
         // The page header names the author only once the identity header has
         // scrolled away.
         child: FrostPinnedChrome(
-          chrome: AppFlightChrome(
-            child: FrostPageHeader(title: AppFlightTitle(name: detail.user.name)),
-          ),
+          chrome: AppFlightChrome(title: AppFlightTitle(name: detail.user.name)),
           body: NestedScrollView(
             controller: _outer,
             headerSliverBuilder: (context, _) => [

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 import 'package:frost_ui/frost_ui.dart';
 
@@ -31,6 +33,14 @@ class AppAvatarFlight {
   /// Where the avatar is now.
   final phase = ValueNotifier(AppAvatarFlightPhase.identity);
 
+  /// Whether the page has left its top: only then does the header hold a
+  /// title, so at rest it can leave its row out.
+  final scrolled = ValueNotifier(false);
+
+  /// The identity's top in the page at rest, which the header's row may
+  /// overlap once it has come.
+  double? _leadTop;
+
   RenderBox? _box(GlobalKey key) {
     final box = key.currentContext?.findRenderObject();
     return box is RenderBox && box.attached && box.hasSize ? box : null;
@@ -38,20 +48,47 @@ class AppAvatarFlight {
 
   static const _tolerance = .5;
 
-  /// The offset the avatar's top reaches the header at, and the offset the
-  /// tabs stick at; both stay put while the page scrolls.
+  /// The bottom of the header in the page's coordinates.
+  double? get _chromeBottom {
+    final stack = _box(_stack), chrome = _box(_chrome);
+    return stack == null || chrome == null ? null : chrome.localToGlobal(Offset(0, chrome.size.height), ancestor: stack).dy;
+  }
+
+  /// The offset the avatar's top reaches the header at (0 when it starts
+  /// beside the header's row), and the offset the tabs reach the header at;
+  /// both stay put while the page scrolls.
   ({double arrives, double sticks})? get _travel {
-    final lead = _box(_lead), source = _box(_source);
-    if (lead == null) return null;
-    final sticks = lead.size.height;
+    final lead = _box(_lead), source = _box(_source), bottom = _chromeBottom;
+    if (lead == null || bottom == null || lead.size.height <= 0) return null;
+    final under = (_leadTop ?? bottom) - bottom;
+    final sticks = lead.size.height + under;
     if (sticks <= 0) return null;
-    return (arrives: source == null ? sticks : source.localToGlobal(Offset.zero, ancestor: lead).dy, sticks: sticks);
+    final arrives = source == null ? sticks : math.max(0.0, source.localToGlobal(Offset.zero, ancestor: lead).dy + under);
+    return (arrives: arrives, sticks: sticks);
+  }
+
+  /// After a layout: notes where the identity rests, and goes on from the
+  /// header as it now is.
+  void settled() {
+    if (_scroll.hasClients && _scroll.offset <= 0) {
+      final stack = _box(_stack), lead = _box(_lead);
+      if (stack != null && lead != null) _leadTop = lead.localToGlobal(Offset.zero, ancestor: stack).dy;
+    }
+    update();
   }
 
   void update() {
-    final travel = _travel;
-    if (travel == null || !_scroll.hasClients) return;
+    if (!_scroll.hasClients) return;
     final offset = _scroll.offset;
+    if (scrolled.value != offset > 0) {
+      scrolled.value = offset > 0;
+      // The header's row comes or goes with the title.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_box(_stack) != null) settled();
+      });
+    }
+    final travel = _travel;
+    if (travel == null) return;
     phase.value = offset >= travel.sticks - _tolerance
         ? AppAvatarFlightPhase.header
         : _flies() && offset > travel.arrives
@@ -63,9 +100,11 @@ class AppAvatarFlight {
   /// avatar is when it reaches the header, moved to the header's slot so that
   /// it lands exactly when the tabs stick. Null without the page laid out.
   Rect? get flyingRect {
-    final stack = _box(_stack), chrome = _box(_chrome), source = _box(_source), slot = _box(_slot), travel = _travel;
-    if (stack == null || chrome == null || source == null || slot == null || travel == null || !_scroll.hasClients) return null;
-    final top = chrome.localToGlobal(Offset(0, chrome.size.height), ancestor: stack).dy;
+    final stack = _box(_stack), lead = _box(_lead), source = _box(_source), slot = _box(_slot), bottom = _chromeBottom, travel = _travel;
+    if (stack == null || lead == null || source == null || slot == null || bottom == null || travel == null || !_scroll.hasClients) return null;
+    // Where the avatar was when it took off: at the header's bottom, or where
+    // it rests when that is already beside the header's row.
+    final top = (_leadTop ?? bottom) + source.localToGlobal(Offset.zero, ancestor: lead).dy - travel.arrives;
     final from = Offset(source.localToGlobal(Offset.zero, ancestor: stack).dx, top) & source.size;
     final to = slot.localToGlobal(Offset.zero, ancestor: stack) & slot.size;
     final span = travel.sticks - travel.arrives;
@@ -73,7 +112,10 @@ class AppAvatarFlight {
     return Rect.lerp(from, to, progress);
   }
 
-  void _dispose() => phase.dispose();
+  void _dispose() {
+    phase.dispose();
+    scrolled.dispose();
+  }
 
   static AppAvatarFlight of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<_FlightScope>()!.flight;
 }
@@ -126,7 +168,7 @@ class _AppAvatarFlightHostState extends State<AppAvatarFlightHost> {
   Widget build(BuildContext context) {
     // The header and identity may have moved with the window.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _flight.update();
+      if (mounted) _flight.settled();
     });
     return _FlightScope(
       flight: _flight,
@@ -177,14 +219,26 @@ class _FlyingAvatarDelegate extends FlowDelegate {
   bool shouldRepaint(_FlyingAvatarDelegate oldDelegate) => oldDelegate.flight != flight;
 }
 
-/// The page header, measured so the flight knows where it ends.
+/// The page header, measured so the flight knows where it ends. It holds
+/// [title] once the page has left its top, so that at rest it can leave its
+/// row out and the identity starts at the top of the page.
 class AppFlightChrome extends StatelessWidget {
-  const AppFlightChrome({required this.child, super.key});
+  const AppFlightChrome({required this.title, super.key});
 
-  final Widget child;
+  /// Usually an [AppFlightTitle]; null while there is nothing to name.
+  final Widget? title;
 
   @override
-  Widget build(BuildContext context) => KeyedSubtree(key: AppAvatarFlight.of(context)._chrome, child: child);
+  Widget build(BuildContext context) {
+    final flight = AppAvatarFlight.of(context);
+    return KeyedSubtree(
+      key: flight._chrome,
+      child: ValueListenableBuilder(
+        valueListenable: flight.scrolled,
+        builder: (context, scrolled, _) => FrostPageHeader(title: scrolled ? title : null),
+      ),
+    );
+  }
 }
 
 /// The identity above the tabs, whose height is the distance to sticking.

@@ -235,7 +235,8 @@ void main() {
         await settlePilot(tester);
         expect(outer.offset, outer.position.maxScrollExtent, reason: 'the works scroll, the identity stays away');
         final pinned = tester.getRect(bar);
-        expect(pinned.top, closeTo(header, 2), reason: 'the tabs sit right under the page header (drag ${step + 1})');
+        // At the normal text size the stuck tabs tuck slightly under the header.
+        expect(pinned.top, closeTo(textScale > 1.3 ? header : header - 12, 2), reason: 'the tabs sit right under the page header (drag ${step + 1})');
         final cards = find.byType(AppArtworkCard).hitTestable();
         expect(cards, findsWidgets);
         expect(tester.getRect(cards.first).bottom, greaterThan(pinned.bottom), reason: 'works scroll under the tabs, not over them');

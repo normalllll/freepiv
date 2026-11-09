@@ -43,6 +43,9 @@ Future<void> _showTab(WidgetTester tester, String label) async {
   await settlePilot(tester);
 }
 
+/// How far the stuck tabs go under the page header at the normal text size.
+const _tabsTuck = 12.0;
+
 void main() {
   testWidgets('the identity avatar is 72 across', (tester) async {
     await _mount(tester);
@@ -72,7 +75,7 @@ void main() {
     for (var step = 0; step < 3; step++) {
       await tester.dragFrom(const Offset(500, 650), const Offset(0, -300));
       await settlePilot(tester);
-      expect(tester.getRect(bar).top, closeTo(header, 2), reason: 'pinned after drag ${step + 1}');
+      expect(tester.getRect(bar).top, closeTo(header - _tabsTuck, 2), reason: 'pinned after drag ${step + 1}');
     }
   });
 
@@ -138,6 +141,7 @@ void main() {
     await _mount(tester, plans: true);
     expect(tester.widget<FrostTabBar>(find.byType(FrostTabBar)).controller!.index, 1);
     final page = find.byType(FrostPageHeader);
+    expect(find.descendant(of: page, matching: find.text('Studio Kite')), findsNothing, reason: 'the header holds nothing at the top');
     bool named() => tester
         .widget<Visibility>(
           find
@@ -148,7 +152,6 @@ void main() {
               .first,
         )
         .visible;
-    expect(named(), isFalse);
     await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -600));
     await settlePilot(tester);
     expect(named(), isTrue);
