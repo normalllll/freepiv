@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderContainer;
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/dev/sample_data.dart';
@@ -31,6 +32,12 @@ class _Session extends FanboxSession {
 
   @override
   Future<String?> build() async => value;
+}
+
+/// Fails on any request.
+class _NoRequests implements FanboxApi {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw StateError('unexpected request: ${invocation.memberName}');
 }
 
 Future<void> _mount(
@@ -78,6 +85,29 @@ void main() {
     expect(find.text(first.user.name), findsWidgets);
     expect(find.byWidgetPredicate((widget) => widget is FrostTitleMenu && widget.title == '${t.fanbox.title} · ${t.fanbox.home}'), findsOneWidget);
   });
+
+  testWidgets('the title menu offers only what opens without words, supported plans under Mine', (tester) async {
+    await _mount(tester);
+    final groups = tester.widget<FrostTitleMenu>(find.byType(FrostTitleMenu)).entries.cast<FrostMenuSection>();
+    List<String> labels(FrostMenuSection group) => [for (final entry in group.entries.cast<FrostMenuAction>()) entry.label];
+    final all = groups.expand(labels).toList();
+    expect(all, isNot(contains(t.fanbox.searchCreators)));
+    expect(all, isNot(contains(t.fanbox.searchTags)));
+    expect(labels(groups.singleWhere((group) => group.header == t.fanboxPage.groupMine)), contains(t.fanbox.plans));
+    expect(labels(groups.singleWhere((group) => group.header == t.fanboxPage.groupDiscover)), isNot(contains(t.fanbox.plans)));
+  });
+
+  for (final section in [FanboxSection.searchCreators, FanboxSection.searchTags]) {
+    for (final query in ['', '  ']) {
+      test('${section.name} without words ("$query") shows nothing and asks FANBOX nothing', () async {
+        final container = ProviderContainer(overrides: [fanboxApiProvider.overrideWith((ref) async => _NoRequests())]);
+        addTearDown(container.dispose);
+        final collection = await container.read(fanboxBrowseProvider((section: section, creatorId: '', query: query)).future);
+        expect(collection.entries, isEmpty);
+        expect(collection.hasMore, isFalse);
+      });
+    }
+  }
 
   testWidgets('the title menu follows the collection shown, a tag or a search included', (tester) async {
     await _mount(tester, location: (section: FanboxSection.bookmarks, creatorId: '', query: ''));

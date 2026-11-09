@@ -217,6 +217,8 @@ class FanboxBrowse extends _$FanboxBrowse {
   };
 
   Future<FanboxCollection> _fetch(FanboxApi api, FanboxLocation location, String? cursor, int page) async {
+    // A search without words is refused by FANBOX; a link can still ask for one.
+    if (location.section case FanboxSection.searchCreators || FanboxSection.searchTags when location.query.trim().isEmpty) return const FanboxCollection([]);
     switch (location.section) {
       case FanboxSection.home:
       case FanboxSection.supporting:

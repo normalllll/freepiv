@@ -23,14 +23,14 @@ String fanboxSectionLabel(BuildContext context, FanboxSection section) {
 
 enum FanboxGroup {
   feed([FanboxSection.home, FanboxSection.supporting]),
-  discover([FanboxSection.recommended, FanboxSection.pixiv, FanboxSection.plans, FanboxSection.searchCreators, FanboxSection.searchTags]),
-  personal([FanboxSection.following, FanboxSection.bookmarks, FanboxSection.notices, FanboxSection.messages]);
+  discover([FanboxSection.recommended, FanboxSection.pixiv]),
+  personal([FanboxSection.following, FanboxSection.plans, FanboxSection.bookmarks, FanboxSection.notices, FanboxSection.messages]);
 
   const FanboxGroup(this.sections);
   final List<FanboxSection> sections;
 
-  /// The group that lists [section]; sections outside every list (a tag's
-  /// posts, a creator's) belong with discovery.
+  /// The group that lists [section]; sections outside every list (search
+  /// results, a tag's posts, a creator's) belong with discovery.
   static FanboxGroup of(FanboxSection section) => values.where((group) => group.sections.contains(section)).firstOrNull ?? discover;
 }
 
