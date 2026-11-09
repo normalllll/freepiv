@@ -231,6 +231,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PixivEnumParam dco_decode_TraitDef_PixivEnumParam(dynamic raw);
 
   @protected
+  AiShowSettingsResult dco_decode_ai_show_settings_result(dynamic raw);
+
+  @protected
   Article dco_decode_article(dynamic raw);
 
   @protected
@@ -357,7 +360,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int dco_decode_box_autoadd_u_8(dynamic raw);
 
   @protected
+  User dco_decode_box_autoadd_user(dynamic raw);
+
+  @protected
   UserAccountResult dco_decode_box_autoadd_user_account_result(dynamic raw);
+
+  @protected
+  UserProfileEdit dco_decode_box_autoadd_user_profile_edit(dynamic raw);
+
+  @protected
+  UserWorkspaceEdit dco_decode_box_autoadd_user_workspace_edit(dynamic raw);
 
   @protected
   Category dco_decode_category(dynamic raw);
@@ -570,6 +582,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<ProfileAddressPreset> dco_decode_list_profile_address_preset(
+    dynamic raw,
+  );
+
+  @protected
+  List<ProfileCountryPreset> dco_decode_list_profile_country_preset(
+    dynamic raw,
+  );
+
+  @protected
+  List<ProfileJobPreset> dco_decode_list_profile_job_preset(dynamic raw);
+
+  @protected
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
 
   @protected
@@ -589,6 +614,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<UserPreview> dco_decode_list_user_preview(dynamic raw);
+
+  @protected
+  List<WatchlistSeries> dco_decode_list_watchlist_series(dynamic raw);
 
   @protected
   List<WebviewNovelImage> dco_decode_list_webview_novel_image(dynamic raw);
@@ -704,6 +732,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int? dco_decode_opt_box_autoadd_u_8(dynamic raw);
 
   @protected
+  User? dco_decode_opt_box_autoadd_user(dynamic raw);
+
+  @protected
   UserAccountResult? dco_decode_opt_box_autoadd_user_account_result(
     dynamic raw,
   );
@@ -730,7 +761,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PixivisionTag dco_decode_pixivision_tag(dynamic raw);
 
   @protected
+  ProfileAddressPreset dco_decode_profile_address_preset(dynamic raw);
+
+  @protected
+  ProfileCountryPreset dco_decode_profile_country_preset(dynamic raw);
+
+  @protected
   ProfileImageUrls dco_decode_profile_image_urls(dynamic raw);
+
+  @protected
+  ProfileJobPreset dco_decode_profile_job_preset(dynamic raw);
+
+  @protected
+  ProfilePresets dco_decode_profile_presets(dynamic raw);
+
+  @protected
+  ProfilePresetsResult dco_decode_profile_presets_result(dynamic raw);
 
   @protected
   (String, String) dco_decode_record_string_string(dynamic raw);
@@ -835,6 +881,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   UserDetailResult dco_decode_user_detail_result(dynamic raw);
 
   @protected
+  UserFollowDetail dco_decode_user_follow_detail(dynamic raw);
+
+  @protected
+  UserFollowDetailResult dco_decode_user_follow_detail_result(dynamic raw);
+
+  @protected
   UserInfo dco_decode_user_info(dynamic raw);
 
   @protected
@@ -847,13 +899,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   UserProfile dco_decode_user_profile(dynamic raw);
 
   @protected
+  UserProfileEdit dco_decode_user_profile_edit(dynamic raw);
+
+  @protected
   UserProfilePublicity dco_decode_user_profile_publicity(dynamic raw);
 
   @protected
   UserWorkspace dco_decode_user_workspace(dynamic raw);
 
   @protected
+  UserWorkspaceEdit dco_decode_user_workspace_edit(dynamic raw);
+
+  @protected
   BigInt dco_decode_usize(dynamic raw);
+
+  @protected
+  WatchlistPageResult dco_decode_watchlist_page_result(dynamic raw);
+
+  @protected
+  WatchlistSeries dco_decode_watchlist_series(dynamic raw);
 
   @protected
   WebviewNovel dco_decode_webview_novel(dynamic raw);
@@ -1055,6 +1119,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
+  AiShowSettingsResult sse_decode_ai_show_settings_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   Article sse_decode_article(SseDeserializer deserializer);
 
   @protected
@@ -1215,7 +1284,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int sse_decode_box_autoadd_u_8(SseDeserializer deserializer);
 
   @protected
+  User sse_decode_box_autoadd_user(SseDeserializer deserializer);
+
+  @protected
   UserAccountResult sse_decode_box_autoadd_user_account_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  UserProfileEdit sse_decode_box_autoadd_user_profile_edit(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  UserWorkspaceEdit sse_decode_box_autoadd_user_workspace_edit(
     SseDeserializer deserializer,
   );
 
@@ -1478,6 +1560,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<ProfileAddressPreset> sse_decode_list_profile_address_preset(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<ProfileCountryPreset> sse_decode_list_profile_country_preset(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<ProfileJobPreset> sse_decode_list_profile_job_preset(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<(String, String)> sse_decode_list_record_string_string(
     SseDeserializer deserializer,
   );
@@ -1501,6 +1598,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<UserPreview> sse_decode_list_user_preview(SseDeserializer deserializer);
+
+  @protected
+  List<WatchlistSeries> sse_decode_list_watchlist_series(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<WebviewNovelImage> sse_decode_list_webview_novel_image(
@@ -1638,6 +1740,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int? sse_decode_opt_box_autoadd_u_8(SseDeserializer deserializer);
 
   @protected
+  User? sse_decode_opt_box_autoadd_user(SseDeserializer deserializer);
+
+  @protected
   UserAccountResult? sse_decode_opt_box_autoadd_user_account_result(
     SseDeserializer deserializer,
   );
@@ -1664,7 +1769,28 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PixivisionTag sse_decode_pixivision_tag(SseDeserializer deserializer);
 
   @protected
+  ProfileAddressPreset sse_decode_profile_address_preset(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ProfileCountryPreset sse_decode_profile_country_preset(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ProfileImageUrls sse_decode_profile_image_urls(SseDeserializer deserializer);
+
+  @protected
+  ProfileJobPreset sse_decode_profile_job_preset(SseDeserializer deserializer);
+
+  @protected
+  ProfilePresets sse_decode_profile_presets(SseDeserializer deserializer);
+
+  @protected
+  ProfilePresetsResult sse_decode_profile_presets_result(
+    SseDeserializer deserializer,
+  );
 
   @protected
   (String, String) sse_decode_record_string_string(
@@ -1791,6 +1917,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   UserDetailResult sse_decode_user_detail_result(SseDeserializer deserializer);
 
   @protected
+  UserFollowDetail sse_decode_user_follow_detail(SseDeserializer deserializer);
+
+  @protected
+  UserFollowDetailResult sse_decode_user_follow_detail_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   UserInfo sse_decode_user_info(SseDeserializer deserializer);
 
   @protected
@@ -1803,6 +1937,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   UserProfile sse_decode_user_profile(SseDeserializer deserializer);
 
   @protected
+  UserProfileEdit sse_decode_user_profile_edit(SseDeserializer deserializer);
+
+  @protected
   UserProfilePublicity sse_decode_user_profile_publicity(
     SseDeserializer deserializer,
   );
@@ -1811,7 +1948,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   UserWorkspace sse_decode_user_workspace(SseDeserializer deserializer);
 
   @protected
+  UserWorkspaceEdit sse_decode_user_workspace_edit(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   BigInt sse_decode_usize(SseDeserializer deserializer);
+
+  @protected
+  WatchlistPageResult sse_decode_watchlist_page_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  WatchlistSeries sse_decode_watchlist_series(SseDeserializer deserializer);
 
   @protected
   WebviewNovel sse_decode_webview_novel(SseDeserializer deserializer);
@@ -2049,6 +2199,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_ai_show_settings_result(
+    AiShowSettingsResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_article(Article self, SseSerializer serializer);
 
   @protected
@@ -2247,8 +2403,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_u_8(int self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_user(User self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_user_account_result(
     UserAccountResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_user_profile_edit(
+    UserProfileEdit self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_user_workspace_edit(
+    UserWorkspaceEdit self,
     SseSerializer serializer,
   );
 
@@ -2580,6 +2751,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_profile_address_preset(
+    List<ProfileAddressPreset> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_profile_country_preset(
+    List<ProfileCountryPreset> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_profile_job_preset(
+    List<ProfileJobPreset> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_record_string_string(
     List<(String, String)> self,
     SseSerializer serializer,
@@ -2606,6 +2795,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_user_preview(
     List<UserPreview> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_watchlist_series(
+    List<WatchlistSeries> self,
     SseSerializer serializer,
   );
 
@@ -2781,6 +2976,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_box_autoadd_u_8(int? self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_box_autoadd_user(User? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_box_autoadd_user_account_result(
     UserAccountResult? self,
     SseSerializer serializer,
@@ -2820,8 +3018,38 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_pixivision_tag(PixivisionTag self, SseSerializer serializer);
 
   @protected
+  void sse_encode_profile_address_preset(
+    ProfileAddressPreset self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_profile_country_preset(
+    ProfileCountryPreset self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_profile_image_urls(
     ProfileImageUrls self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_profile_job_preset(
+    ProfileJobPreset self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_profile_presets(
+    ProfilePresets self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_profile_presets_result(
+    ProfilePresetsResult self,
     SseSerializer serializer,
   );
 
@@ -2970,6 +3198,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_user_follow_detail(
+    UserFollowDetail self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_user_follow_detail_result(
+    UserFollowDetailResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_user_info(UserInfo self, SseSerializer serializer);
 
   @protected
@@ -2985,6 +3225,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_user_profile(UserProfile self, SseSerializer serializer);
 
   @protected
+  void sse_encode_user_profile_edit(
+    UserProfileEdit self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_user_profile_publicity(
     UserProfilePublicity self,
     SseSerializer serializer,
@@ -2994,7 +3240,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_user_workspace(UserWorkspace self, SseSerializer serializer);
 
   @protected
+  void sse_encode_user_workspace_edit(
+    UserWorkspaceEdit self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_usize(BigInt self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_watchlist_page_result(
+    WatchlistPageResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_watchlist_series(
+    WatchlistSeries self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_webview_novel(WebviewNovel self, SseSerializer serializer);

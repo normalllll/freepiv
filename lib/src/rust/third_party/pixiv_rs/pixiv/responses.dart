@@ -13,6 +13,22 @@ part 'responses.g.dart';
 
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `ApiErrorBody`, `BookmarkDetailResult`, `ErrorMessage`, `StampListResult`
 
+class AiShowSettingsResult {
+  final bool showAi;
+
+  const AiShowSettingsResult({required this.showAi});
+
+  @override
+  int get hashCode => showAi.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AiShowSettingsResult &&
+          runtimeType == other.runtimeType &&
+          showAi == other.showAi;
+}
+
 class BookmarkTagPageResult {
   final List<BookmarkTag> bookmarkTags;
   final String? nextUrl;
@@ -424,6 +440,109 @@ class NovelSeriesPageResult {
           nextUrl == other.nextUrl;
 }
 
+class ProfileAddressPreset {
+  final int id;
+  final String name;
+
+  /// A country has to be chosen as well.
+  final bool isGlobal;
+
+  const ProfileAddressPreset({
+    required this.id,
+    required this.name,
+    required this.isGlobal,
+  });
+
+  @override
+  int get hashCode => id.hashCode ^ name.hashCode ^ isGlobal.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProfileAddressPreset &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          isGlobal == other.isGlobal;
+}
+
+class ProfileCountryPreset {
+  final String code;
+  final String name;
+
+  const ProfileCountryPreset({required this.code, required this.name});
+
+  @override
+  int get hashCode => code.hashCode ^ name.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProfileCountryPreset &&
+          runtimeType == other.runtimeType &&
+          code == other.code &&
+          name == other.name;
+}
+
+class ProfileJobPreset {
+  final int id;
+  final String name;
+
+  const ProfileJobPreset({required this.id, required this.name});
+
+  @override
+  int get hashCode => id.hashCode ^ name.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProfileJobPreset &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name;
+}
+
+/// The choices of the profile form.
+class ProfilePresets {
+  final List<ProfileAddressPreset> addresses;
+  final List<ProfileCountryPreset> countries;
+  final List<ProfileJobPreset> jobs;
+
+  const ProfilePresets({
+    required this.addresses,
+    required this.countries,
+    required this.jobs,
+  });
+
+  @override
+  int get hashCode => addresses.hashCode ^ countries.hashCode ^ jobs.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProfilePresets &&
+          runtimeType == other.runtimeType &&
+          addresses == other.addresses &&
+          countries == other.countries &&
+          jobs == other.jobs;
+}
+
+class ProfilePresetsResult {
+  final ProfilePresets profilePresets;
+
+  const ProfilePresetsResult({required this.profilePresets});
+
+  @override
+  int get hashCode => profilePresets.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProfilePresetsResult &&
+          runtimeType == other.runtimeType &&
+          profilePresets == other.profilePresets;
+}
+
 class SearchAutocompleteResult {
   final List<Tag> tags;
 
@@ -624,6 +743,42 @@ class UserDetailResult {
           profile == other.profile &&
           profilePublicity == other.profilePublicity &&
           workspace == other.workspace;
+}
+
+class UserFollowDetail {
+  final bool isFollowed;
+
+  /// `None` while the user is not followed; Pixiv sends an empty string.
+  final Restrict? restrict;
+
+  const UserFollowDetail({required this.isFollowed, this.restrict});
+
+  @override
+  int get hashCode => isFollowed.hashCode ^ restrict.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserFollowDetail &&
+          runtimeType == other.runtimeType &&
+          isFollowed == other.isFollowed &&
+          restrict == other.restrict;
+}
+
+class UserFollowDetailResult {
+  final UserFollowDetail followDetail;
+
+  const UserFollowDetailResult({required this.followDetail});
+
+  @override
+  int get hashCode => followDetail.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserFollowDetailResult &&
+          runtimeType == other.runtimeType &&
+          followDetail == other.followDetail;
 }
 
 class UserInfo {
@@ -898,6 +1053,70 @@ class UserWorkspace {
           chair == other.chair &&
           comment == other.comment &&
           workspaceImageUrl == other.workspaceImageUrl;
+}
+
+/// The series the account follows up, manga or novels.
+class WatchlistPageResult {
+  final List<WatchlistSeries> series;
+  final String? nextUrl;
+
+  const WatchlistPageResult({required this.series, this.nextUrl});
+
+  @override
+  int get hashCode => series.hashCode ^ nextUrl.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WatchlistPageResult &&
+          runtimeType == other.runtimeType &&
+          series == other.series &&
+          nextUrl == other.nextUrl;
+}
+
+class WatchlistSeries {
+  final int id;
+  final String title;
+  final String? url;
+
+  /// Pixiv's reason when the series cannot be shown.
+  final String? maskText;
+  final User? user;
+  final int publishedContentCount;
+  final String? lastPublishedContentDatetime;
+
+  const WatchlistSeries({
+    required this.id,
+    required this.title,
+    this.url,
+    this.maskText,
+    this.user,
+    required this.publishedContentCount,
+    this.lastPublishedContentDatetime,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      title.hashCode ^
+      url.hashCode ^
+      maskText.hashCode ^
+      user.hashCode ^
+      publishedContentCount.hashCode ^
+      lastPublishedContentDatetime.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WatchlistSeries &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          title == other.title &&
+          url == other.url &&
+          maskText == other.maskText &&
+          user == other.user &&
+          publishedContentCount == other.publishedContentCount &&
+          lastPublishedContentDatetime == other.lastPublishedContentDatetime;
 }
 
 class WebviewNovel {

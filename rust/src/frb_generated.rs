@@ -47,7 +47,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.14.0-beta.2";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 772954992;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 568984403;
 
 // Section: executor
 
@@ -1878,6 +1878,63 @@ fn wire__pixiv_rs__pixiv__api__PixivApi_generate_login_url_impl(
         },
     )
 }
+fn wire__pixiv_rs__pixiv__api__PixivApi_get_ai_show_settings_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_get_ai_show_settings",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, pixiv_rs::error::PixivError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok =
+                            pixiv_rs::pixiv::api::PixivApi::get_ai_show_settings(&*api_that_guard)
+                                .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__pixiv_rs__pixiv__api__PixivApi_get_bookmark_tag_page_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -3694,6 +3751,66 @@ fn wire__pixiv_rs__pixiv__api__PixivApi_get_next_user_page_impl(
         },
     )
 }
+fn wire__pixiv_rs__pixiv__api__PixivApi_get_next_watchlist_page_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_get_next_watchlist_page",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            let api_url = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, pixiv_rs::error::PixivError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = pixiv_rs::pixiv::api::PixivApi::get_next_watchlist_page(
+                            &*api_that_guard,
+                            api_url,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__pixiv_rs__pixiv__api__PixivApi_get_novel_bookmark_detail_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -4232,6 +4349,63 @@ fn wire__pixiv_rs__pixiv__api__PixivApi_get_novel_series_page_impl(
                             api_series_id,
                         )
                         .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__pixiv_rs__pixiv__api__PixivApi_get_profile_presets_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_get_profile_presets",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, pixiv_rs::error::PixivError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok =
+                            pixiv_rs::pixiv::api::PixivApi::get_profile_presets(&*api_that_guard)
+                                .await?;
                         std::result::Result::Ok(output_ok)
                     })()
                     .await,
@@ -5110,6 +5284,66 @@ fn wire__pixiv_rs__pixiv__api__PixivApi_get_user_detail_impl(
         },
     )
 }
+fn wire__pixiv_rs__pixiv__api__PixivApi_get_user_follow_detail_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_get_user_follow_detail",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            let api_user_id = <u64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, pixiv_rs::error::PixivError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = pixiv_rs::pixiv::api::PixivApi::get_user_follow_detail(
+                            &*api_that_guard,
+                            api_user_id,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_bookmark_page_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -5463,6 +5697,66 @@ fn wire__pixiv_rs__pixiv__api__PixivApi_get_user_related_page_impl(
                             &*api_that_guard,
                             api_offset,
                             api_seed_user_id,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__pixiv_rs__pixiv__api__PixivApi_get_watchlist_page_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_get_watchlist_page",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            let api_is_novel = <bool>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, pixiv_rs::error::PixivError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = pixiv_rs::pixiv::api::PixivApi::get_watchlist_page(
+                            &*api_that_guard,
+                            api_is_novel,
                         )
                         .await?;
                         std::result::Result::Ok(output_ok)
@@ -6166,6 +6460,372 @@ fn wire__pixiv_rs__pixiv__api__PixivApi_post_novel_comment_delete_impl(
                         let output_ok = pixiv_rs::pixiv::api::PixivApi::post_novel_comment_delete(
                             &*api_that_guard,
                             api_comment_id,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__pixiv_rs__pixiv__api__PixivApi_post_novel_marker_add_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_post_novel_marker_add",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            let api_novel_id = <u64>::sse_decode(&mut deserializer);
+            let api_page = <u32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, pixiv_rs::error::PixivError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = pixiv_rs::pixiv::api::PixivApi::post_novel_marker_add(
+                            &*api_that_guard,
+                            api_novel_id,
+                            api_page,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__pixiv_rs__pixiv__api__PixivApi_post_novel_marker_delete_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_post_novel_marker_delete",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            let api_novel_id = <u64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, pixiv_rs::error::PixivError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = pixiv_rs::pixiv::api::PixivApi::post_novel_marker_delete(
+                            &*api_that_guard,
+                            api_novel_id,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__pixiv_rs__pixiv__api__PixivApi_post_user_profile_edit_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_post_user_profile_edit",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            let api_edit = <pixiv_rs::pixiv::api::UserProfileEdit>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, pixiv_rs::error::PixivError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = pixiv_rs::pixiv::api::PixivApi::post_user_profile_edit(
+                            &*api_that_guard,
+                            api_edit,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__pixiv_rs__pixiv__api__PixivApi_post_user_workspace_edit_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_post_user_workspace_edit",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            let api_edit = <pixiv_rs::pixiv::api::UserWorkspaceEdit>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, pixiv_rs::error::PixivError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = pixiv_rs::pixiv::api::PixivApi::post_user_workspace_edit(
+                            &*api_that_guard,
+                            api_edit,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__pixiv_rs__pixiv__api__PixivApi_post_watchlist_add_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_post_watchlist_add",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            let api_series_id = <u64>::sse_decode(&mut deserializer);
+            let api_is_novel = <bool>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, pixiv_rs::error::PixivError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = pixiv_rs::pixiv::api::PixivApi::post_watchlist_add(
+                            &*api_that_guard,
+                            api_series_id,
+                            api_is_novel,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__pixiv_rs__pixiv__api__PixivApi_post_watchlist_delete_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PixivApi_post_watchlist_delete",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>,
+            >>::sse_decode(&mut deserializer);
+            let api_series_id = <u64>::sse_decode(&mut deserializer);
+            let api_is_novel = <bool>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, pixiv_rs::error::PixivError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = pixiv_rs::pixiv::api::PixivApi::post_watchlist_delete(
+                            &*api_that_guard,
+                            api_series_id,
+                            api_is_novel,
                         )
                         .await?;
                         std::result::Result::Ok(output_ok)
@@ -8944,6 +9604,11 @@ fn wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
 #[allow(clippy::unnecessary_literal_unwrap)]
 const _: fn() = || {
     {
+        let AiShowSettingsResult =
+            None::<pixiv_rs::pixiv::responses::AiShowSettingsResult>.unwrap();
+        let _: bool = AiShowSettingsResult.show_ai;
+    }
+    {
         let Article = None::<pixiv_rs::pixivision::Article>.unwrap();
         let _: u64 = Article.id;
         let _: String = Article.url;
@@ -9484,8 +10149,37 @@ const _: fn() = || {
         let _: String = PixivisionTag.url;
     }
     {
+        let ProfileAddressPreset =
+            None::<pixiv_rs::pixiv::responses::ProfileAddressPreset>.unwrap();
+        let _: u64 = ProfileAddressPreset.id;
+        let _: String = ProfileAddressPreset.name;
+        let _: bool = ProfileAddressPreset.is_global;
+    }
+    {
+        let ProfileCountryPreset =
+            None::<pixiv_rs::pixiv::responses::ProfileCountryPreset>.unwrap();
+        let _: String = ProfileCountryPreset.code;
+        let _: String = ProfileCountryPreset.name;
+    }
+    {
         let ProfileImageUrls = None::<pixiv_rs::pixiv::models::ProfileImageUrls>.unwrap();
         let _: String = ProfileImageUrls.medium;
+    }
+    {
+        let ProfileJobPreset = None::<pixiv_rs::pixiv::responses::ProfileJobPreset>.unwrap();
+        let _: u64 = ProfileJobPreset.id;
+        let _: String = ProfileJobPreset.name;
+    }
+    {
+        let ProfilePresets = None::<pixiv_rs::pixiv::responses::ProfilePresets>.unwrap();
+        let _: Vec<pixiv_rs::pixiv::responses::ProfileAddressPreset> = ProfilePresets.addresses;
+        let _: Vec<pixiv_rs::pixiv::responses::ProfileCountryPreset> = ProfilePresets.countries;
+        let _: Vec<pixiv_rs::pixiv::responses::ProfileJobPreset> = ProfilePresets.jobs;
+    }
+    {
+        let ProfilePresetsResult =
+            None::<pixiv_rs::pixiv::responses::ProfilePresetsResult>.unwrap();
+        let _: pixiv_rs::pixiv::responses::ProfilePresets = ProfilePresetsResult.profile_presets;
     }
     {
         let SearchAutocompleteResult =
@@ -9622,6 +10316,16 @@ const _: fn() = || {
         let _: pixiv_rs::pixiv::responses::UserWorkspace = UserDetailResult.workspace;
     }
     {
+        let UserFollowDetail = None::<pixiv_rs::pixiv::responses::UserFollowDetail>.unwrap();
+        let _: bool = UserFollowDetail.is_followed;
+        let _: Option<pixiv_rs::pixiv::enums::Restrict> = UserFollowDetail.restrict;
+    }
+    {
+        let UserFollowDetailResult =
+            None::<pixiv_rs::pixiv::responses::UserFollowDetailResult>.unwrap();
+        let _: pixiv_rs::pixiv::responses::UserFollowDetail = UserFollowDetailResult.follow_detail;
+    }
+    {
         let UserInfo = None::<pixiv_rs::pixiv::responses::UserInfo>.unwrap();
         let _: u64 = UserInfo.id;
         let _: String = UserInfo.name;
@@ -9669,6 +10373,18 @@ const _: fn() = || {
         let _: bool = UserProfile.is_using_custom_profile_image;
     }
     {
+        let UserProfileEdit = None::<pixiv_rs::pixiv::api::UserProfileEdit>.unwrap();
+        let _: String = UserProfileEdit.user_name;
+        let _: String = UserProfileEdit.gender;
+        let _: u64 = UserProfileEdit.address_id;
+        let _: Option<String> = UserProfileEdit.country_code;
+        let _: u64 = UserProfileEdit.job_id;
+        let _: String = UserProfileEdit.webpage;
+        let _: String = UserProfileEdit.twitter;
+        let _: String = UserProfileEdit.comment;
+        let _: String = UserProfileEdit.birthday;
+    }
+    {
         let UserProfilePublicity =
             None::<pixiv_rs::pixiv::responses::UserProfilePublicity>.unwrap();
         let _: String = UserProfilePublicity.gender;
@@ -9693,6 +10409,36 @@ const _: fn() = || {
         let _: String = UserWorkspace.chair;
         let _: String = UserWorkspace.comment;
         let _: Option<String> = UserWorkspace.workspace_image_url;
+    }
+    {
+        let UserWorkspaceEdit = None::<pixiv_rs::pixiv::api::UserWorkspaceEdit>.unwrap();
+        let _: String = UserWorkspaceEdit.pc;
+        let _: String = UserWorkspaceEdit.monitor;
+        let _: String = UserWorkspaceEdit.tool;
+        let _: String = UserWorkspaceEdit.scanner;
+        let _: String = UserWorkspaceEdit.tablet;
+        let _: String = UserWorkspaceEdit.mouse;
+        let _: String = UserWorkspaceEdit.printer;
+        let _: String = UserWorkspaceEdit.desktop;
+        let _: String = UserWorkspaceEdit.music;
+        let _: String = UserWorkspaceEdit.desk;
+        let _: String = UserWorkspaceEdit.chair;
+        let _: String = UserWorkspaceEdit.comment;
+    }
+    {
+        let WatchlistPageResult = None::<pixiv_rs::pixiv::responses::WatchlistPageResult>.unwrap();
+        let _: Vec<pixiv_rs::pixiv::responses::WatchlistSeries> = WatchlistPageResult.series;
+        let _: Option<String> = WatchlistPageResult.next_url;
+    }
+    {
+        let WatchlistSeries = None::<pixiv_rs::pixiv::responses::WatchlistSeries>.unwrap();
+        let _: u64 = WatchlistSeries.id;
+        let _: String = WatchlistSeries.title;
+        let _: Option<String> = WatchlistSeries.url;
+        let _: Option<String> = WatchlistSeries.mask_text;
+        let _: Option<pixiv_rs::pixiv::models::User> = WatchlistSeries.user;
+        let _: u64 = WatchlistSeries.published_content_count;
+        let _: Option<String> = WatchlistSeries.last_published_content_datetime;
     }
     {
         let WebviewNovel = None::<pixiv_rs::pixiv::responses::WebviewNovel>.unwrap();
@@ -10002,6 +10748,16 @@ impl SseDecode for String {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <Vec<u8>>::sse_decode(deserializer);
         return String::from_utf8(inner).unwrap();
+    }
+}
+
+impl SseDecode for pixiv_rs::pixiv::responses::AiShowSettingsResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_showAi = <bool>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::responses::AiShowSettingsResult {
+            show_ai: var_showAi,
+        };
     }
 }
 
@@ -11437,6 +12193,44 @@ impl SseDecode for Vec<u8> {
     }
 }
 
+impl SseDecode for Vec<pixiv_rs::pixiv::responses::ProfileAddressPreset> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<pixiv_rs::pixiv::responses::ProfileAddressPreset>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<pixiv_rs::pixiv::responses::ProfileCountryPreset> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<pixiv_rs::pixiv::responses::ProfileCountryPreset>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<pixiv_rs::pixiv::responses::ProfileJobPreset> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<pixiv_rs::pixiv::responses::ProfileJobPreset>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<(String, String)> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -11520,6 +12314,20 @@ impl SseDecode for Vec<pixiv_rs::pixiv::models::UserPreview> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<pixiv_rs::pixiv::models::UserPreview>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<pixiv_rs::pixiv::responses::WatchlistSeries> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<pixiv_rs::pixiv::responses::WatchlistSeries>::sse_decode(
                 deserializer,
             ));
         }
@@ -12044,6 +12852,17 @@ impl SseDecode for Option<u8> {
     }
 }
 
+impl SseDecode for Option<pixiv_rs::pixiv::models::User> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<pixiv_rs::pixiv::models::User>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<pixiv_rs::pixiv::responses::UserAccountResult> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -12171,11 +12990,77 @@ impl SseDecode for pixiv_rs::pixivision::PixivisionTag {
     }
 }
 
+impl SseDecode for pixiv_rs::pixiv::responses::ProfileAddressPreset {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <u64>::sse_decode(deserializer);
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_isGlobal = <bool>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::responses::ProfileAddressPreset {
+            id: var_id,
+            name: var_name,
+            is_global: var_isGlobal,
+        };
+    }
+}
+
+impl SseDecode for pixiv_rs::pixiv::responses::ProfileCountryPreset {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_code = <String>::sse_decode(deserializer);
+        let mut var_name = <String>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::responses::ProfileCountryPreset {
+            code: var_code,
+            name: var_name,
+        };
+    }
+}
+
 impl SseDecode for pixiv_rs::pixiv::models::ProfileImageUrls {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_medium = <String>::sse_decode(deserializer);
         return pixiv_rs::pixiv::models::ProfileImageUrls { medium: var_medium };
+    }
+}
+
+impl SseDecode for pixiv_rs::pixiv::responses::ProfileJobPreset {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <u64>::sse_decode(deserializer);
+        let mut var_name = <String>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::responses::ProfileJobPreset {
+            id: var_id,
+            name: var_name,
+        };
+    }
+}
+
+impl SseDecode for pixiv_rs::pixiv::responses::ProfilePresets {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_addresses =
+            <Vec<pixiv_rs::pixiv::responses::ProfileAddressPreset>>::sse_decode(deserializer);
+        let mut var_countries =
+            <Vec<pixiv_rs::pixiv::responses::ProfileCountryPreset>>::sse_decode(deserializer);
+        let mut var_jobs =
+            <Vec<pixiv_rs::pixiv::responses::ProfileJobPreset>>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::responses::ProfilePresets {
+            addresses: var_addresses,
+            countries: var_countries,
+            jobs: var_jobs,
+        };
+    }
+}
+
+impl SseDecode for pixiv_rs::pixiv::responses::ProfilePresetsResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_profilePresets =
+            <pixiv_rs::pixiv::responses::ProfilePresets>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::responses::ProfilePresetsResult {
+            profile_presets: var_profilePresets,
+        };
     }
 }
 
@@ -12618,6 +13503,29 @@ impl SseDecode for pixiv_rs::pixiv::responses::UserDetailResult {
     }
 }
 
+impl SseDecode for pixiv_rs::pixiv::responses::UserFollowDetail {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_isFollowed = <bool>::sse_decode(deserializer);
+        let mut var_restrict = <Option<pixiv_rs::pixiv::enums::Restrict>>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::responses::UserFollowDetail {
+            is_followed: var_isFollowed,
+            restrict: var_restrict,
+        };
+    }
+}
+
+impl SseDecode for pixiv_rs::pixiv::responses::UserFollowDetailResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_followDetail =
+            <pixiv_rs::pixiv::responses::UserFollowDetail>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::responses::UserFollowDetailResult {
+            follow_detail: var_followDetail,
+        };
+    }
+}
+
 impl SseDecode for pixiv_rs::pixiv::responses::UserInfo {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -12722,6 +13630,32 @@ impl SseDecode for pixiv_rs::pixiv::responses::UserProfile {
     }
 }
 
+impl SseDecode for pixiv_rs::pixiv::api::UserProfileEdit {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_userName = <String>::sse_decode(deserializer);
+        let mut var_gender = <String>::sse_decode(deserializer);
+        let mut var_addressId = <u64>::sse_decode(deserializer);
+        let mut var_countryCode = <Option<String>>::sse_decode(deserializer);
+        let mut var_jobId = <u64>::sse_decode(deserializer);
+        let mut var_webpage = <String>::sse_decode(deserializer);
+        let mut var_twitter = <String>::sse_decode(deserializer);
+        let mut var_comment = <String>::sse_decode(deserializer);
+        let mut var_birthday = <String>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::api::UserProfileEdit {
+            user_name: var_userName,
+            gender: var_gender,
+            address_id: var_addressId,
+            country_code: var_countryCode,
+            job_id: var_jobId,
+            webpage: var_webpage,
+            twitter: var_twitter,
+            comment: var_comment,
+            birthday: var_birthday,
+        };
+    }
+}
+
 impl SseDecode for pixiv_rs::pixiv::responses::UserProfilePublicity {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -12776,10 +13710,77 @@ impl SseDecode for pixiv_rs::pixiv::responses::UserWorkspace {
     }
 }
 
+impl SseDecode for pixiv_rs::pixiv::api::UserWorkspaceEdit {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_pc = <String>::sse_decode(deserializer);
+        let mut var_monitor = <String>::sse_decode(deserializer);
+        let mut var_tool = <String>::sse_decode(deserializer);
+        let mut var_scanner = <String>::sse_decode(deserializer);
+        let mut var_tablet = <String>::sse_decode(deserializer);
+        let mut var_mouse = <String>::sse_decode(deserializer);
+        let mut var_printer = <String>::sse_decode(deserializer);
+        let mut var_desktop = <String>::sse_decode(deserializer);
+        let mut var_music = <String>::sse_decode(deserializer);
+        let mut var_desk = <String>::sse_decode(deserializer);
+        let mut var_chair = <String>::sse_decode(deserializer);
+        let mut var_comment = <String>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::api::UserWorkspaceEdit {
+            pc: var_pc,
+            monitor: var_monitor,
+            tool: var_tool,
+            scanner: var_scanner,
+            tablet: var_tablet,
+            mouse: var_mouse,
+            printer: var_printer,
+            desktop: var_desktop,
+            music: var_music,
+            desk: var_desk,
+            chair: var_chair,
+            comment: var_comment,
+        };
+    }
+}
+
 impl SseDecode for usize {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_u64::<NativeEndian>().unwrap() as _
+    }
+}
+
+impl SseDecode for pixiv_rs::pixiv::responses::WatchlistPageResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_series =
+            <Vec<pixiv_rs::pixiv::responses::WatchlistSeries>>::sse_decode(deserializer);
+        let mut var_nextUrl = <Option<String>>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::responses::WatchlistPageResult {
+            series: var_series,
+            next_url: var_nextUrl,
+        };
+    }
+}
+
+impl SseDecode for pixiv_rs::pixiv::responses::WatchlistSeries {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <u64>::sse_decode(deserializer);
+        let mut var_title = <String>::sse_decode(deserializer);
+        let mut var_url = <Option<String>>::sse_decode(deserializer);
+        let mut var_maskText = <Option<String>>::sse_decode(deserializer);
+        let mut var_user = <Option<pixiv_rs::pixiv::models::User>>::sse_decode(deserializer);
+        let mut var_publishedContentCount = <u64>::sse_decode(deserializer);
+        let mut var_lastPublishedContentDatetime = <Option<String>>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::responses::WatchlistSeries {
+            id: var_id,
+            title: var_title,
+            url: var_url,
+            mask_text: var_maskText,
+            user: var_user,
+            published_content_count: var_publishedContentCount,
+            last_published_content_datetime: var_lastPublishedContentDatetime,
+        };
     }
 }
 
@@ -13037,727 +14038,793 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        33 => wire__pixiv_rs__pixiv__api__PixivApi_get_bookmark_tag_page_impl(
+        33 => wire__pixiv_rs__pixiv__api__PixivApi_get_ai_show_settings_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        34 => wire__pixiv_rs__pixiv__api__PixivApi_get_follow_new_illust_page_impl(
+        34 => wire__pixiv_rs__pixiv__api__PixivApi_get_bookmark_tag_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        35 => wire__pixiv_rs__pixiv__api__PixivApi_get_follow_new_novel_page_impl(
+        35 => wire__pixiv_rs__pixiv__api__PixivApi_get_follow_new_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        36 => wire__pixiv_rs__pixiv__api__PixivApi_get_follower_page_impl(
+        36 => wire__pixiv_rs__pixiv__api__PixivApi_get_follow_new_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        37 => wire__pixiv_rs__pixiv__api__PixivApi_get_following_user_page_impl(
+        37 => wire__pixiv_rs__pixiv__api__PixivApi_get_follower_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        38 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_bookmark_detail_impl(
+        38 => wire__pixiv_rs__pixiv__api__PixivApi_get_following_user_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        39 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_comment_page_impl(
+        39 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_bookmark_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        40 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_comment_reply_page_impl(
+        40 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_comment_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        41 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_detail_impl(
+        41 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_comment_reply_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        42 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_ranking_page_impl(
+        42 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        43 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_ranking_page_on_date_impl(
+        43 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_ranking_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        44 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_related_page_impl(
+        44 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_ranking_page_on_date_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        45 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_series_page_impl(
+        45 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_related_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        46 => wire__pixiv_rs__pixiv__api__PixivApi_get_manga_ranking_page_impl(
+        46 => wire__pixiv_rs__pixiv__api__PixivApi_get_illust_series_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        47 => wire__pixiv_rs__pixiv__api__PixivApi_get_manga_ranking_page_on_date_impl(
+        47 => wire__pixiv_rs__pixiv__api__PixivApi_get_manga_ranking_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        48 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_new_illust_page_impl(
+        48 => wire__pixiv_rs__pixiv__api__PixivApi_get_manga_ranking_page_on_date_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        49 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_new_novel_page_impl(
+        49 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_new_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        50 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_user_page_impl(
+        50 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_new_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        51 => wire__pixiv_rs__pixiv__api__PixivApi_get_new_illust_page_impl(
+        51 => wire__pixiv_rs__pixiv__api__PixivApi_get_mypixiv_user_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        52 => wire__pixiv_rs__pixiv__api__PixivApi_get_new_novel_page_impl(
+        52 => wire__pixiv_rs__pixiv__api__PixivApi_get_new_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        53 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_bookmark_tag_page_impl(
+        53 => wire__pixiv_rs__pixiv__api__PixivApi_get_new_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        54 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_comment_page_impl(
+        54 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_bookmark_tag_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        55 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_illust_page_impl(
+        55 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_comment_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        56 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_illust_series_page_impl(
+        56 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        57 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_novel_page_impl(
+        57 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_illust_series_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        58 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_novel_series_page_impl(
+        58 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        59 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_search_illust_page_impl(
+        59 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_novel_series_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        60 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_search_novel_page_impl(
+        60 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_search_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        61 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_spotlight_article_page_impl(
+        61 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_search_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        62 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_user_page_impl(
+        62 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_spotlight_article_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        63 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_bookmark_detail_impl(
+        63 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_user_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        64 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_comment_page_impl(
+        64 => wire__pixiv_rs__pixiv__api__PixivApi_get_next_watchlist_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        65 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_comment_reply_page_impl(
+        65 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_bookmark_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        66 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_detail_impl(
+        66 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_comment_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        67 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_html_impl(
+        67 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_comment_reply_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        68 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_ranking_page_impl(
+        68 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        69 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_ranking_page_on_date_impl(
+        69 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_html_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        70 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_related_page_impl(
+        70 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_ranking_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        71 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_series_page_impl(
+        71 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_ranking_page_on_date_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        72 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_illust_page_impl(
+        72 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_related_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        73 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_novel_page_impl(
+        73 => wire__pixiv_rs__pixiv__api__PixivApi_get_novel_series_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        74 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_user_page_impl(
+        74 => wire__pixiv_rs__pixiv__api__PixivApi_get_profile_presets_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        75 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_autocomplete_impl(
+        75 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        76 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_illust_page_impl(
+        76 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        77 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_illust_page_with_ai_impl(
+        77 => wire__pixiv_rs__pixiv__api__PixivApi_get_recommended_user_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        78 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_novel_page_impl(
+        78 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_autocomplete_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        79 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_popular_preview_illust_impl(
+        79 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        80 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_popular_preview_novel_impl(
+        80 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_illust_page_with_ai_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        81 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_user_page_impl(
+        81 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        82 => wire__pixiv_rs__pixiv__api__PixivApi_get_spotlight_article_page_impl(
+        82 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_popular_preview_illust_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        83 => wire__pixiv_rs__pixiv__api__PixivApi_get_trending_tag_list_impl(
+        83 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_popular_preview_novel_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        84 => wire__pixiv_rs__pixiv__api__PixivApi_get_ugoira_metadata_impl(
+        84 => wire__pixiv_rs__pixiv__api__PixivApi_get_search_user_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        85 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_detail_impl(
+        85 => wire__pixiv_rs__pixiv__api__PixivApi_get_spotlight_article_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        86 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_bookmark_page_impl(
+        86 => wire__pixiv_rs__pixiv__api__PixivApi_get_trending_tag_list_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        87 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_bookmark_page_with_options_impl(
+        87 => wire__pixiv_rs__pixiv__api__PixivApi_get_ugoira_metadata_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        88 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_page_impl(
+        88 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        89 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_bookmark_page_impl(
+        89 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_follow_detail_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        90 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_bookmark_page_with_options_impl(
+        90 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_bookmark_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        91 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_page_impl(
+        91 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_bookmark_page_with_options_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        92 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_related_page_impl(
+        92 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_illust_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        93 => wire__pixiv_rs__pixiv__api__PixivApi_get_webview_novel_impl(
+        93 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_bookmark_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        94 => wire__pixiv_rs__pixiv__api__PixivApi_init_account_auth_token_impl(
+        94 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_bookmark_page_with_options_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        96 => wire__pixiv_rs__pixiv__api__PixivApi_post_ai_show_settings_impl(
+        95 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_novel_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        97 => wire__pixiv_rs__pixiv__api__PixivApi_post_bookmark_add_impl(
+        96 => wire__pixiv_rs__pixiv__api__PixivApi_get_user_related_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        98 => wire__pixiv_rs__pixiv__api__PixivApi_post_bookmark_delete_impl(
+        97 => wire__pixiv_rs__pixiv__api__PixivApi_get_watchlist_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        99 => wire__pixiv_rs__pixiv__api__PixivApi_post_follow_add_impl(
+        98 => wire__pixiv_rs__pixiv__api__PixivApi_get_webview_novel_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        100 => wire__pixiv_rs__pixiv__api__PixivApi_post_follow_delete_impl(
+        99 => wire__pixiv_rs__pixiv__api__PixivApi_init_account_auth_token_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        101 => wire__pixiv_rs__pixiv__api__PixivApi_post_illust_comment_add_impl(
+        101 => wire__pixiv_rs__pixiv__api__PixivApi_post_ai_show_settings_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        102 => wire__pixiv_rs__pixiv__api__PixivApi_post_illust_comment_delete_impl(
+        102 => wire__pixiv_rs__pixiv__api__PixivApi_post_bookmark_add_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        103 => wire__pixiv_rs__pixiv__api__PixivApi_post_novel_comment_add_impl(
+        103 => wire__pixiv_rs__pixiv__api__PixivApi_post_bookmark_delete_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        104 => wire__pixiv_rs__pixiv__api__PixivApi_post_novel_comment_delete_impl(
+        104 => wire__pixiv_rs__pixiv__api__PixivApi_post_follow_add_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        107 => wire__pixiv_rs__pixiv__auth__PixivAuth_code_challenge_impl(
+        105 => wire__pixiv_rs__pixiv__api__PixivApi_post_follow_delete_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        108 => wire__pixiv_rs__pixiv__auth__PixivAuth_code_verifier_impl(
+        106 => wire__pixiv_rs__pixiv__api__PixivApi_post_illust_comment_add_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        109 => wire__pixiv_rs__pixiv__auth__PixivAuth_from_parts_impl(
+        107 => wire__pixiv_rs__pixiv__api__PixivApi_post_illust_comment_delete_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        110 => wire__pixiv_rs__pixiv__auth__PixivAuth_generate_login_url_impl(
+        108 => wire__pixiv_rs__pixiv__api__PixivApi_post_novel_comment_add_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        111 => wire__pixiv_rs__pixiv__auth__PixivAuth_init_account_auth_token_impl(
+        109 => wire__pixiv_rs__pixiv__api__PixivApi_post_novel_comment_delete_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        112 => wire__pixiv_rs__pixiv__auth__PixivAuth_new_impl(port, ptr, rust_vec_len, data_len),
-        113 => wire__pixiv_rs__pixiv__auth__PixivAuth_refresh_auth_token_impl(
+        110 => wire__pixiv_rs__pixiv__api__PixivApi_post_novel_marker_add_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        114 => {
+        111 => wire__pixiv_rs__pixiv__api__PixivApi_post_novel_marker_delete_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        112 => wire__pixiv_rs__pixiv__api__PixivApi_post_user_profile_edit_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        113 => wire__pixiv_rs__pixiv__api__PixivApi_post_user_workspace_edit_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        114 => wire__pixiv_rs__pixiv__api__PixivApi_post_watchlist_add_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        115 => wire__pixiv_rs__pixiv__api__PixivApi_post_watchlist_delete_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        118 => wire__pixiv_rs__pixiv__auth__PixivAuth_code_challenge_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        119 => wire__pixiv_rs__pixiv__auth__PixivAuth_code_verifier_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        120 => wire__pixiv_rs__pixiv__auth__PixivAuth_from_parts_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        121 => wire__pixiv_rs__pixiv__auth__PixivAuth_generate_login_url_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        122 => wire__pixiv_rs__pixiv__auth__PixivAuth_init_account_auth_token_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        123 => wire__pixiv_rs__pixiv__auth__PixivAuth_new_impl(port, ptr, rust_vec_len, data_len),
+        124 => wire__pixiv_rs__pixiv__auth__PixivAuth_refresh_auth_token_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        125 => {
             wire__pixiv_rs__pixiv__auth__PixivAuth_set_proxy_impl(port, ptr, rust_vec_len, data_len)
         }
-        115 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_impl(
+        126 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        116 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_by_url_impl(
+        127 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_by_url_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        117 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_page_impl(
+        128 => wire__pixiv_rs__pixivision__PixivisionApi_get_article_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        118 => wire__pixiv_rs__pixivision__PixivisionApi_get_next_article_page_impl(
+        129 => wire__pixiv_rs__pixivision__PixivisionApi_get_next_article_page_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        119 => wire__pixiv_rs__pixivision__PixivisionApi_get_tag_directory_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        120 => {
-            wire__pixiv_rs__pixivision__PixivisionApi_new_impl(port, ptr, rust_vec_len, data_len)
-        }
-        122 => wire__pixiv_rs__pixiv__api__bookmark_add_options_default_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        123 => wire__pixiv_rs__pixiv__api__bookmark_page_options_default_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        124 => wire__pixiv_rs__pixiv__api__bookmark_tag_options_default_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        125 => wire__pixiv_rs__pixivision__category_path_impl(port, ptr, rust_vec_len, data_len),
-        126 => wire__crate__api__fanbox_login__clear_fanbox_browser_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        127 => wire__pixiv_rs__pixiv__api__comment_add_options_default_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        128 => wire__crate__api__download__download_to_file_impl(port, ptr, rust_vec_len, data_len),
-        129 => {
-            wire__crate__api__download__download_to_memory_impl(port, ptr, rust_vec_len, data_len)
-        }
-        130 => wire__crate__api__fanbox_login__fanbox_browser_available_impl(
+        130 => wire__pixiv_rs__pixivision__PixivisionApi_get_tag_directory_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
         131 => {
+            wire__pixiv_rs__pixivision__PixivisionApi_new_impl(port, ptr, rust_vec_len, data_len)
+        }
+        133 => wire__pixiv_rs__pixiv__api__bookmark_add_options_default_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        134 => wire__pixiv_rs__pixiv__api__bookmark_page_options_default_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        135 => wire__pixiv_rs__pixiv__api__bookmark_tag_options_default_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        136 => wire__pixiv_rs__pixivision__category_path_impl(port, ptr, rust_vec_len, data_len),
+        137 => wire__crate__api__fanbox_login__clear_fanbox_browser_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        138 => wire__pixiv_rs__pixiv__api__comment_add_options_default_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        139 => wire__crate__api__download__download_to_file_impl(port, ptr, rust_vec_len, data_len),
+        140 => {
+            wire__crate__api__download__download_to_memory_impl(port, ptr, rust_vec_len, data_len)
+        }
+        141 => wire__crate__api__fanbox_login__fanbox_browser_available_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        142 => {
             wire__pixiv_rs__fanbox__fanbox_comment_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        132 => wire__pixiv_rs__fanbox__fanbox_comment_page_default_impl(
+        143 => wire__pixiv_rs__fanbox__fanbox_comment_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        133 => {
+        144 => {
             wire__pixiv_rs__fanbox__fanbox_creator_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        134 => wire__pixiv_rs__fanbox__fanbox_creator_page_default_impl(
+        145 => wire__pixiv_rs__fanbox__fanbox_creator_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        135 => wire__pixiv_rs__fanbox__fanbox_file_default_impl(port, ptr, rust_vec_len, data_len),
-        136 => wire__pixiv_rs__fanbox__fanbox_image_default_impl(port, ptr, rust_vec_len, data_len),
-        137 => {
+        146 => wire__pixiv_rs__fanbox__fanbox_file_default_impl(port, ptr, rust_vec_len, data_len),
+        147 => wire__pixiv_rs__fanbox__fanbox_image_default_impl(port, ptr, rust_vec_len, data_len),
+        148 => {
             wire__pixiv_rs__fanbox__fanbox_notice_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        138 => wire__pixiv_rs__fanbox__fanbox_notice_page_default_impl(
+        149 => wire__pixiv_rs__fanbox__fanbox_notice_page_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        139 => wire__pixiv_rs__fanbox__fanbox_plan_default_impl(port, ptr, rust_vec_len, data_len),
-        140 => wire__pixiv_rs__fanbox__fanbox_post_default_impl(port, ptr, rust_vec_len, data_len),
-        141 => {
+        150 => wire__pixiv_rs__fanbox__fanbox_plan_default_impl(port, ptr, rust_vec_len, data_len),
+        151 => wire__pixiv_rs__fanbox__fanbox_post_default_impl(port, ptr, rust_vec_len, data_len),
+        152 => {
             wire__pixiv_rs__fanbox__fanbox_post_page_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        142 => {
+        153 => {
             wire__pixiv_rs__fanbox__fanbox_support_default_impl(port, ptr, rust_vec_len, data_len)
         }
-        143 => wire__pixiv_rs__fanbox__fanbox_tag_default_impl(port, ptr, rust_vec_len, data_len),
-        144 => wire__pixiv_rs__fanbox__fanbox_user_default_impl(port, ptr, rust_vec_len, data_len),
-        145 => wire__crate__api__proxy__get_system_proxy_impl(port, ptr, rust_vec_len, data_len),
-        146 => wire__pixiv_rs__pixiv__models__illust_is_r18_impl(port, ptr, rust_vec_len, data_len),
-        147 => {
+        154 => wire__pixiv_rs__fanbox__fanbox_tag_default_impl(port, ptr, rust_vec_len, data_len),
+        155 => wire__pixiv_rs__fanbox__fanbox_user_default_impl(port, ptr, rust_vec_len, data_len),
+        156 => wire__crate__api__proxy__get_system_proxy_impl(port, ptr, rust_vec_len, data_len),
+        157 => wire__pixiv_rs__pixiv__models__illust_is_r18_impl(port, ptr, rust_vec_len, data_len),
+        158 => {
             wire__pixiv_rs__pixiv__models__illust_is_ugoira_impl(port, ptr, rust_vec_len, data_len)
         }
-        148 => wire__pixiv_rs__pixiv__enums__illust_ranking_mode_as_pixiv_param_impl(
+        159 => wire__pixiv_rs__pixiv__enums__illust_ranking_mode_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        149 => wire__pixiv_rs__pixiv__enums__illust_type_as_pixiv_param_impl(
+        160 => wire__pixiv_rs__pixiv__enums__illust_type_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        150 => wire__crate__api__image_utils__image_utils_images_to_gif_impl(
+        161 => wire__crate__api__image_utils__image_utils_images_to_gif_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        151 => wire__pixiv_rs__pixivision__language_path_impl(port, ptr, rust_vec_len, data_len),
-        152 => wire__pixiv_rs__pixiv__enums__manga_ranking_mode_as_pixiv_param_impl(
+        162 => wire__pixiv_rs__pixivision__language_path_impl(port, ptr, rust_vec_len, data_len),
+        163 => wire__pixiv_rs__pixiv__enums__manga_ranking_mode_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        153 => wire__pixiv_rs__pixiv__responses__novel_navigation_info_default_impl(
+        164 => wire__pixiv_rs__pixiv__responses__novel_navigation_info_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        154 => wire__pixiv_rs__pixiv__responses__novel_navigation_item_default_impl(
+        165 => wire__pixiv_rs__pixiv__responses__novel_navigation_item_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        155 => wire__pixiv_rs__pixiv__enums__novel_ranking_mode_as_pixiv_param_impl(
+        166 => wire__pixiv_rs__pixiv__enums__novel_ranking_mode_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        156 => wire__pixiv_rs__pixiv__responses__novel_rating_default_impl(
+        167 => wire__pixiv_rs__pixiv__responses__novel_rating_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        157 => wire__pixiv_rs__pixivision__parse_article_impl(port, ptr, rust_vec_len, data_len),
-        158 => {
+        168 => wire__pixiv_rs__pixivision__parse_article_impl(port, ptr, rust_vec_len, data_len),
+        169 => {
             wire__pixiv_rs__pixivision__parse_article_page_impl(port, ptr, rust_vec_len, data_len)
         }
-        159 => {
+        170 => {
             wire__pixiv_rs__pixivision__parse_tag_directory_impl(port, ptr, rust_vec_len, data_len)
         }
-        160 => {
+        171 => {
             wire__pixiv_rs__pixiv__api__pixiv_api_config_new_impl(port, ptr, rust_vec_len, data_len)
         }
-        161 => wire__pixiv_rs__pixiv__auth__pixiv_auth_config_new_impl(
+        172 => wire__pixiv_rs__pixiv__auth__pixiv_auth_config_new_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        162 => {
+        173 => {
             wire__pixiv_rs__error__pixiv_error_http_status_impl(port, ptr, rust_vec_len, data_len)
         }
-        163 => wire__pixiv_rs__error__pixiv_error_missing_account_impl(
+        174 => wire__pixiv_rs__error__pixiv_error_missing_account_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        164 => wire__pixiv_rs__error__pixiv_error_new_impl(port, ptr, rust_vec_len, data_len),
-        165 => wire__pixiv_rs__pixivision__pixivision_config_default_impl(
+        175 => wire__pixiv_rs__error__pixiv_error_new_impl(port, ptr, rust_vec_len, data_len),
+        176 => wire__pixiv_rs__pixivision__pixivision_config_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        166 => wire__pixiv_rs__pixiv__enums__restrict_as_pixiv_param_impl(
+        177 => wire__pixiv_rs__pixiv__enums__restrict_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        167 => wire__pixiv_rs__pixiv__enums__search_content_type_as_pixiv_param_impl(
+        178 => wire__pixiv_rs__pixiv__enums__search_content_type_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        168 => wire__pixiv_rs__pixiv__enums__search_novel_target_as_pixiv_param_impl(
+        179 => wire__pixiv_rs__pixiv__enums__search_novel_target_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        169 => wire__pixiv_rs__pixiv__api__search_options_default_impl(
+        180 => wire__pixiv_rs__pixiv__api__search_options_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        170 => wire__pixiv_rs__pixiv__enums__search_ratio_as_pixiv_param_impl(
+        181 => wire__pixiv_rs__pixiv__enums__search_ratio_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        171 => wire__pixiv_rs__pixiv__enums__search_sort_as_pixiv_param_impl(
+        182 => wire__pixiv_rs__pixiv__enums__search_sort_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        172 => wire__pixiv_rs__pixiv__enums__search_target_as_pixiv_param_impl(
+        183 => wire__pixiv_rs__pixiv__enums__search_target_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        173 => wire__crate__api__media__stream_media_impl(port, ptr, rust_vec_len, data_len),
-        174 => wire__pixiv_rs__pixiv__responses__webview_novel_image_urls_default_impl(
+        184 => wire__crate__api__media__stream_media_impl(port, ptr, rust_vec_len, data_len),
+        185 => wire__pixiv_rs__pixiv__responses__webview_novel_image_urls_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        175 => wire__pixiv_rs__pixiv__enums__work_type_as_pixiv_param_impl(
+        186 => wire__pixiv_rs__pixiv__enums__work_type_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        176 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
+        187 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
             port,
             ptr,
             rust_vec_len,
@@ -13790,9 +14857,9 @@ fn pde_ffi_dispatcher_sync_impl(
             rust_vec_len,
             data_len,
         ),
-        95 => wire__pixiv_rs__pixiv__api__PixivApi_new_impl(ptr, rust_vec_len, data_len),
-        105 => wire__pixiv_rs__pixiv__api__PixivApi_set_account_impl(ptr, rust_vec_len, data_len),
-        106 => wire__pixiv_rs__pixiv__api__PixivApi_set_proxy_impl(ptr, rust_vec_len, data_len),
+        100 => wire__pixiv_rs__pixiv__api__PixivApi_new_impl(ptr, rust_vec_len, data_len),
+        116 => wire__pixiv_rs__pixiv__api__PixivApi_set_account_impl(ptr, rust_vec_len, data_len),
+        117 => wire__pixiv_rs__pixiv__api__PixivApi_set_proxy_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -13922,6 +14989,25 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<UnzipError>> for UnzipError {
     }
 }
 
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart
+    for FrbWrapper<pixiv_rs::pixiv::responses::AiShowSettingsResult>
+{
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [self.0.show_ai.into_into_dart().into_dart()].into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::responses::AiShowSettingsResult>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::AiShowSettingsResult>>
+    for pixiv_rs::pixiv::responses::AiShowSettingsResult
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::AiShowSettingsResult> {
+        self.into()
+    }
+}
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixivision::Article> {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
@@ -15823,6 +16909,53 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixivision::Pixivisi
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart
+    for FrbWrapper<pixiv_rs::pixiv::responses::ProfileAddressPreset>
+{
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.id.into_into_dart().into_dart(),
+            self.0.name.into_into_dart().into_dart(),
+            self.0.is_global.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::responses::ProfileAddressPreset>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::ProfileAddressPreset>>
+    for pixiv_rs::pixiv::responses::ProfileAddressPreset
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::ProfileAddressPreset> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart
+    for FrbWrapper<pixiv_rs::pixiv::responses::ProfileCountryPreset>
+{
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.code.into_into_dart().into_dart(),
+            self.0.name.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::responses::ProfileCountryPreset>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::ProfileCountryPreset>>
+    for pixiv_rs::pixiv::responses::ProfileCountryPreset
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::ProfileCountryPreset> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::models::ProfileImageUrls> {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [self.0.medium.into_into_dart().into_dart()].into_dart()
@@ -15836,6 +16969,68 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::models::Profi
     for pixiv_rs::pixiv::models::ProfileImageUrls
 {
     fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::models::ProfileImageUrls> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::responses::ProfileJobPreset> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.id.into_into_dart().into_dart(),
+            self.0.name.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::responses::ProfileJobPreset>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::ProfileJobPreset>>
+    for pixiv_rs::pixiv::responses::ProfileJobPreset
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::ProfileJobPreset> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::responses::ProfilePresets> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.addresses.into_into_dart().into_dart(),
+            self.0.countries.into_into_dart().into_dart(),
+            self.0.jobs.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::responses::ProfilePresets>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::ProfilePresets>>
+    for pixiv_rs::pixiv::responses::ProfilePresets
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::ProfilePresets> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart
+    for FrbWrapper<pixiv_rs::pixiv::responses::ProfilePresetsResult>
+{
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [self.0.profile_presets.into_into_dart().into_dart()].into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::responses::ProfilePresetsResult>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::ProfilePresetsResult>>
+    for pixiv_rs::pixiv::responses::ProfilePresetsResult
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::ProfilePresetsResult> {
         self.into()
     }
 }
@@ -16470,6 +17665,48 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::Us
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::responses::UserFollowDetail> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.is_followed.into_into_dart().into_dart(),
+            self.0.restrict.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::responses::UserFollowDetail>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::UserFollowDetail>>
+    for pixiv_rs::pixiv::responses::UserFollowDetail
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::UserFollowDetail> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart
+    for FrbWrapper<pixiv_rs::pixiv::responses::UserFollowDetailResult>
+{
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [self.0.follow_detail.into_into_dart().into_dart()].into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::responses::UserFollowDetailResult>
+{
+}
+impl
+    flutter_rust_bridge::IntoIntoDart<
+        FrbWrapper<pixiv_rs::pixiv::responses::UserFollowDetailResult>,
+    > for pixiv_rs::pixiv::responses::UserFollowDetailResult
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::UserFollowDetailResult> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::responses::UserInfo> {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -16587,6 +17824,34 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::Us
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::api::UserProfileEdit> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.user_name.into_into_dart().into_dart(),
+            self.0.gender.into_into_dart().into_dart(),
+            self.0.address_id.into_into_dart().into_dart(),
+            self.0.country_code.into_into_dart().into_dart(),
+            self.0.job_id.into_into_dart().into_dart(),
+            self.0.webpage.into_into_dart().into_dart(),
+            self.0.twitter.into_into_dart().into_dart(),
+            self.0.comment.into_into_dart().into_dart(),
+            self.0.birthday.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::api::UserProfileEdit>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::api::UserProfileEdit>>
+    for pixiv_rs::pixiv::api::UserProfileEdit
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::api::UserProfileEdit> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart
     for FrbWrapper<pixiv_rs::pixiv::responses::UserProfilePublicity>
 {
@@ -16642,6 +17907,87 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::Us
     for pixiv_rs::pixiv::responses::UserWorkspace
 {
     fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::UserWorkspace> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::api::UserWorkspaceEdit> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.pc.into_into_dart().into_dart(),
+            self.0.monitor.into_into_dart().into_dart(),
+            self.0.tool.into_into_dart().into_dart(),
+            self.0.scanner.into_into_dart().into_dart(),
+            self.0.tablet.into_into_dart().into_dart(),
+            self.0.mouse.into_into_dart().into_dart(),
+            self.0.printer.into_into_dart().into_dart(),
+            self.0.desktop.into_into_dart().into_dart(),
+            self.0.music.into_into_dart().into_dart(),
+            self.0.desk.into_into_dart().into_dart(),
+            self.0.chair.into_into_dart().into_dart(),
+            self.0.comment.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::api::UserWorkspaceEdit>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::api::UserWorkspaceEdit>>
+    for pixiv_rs::pixiv::api::UserWorkspaceEdit
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::api::UserWorkspaceEdit> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::responses::WatchlistPageResult> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.series.into_into_dart().into_dart(),
+            self.0.next_url.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::responses::WatchlistPageResult>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::WatchlistPageResult>>
+    for pixiv_rs::pixiv::responses::WatchlistPageResult
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::WatchlistPageResult> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::responses::WatchlistSeries> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.id.into_into_dart().into_dart(),
+            self.0.title.into_into_dart().into_dart(),
+            self.0.url.into_into_dart().into_dart(),
+            self.0.mask_text.into_into_dart().into_dart(),
+            self.0.user.into_into_dart().into_dart(),
+            self.0.published_content_count.into_into_dart().into_dart(),
+            self.0
+                .last_published_content_datetime
+                .into_into_dart()
+                .into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::responses::WatchlistSeries>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::WatchlistSeries>>
+    for pixiv_rs::pixiv::responses::WatchlistSeries
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::WatchlistSeries> {
         self.into()
     }
 }
@@ -17049,6 +18395,13 @@ impl SseEncode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Vec<u8>>::sse_encode(self.into_bytes(), serializer);
+    }
+}
+
+impl SseEncode for pixiv_rs::pixiv::responses::AiShowSettingsResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.show_ai, serializer);
     }
 }
 
@@ -18116,6 +19469,36 @@ impl SseEncode for Vec<u8> {
     }
 }
 
+impl SseEncode for Vec<pixiv_rs::pixiv::responses::ProfileAddressPreset> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <pixiv_rs::pixiv::responses::ProfileAddressPreset>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<pixiv_rs::pixiv::responses::ProfileCountryPreset> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <pixiv_rs::pixiv::responses::ProfileCountryPreset>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<pixiv_rs::pixiv::responses::ProfileJobPreset> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <pixiv_rs::pixiv::responses::ProfileJobPreset>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<(String, String)> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -18182,6 +19565,16 @@ impl SseEncode for Vec<pixiv_rs::pixiv::models::UserPreview> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <pixiv_rs::pixiv::models::UserPreview>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<pixiv_rs::pixiv::responses::WatchlistSeries> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <pixiv_rs::pixiv::responses::WatchlistSeries>::sse_encode(item, serializer);
         }
     }
 }
@@ -18591,6 +19984,16 @@ impl SseEncode for Option<u8> {
     }
 }
 
+impl SseEncode for Option<pixiv_rs::pixiv::models::User> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <pixiv_rs::pixiv::models::User>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<pixiv_rs::pixiv::responses::UserAccountResult> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -18688,10 +20091,57 @@ impl SseEncode for pixiv_rs::pixivision::PixivisionTag {
     }
 }
 
+impl SseEncode for pixiv_rs::pixiv::responses::ProfileAddressPreset {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u64>::sse_encode(self.id, serializer);
+        <String>::sse_encode(self.name, serializer);
+        <bool>::sse_encode(self.is_global, serializer);
+    }
+}
+
+impl SseEncode for pixiv_rs::pixiv::responses::ProfileCountryPreset {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.code, serializer);
+        <String>::sse_encode(self.name, serializer);
+    }
+}
+
 impl SseEncode for pixiv_rs::pixiv::models::ProfileImageUrls {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.medium, serializer);
+    }
+}
+
+impl SseEncode for pixiv_rs::pixiv::responses::ProfileJobPreset {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u64>::sse_encode(self.id, serializer);
+        <String>::sse_encode(self.name, serializer);
+    }
+}
+
+impl SseEncode for pixiv_rs::pixiv::responses::ProfilePresets {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<pixiv_rs::pixiv::responses::ProfileAddressPreset>>::sse_encode(
+            self.addresses,
+            serializer,
+        );
+        <Vec<pixiv_rs::pixiv::responses::ProfileCountryPreset>>::sse_encode(
+            self.countries,
+            serializer,
+        );
+        <Vec<pixiv_rs::pixiv::responses::ProfileJobPreset>>::sse_encode(self.jobs, serializer);
+    }
+}
+
+impl SseEncode for pixiv_rs::pixiv::responses::ProfilePresetsResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <pixiv_rs::pixiv::responses::ProfilePresets>::sse_encode(self.profile_presets, serializer);
     }
 }
 
@@ -19072,6 +20522,21 @@ impl SseEncode for pixiv_rs::pixiv::responses::UserDetailResult {
     }
 }
 
+impl SseEncode for pixiv_rs::pixiv::responses::UserFollowDetail {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_followed, serializer);
+        <Option<pixiv_rs::pixiv::enums::Restrict>>::sse_encode(self.restrict, serializer);
+    }
+}
+
+impl SseEncode for pixiv_rs::pixiv::responses::UserFollowDetailResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <pixiv_rs::pixiv::responses::UserFollowDetail>::sse_encode(self.follow_detail, serializer);
+    }
+}
+
 impl SseEncode for pixiv_rs::pixiv::responses::UserInfo {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -19134,6 +20599,21 @@ impl SseEncode for pixiv_rs::pixiv::responses::UserProfile {
     }
 }
 
+impl SseEncode for pixiv_rs::pixiv::api::UserProfileEdit {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.user_name, serializer);
+        <String>::sse_encode(self.gender, serializer);
+        <u64>::sse_encode(self.address_id, serializer);
+        <Option<String>>::sse_encode(self.country_code, serializer);
+        <u64>::sse_encode(self.job_id, serializer);
+        <String>::sse_encode(self.webpage, serializer);
+        <String>::sse_encode(self.twitter, serializer);
+        <String>::sse_encode(self.comment, serializer);
+        <String>::sse_encode(self.birthday, serializer);
+    }
+}
+
 impl SseEncode for pixiv_rs::pixiv::responses::UserProfilePublicity {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -19165,6 +20645,24 @@ impl SseEncode for pixiv_rs::pixiv::responses::UserWorkspace {
     }
 }
 
+impl SseEncode for pixiv_rs::pixiv::api::UserWorkspaceEdit {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.pc, serializer);
+        <String>::sse_encode(self.monitor, serializer);
+        <String>::sse_encode(self.tool, serializer);
+        <String>::sse_encode(self.scanner, serializer);
+        <String>::sse_encode(self.tablet, serializer);
+        <String>::sse_encode(self.mouse, serializer);
+        <String>::sse_encode(self.printer, serializer);
+        <String>::sse_encode(self.desktop, serializer);
+        <String>::sse_encode(self.music, serializer);
+        <String>::sse_encode(self.desk, serializer);
+        <String>::sse_encode(self.chair, serializer);
+        <String>::sse_encode(self.comment, serializer);
+    }
+}
+
 impl SseEncode for usize {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -19172,6 +20670,27 @@ impl SseEncode for usize {
             .cursor
             .write_u64::<NativeEndian>(self as _)
             .unwrap();
+    }
+}
+
+impl SseEncode for pixiv_rs::pixiv::responses::WatchlistPageResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<pixiv_rs::pixiv::responses::WatchlistSeries>>::sse_encode(self.series, serializer);
+        <Option<String>>::sse_encode(self.next_url, serializer);
+    }
+}
+
+impl SseEncode for pixiv_rs::pixiv::responses::WatchlistSeries {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u64>::sse_encode(self.id, serializer);
+        <String>::sse_encode(self.title, serializer);
+        <Option<String>>::sse_encode(self.url, serializer);
+        <Option<String>>::sse_encode(self.mask_text, serializer);
+        <Option<pixiv_rs::pixiv::models::User>>::sse_encode(self.user, serializer);
+        <u64>::sse_encode(self.published_content_count, serializer);
+        <Option<String>>::sse_encode(self.last_published_content_datetime, serializer);
     }
 }
 

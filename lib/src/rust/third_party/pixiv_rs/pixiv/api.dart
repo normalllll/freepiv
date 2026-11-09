@@ -21,6 +21,8 @@ abstract class PixivApi implements RustOpaqueInterface {
 
   String generateLoginUrl();
 
+  Future<AiShowSettingsResult> getAiShowSettings();
+
   Future<BookmarkTagPageResult> getBookmarkTagPage({
     required int userId,
     required BookmarkTagOptions options,
@@ -100,6 +102,8 @@ abstract class PixivApi implements RustOpaqueInterface {
 
   Future<UserPageResult> getNextUserPage({required String url});
 
+  Future<WatchlistPageResult> getNextWatchlistPage({required String url});
+
   Future<WorkBookmarkDetailResult> getNovelBookmarkDetail({
     required int novelId,
   });
@@ -122,6 +126,8 @@ abstract class PixivApi implements RustOpaqueInterface {
   Future<NovelPageResult> getNovelRelatedPage({required int novelId});
 
   Future<NovelSeriesPageResult> getNovelSeriesPage({required int seriesId});
+
+  Future<ProfilePresetsResult> getProfilePresets();
 
   Future<IllustPageResult> getRecommendedIllustPage({
     required IllustType illustType,
@@ -186,6 +192,8 @@ abstract class PixivApi implements RustOpaqueInterface {
 
   Future<UserDetailResult> getUserDetail({required int userId});
 
+  Future<UserFollowDetailResult> getUserFollowDetail({required int userId});
+
   Future<IllustPageResult> getUserIllustBookmarkPage({
     required int userId,
     required Restrict restrict,
@@ -217,6 +225,9 @@ abstract class PixivApi implements RustOpaqueInterface {
     required int offset,
     required int seedUserId,
   });
+
+  /// The manga or novel series the account follows up.
+  Future<WatchlistPageResult> getWatchlistPage({required bool isNovel});
 
   Future<WebviewNovel> getWebviewNovel({required int novelId});
 
@@ -255,6 +266,26 @@ abstract class PixivApi implements RustOpaqueInterface {
   });
 
   Future<String> postNovelCommentDelete({required int commentId});
+
+  /// Saves the reading position; `page` is the 1-based `[newpage]` section.
+  Future<String> postNovelMarkerAdd({required int novelId, required int page});
+
+  Future<String> postNovelMarkerDelete({required int novelId});
+
+  Future<String> postUserProfileEdit({required UserProfileEdit edit});
+
+  Future<String> postUserWorkspaceEdit({required UserWorkspaceEdit edit});
+
+  /// Adds a manga or novel series to the account's follow-up list.
+  Future<String> postWatchlistAdd({
+    required int seriesId,
+    required bool isNovel,
+  });
+
+  Future<String> postWatchlistDelete({
+    required int seriesId,
+    required bool isNovel,
+  });
 
   void setAccount({UserAccountResult? account});
 
@@ -480,4 +511,127 @@ class SearchOptions {
           heightMin == other.heightMin &&
           heightMax == other.heightMax &&
           tool == other.tool;
+}
+
+/// Every field Pixiv's profile form submits. Publicity and the profile image
+/// are not part of this request and keep their server values.
+class UserProfileEdit {
+  final String userName;
+
+  /// `male`, `female` or `unknown`.
+  final String gender;
+  final int addressId;
+
+  /// Required only for addresses Pixiv marks as global.
+  final String? countryCode;
+  final int jobId;
+  final String webpage;
+  final String twitter;
+  final String comment;
+
+  /// `YYYY-MM-DD`, or empty when unset.
+  final String birthday;
+
+  const UserProfileEdit({
+    required this.userName,
+    required this.gender,
+    required this.addressId,
+    this.countryCode,
+    required this.jobId,
+    required this.webpage,
+    required this.twitter,
+    required this.comment,
+    required this.birthday,
+  });
+
+  @override
+  int get hashCode =>
+      userName.hashCode ^
+      gender.hashCode ^
+      addressId.hashCode ^
+      countryCode.hashCode ^
+      jobId.hashCode ^
+      webpage.hashCode ^
+      twitter.hashCode ^
+      comment.hashCode ^
+      birthday.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserProfileEdit &&
+          runtimeType == other.runtimeType &&
+          userName == other.userName &&
+          gender == other.gender &&
+          addressId == other.addressId &&
+          countryCode == other.countryCode &&
+          jobId == other.jobId &&
+          webpage == other.webpage &&
+          twitter == other.twitter &&
+          comment == other.comment &&
+          birthday == other.birthday;
+}
+
+/// The whole workspace form; a field left empty is cleared on Pixiv.
+class UserWorkspaceEdit {
+  final String pc;
+  final String monitor;
+  final String tool;
+  final String scanner;
+  final String tablet;
+  final String mouse;
+  final String printer;
+  final String desktop;
+  final String music;
+  final String desk;
+  final String chair;
+  final String comment;
+
+  const UserWorkspaceEdit({
+    required this.pc,
+    required this.monitor,
+    required this.tool,
+    required this.scanner,
+    required this.tablet,
+    required this.mouse,
+    required this.printer,
+    required this.desktop,
+    required this.music,
+    required this.desk,
+    required this.chair,
+    required this.comment,
+  });
+
+  @override
+  int get hashCode =>
+      pc.hashCode ^
+      monitor.hashCode ^
+      tool.hashCode ^
+      scanner.hashCode ^
+      tablet.hashCode ^
+      mouse.hashCode ^
+      printer.hashCode ^
+      desktop.hashCode ^
+      music.hashCode ^
+      desk.hashCode ^
+      chair.hashCode ^
+      comment.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserWorkspaceEdit &&
+          runtimeType == other.runtimeType &&
+          pc == other.pc &&
+          monitor == other.monitor &&
+          tool == other.tool &&
+          scanner == other.scanner &&
+          tablet == other.tablet &&
+          mouse == other.mouse &&
+          printer == other.printer &&
+          desktop == other.desktop &&
+          music == other.music &&
+          desk == other.desk &&
+          chair == other.chair &&
+          comment == other.comment;
 }
