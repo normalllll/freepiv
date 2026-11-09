@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:path/path.dart' as p;
@@ -85,6 +87,10 @@ Future<Directory> downloadTempDirectory() async {
   return directory;
 }
 
+/// The name for [jobId]'s temporary files. A job id can hold path separators
+/// (a content file's address) and be long, so it cannot name them itself.
+String downloadTempFolderName(String jobId) => crypto.sha1.convert(utf8.encode(jobId)).toString();
+
 Future<void> ensureWritableDirectory(Directory directory) async {
   try {
     await directory.create(recursive: true);
@@ -107,7 +113,8 @@ Future<File> moveFileWithFallback({required File source, required File destinati
     return source;
   }
 
-  await deleteFileIfExists(destination);
+  // An existing destination stays until the new file is in place: rename
+  // replaces it, here and after the copy below.
   try {
     return await source.rename(destination.path);
   } on FileSystemException catch (renameError) {
@@ -115,7 +122,6 @@ Future<File> moveFileWithFallback({required File source, required File destinati
     try {
       await deleteFileIfExists(staging);
       final copied = await source.copy(staging.path);
-      await deleteFileIfExists(destination);
       final saved = await copied.rename(destination.path);
       try {
         await source.delete();
@@ -149,7 +155,6 @@ Future<DownloadedFile> writeBytesAtomically({required Uint8List bytes, required 
     await sink.close();
     sink = null;
 
-    await deleteFileIfExists(destination);
     final saved = await partial.rename(destination.path);
     return DownloadedFile(path: saved.path, bytesWritten: bytes.lengthInBytes);
   } catch (error) {

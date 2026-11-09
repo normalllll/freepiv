@@ -7,6 +7,7 @@ import 'package:freepiv/app/app.dart';
 import 'package:freepiv/app/window/app_window.dart';
 import 'package:freepiv/app_links/app_links.dart';
 import 'package:freepiv/core/downloads/download_manager.dart';
+import 'package:freepiv/core/downloads/platform/macos_folder_access.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/core/services/updater_service.dart';
@@ -16,6 +17,7 @@ Future<void> main() async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
   await appLinkDispatcher.start();
   useDownloadSessionHeaders(fanboxDownloadSessionHeaders);
+  await MacosFolderAccess.restore();
   await initializeAppServices();
   await initializeLocaleSettings();
   refreshPixivApiLanguage();

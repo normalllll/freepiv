@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/core/downloads/platform/macos_folder_access.dart';
 import 'package:freepiv/features/fanbox/login_logic.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/fanbox/login_panel.dart';
@@ -155,6 +156,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     if (!mounted || selected == null || selected.isEmpty) return;
     try {
       final path = await prepareDesktopCustomDownloadDirectory(selected);
+      await MacosFolderAccess.remember(selected);
       if (!mounted) return;
       ref.read(downloadSavePathSettingsProvider.notifier).useCustomDirectory(path);
       FrostToast.success(t.settings.downloads.directorySet(path: path));

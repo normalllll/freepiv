@@ -45,9 +45,13 @@ abstract interface class DownloadEngine {
 
   Future<List<DownloadEngineSnapshot>> syncActiveTasks();
 
-  /// Releases terminal snapshots retained by a background engine after their
-  /// state has been durably recorded by the manager.
+  /// Releases what an engine retains for finished jobs (snapshots, temporary
+  /// files) once the manager has durably recorded their state. Best effort.
   Future<void> acknowledge(Set<String> jobIds);
+
+  /// Removes temporary files that jobs of an earlier process left, except the
+  /// ones at [keepPaths]. Best effort.
+  Future<void> removeLeftovers(Set<String> keepPaths);
 
   Future<void> dispose();
 }

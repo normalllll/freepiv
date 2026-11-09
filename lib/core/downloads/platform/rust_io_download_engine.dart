@@ -84,7 +84,42 @@ final class RustIoDownloadEngine implements DownloadEngine {
   }
 
   @override
-  Future<void> acknowledge(Set<String> jobIds) async {}
+  Future<void> acknowledge(Set<String> jobIds) async {
+    if (jobIds.isEmpty) return;
+    try {
+      final root = await downloadTempDirectory();
+      for (final id in jobIds) {
+        if (!_running.containsKey(id)) {
+          await _removeTemporary(Directory(p.join(root.path, downloadTempFolderName(id))));
+        }
+      }
+    } on Exception {
+      // The next launch tries again.
+    }
+  }
+
+  @override
+  Future<void> removeLeftovers(Set<String> keepPaths) async {
+    try {
+      final root = await downloadTempDirectory();
+      for (final entry in await root.list().toList()) {
+        if (!keepPaths.any((path) => p.equals(entry.path, path) || p.isWithin(entry.path, path))) {
+          await _removeTemporary(entry);
+        }
+      }
+    } on Exception {
+      // The next launch tries again.
+    }
+  }
+
+  /// Temporary files are best effort: a locked file must never decide a task.
+  Future<void> _removeTemporary(FileSystemEntity entry) async {
+    try {
+      await entry.delete(recursive: true);
+    } on FileSystemException {
+      // Already gone, or the next launch tries again.
+    }
+  }
 
   @override
   Future<void> dispose() async {
@@ -104,7 +139,7 @@ final class RustIoDownloadEngine implements DownloadEngine {
     File? downloadedFile;
     try {
       final tempDirectory = await downloadTempDirectory();
-      final jobDirectory = Directory(p.join(tempDirectory.path, job.id));
+      final jobDirectory = Directory(p.join(tempDirectory.path, downloadTempFolderName(job.id)));
       await jobDirectory.create(recursive: true);
       final filename = safeDownloadFilename(job.filename);
       partialFile = File(p.join(jobDirectory.path, '$filename.part'));
@@ -146,12 +181,8 @@ final class RustIoDownloadEngine implements DownloadEngine {
       _events.add(EngineProgressEvent(jobId: job.id, receivedBytes: running.receivedBytes, totalBytes: running.totalBytes, progress: 1));
       _events.add(EngineCompletedEvent(jobId: job.id, localPath: savedTempFile.path, bytesWritten: running.receivedBytes));
     } catch (error, stackTrace) {
-      if (partialFile != null && await partialFile.exists()) {
-        await partialFile.delete();
-      }
-      if (downloadedFile != null && downloadedFile.path != partialFile?.path && await downloadedFile.exists()) {
-        await downloadedFile.delete();
-      }
+      if (partialFile != null) await _removeTemporary(partialFile);
+      if (downloadedFile != null) await _removeTemporary(downloadedFile);
 
       if (running.cancelled) {
         _events.add(EngineCancelledEvent(jobId: job.id));

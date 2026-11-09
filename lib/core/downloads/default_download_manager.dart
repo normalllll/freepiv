@@ -45,6 +45,9 @@ final class DefaultDownloadManager implements DownloadManager {
   bool _ownsStore = false;
   bool _disposed = false;
   final _jobs = <String, DownloadJob>{};
+  final _saves = <String, Future<void>>{};
+  // Saves run one at a time, apart from the engine's events.
+  Future<void> _saveTail = Future<void>.value();
   final _waiters = <String, Completer<DownloadedFile>>{};
 
   @override
@@ -96,8 +99,20 @@ final class DefaultDownloadManager implements DownloadManager {
             Zone.current.handleUncaughtError(error, stackTrace);
           },
         );
+    // Before anything can start: every temporary file now is from an old run.
+    await _removeTemporaryLeftovers();
     _initialized = true;
-    await sync();
+    await _recoverLastRun();
+  }
+
+  /// Keeps the files a save still needs: one to finish and one to retry.
+  Future<void> _removeTemporaryLeftovers() async {
+    final saving = await _activeStore.listPendingSaveTasks();
+    final failed = await _activeStore.listTasks(saveState: SaveState.failed);
+    await _activeEngine.removeLeftovers({
+      for (final task in [...saving, ...failed])
+        if (task.localPath case final path? when path.isNotEmpty) path,
+    });
   }
 
   Future<void> _retireNativeDownloads() async {
@@ -241,31 +256,33 @@ final class DefaultDownloadManager implements DownloadManager {
       throw const DownloadAlreadyQueued();
     }
 
+    await validateDownloadedBytes(bytes, validation: job.validation);
     _jobs[job.id] = job;
     await _activeStore.upsertJob(job);
-    await validateDownloadedBytes(bytes, validation: job.validation);
     await _activeStore.updateStatus(job.id, DownloadStatus.running);
     await _activeStore.updateProgress(job.id, receivedBytes: bytes.lengthInBytes, totalBytes: bytes.lengthInBytes, progress: 1);
     await _activeStore.updateStatus(job.id, DownloadStatus.downloaded);
     await _activeStore.updateSaveState(job.id, SaveState.saving);
-    try {
-      final result = await _activeMediaSaver.saveBytes(job: job, bytes: bytes);
-      await _activeStore.updateSaveState(job.id, SaveState.saved, localPath: result.path, galleryAssetId: result.galleryAssetId);
-      return DownloadedFile(path: result.path, bytesWritten: result.bytesWritten);
-    } catch (error, stackTrace) {
-      await _activeStore.appendLog(
-        job.id,
-        'Save bytes failed.\n'
-        'sourceUrl=$sourceUrl\n'
-        'bytes=${bytes.lengthInBytes}\n'
-        'filename=${job.filename}\n'
-        'saveTarget=${job.saveTarget.toJson()}\n'
-        'error=$error\n'
-        'stackTrace=$stackTrace',
-      );
-      await _activeStore.updateSaveState(job.id, SaveState.failed, error: error.toString());
-      throw DownloadException('Failed to save downloaded file', error);
-    }
+    return _inSaveOrder(() async {
+      try {
+        final result = await _activeMediaSaver.saveBytes(job: job, bytes: bytes);
+        await _activeStore.updateSaveState(job.id, SaveState.saved, localPath: result.path, galleryAssetId: result.galleryAssetId);
+        return DownloadedFile(path: result.path, bytesWritten: result.bytesWritten);
+      } catch (error, stackTrace) {
+        await _activeStore.appendLog(
+          job.id,
+          'Save bytes failed.\n'
+          'sourceUrl=$sourceUrl\n'
+          'bytes=${bytes.lengthInBytes}\n'
+          'filename=${job.filename}\n'
+          'saveTarget=${job.saveTarget.toJson()}\n'
+          'error=$error\n'
+          'stackTrace=$stackTrace',
+        );
+        await _activeStore.updateSaveState(job.id, SaveState.failed, error: error.toString());
+        throw DownloadException('Failed to save downloaded file', error);
+      }
+    });
   }
 
   @override
@@ -320,21 +337,23 @@ final class DefaultDownloadManager implements DownloadManager {
     await _activeStore.updateProgress(job.id, receivedBytes: bytes.lengthInBytes, totalBytes: bytes.lengthInBytes, progress: 1);
     await _activeStore.updateStatus(job.id, DownloadStatus.downloaded);
     await _activeStore.updateSaveState(job.id, SaveState.saving);
-    try {
-      final result = await _activeMediaSaver.saveBytes(job: job, bytes: bytes);
-      await _activeStore.updateSaveState(job.id, SaveState.saved, localPath: result.path, galleryAssetId: result.galleryAssetId);
-      return DownloadedFile(path: result.path, bytesWritten: result.bytesWritten);
-    } catch (error, stackTrace) {
-      await _activeStore.appendLog(
-        job.id,
-        'Save generated file failed.\n'
-        'filename=${job.filename}\n'
-        'error=$error\n'
-        'stackTrace=$stackTrace',
-      );
-      await _activeStore.updateSaveState(job.id, SaveState.failed, error: error.toString());
-      throw DownloadException('Failed to save generated file', error);
-    }
+    return _inSaveOrder(() async {
+      try {
+        final result = await _activeMediaSaver.saveBytes(job: job, bytes: bytes);
+        await _activeStore.updateSaveState(job.id, SaveState.saved, localPath: result.path, galleryAssetId: result.galleryAssetId);
+        return DownloadedFile(path: result.path, bytesWritten: result.bytesWritten);
+      } catch (error, stackTrace) {
+        await _activeStore.appendLog(
+          job.id,
+          'Save generated file failed.\n'
+          'filename=${job.filename}\n'
+          'error=$error\n'
+          'stackTrace=$stackTrace',
+        );
+        await _activeStore.updateSaveState(job.id, SaveState.failed, error: error.toString());
+        throw DownloadException('Failed to save generated file', error);
+      }
+    });
   }
 
   @override
@@ -361,13 +380,18 @@ final class DefaultDownloadManager implements DownloadManager {
         task.saveState == SaveState.saved) {
       return;
     }
-    if (task.status == DownloadStatus.queued) {
-      await _activeStore.updateStatus(jobId, DownloadStatus.cancelled);
-      _completeWithError(jobId, const DownloadException('Download cancelled'));
-      await _pumpQueue();
+    // A transfer the engine holds reports its own end. A task it does not hold
+    // has none to stop, even when its row says running: it is about to start.
+    final snapshots = await _activeEngine.syncActiveTasks();
+    if (snapshots.any((item) => item.jobId == jobId)) {
+      await _activeEngine.cancel(jobId);
       return;
     }
+    await _activeStore.updateStatus(jobId, DownloadStatus.cancelled);
+    _completeWithError(jobId, const DownloadException('Download cancelled'));
+    // A start that read the row just before this write has happened by now.
     await _activeEngine.cancel(jobId);
+    await _pumpQueue();
   }
 
   @override
@@ -378,13 +402,12 @@ final class DefaultDownloadManager implements DownloadManager {
       return;
     }
 
-    if (task.status == DownloadStatus.running || task.status == DownloadStatus.paused) {
-      await _activeEngine.cancel(jobId);
-    }
-
     _jobs.remove(jobId);
     _completeWithError(jobId, const DownloadException('Download task deleted'));
     await _activeStore.deleteTask(jobId);
+    // After the row is gone, so that a start that just read it is stopped too.
+    await _activeEngine.cancel(jobId);
+    await _activeEngine.acknowledge({jobId});
     await _pumpQueue();
   }
 
@@ -460,6 +483,15 @@ final class DefaultDownloadManager implements DownloadManager {
   @override
   Future<void> sync() async {
     await _ensureInitialized();
+    // Events keep the rows of this process current; a snapshot could only
+    // write an older state over them.
+    await _pumpQueue();
+  }
+
+  /// For launch only. A running row with no transfer, or a save with no one
+  /// working on it, is left over from the old process then. Later, the same
+  /// rows are work this process is still doing.
+  Future<void> _recoverLastRun() async {
     final snapshots = await _activeEngine.syncActiveTasks();
     final activeIds = <String>{};
     final nativeSavingIds = <String>{};
@@ -507,6 +539,7 @@ final class DefaultDownloadManager implements DownloadManager {
       case EngineCompletedEvent():
         final task = await _activeStore.getTask(event.jobId);
         if (task == null || task.status == DownloadStatus.failed || task.status == DownloadStatus.cancelled || task.saveState == SaveState.saved) {
+          await _activeEngine.acknowledge({event.jobId});
           return;
         }
         await _activeStore.updateProgress(event.jobId, receivedBytes: event.bytesWritten, progress: 1);
@@ -519,7 +552,7 @@ final class DefaultDownloadManager implements DownloadManager {
         if (!_activeEngine.capabilities.handlesSaving) {
           final job = await _jobFor(event.jobId);
           if (job != null) {
-            await _saveCompletedFile(job, DownloadedFile(path: event.localPath, bytesWritten: event.bytesWritten));
+            _saveInBackground(job, DownloadedFile(path: event.localPath, bytesWritten: event.bytesWritten));
           }
         }
         await _pumpQueue();
@@ -573,7 +606,37 @@ final class DefaultDownloadManager implements DownloadManager {
     }
   }
 
-  Future<void> _saveCompletedFile(DownloadJob job, DownloadedFile file) async {
+  /// Runs [save] after the saves before it, whatever becomes of them.
+  Future<T> _inSaveOrder<T>(Future<T> Function() save) {
+    final result = _saveTail.then((_) => save());
+    _saveTail = result.then<void>((_) {}, onError: (Object _) {});
+    return result;
+  }
+
+  Future<void> _saveCompletedFile(DownloadJob job, DownloadedFile file) => _saves.putIfAbsent(job.id, () {
+    // A block: returning the removed future would make the save wait for itself.
+    return _inSaveOrder(() => _saveFileOnce(job, file)).whenComplete(() {
+      _saves.remove(job.id);
+    });
+  });
+
+  /// For callers a long save must not hold up: other tasks' events and the
+  /// queue. The save records its own failures; this surfaces any it cannot.
+  void _saveInBackground(DownloadJob job, DownloadedFile file) {
+    unawaited(
+      _saveCompletedFile(job, file).catchError((Object error, StackTrace stackTrace) {
+        _completeWithError(job.id, DownloadException('Failed to save downloaded file', error));
+        Zone.current.handleUncaughtError(error, stackTrace);
+      }),
+    );
+  }
+
+  Future<void> _saveFileOnce(DownloadJob job, DownloadedFile file) async {
+    // A save that waited its turn: the next launch finishes it after a dispose,
+    // and a task deleted or saved meanwhile has nothing left to do.
+    if (_disposed) return;
+    final current = await _activeStore.getTask(job.id);
+    if (current == null || current.saveState == SaveState.saved) return;
     await _activeStore.updateSaveState(job.id, SaveState.saving, localPath: file.path);
     try {
       final result = await _activeMediaSaver.saveDownloadedFile(job: job, file: file);
@@ -593,7 +656,9 @@ final class DefaultDownloadManager implements DownloadManager {
       );
       await _activeStore.updateSaveState(job.id, SaveState.failed, localPath: file.path, error: error.toString());
       _completeWithError(job.id, DownloadException('Failed to save downloaded file', error));
+      return;
     }
+    await _activeEngine.acknowledge({job.id});
   }
 
   Future<void> _resumePendingSaves({Set<String> skipJobIds = const <String>{}}) async {
@@ -617,7 +682,7 @@ final class DefaultDownloadManager implements DownloadManager {
         await _activeStore.updateSaveState(task.id, SaveState.failed, error: 'Downloaded local file does not exist: $localPath');
         continue;
       }
-      await _saveCompletedFile(job, DownloadedFile(path: localPath, bytesWritten: task.receivedBytes));
+      _saveInBackground(job, DownloadedFile(path: localPath, bytesWritten: task.receivedBytes));
     }
   }
 
@@ -661,9 +726,14 @@ final class DefaultDownloadManager implements DownloadManager {
 
       await _activeStore.updateStatus(job.id, DownloadStatus.running);
       try {
-        await _activeEngine.start([await _withSessionHeaders(job)]);
+        final sending = await _withSessionHeaders(job);
+        // The session can take a while to answer, and the task can end meanwhile.
+        if ((await _activeStore.getTask(job.id))?.status != DownloadStatus.running) continue;
+        await _activeEngine.start([sending]);
         availableSlots -= 1;
       } catch (error, stackTrace) {
+        // A task cancelled or deleted while it was starting stays that way.
+        if ((await _activeStore.getTask(job.id))?.status != DownloadStatus.running) continue;
         await _activeStore.appendLog(
           job.id,
           'Failed to start download.\n'
@@ -820,6 +890,8 @@ final class DefaultDownloadManager implements DownloadManager {
     if (engine != null) {
       await engine.dispose();
     }
+    // The save under way still writes its result to the store.
+    await _saveTail;
     final store = _store;
     if (_ownsStore && store != null) {
       await store.close();

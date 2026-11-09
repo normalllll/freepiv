@@ -87,6 +87,9 @@ final class NativeDownloadEngine implements DownloadEngine {
   }
 
   @override
+  Future<void> removeLeftovers(Set<String> keepPaths) async {}
+
+  @override
   Future<void> dispose() async {}
 
   DownloadEngineEvent? _eventFromNative(Object? event) {
@@ -154,20 +157,25 @@ final class NativeMediaSaver implements MediaSaver {
 
   @override
   Future<SaveResult> saveBytes({required DownloadJob job, required Uint8List bytes}) async {
-    final tempFile = await _writeTempBytes(job, bytes);
-    final response = await _methodChannel.invokeMethod<Map<Object?, Object?>>('saveFile', {
-      'job': job.toPlatformJson(),
-      'path': tempFile.path,
-      'bytesWritten': bytes.lengthInBytes,
-    });
-    return _saveResultFromNative(response, fallbackBytes: bytes.lengthInBytes);
+    final tempFile = await _tempFileFor(job);
+    try {
+      await tempFile.writeAsBytes(bytes, flush: true);
+      return await saveDownloadedFile(
+        job: job,
+        file: DownloadedFile(path: tempFile.path, bytesWritten: bytes.lengthInBytes),
+      );
+    } finally {
+      try {
+        await tempFile.delete();
+      } on FileSystemException {
+        // The next launch removes it.
+      }
+    }
   }
 
-  Future<File> _writeTempBytes(DownloadJob job, Uint8List bytes) async {
+  Future<File> _tempFileFor(DownloadJob job) async {
     final directory = await downloadTempDirectory();
-    final file = File(p.join(directory.path, '${job.id}-${safeDownloadFilename(job.filename)}'));
-    await file.writeAsBytes(bytes, flush: true);
-    return file;
+    return File(p.join(directory.path, '${downloadTempFolderName(job.id)}-${safeDownloadFilename(job.filename)}'));
   }
 
   SaveResult _saveResultFromNative(Map<Object?, Object?>? response, {required int fallbackBytes}) {

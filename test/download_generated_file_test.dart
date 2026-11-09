@@ -76,6 +76,9 @@ class _IdleEngine implements DownloadEngine {
   Future<void> acknowledge(Set<String> jobIds) async {}
 
   @override
+  Future<void> removeLeftovers(Set<String> keepPaths) async {}
+
+  @override
   Future<void> dispose() async {}
 
   @override

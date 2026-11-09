@@ -20,7 +20,40 @@ class MainFlutterWindow: NSWindow {
     self.center()
 
     RegisterGeneratedPlugins(registry: flutterViewController)
+    registerFolderAccess(flutterViewController.engine.binaryMessenger)
 
     super.awakeFromNib()
+  }
+
+  /// Security-scoped bookmarks keep a folder the user picked writable after
+  /// a relaunch. The access stays open for the life of the process.
+  private func registerFolderAccess(_ messenger: FlutterBinaryMessenger) {
+    let channel = FlutterMethodChannel(name: "freepiv/folder_access", binaryMessenger: messenger)
+    channel.setMethodCallHandler { call, result in
+      do {
+        switch (call.method, call.arguments) {
+        case ("bookmark", let path as String):
+          let data = try URL(fileURLWithPath: path).bookmarkData(
+            options: .withSecurityScope,
+            includingResourceValuesForKeys: nil,
+            relativeTo: nil
+          )
+          result(FlutterStandardTypedData(bytes: data))
+        case ("open", let bookmark as FlutterStandardTypedData):
+          var stale = false
+          let url = try URL(
+            resolvingBookmarkData: bookmark.data,
+            options: .withSecurityScope,
+            relativeTo: nil,
+            bookmarkDataIsStale: &stale
+          )
+          result(url.startAccessingSecurityScopedResource() ? url.path : nil)
+        default:
+          result(FlutterMethodNotImplemented)
+        }
+      } catch {
+        result(FlutterError(code: "folder_access", message: error.localizedDescription, details: nil))
+      }
+    }
   }
 }
