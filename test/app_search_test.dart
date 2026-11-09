@@ -118,6 +118,18 @@ void main() {
     await _finish(tester);
   });
 
+  testWidgets('the title bar search chooses the type inside its field', (tester) async {
+    await _mount(tester);
+    FrostToolbarMenuButton menu() => tester.widget<FrostCaptionSearch>(find.byType(FrostCaptionSearch)).actions.single as FrostToolbarMenuButton;
+    expect(menu().valueLabel, t.search.type.illustManga);
+    expect(menu().entries.map((entry) => (entry as FrostMenuAction).label), [t.search.type.illustManga, t.search.type.novel, t.search.type.user]);
+    expect((menu().entries.first as FrostMenuAction).checked, isTrue);
+    (menu().entries[1] as FrostMenuAction).onSelected!();
+    await tester.pump();
+    expect(menu().valueLabel, t.search.type.novel);
+    expect((menu().entries[1] as FrostMenuAction).checked, isTrue);
+    await _finish(tester);
+  });
 
   testWidgets('the title bar search gives its room to the placeholder, not a shortcut hint', (tester) async {
     await _mount(tester);

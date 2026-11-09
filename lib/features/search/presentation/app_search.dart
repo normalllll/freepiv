@@ -440,11 +440,26 @@ class _AppTitleBarSearchState extends ConsumerState<AppTitleBarSearch> {
     listenable: _session,
     builder: (context, _) {
       final actions = AppSearchActions(ref, context);
+      final t = context.t;
+      String label(SearchType type) => switch (type) {
+        SearchType.illust => t.search.type.illustManga,
+        SearchType.novel => t.search.type.novel,
+        SearchType.user => t.search.type.user,
+      };
       return FrostCaptionSearch(
         controller: _session.controller,
         focusNode: _session.focusNode,
-        placeholder: context.t.appSearch.placeholder,
+        placeholder: t.appSearch.placeholder,
         content: appSearchContent(context, ref, actions),
+        actions: [
+          FrostToolbarMenuButton(
+            label: t.common.type,
+            valueLabel: label(_session.type),
+            entries: [
+              for (final type in SearchType.values) FrostMenuAction(label(type), checked: type == _session.type, onSelected: () => _session.setType(type)),
+            ],
+          ),
+        ],
         onSubmitted: (_) => actions.submit(),
       );
     },
