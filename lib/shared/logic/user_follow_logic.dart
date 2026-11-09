@@ -65,4 +65,27 @@ class UserFollow extends _$UserFollow {
       canCommit: () => ref.mounted && pixivAccountNotifier.value?.user.id == args.accountId,
     );
   }
+
+  /// Follows the user as [restrict], or moves an existing follow to it.
+  Future<void> setRestrict(Restrict restrict) async {
+    if (state.updating) return;
+    if (args.accountId == null || pixivAccountNotifier.value?.user.id != args.accountId) return;
+
+    final previous = state;
+    await runOptimisticMutation(
+      previous: previous,
+      optimistic: previous.copyWith(isFollowed: true, updating: true),
+      read: () => state,
+      write: (next) => state = next,
+      mutate: () => pixivApi.postFollowAdd(userId: args.userId, restrict: restrict),
+      settle: (current) => current.copyWith(updating: false),
+      rollback: (previous) => previous.copyWith(updating: false),
+      canCommit: () => ref.mounted && pixivAccountNotifier.value?.user.id == args.accountId,
+    );
+    if (ref.mounted) ref.invalidate(userFollowRestrictProvider(args));
+  }
 }
+
+/// How the account follows the user: public or private. Null until followed.
+@riverpod
+Future<Restrict?> userFollowRestrict(Ref ref, UserFollowArgs args) async => (await pixivApi.getUserFollowDetail(userId: args.userId)).followDetail.restrict;

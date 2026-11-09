@@ -83,8 +83,8 @@ class UserNovels extends _$UserNovels {
 @riverpod
 class UserIllustBookmarks extends _$UserIllustBookmarks {
   @override
-  UserIllustBookmarkListSource build({required int userId}) {
-    final source = UserIllustBookmarkListSource(userId: userId);
+  UserIllustBookmarkListSource build({required int userId, Restrict restrict = Restrict.public}) {
+    final source = UserIllustBookmarkListSource(userId: userId, restrict: restrict);
     ref.onDispose(source.dispose);
     return source;
   }
@@ -93,8 +93,8 @@ class UserIllustBookmarks extends _$UserIllustBookmarks {
 @riverpod
 class UserNovelBookmarks extends _$UserNovelBookmarks {
   @override
-  UserNovelBookmarkListSource build({required int userId}) {
-    final source = UserNovelBookmarkListSource(userId: userId);
+  UserNovelBookmarkListSource build({required int userId, Restrict restrict = Restrict.public}) {
+    final source = UserNovelBookmarkListSource(userId: userId, restrict: restrict);
     ref.onDispose(source.dispose);
     return source;
   }
@@ -103,8 +103,8 @@ class UserNovelBookmarks extends _$UserNovelBookmarks {
 @riverpod
 class UserFollowingUsers extends _$UserFollowingUsers {
   @override
-  UserFollowingListSource build({required int userId}) {
-    final source = UserFollowingListSource(userId: userId);
+  UserFollowingListSource build({required int userId, Restrict restrict = Restrict.public}) {
+    final source = UserFollowingListSource(userId: userId, restrict: restrict);
     ref.onDispose(source.dispose);
     return source;
   }
@@ -164,13 +164,16 @@ class UserNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> 
 }
 
 class UserIllustBookmarkListSource extends FrostCursorListSource<Illust, IllustPageResult> {
-  UserIllustBookmarkListSource({required this.userId});
+  UserIllustBookmarkListSource({required this.userId, this.restrict = Restrict.public});
 
   final int userId;
 
+  /// Private lists answer only the account that owns them.
+  final Restrict restrict;
+
   @override
   Future<IllustPageResult> loadFirstPage() {
-    return pixivApi.getUserIllustBookmarkPage(userId: userId, restrict: Restrict.public);
+    return pixivApi.getUserIllustBookmarkPage(userId: userId, restrict: restrict);
   }
 
   @override
@@ -190,13 +193,16 @@ class UserIllustBookmarkListSource extends FrostCursorListSource<Illust, IllustP
 }
 
 class UserNovelBookmarkListSource extends FrostCursorListSource<Novel, NovelPageResult> {
-  UserNovelBookmarkListSource({required this.userId});
+  UserNovelBookmarkListSource({required this.userId, this.restrict = Restrict.public});
 
   final int userId;
 
+  /// Private lists answer only the account that owns them.
+  final Restrict restrict;
+
   @override
   Future<NovelPageResult> loadFirstPage() {
-    return pixivApi.getUserNovelBookmarkPage(userId: userId, restrict: Restrict.public);
+    return pixivApi.getUserNovelBookmarkPage(userId: userId, restrict: restrict);
   }
 
   @override
@@ -216,13 +222,16 @@ class UserNovelBookmarkListSource extends FrostCursorListSource<Novel, NovelPage
 }
 
 class UserFollowingListSource extends FrostCursorListSource<UserPreview, UserPageResult> {
-  UserFollowingListSource({required this.userId});
+  UserFollowingListSource({required this.userId, this.restrict = Restrict.public});
 
   final int userId;
 
+  /// Private lists answer only the account that owns them.
+  final Restrict restrict;
+
   @override
   Future<UserPageResult> loadFirstPage() {
-    return pixivApi.getFollowingUserPage(userId: userId, restrict: Restrict.public);
+    return pixivApi.getFollowingUserPage(userId: userId, restrict: restrict);
   }
 
   @override

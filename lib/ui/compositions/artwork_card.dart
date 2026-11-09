@@ -10,6 +10,7 @@ import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:freepiv/features/illust/presentation/artwork_actions.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/ui/compositions/bookmark_options.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
@@ -192,6 +193,7 @@ List<FrostMenuEntry> artworkMenu(BuildContext context, WidgetRef ref, Illust ill
               ),
             ),
           ),
+        ...bookmarkOptionsMenuEntries(context, workId: illust.id, initiallyBookmarked: illust.isBookmarked),
         FrostMenuAction(t.illust.contextMenu.copyLink, leading: const FrostGlyph.icon(PivIcons.link), onSelected: () => unawaited(copyArtworkLink(illust.id))),
         FrostMenuAction(
           t.illust.contextMenu.openOriginal,

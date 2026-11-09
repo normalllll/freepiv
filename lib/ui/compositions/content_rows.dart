@@ -7,6 +7,7 @@ import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/ui/compositions/bookmark_options.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
@@ -46,11 +47,14 @@ class AppNovelRow extends StatelessWidget {
   static const _shownTags = 3;
 
   @override
-  Widget build(BuildContext context) => FrostClickSurface(
-    onTap: () => unawaited(GoRouter.of(context).push(AppLocations.novel(novel.id), extra: novel)),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
-      child: _content(context),
+  Widget build(BuildContext context) => FrostContextMenuRegion(
+    entries: bookmarkOptionsMenuEntries(context, workId: novel.id, initiallyBookmarked: novel.isBookmarked, novel: true),
+    child: FrostClickSurface(
+      onTap: () => unawaited(GoRouter.of(context).push(AppLocations.novel(novel.id), extra: novel)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
+        child: _content(context),
+      ),
     ),
   );
 
@@ -137,12 +141,15 @@ class AppNovelCard extends StatelessWidget {
       edge: FrostSurfaceEdge.none,
       elevated: false,
       borderRadius: radius,
-      child: FrostClickSurface(
-        shape: FrostClickShape.rounded(radius),
-        onTap: () => unawaited(GoRouter.of(context).push(AppLocations.novel(novel.id), extra: novel)),
-        child: Padding(
-          padding: const EdgeInsets.all(_novelCardPadding),
-          child: AppNovelRow(novel: novel)._content(context),
+      child: FrostContextMenuRegion(
+        entries: bookmarkOptionsMenuEntries(context, workId: novel.id, initiallyBookmarked: novel.isBookmarked, novel: true),
+        child: FrostClickSurface(
+          shape: FrostClickShape.rounded(radius),
+          onTap: () => unawaited(GoRouter.of(context).push(AppLocations.novel(novel.id), extra: novel)),
+          child: Padding(
+            padding: const EdgeInsets.all(_novelCardPadding),
+            child: AppNovelRow(novel: novel)._content(context),
+          ),
         ),
       ),
     );

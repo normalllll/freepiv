@@ -313,7 +313,7 @@ final class UserIllustBookmarksProvider
         $NotifierProvider<UserIllustBookmarks, UserIllustBookmarkListSource> {
   UserIllustBookmarksProvider._({
     required UserIllustBookmarksFamily super.from,
-    required int super.argument,
+    required ({int userId, Restrict restrict}) super.argument,
   }) : super(
          retry: null,
          name: r'userIllustBookmarksProvider',
@@ -329,7 +329,7 @@ final class UserIllustBookmarksProvider
   String toString() {
     return r'userIllustBookmarksProvider'
         ''
-        '($argument)';
+        '$argument';
   }
 
   @$internal
@@ -356,7 +356,7 @@ final class UserIllustBookmarksProvider
 }
 
 String _$userIllustBookmarksHash() =>
-    r'90beb48e1f608291e7b4a03f7263ef0635153120';
+    r'12d52c9616bd10c176743451c737c1fbde8819fc';
 
 final class UserIllustBookmarksFamily extends $Family
     with
@@ -365,7 +365,7 @@ final class UserIllustBookmarksFamily extends $Family
           UserIllustBookmarkListSource,
           UserIllustBookmarkListSource,
           UserIllustBookmarkListSource,
-          int
+          ({int userId, Restrict restrict})
         > {
   UserIllustBookmarksFamily._()
     : super(
@@ -376,8 +376,13 @@ final class UserIllustBookmarksFamily extends $Family
         isAutoDispose: true,
       );
 
-  UserIllustBookmarksProvider call({required int userId}) =>
-      UserIllustBookmarksProvider._(argument: userId, from: this);
+  UserIllustBookmarksProvider call({
+    required int userId,
+    Restrict restrict = Restrict.public,
+  }) => UserIllustBookmarksProvider._(
+    argument: (userId: userId, restrict: restrict),
+    from: this,
+  );
 
   @override
   String toString() => r'userIllustBookmarksProvider';
@@ -385,10 +390,14 @@ final class UserIllustBookmarksFamily extends $Family
 
 abstract class _$UserIllustBookmarks
     extends $Notifier<UserIllustBookmarkListSource> {
-  late final _$args = ref.$arg as int;
-  int get userId => _$args;
+  late final _$args = ref.$arg as ({int userId, Restrict restrict});
+  int get userId => _$args.userId;
+  Restrict get restrict => _$args.restrict;
 
-  UserIllustBookmarkListSource build({required int userId});
+  UserIllustBookmarkListSource build({
+    required int userId,
+    Restrict restrict = Restrict.public,
+  });
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -406,7 +415,10 @@ abstract class _$UserIllustBookmarks
               Object?,
               Object?
             >;
-    return element.handleCreate(ref, () => build(userId: _$args));
+    return element.handleCreate(
+      ref,
+      () => build(userId: _$args.userId, restrict: _$args.restrict),
+    );
   }
 }
 
@@ -417,7 +429,7 @@ final class UserNovelBookmarksProvider
     extends $NotifierProvider<UserNovelBookmarks, UserNovelBookmarkListSource> {
   UserNovelBookmarksProvider._({
     required UserNovelBookmarksFamily super.from,
-    required int super.argument,
+    required ({int userId, Restrict restrict}) super.argument,
   }) : super(
          retry: null,
          name: r'userNovelBookmarksProvider',
@@ -433,7 +445,7 @@ final class UserNovelBookmarksProvider
   String toString() {
     return r'userNovelBookmarksProvider'
         ''
-        '($argument)';
+        '$argument';
   }
 
   @$internal
@@ -460,7 +472,7 @@ final class UserNovelBookmarksProvider
 }
 
 String _$userNovelBookmarksHash() =>
-    r'2596187d59babf4477da98acbcd6374d44356cab';
+    r'fa8f6d2e740628475bc2da2b081836bc19ea1031';
 
 final class UserNovelBookmarksFamily extends $Family
     with
@@ -469,7 +481,7 @@ final class UserNovelBookmarksFamily extends $Family
           UserNovelBookmarkListSource,
           UserNovelBookmarkListSource,
           UserNovelBookmarkListSource,
-          int
+          ({int userId, Restrict restrict})
         > {
   UserNovelBookmarksFamily._()
     : super(
@@ -480,8 +492,13 @@ final class UserNovelBookmarksFamily extends $Family
         isAutoDispose: true,
       );
 
-  UserNovelBookmarksProvider call({required int userId}) =>
-      UserNovelBookmarksProvider._(argument: userId, from: this);
+  UserNovelBookmarksProvider call({
+    required int userId,
+    Restrict restrict = Restrict.public,
+  }) => UserNovelBookmarksProvider._(
+    argument: (userId: userId, restrict: restrict),
+    from: this,
+  );
 
   @override
   String toString() => r'userNovelBookmarksProvider';
@@ -489,10 +506,14 @@ final class UserNovelBookmarksFamily extends $Family
 
 abstract class _$UserNovelBookmarks
     extends $Notifier<UserNovelBookmarkListSource> {
-  late final _$args = ref.$arg as int;
-  int get userId => _$args;
+  late final _$args = ref.$arg as ({int userId, Restrict restrict});
+  int get userId => _$args.userId;
+  Restrict get restrict => _$args.restrict;
 
-  UserNovelBookmarkListSource build({required int userId});
+  UserNovelBookmarkListSource build({
+    required int userId,
+    Restrict restrict = Restrict.public,
+  });
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -510,7 +531,10 @@ abstract class _$UserNovelBookmarks
               Object?,
               Object?
             >;
-    return element.handleCreate(ref, () => build(userId: _$args));
+    return element.handleCreate(
+      ref,
+      () => build(userId: _$args.userId, restrict: _$args.restrict),
+    );
   }
 }
 
@@ -521,7 +545,7 @@ final class UserFollowingUsersProvider
     extends $NotifierProvider<UserFollowingUsers, UserFollowingListSource> {
   UserFollowingUsersProvider._({
     required UserFollowingUsersFamily super.from,
-    required int super.argument,
+    required ({int userId, Restrict restrict}) super.argument,
   }) : super(
          retry: null,
          name: r'userFollowingUsersProvider',
@@ -537,7 +561,7 @@ final class UserFollowingUsersProvider
   String toString() {
     return r'userFollowingUsersProvider'
         ''
-        '($argument)';
+        '$argument';
   }
 
   @$internal
@@ -564,7 +588,7 @@ final class UserFollowingUsersProvider
 }
 
 String _$userFollowingUsersHash() =>
-    r'478ea5648246c5d98b9825c4f072d3a018503f90';
+    r'7bcf3f2059d408d6660014cf41ffb2109a5a3817';
 
 final class UserFollowingUsersFamily extends $Family
     with
@@ -573,7 +597,7 @@ final class UserFollowingUsersFamily extends $Family
           UserFollowingListSource,
           UserFollowingListSource,
           UserFollowingListSource,
-          int
+          ({int userId, Restrict restrict})
         > {
   UserFollowingUsersFamily._()
     : super(
@@ -584,18 +608,27 @@ final class UserFollowingUsersFamily extends $Family
         isAutoDispose: true,
       );
 
-  UserFollowingUsersProvider call({required int userId}) =>
-      UserFollowingUsersProvider._(argument: userId, from: this);
+  UserFollowingUsersProvider call({
+    required int userId,
+    Restrict restrict = Restrict.public,
+  }) => UserFollowingUsersProvider._(
+    argument: (userId: userId, restrict: restrict),
+    from: this,
+  );
 
   @override
   String toString() => r'userFollowingUsersProvider';
 }
 
 abstract class _$UserFollowingUsers extends $Notifier<UserFollowingListSource> {
-  late final _$args = ref.$arg as int;
-  int get userId => _$args;
+  late final _$args = ref.$arg as ({int userId, Restrict restrict});
+  int get userId => _$args.userId;
+  Restrict get restrict => _$args.restrict;
 
-  UserFollowingListSource build({required int userId});
+  UserFollowingListSource build({
+    required int userId,
+    Restrict restrict = Restrict.public,
+  });
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -609,6 +642,9 @@ abstract class _$UserFollowingUsers extends $Notifier<UserFollowingListSource> {
               Object?,
               Object?
             >;
-    return element.handleCreate(ref, () => build(userId: _$args));
+    return element.handleCreate(
+      ref,
+      () => build(userId: _$args.userId, restrict: _$args.restrict),
+    );
   }
 }

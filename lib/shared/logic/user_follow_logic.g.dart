@@ -58,7 +58,7 @@ final class UserFollowProvider
   }
 }
 
-String _$userFollowHash() => r'00dd132a9e7bc55312c98e3ce94819a633c030a1';
+String _$userFollowHash() => r'9ceee8e2155d7909e57af7746316d8f3d462135b';
 
 final class UserFollowFamily extends $Family
     with
@@ -104,4 +104,88 @@ abstract class _$UserFollow extends $Notifier<UserFollowEntry> {
             >;
     return element.handleCreate(ref, () => build(_$args));
   }
+}
+
+/// How the account follows the user: public or private. Null until followed.
+
+@ProviderFor(userFollowRestrict)
+final userFollowRestrictProvider = UserFollowRestrictFamily._();
+
+/// How the account follows the user: public or private. Null until followed.
+
+final class UserFollowRestrictProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Restrict?>,
+          Restrict?,
+          FutureOr<Restrict?>
+        >
+    with $FutureModifier<Restrict?>, $FutureProvider<Restrict?> {
+  /// How the account follows the user: public or private. Null until followed.
+  UserFollowRestrictProvider._({
+    required UserFollowRestrictFamily super.from,
+    required UserFollowArgs super.argument,
+  }) : super(
+         retry: null,
+         name: r'userFollowRestrictProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$userFollowRestrictHash();
+
+  @override
+  String toString() {
+    return r'userFollowRestrictProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Restrict?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Restrict?> create(Ref ref) {
+    final argument = this.argument as UserFollowArgs;
+    return userFollowRestrict(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is UserFollowRestrictProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$userFollowRestrictHash() =>
+    r'7a544a5378d831b039d09c8ce64a18483df93075';
+
+/// How the account follows the user: public or private. Null until followed.
+
+final class UserFollowRestrictFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<Restrict?>, UserFollowArgs> {
+  UserFollowRestrictFamily._()
+    : super(
+        retry: null,
+        name: r'userFollowRestrictProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// How the account follows the user: public or private. Null until followed.
+
+  UserFollowRestrictProvider call(UserFollowArgs args) =>
+      UserFollowRestrictProvider._(argument: args, from: this);
+
+  @override
+  String toString() => r'userFollowRestrictProvider';
 }

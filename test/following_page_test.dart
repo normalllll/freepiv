@@ -6,6 +6,7 @@ import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/me/presentation/following_page.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -31,7 +32,7 @@ class _Notifier extends UserFollowingUsers {
   final Future<UserPageResult> Function() first;
 
   @override
-  UserFollowingListSource build({required int userId}) {
+  UserFollowingListSource build({required int userId, Restrict restrict = Restrict.public}) {
     final source = _Following(first);
     ref.onDispose(source.dispose);
     return source;

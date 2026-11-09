@@ -58,7 +58,7 @@ final class IllustBookmarkProvider
   }
 }
 
-String _$illustBookmarkHash() => r'87caf71fbaa7b6f8736cf978fc1ad003a78c5728';
+String _$illustBookmarkHash() => r'2667d2a3ab441b456c88d82932201c9572920761';
 
 final class IllustBookmarkFamily extends $Family
     with

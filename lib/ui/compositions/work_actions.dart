@@ -138,6 +138,37 @@ class AppFollowBuilder extends ConsumerWidget {
   }
 }
 
+/// Choosing whether the account follows [user] publicly or privately, for an
+/// author's More menu; nothing on one's own page or without an account.
+List<FrostMenuEntry> followRestrictMenuEntries(BuildContext context, WidgetRef ref, User user) {
+  final account = pixivAccountNotifier.value?.user.id;
+  if (account == null || int.tryParse(account) == user.id) return const [];
+  final t = context.t;
+  final args = UserFollowArgs(userId: user.id, isFollowed: user.isFollowed ?? false, accountId: account);
+  final follow = ref.watch(userFollowProvider(args));
+  // A follow made a moment ago with the button may not read back yet; the
+  // button follows publicly.
+  final current = follow.isFollowed ? ref.watch(userFollowRestrictProvider(args)) : null;
+  final restrict = current?.value ?? (current == null || current.isLoading ? null : Restrict.public);
+  final ready = !follow.updating && (!follow.isFollowed || (current?.hasValue ?? false));
+  FrostMenuAction choice(String label, Restrict value) => FrostMenuAction(
+    label,
+    checked: follow.isFollowed && restrict == value,
+    onSelected: !ready
+        ? null
+        : () async {
+            try {
+              await ref.read(userFollowProvider(args).notifier).setRestrict(value);
+            } catch (error) {
+              if (pixivAccountNotifier.value?.user.id == account) toastErrorWithCause(t.toast.followFailed, error);
+            }
+          },
+  );
+  return [
+    FrostMenuSection(header: t.follow.restrictTitle, entries: [choice(t.privacy.public, Restrict.public), choice(t.privacy.private, Restrict.private)]),
+  ];
+}
+
 /// Follow as the one primary action of an identity header or an author
 /// line; "Following" once followed.
 class AppFollowButton extends StatelessWidget {

@@ -12,6 +12,7 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/compositions/avatar_flight.dart';
+import 'package:freepiv/ui/compositions/bookmark_options.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/identity_header.dart';
@@ -75,8 +76,13 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
   late final _tabs = TabController(length: UserDetailContent.tabs.length, initialIndex: UserDetailContent.tabs.indexOf(widget.initialTab), vsync: this);
   final _outer = ScrollController();
   var _bookmarks = UserBookmarkKind.illustManga;
+  var _bookmarkRestrict = Restrict.public;
+  var _followingRestrict = Restrict.public;
 
   int get _userId => widget.detail.user.id;
+
+  /// Private lists are the account's own; anyone else's page has only public.
+  bool get _ownPage => int.tryParse(pixivAccountNotifier.value?.user.id ?? '') == _userId;
 
   @override
   void didUpdateWidget(UserDetailContent oldWidget) {
@@ -97,10 +103,10 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
     UserContentTabKind.manga => ref.read(userIllustsProvider(userId: _userId, illustType: IllustType.manga)),
     UserContentTabKind.novel => ref.read(userNovelsProvider(userId: _userId)),
     UserContentTabKind.bookmarks => switch (_bookmarks) {
-      UserBookmarkKind.illustManga => ref.read(userIllustBookmarksProvider(userId: _userId)),
-      UserBookmarkKind.novel => ref.read(userNovelBookmarksProvider(userId: _userId)),
+      UserBookmarkKind.illustManga => ref.read(userIllustBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict)),
+      UserBookmarkKind.novel => ref.read(userNovelBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict)),
     },
-    UserContentTabKind.following => ref.read(userFollowingUsersProvider(userId: _userId)),
+    UserContentTabKind.following => ref.read(userFollowingUsersProvider(userId: _userId, restrict: _followingRestrict)),
     UserContentTabKind.profile => null,
   };
 
@@ -186,13 +192,18 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
               padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
               child: Align(
                 alignment: AlignmentDirectional.centerStart,
-                child: FrostPicker<UserBookmarkKind>.segmented(
-                  label: t.user.tabs.bookmarks,
-                  value: _bookmarks,
-                  onChanged: (kind) => setState(() => _bookmarks = kind),
-                  options: [
-                    FrostPickerOption(value: UserBookmarkKind.illustManga, label: t.user.bookmarks.illustManga),
-                    FrostPickerOption(value: UserBookmarkKind.novel, label: t.user.bookmarks.novels),
+                child: FrostWrap(
+                  children: [
+                    FrostPicker<UserBookmarkKind>.segmented(
+                      label: t.user.tabs.bookmarks,
+                      value: _bookmarks,
+                      onChanged: (kind) => setState(() => _bookmarks = kind),
+                      options: [
+                        FrostPickerOption(value: UserBookmarkKind.illustManga, label: t.user.bookmarks.illustManga),
+                        FrostPickerOption(value: UserBookmarkKind.novel, label: t.user.bookmarks.novels),
+                      ],
+                    ),
+                    if (_ownPage) AppRestrictPicker(value: _bookmarkRestrict, onChanged: (value) => setState(() => _bookmarkRestrict = value)),
                   ],
                 ),
               ),
@@ -201,14 +212,14 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
         ),
         switch (_bookmarks) {
           UserBookmarkKind.illustManga => FrostSliverDataWaterfallGrid<Illust>(
-            source: ref.watch(userIllustBookmarksProvider(userId: _userId)),
+            source: ref.watch(userIllustBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict)),
             firstLoadSkeleton: const AppArtworkWaterfallSkeleton(),
             empty: empty(t.user.empty.bookmarkIllustrations),
             itemBuilder: (context, illust, index) => AppArtworkCard(illust: illust),
           ),
           UserBookmarkKind.novel => column(
             FrostSliverDataList<Novel>(
-              source: ref.watch(userNovelBookmarksProvider(userId: _userId)),
+              source: ref.watch(userNovelBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict)),
               firstLoadSkeleton: const AppNovelRowsSkeleton(),
               empty: empty(t.user.empty.bookmarkNovels),
               itemBuilder: (context, novel, index) => AppNovelRow(novel: novel),
@@ -217,8 +228,20 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
         },
       ],
       UserContentTabKind.following => [
+        if (_ownPage)
+          column(
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: AppRestrictPicker(value: _followingRestrict, onChanged: (value) => setState(() => _followingRestrict = value)),
+                ),
+              ),
+            ),
+          ),
         AppSliverUserGrid(
-          source: ref.watch(userFollowingUsersProvider(userId: _userId)),
+          source: ref.watch(userFollowingUsersProvider(userId: _userId, restrict: _followingRestrict)),
           empty: empty(t.user.empty.following),
         ),
       ],
@@ -265,13 +288,13 @@ class _UserTab extends StatelessWidget {
 
 /// Avatar, name, @account, the stat row, Follow (not on one's own page) and
 /// More, then the two-line bio, which a right-click or long press copies.
-class _UserIdentity extends StatelessWidget {
+class _UserIdentity extends ConsumerWidget {
   const _UserIdentity({required this.detail});
 
   final UserDetailResult detail;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final t = context.t;
     final user = userOf(detail.user);
     final profile = detail.profile;
@@ -295,6 +318,7 @@ class _UserIdentity extends StatelessWidget {
             ],
             primary: AppFollowButton(user: user),
             more: [
+              ...followRestrictMenuEntries(context, ref, user),
               FrostMenuAction(
                 t.userPage.copyLink,
                 leading: const FrostGlyph.icon(PivIcons.link),

@@ -75,4 +75,26 @@ class IllustBookmark extends _$IllustBookmark {
       canCommit: () => ref.mounted && pixivAccountNotifier.value?.user.id == args.accountId,
     );
   }
+
+  /// Bookmarks the work with [restrict] and [tags], or replaces both when it
+  /// is bookmarked already, which keeps its place in the list.
+  Future<void> save({required Restrict restrict, required List<String> tags}) async {
+    if (state.updating) return;
+    if (args.accountId == null || pixivAccountNotifier.value?.user.id != args.accountId) return;
+
+    final previous = state;
+    await runOptimisticMutation(
+      previous: previous,
+      optimistic: previous.copyWith(isBookmarked: true, updating: true),
+      read: () => state,
+      write: (next) => state = next,
+      mutate: () => pixivApi.postBookmarkAdd(
+        id: previous.illustId,
+        options: BookmarkAddOptions(tags: tags, restrict: restrict, isNovel: previous.isNovel),
+      ),
+      settle: (current) => current.copyWith(updating: false),
+      rollback: (previous) => previous.copyWith(updating: false),
+      canCommit: () => ref.mounted && pixivAccountNotifier.value?.user.id == args.accountId,
+    );
+  }
 }

@@ -18,6 +18,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/ui/compositions/bookmark_options.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/loading_section.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
@@ -157,6 +158,7 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
                           onPressed: toggle,
                         ),
                       ),
+                      AppBookmarkOptionsButton(workId: _novel.id, initiallyBookmarked: _novel.isBookmarked, novel: true),
                     ],
                   ),
                   if (text.hasError && !text.isLoading)

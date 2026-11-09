@@ -13,6 +13,8 @@ import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/comments/logic/work_comments_source.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
 import 'package:freepiv/features/me/logic/me_logic.dart';
+import 'package:freepiv/shared/logic/bookmark_options_logic.dart';
+import 'package:freepiv/shared/logic/user_follow_logic.dart';
 import 'package:freepiv/features/newest/logic/newest_logic.dart';
 import 'package:freepiv/features/ranking/logic/ranking_logic.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
@@ -257,6 +259,10 @@ final sampleOverrideMap = <Object, Override>{
     ref.onDispose(source.dispose);
     return source;
   }),
+  workBookmarkOptionsProvider: workBookmarkOptionsProvider.overrideWith(
+    (ref, key) async => const WorkBookmarkOptions(restrict: Restrict.public, chosen: {'landscape'}, tags: ['landscape', 'オリジナル', 'girl', 'reference', 'wallpaper']),
+  ),
+  userFollowRestrictProvider: userFollowRestrictProvider.overrideWith((ref, args) async => Restrict.public),
 };
 
 final sampleOverrides = [...sampleOverrideMap.values];
@@ -489,7 +495,7 @@ class _SampleUserNovelsNotifier extends UserNovels {
 
 class _SampleUserFollowingNotifier extends UserFollowingUsers {
   @override
-  UserFollowingListSource build({required int userId}) {
+  UserFollowingListSource build({required int userId, Restrict restrict = Restrict.public}) {
     final source = _SampleUserFollowing(userId: userId);
     ref.onDispose(source.dispose);
     return source;

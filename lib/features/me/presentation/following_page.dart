@@ -9,23 +9,33 @@ import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/features/me/logic/me_logic.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart' show Restrict;
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/ui/compositions/bookmark_options.dart';
 import 'package:freepiv/ui/compositions/user_card.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
-/// The users the signed-in account follows, public
-/// follows as on Pixiv's app: a centred reading column of user rows whose
-/// Follow button never opens the row.
-class FollowingPage extends ConsumerWidget {
+/// The users the signed-in account follows, public or
+/// private: a centred reading column of user rows whose Follow button never
+/// opens the row.
+class FollowingPage extends ConsumerStatefulWidget {
   const FollowingPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => _AccountUserList(
+  ConsumerState<FollowingPage> createState() => _FollowingPageState();
+}
+
+class _FollowingPageState extends ConsumerState<FollowingPage> {
+  var _restrict = Restrict.public;
+
+  @override
+  Widget build(BuildContext context) => _AccountUserList(
     title: context.t.me.following,
     emptyTitle: context.t.me.emptyFollowing,
-    source: (ref, userId) => ref.watch(userFollowingUsersProvider(userId: userId)),
+    above: AppRestrictPicker(value: _restrict, onChanged: (value) => setState(() => _restrict = value)),
+    source: (ref, userId) => ref.watch(userFollowingUsersProvider(userId: userId, restrict: _restrict)),
   );
 }
 
@@ -43,10 +53,13 @@ class FollowersPage extends ConsumerWidget {
 }
 
 class _AccountUserList extends ConsumerWidget {
-  const _AccountUserList({required this.title, required this.emptyTitle, required this.source});
+  const _AccountUserList({required this.title, required this.emptyTitle, required this.source, this.above});
 
   final String title;
   final String emptyTitle;
+
+  /// Shown above the list, at the start of the content column.
+  final Widget? above;
   final FrostListSource<UserPreview> Function(WidgetRef ref, int userId) source;
 
   @override
@@ -81,6 +94,16 @@ class _AccountUserList extends ConsumerWidget {
                 slivers: [
                   const FrostChromeSpacer(),
                   ?locators.sliverHeader,
+                  if (above case final above?)
+                    FrostSliverContentColumn(
+                      maxWidth: double.infinity,
+                      sliver: SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: FrostGap.related),
+                          child: Align(alignment: AlignmentDirectional.centerStart, child: above),
+                        ),
+                      ),
+                    ),
                   AppSliverUserGrid(
                     source: users,
                     empty: FrostEmptyState(icon: PivIcons.users, title: emptyTitle),

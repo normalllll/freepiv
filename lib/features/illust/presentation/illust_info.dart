@@ -13,6 +13,7 @@ import 'package:freepiv/features/illust/presentation/artwork_actions.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
+import 'package:freepiv/ui/compositions/bookmark_options.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/loading_section.dart';
 import 'package:freepiv/ui/compositions/pixiv_text.dart';
@@ -102,6 +103,9 @@ class IllustAuthorLine extends StatelessWidget {
 class IllustActionBar extends ConsumerWidget {
   const IllustActionBar({required this.info, super.key});
 
+  /// Narrower than this, Copy link would push the row onto a second line.
+  static const _linkButtonMinWidth = 430.0;
+
   final IllustInfoContext info;
 
   @override
@@ -109,51 +113,60 @@ class IllustActionBar extends ConsumerWidget {
     final t = context.t;
     final illust = info.illust;
     final page = info.pages[info.page.clamp(0, info.pages.length - 1)];
-    return Wrap(
-      spacing: FrostGap.related,
-      runSpacing: FrostGap.related,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        AppBookmarkBuilder(
-          workId: illust.id,
-          initiallyBookmarked: illust.isBookmarked,
-          builder: (context, bookmarked, toggle) {
-            final count = illust.totalBookmarks + (bookmarked && !illust.isBookmarked ? 1 : 0) - (!bookmarked && illust.isBookmarked ? 1 : 0);
-            return AppDetailBookmarkButton(
-              bookmarked: bookmarked,
-              label: t.illustDetail.bookmarkCount(count: formatCount(count)),
-              tooltip: bookmarked ? t.illust.tooltip.removeBookmark : t.illust.tooltip.addBookmark,
-              onPressed: toggle,
-            );
-          },
-        ),
-        Builder(
-          builder: (buttonContext) => FrostButton.icon(
-            icon: PivIcons.download,
-            label: info.ugoira ? t.illustDetail.downloadGif : t.illust.contextMenu.download,
-            onPressed: () {
-              final origin = DownloadFlight.originOf(buttonContext);
-              if (info.playback case final playback?) {
-                unawaited(downloadUgoiraGif(playback, illust, page: page, origin: origin));
-              } else {
-                unawaited(downloadArtworkPage(illust, info.page, page, origin: origin));
-              }
-            },
-          ),
-        ),
-        FrostButton.icon(icon: PivIcons.link, label: t.illust.contextMenu.copyLink, onPressed: () => unawaited(copyArtworkLink(illust.id))),
-        FrostMenuAnchor(
-          entries: illustMoreMenu(context, info),
-          builder: (context, focusNode, toggle) => FrostButton.icon(icon: PivIcons.more, label: FrostScope.labelsOf(context).more, onPressed: toggle),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // On a phone the link moves into More, so the row stays one line.
+        final roomForLink = constraints.maxWidth >= _linkButtonMinWidth;
+        return Wrap(
+          spacing: FrostGap.related,
+          runSpacing: FrostGap.related,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            AppBookmarkBuilder(
+              workId: illust.id,
+              initiallyBookmarked: illust.isBookmarked,
+              builder: (context, bookmarked, toggle) {
+                final count = illust.totalBookmarks + (bookmarked && !illust.isBookmarked ? 1 : 0) - (!bookmarked && illust.isBookmarked ? 1 : 0);
+                return AppDetailBookmarkButton(
+                  bookmarked: bookmarked,
+                  label: t.illustDetail.bookmarkCount(count: formatCount(count)),
+                  tooltip: bookmarked ? t.illust.tooltip.removeBookmark : t.illust.tooltip.addBookmark,
+                  onPressed: toggle,
+                );
+              },
+            ),
+            AppBookmarkOptionsButton(workId: illust.id, initiallyBookmarked: illust.isBookmarked),
+            Builder(
+              builder: (buttonContext) => FrostButton.icon(
+                icon: PivIcons.download,
+                label: info.ugoira ? t.illustDetail.downloadGif : t.illust.contextMenu.download,
+                onPressed: () {
+                  final origin = DownloadFlight.originOf(buttonContext);
+                  if (info.playback case final playback?) {
+                    unawaited(downloadUgoiraGif(playback, illust, page: page, origin: origin));
+                  } else {
+                    unawaited(downloadArtworkPage(illust, info.page, page, origin: origin));
+                  }
+                },
+              ),
+            ),
+            if (roomForLink)
+              FrostButton.icon(icon: PivIcons.link, label: t.illust.contextMenu.copyLink, onPressed: () => unawaited(copyArtworkLink(illust.id))),
+            FrostMenuAnchor(
+              entries: illustMoreMenu(context, info, copyLink: !roomForLink),
+              builder: (context, focusNode, toggle) => FrostButton.icon(icon: PivIcons.more, label: FrostScope.labelsOf(context).more, onPressed: toggle),
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
 /// More: download every page, copy the picture (desktop), open on Pixiv,
-/// copy the ID; for an animation, the GIF instead of the pages.
-List<FrostMenuEntry> illustMoreMenu(BuildContext context, IllustInfoContext info) {
+/// copy the ID; for an animation, the GIF instead of the pages. [copyLink]
+/// adds the link for a row with no room for its own button.
+List<FrostMenuEntry> illustMoreMenu(BuildContext context, IllustInfoContext info, {bool copyLink = false}) {
   final t = context.t;
   final illust = info.illust;
   final page = info.pages[info.page.clamp(0, info.pages.length - 1)];
@@ -176,6 +189,8 @@ List<FrostMenuEntry> illustMoreMenu(BuildContext context, IllustInfoContext info
       if (isDesktopPlatform)
         FrostMenuAction(t.illust.contextMenu.copyImage, leading: const FrostGlyph.icon(PivIcons.copy), onSelected: () => unawaited(copyArtworkImage(page))),
     ],
+    if (copyLink)
+      FrostMenuAction(t.illust.contextMenu.copyLink, leading: const FrostGlyph.icon(PivIcons.link), onSelected: () => unawaited(copyArtworkLink(illust.id))),
     FrostMenuAction(
       t.illust.contextMenu.openOriginal,
       leading: const FrostGlyph.icon(PivIcons.externalLink),
