@@ -85,6 +85,26 @@ void main() {
     expect(text.style!.fontFamily, FrostTypography.of(tester.element(find.byType(ReaderParagraph).first)).style(FrostTextRole.body).fontFamily);
   });
 
+  testWidgets('a phone gives the bar to the chapter menu; without chapters, or with room, the title stays', (tester) async {
+    await _mount(tester, size: phoneSize);
+    expect(find.text('A novel'), findsNothing);
+    expect(find.byKey(const ValueKey('reader-chapters')), findsOneWidget);
+
+    await _mount(tester, size: phoneSize, body: _paragraph);
+    expect(find.text('A novel'), findsOneWidget);
+
+    await _mount(tester);
+    expect(find.text('A novel'), findsOneWidget);
+    expect(find.byKey(const ValueKey('reader-chapters')), findsOneWidget);
+  });
+
+  testWidgets('large text on a phone numbers the chapters so the bar stays one line, beside the bookmark', (tester) async {
+    await _mount(tester, size: phoneSize, textScale: 2, body: '${_chapters()}\n\n[newpage]\n\n$_paragraph');
+    expect(_chapterTitle(tester), '1 / 3');
+    expect(find.byKey(const ValueKey('reader-marker')), findsOneWidget);
+    expectNoLayoutErrors(tester);
+  });
+
   testWidgets('chapters: the menu, the bar buttons and the arrow keys move between them', (tester) async {
     await _mount(tester);
     expect(_chapterTitle(tester), t.novel.reader.chapterPosition(current: 1, total: 3));

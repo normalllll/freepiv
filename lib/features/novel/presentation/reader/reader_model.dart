@@ -55,6 +55,22 @@ class ReaderModel {
 
   bool get isEmpty => blocks.isEmpty;
 
+  /// Sections of the text, divided at each `[newpage]`, as Pixiv counts them.
+  int get pageCount => 1 + blocks.whereType<NovelTextPageBreak>().length;
+
+  /// The 1-based section holding [block].
+  int pageOf(int block) => 1 + blocks.take(block + 1).whereType<NovelTextPageBreak>().length;
+
+  /// The first block of section [page], which is clamped to the text.
+  int firstBlockOfPage(int page) {
+    if (page <= 1) return 0;
+    var seen = 1;
+    for (var index = 0; index < blocks.length; index++) {
+      if (blocks[index] is NovelTextPageBreak && ++seen == page) return index;
+    }
+    return blocks.isEmpty ? 0 : blocks.length - 1;
+  }
+
   /// Characters of the text before [block].
   int offsetOf(int block) => block < 0 || _offsets.isEmpty ? 0 : (block >= _offsets.length ? totalCharacters : _offsets[block]);
 

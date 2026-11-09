@@ -24,6 +24,7 @@ import 'package:freepiv/features/novel/presentation/reader/novel_reading_session
 import 'package:freepiv/features/novel/presentation/reader/reader_model.dart';
 import 'package:freepiv/features/novel/presentation/reader/reader_scroll_clock.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/features/novel/logic/novel_marker_logic.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -104,6 +105,8 @@ class NovelReaderContent extends ConsumerStatefulWidget {
 
 /// Public for tests: the reading place and what pauses auto scroll.
 class NovelReaderContentState extends ConsumerState<NovelReaderContent> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  static const _fullChapterLabelMaxTextScale = 1.5;
+
   final _scroll = ScrollController();
   final _keyboard = FocusNode(debugLabel: 'novel-reader-shortcuts');
   final _region = GlobalKey<FrostSelectionAreaState>();
@@ -372,6 +375,53 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     _jumpToBlock(chapter.firstBlock);
   }
 
+  NovelMarkerProvider get _marker =>
+      novelMarkerProvider(NovelMarkerArgs(accountId: _sessionAccount, novelId: _novel.id, page: parseNovelMarker(widget.detail.webviewNovel.marker)));
+
+  Future<void> _changeMarker(Future<void> Function(NovelMarker marker) change) async {
+    try {
+      await change(ref.read(_marker.notifier));
+    } catch (error) {
+      if (mounted && !_accountChanged) toastErrorWithCause(context.t.novel.reader.markerFailed, error);
+    }
+  }
+
+  void _goToMarker(int page) {
+    _pause();
+    _jumpToBlock(_model.firstBlockOfPage(page));
+  }
+
+  /// The reading bookmark on Pixiv: one press sets it at the section being
+  /// read; once set, a menu moves to it, moves it here or removes it.
+  Widget _markerControl(bool enabled) {
+    final t = context.t.novel.reader;
+    final marker = ref.watch(_marker);
+    final usable = enabled && !marker.updating;
+    final page = marker.page;
+    if (page == null) {
+      return FrostButton.icon(
+        key: const ValueKey('reader-marker'),
+        icon: PivIcons.bookOpen,
+        label: t.markerSet,
+        onPressed: usable ? () => unawaited(_changeMarker((marker) => marker.set(_model.pageOf(_block)))) : null,
+      );
+    }
+    return FrostMenuAnchor(
+      entries: [
+        FrostMenuAction(t.markerJump(page: page), onSelected: usable ? () => _goToMarker(page) : null),
+        FrostMenuAction(t.markerUpdate, onSelected: usable ? () => unawaited(_changeMarker((marker) => marker.set(_model.pageOf(_block)))) : null),
+        FrostMenuAction(t.markerRemove, destructive: true, onSelected: usable ? () => unawaited(_changeMarker((marker) => marker.remove())) : null),
+      ],
+      builder: (context, focusNode, toggle) => FrostButton.icon(
+        key: const ValueKey('reader-marker'),
+        icon: PivIcons.bookOpen,
+        label: t.markerMenu,
+        selected: true,
+        onPressed: enabled ? toggle : null,
+      ),
+    );
+  }
+
   /// Moves to the place [value] of the way through the text.
   void _jumpToProgress(double value) {
     _pause();
@@ -578,6 +628,27 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
               ),
             ),
           );
+    // A phone's bar has room for the chapter or the title, and the chapter is
+    // the one that does something; sharing the line cuts both short.
+    final compact = FrostSizeClass.of(context) == FrostSizeClass.compact;
+    // Large text on a phone would wrap the sentence and grow the bar over the text.
+    final numbersOnly = compact && MediaQuery.textScalerOf(context).scale(1) >= _fullChapterLabelMaxTextScale;
+    final chapterMenu = chapter != null && chapters.length > 1
+        ? FrostTitleMenu(
+            key: const ValueKey('reader-chapters'),
+            title: numbersOnly
+                ? '${chapter.index + 1} / ${chapters.length}'
+                : t.novel.reader.chapterPosition(current: chapter.index + 1, total: chapters.length),
+            entries: [
+              for (final item in chapters)
+                FrostMenuAction(
+                  item.title ?? t.novel.reader.chapterNumber(number: item.index + 1),
+                  checked: item.index == chapter.index,
+                  onSelected: enabled ? () => goToChapter(item.index) : null,
+                ),
+            ],
+          )
+        : null;
     return Focus(
       focusNode: _keyboard,
       autofocus: true,
@@ -595,24 +666,18 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
                 spacing: FrostGap.inline,
                 children: [
                   FrostButton.icon(icon: PivIcons.arrowLeft, label: FrostScope.labelsOf(context).back, onPressed: _close),
-                  Expanded(
-                    child: FrostText(_novel.title, content: true, role: FrostTextRole.headline, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  ),
-                  if (chapter != null && chapters.length > 1)
-                    Flexible(
-                      child: FrostTitleMenu(
-                        key: const ValueKey('reader-chapters'),
-                        title: t.novel.reader.chapterPosition(current: chapter.index + 1, total: chapters.length),
-                        entries: [
-                          for (final item in chapters)
-                            FrostMenuAction(
-                              item.title ?? t.novel.reader.chapterNumber(number: item.index + 1),
-                              checked: item.index == chapter.index,
-                              onSelected: enabled ? () => goToChapter(item.index) : null,
-                            ),
-                        ],
-                      ),
+                  if (chapterMenu == null || !compact)
+                    Expanded(
+                      child: FrostText(_novel.title, content: true, role: FrostTextRole.headline, maxLines: 1, overflow: TextOverflow.ellipsis),
                     ),
+                  if (chapterMenu != null)
+                    if (compact)
+                      Expanded(
+                        child: Align(alignment: AlignmentDirectional.centerStart, child: chapterMenu),
+                      )
+                    else
+                      Flexible(child: chapterMenu),
+                  if (_sessionAccount != null && _model.pageCount > 1) _markerControl(enabled),
                   FrostPopover(
                     title: t.novel.reader.settings,
                     builder: (context, focusNode, toggle) => Focus(
