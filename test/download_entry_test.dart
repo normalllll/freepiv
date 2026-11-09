@@ -224,11 +224,54 @@ void main() {
       await tester.tap(find.byType(FrostShellTaskButton));
       await tester.pumpAndSettle();
       expect(find.byType(DownloadEntryPanel), findsOneWidget);
-      expect(find.text('1 in progress · 0 failed').hitTestable(), findsOneWidget);
+      expect(find.text('Total 1 · Active 1 · Saved 0').hitTestable(), findsOneWidget);
+      expect(find.text('50%').hitTestable(), findsOneWidget);
       await tester.tap(find.text('Summer sketches'));
       await tester.pumpAndSettle();
       expect(find.byType(DownloadEntryPanel), findsNothing);
       expect(find.text('downloads ${AppLocations.downloads(item: _work.key)}'), findsOneWidget);
+    });
+
+    testWidgets('the sidebar panel keeps one size, empty or full, and lists every item', (tester) async {
+      Future<Size> opened(List<DownloadTaskSnapshot> tasks) async {
+        await mount(tester, tasks);
+        await tester.tap(find.byType(FrostShellTaskButton));
+        await tester.pumpAndSettle();
+        return tester.getSize(find.byType(DownloadEntryPanel));
+      }
+
+      final empty = await opened(const []);
+      expect(find.text(t.settings.downloads.noTasks).hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      final items = [
+        for (var index = 0; index < 12; index++)
+          DownloadTaskSnapshot(
+            id: 'file$index',
+            origin: ContentFile(Uri.parse('https://example.com/file$index')),
+            source: ArtworkSource(illustId: 200 + index, title: 'Work $index'),
+            title: 'file$index',
+            filename: 'file$index',
+            status: DownloadStatus.downloaded,
+            saveState: SaveState.saved,
+            receivedBytes: 2048,
+            totalBytes: 2048,
+            progress: 1,
+            localPath: null,
+            error: null,
+            log: null,
+            createdAt: DateTime(2026, 10, 5, 12, 0, index),
+            updatedAt: DateTime(2026, 10, 5, 12, 0, index),
+          ),
+      ];
+      await tester.pumpWidget(const SizedBox());
+      final full = await opened(items);
+      expect(full, empty);
+      expect(tester.takeException(), isNull);
+      final list = tester.state<ScrollableState>(find.descendant(of: find.byType(FrostLoadingScrollView), matching: find.byType(Scrollable)).first).position;
+      expect(list.maxScrollExtent, greaterThan(0));
+      list.jumpTo(list.maxScrollExtent);
+      await tester.pumpAndSettle();
+      expect(find.text('Work 0').hitTestable(), findsOneWidget, reason: 'the oldest of twelve is reachable');
     });
 
     for (final (name, size, textScale) in [

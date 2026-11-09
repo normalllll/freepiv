@@ -89,10 +89,8 @@ class Translations$downloadEntry$en_US {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
-	String summary({required Object active, required Object failed}) => '${active} in progress · ${failed} failed';
 	String get retryFailed => 'Retry failed';
 	String get clearCompleted => 'Clear completed';
-	String more({required Object count}) => '${count} more';
 	String get viewAll => 'View all';
 }
 
@@ -1702,10 +1700,8 @@ class Translations$illustDetail$tabs$en_US {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
-			'downloadEntry.summary' => ({required Object active, required Object failed}) => '${active} in progress · ${failed} failed',
 			'downloadEntry.retryFailed' => 'Retry failed',
 			'downloadEntry.clearCompleted' => 'Clear completed',
-			'downloadEntry.more' => ({required Object count}) => '${count} more',
 			'downloadEntry.viewAll' => 'View all',
 			'novelText.loadFailed' => 'The text couldn\'t load',
 			'signOut.title' => 'Sign out of Pixiv?',
@@ -2214,10 +2210,10 @@ extension on Translations {
 			'illust.contextMenu.copyLink' => 'Copy work link',
 			'illust.contextMenu.openOriginal' => 'Open on Pixiv',
 			'illust.imageLabels.original' => 'original image',
-			_ => null,
-		} ?? switch (path) {
 			'illust.imageLabels.large' => 'large image',
 			'illust.imageLabels.image' => 'image',
+			_ => null,
+		} ?? switch (path) {
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} images added to the download queue',
 			'illust.toast.downloadComplete' => ({required Object name}) => 'Saved ${name}',
 			'illust.toast.downloadFailed' => 'Download failed',

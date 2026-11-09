@@ -1,9 +1,7 @@
 {
   "downloadEntry": {
-    "summary": "$active in progress · $failed failed",
     "retryFailed": "Retry failed",
     "clearCompleted": "Clear completed",
-    "more": "$count more",
     "viewAll": "View all"
   },
   "novelText": {

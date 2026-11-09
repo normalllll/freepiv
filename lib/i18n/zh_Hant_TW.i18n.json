@@ -1,9 +1,7 @@
 {
   "downloadEntry": {
-    "summary": "$active 項進行中 · $failed 項失敗",
     "retryFailed": "重試失敗",
     "clearCompleted": "清除已完成",
-    "more": "還有 $count 項",
     "viewAll": "查看全部"
   },
   "novelText": {

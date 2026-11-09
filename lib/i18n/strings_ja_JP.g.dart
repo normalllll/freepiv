@@ -87,10 +87,8 @@ class _Translations$downloadEntry$ja_JP extends Translations$downloadEntry$en_US
 	final TranslationsJaJp _root; // ignore: unused_field
 
 	// Translations
-	@override String summary({required Object active, required Object failed}) => '進行中 ${active} 件 · 失敗 ${failed} 件';
 	@override String get retryFailed => '失敗を再試行';
 	@override String get clearCompleted => '完了を消去';
-	@override String more({required Object count}) => 'ほか ${count} 件';
 	@override String get viewAll => 'すべて表示';
 }
 
@@ -1700,10 +1698,8 @@ class _Translations$illustDetail$tabs$ja_JP extends Translations$illustDetail$ta
 extension on TranslationsJaJp {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
-			'downloadEntry.summary' => ({required Object active, required Object failed}) => '進行中 ${active} 件 · 失敗 ${failed} 件',
 			'downloadEntry.retryFailed' => '失敗を再試行',
 			'downloadEntry.clearCompleted' => '完了を消去',
-			'downloadEntry.more' => ({required Object count}) => 'ほか ${count} 件',
 			'downloadEntry.viewAll' => 'すべて表示',
 			'novelText.loadFailed' => '本文を読み込めませんでした',
 			'signOut.title' => 'pixiv からログアウトしますか？',
@@ -2212,10 +2208,10 @@ extension on TranslationsJaJp {
 			'illust.contextMenu.copyLink' => '作品リンクをコピー',
 			'illust.contextMenu.openOriginal' => 'Pixiv で開く',
 			'illust.imageLabels.original' => 'オリジナル画像',
-			_ => null,
-		} ?? switch (path) {
 			'illust.imageLabels.large' => '大きい画像',
 			'illust.imageLabels.image' => '画像',
+			_ => null,
+		} ?? switch (path) {
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '${count} 枚の画像をダウンロードキューに追加しました',
 			'illust.toast.downloadComplete' => ({required Object name}) => '${name} を保存しました',
 			'illust.toast.downloadFailed' => 'ダウンロードに失敗しました',

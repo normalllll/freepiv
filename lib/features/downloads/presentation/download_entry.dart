@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,14 +21,20 @@ final downloadTasksProvider = StreamProvider<List<DownloadTaskSnapshot>>((ref) =
 /// progress, and the items its panel lists.
 @immutable
 class DownloadActivity {
-  const DownloadActivity({required this.items, required this.active, required this.failed, required this.progress});
+  const DownloadActivity({required this.items, required this.total, required this.active, required this.saved, required this.failed, required this.progress});
 
-  static const empty = DownloadActivity(items: [], active: 0, failed: 0, progress: null);
+  static const empty = DownloadActivity(items: [], total: 0, active: 0, saved: 0, failed: 0, progress: null);
 
   final List<DownloadItem> items;
 
+  /// Every file on record.
+  final int total;
+
   /// Files queued, downloading or waiting to be saved.
   final int active;
+
+  /// Files finished and saved.
+  final int saved;
 
   /// Files that failed to download or save.
   final int failed;
@@ -50,7 +57,9 @@ DownloadActivity downloadActivityOf(List<DownloadTaskSnapshot> tasks, {Iterable<
   final active = summary.queued + summary.running + summary.savePending;
   return DownloadActivity(
     items: downloadItemsOf(tasks, collecting: collecting),
+    total: summary.total,
     active: active,
+    saved: summary.saved,
     failed: summary.failed + summary.saveFailed,
     progress: active > 0 ? summary.overallProgress : null,
   );
@@ -152,12 +161,19 @@ void _openFromPanel(BuildContext context, String location) {
 /// The download manager the entry's panel acts through.
 final downloadManagerProvider = Provider<DownloadManager>((ref) => downloadManager);
 
-/// The entry's panel: a summary, bulk actions, the first items needing
-/// attention and the way to the downloads page. Closing it never cancels.
+/// The entry's panel: the overall progress and counts, bulk actions, every
+/// item with those needing attention first, and the way to the downloads page.
+/// It keeps one size whatever it holds. Closing it never cancels.
 class DownloadEntryPanel extends ConsumerStatefulWidget {
   const DownloadEntryPanel({super.key});
 
-  static const shownItems = 4;
+  static const width = 400.0;
+
+  /// At the normal text size; larger text makes the panel taller.
+  static const height = 400.0;
+
+  /// The most of the window's height the panel takes at large text.
+  static const maxWindowShare = .7;
 
   /// Collecting, active and failed items first, then the rest, newest first.
   static List<DownloadItem> ordered(List<DownloadItem> items) {
@@ -197,16 +213,26 @@ class _DownloadEntryPanelState extends ConsumerState<DownloadEntryPanel> {
   @override
   Widget build(BuildContext context) {
     final t = context.t;
+    final labels = t.settings.downloads;
     final activity = ref.watch(downloadActivityProvider);
     final items = DownloadEntryPanel.ordered(activity.items);
+    final media = MediaQuery.of(context);
     void open(String location) => _openFromPanel(context, location);
 
-    Widget summary({bool shrink = false}) => FrostText(
-      t.downloadEntry.summary(active: activity.active, failed: activity.failed),
-      role: FrostTextRole.footnote,
-      tone: FrostTextTone.secondary,
-      maxLines: shrink ? 1 : 2,
-      overflow: TextOverflow.ellipsis,
+    final progress = activity.progress;
+    final summary = Wrap(
+      children: [
+        FrostText(
+          [
+            '${labels.total} ${activity.total}',
+            '${labels.active} ${activity.active}',
+            '${labels.saved} ${activity.saved}',
+          ].join(' · '),
+          role: FrostTextRole.footnote,
+          tone: FrostTextTone.secondary,
+        ),
+        if (activity.failed > 0) FrostText(' · ${labels.failed} ${activity.failed}', role: FrostTextRole.footnote, tone: FrostTextTone.negative),
+      ],
     );
     final bulk = [
       if (activity.failed > 0)
@@ -223,74 +249,112 @@ class _DownloadEntryPanelState extends ConsumerState<DownloadEntryPanel> {
         ),
     ];
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // One line in the sidebar's popover; the floating panel is narrower,
-        // so there the bulk actions go under the summary.
-        FrostFit(
-          candidates: [
-            (context) => Row(mainAxisSize: MainAxisSize.min, spacing: FrostGap.related, children: [summary(shrink: true), ...bulk]),
-            (context) => Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return SizedBox(
+      width: DownloadEntryPanel.width,
+      height: math.min(media.textScaler.scale(DownloadEntryPanel.height), media.size.height * DownloadEntryPanel.maxWindowShare),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: FrostGap.related,
+        children: [
+          if (progress != null)
+            Row(
+              spacing: FrostGap.related,
               children: [
-                summary(),
-                if (bulk.isNotEmpty) Wrap(spacing: FrostGap.related, children: bulk),
+                Expanded(
+                  child: FrostProgressBar(value: progress, semanticLabel: labels.downloading),
+                ),
+                FrostText('${(progress * 100).round()}%', role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
               ],
             ),
-          ],
-        ),
-        for (final item in items.take(DownloadEntryPanel.shownItems))
-          FrostTaskRow(
-            key: ValueKey(item.key),
-            title: downloadItemTitle(item),
-            contentTitle: true,
-            status: switch (item.state) {
-              DownloadItemState.active || DownloadItemState.collecting => FrostTaskStatus.running,
-              DownloadItemState.failed => FrostTaskStatus.failed,
-              DownloadItemState.completed => FrostTaskStatus.completed,
-              DownloadItemState.cancelled => FrostTaskStatus.cancelled,
-            },
-            progress: item.state == DownloadItemState.active ? item.progress : null,
-            detail: switch (item.state) {
-              DownloadItemState.collecting => t.settings.downloads.collectingPosts(count: item.collectedPosts ?? 0),
-              DownloadItemState.failed => t.settings.downloads.filesFailed(count: item.failed),
-              _ => t.settings.downloads.filesProgress(done: item.completed, total: item.total),
-            },
-            thumbnail: DownloadThumbnail(source: item.source, url: item.source.thumbnailUrl ?? item.onlyTask?.thumbnailUrl),
-            actions: [
-              if (item.state == DownloadItemState.failed && item.tasks.any((task) => task.needsRetry && !isGeneratedDownload(task.origin)))
-                FrostTaskAction(
-                  label: t.common.retry,
-                  icon: PivIcons.refreshCw,
-                  // A retry still running is not asked again.
-                  onPressed: () => unawaited(
-                    _run(item.key, (manager) async {
-                      for (final task in item.tasks.where((task) => task.needsRetry && !isGeneratedDownload(task.origin))) {
-                        await manager.retry(task.id);
-                      }
-                    }),
-                  ),
-                ),
+          // On one line when the panel has room; the floating panel is
+          // narrower, so there the bulk actions go under the counts.
+          FrostFit(
+            candidates: [
+              (context) => Row(mainAxisSize: MainAxisSize.min, spacing: FrostGap.related, children: [summary, ...bulk]),
+              (context) => Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  summary,
+                  if (bulk.isNotEmpty) Wrap(spacing: FrostGap.related, children: bulk),
+                ],
+              ),
             ],
-            onPressed: () => open(AppLocations.downloads(item: item.key)),
           ),
-        if (items.length > DownloadEntryPanel.shownItems)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: FrostGap.inline),
-            child: FrostText(
-              t.downloadEntry.more(count: items.length - DownloadEntryPanel.shownItems),
-              role: FrostTextRole.footnote,
-              tone: FrostTextTone.secondary,
-            ),
+          Expanded(
+            child: items.isEmpty
+                ? Center(
+                    child: FrostEmptyState(icon: PivIcons.download, title: labels.noTasks, message: labels.noTasksMessage),
+                  )
+                : FrostLoadingScrollView(
+                    primary: false,
+                    slivers: [
+                      SliverList.builder(
+                        itemCount: items.length,
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          final detail = _detail(t, item);
+                          return FrostTaskRow(
+                            key: ValueKey(item.key),
+                            title: downloadItemTitle(item),
+                            contentTitle: true,
+                            status: switch (item.state) {
+                              DownloadItemState.active || DownloadItemState.collecting => FrostTaskStatus.running,
+                              DownloadItemState.failed => FrostTaskStatus.failed,
+                              DownloadItemState.completed => FrostTaskStatus.completed,
+                              DownloadItemState.cancelled => FrostTaskStatus.cancelled,
+                            },
+                            progress: item.state == DownloadItemState.active ? item.progress : null,
+                            detail: detail.isEmpty ? null : detail,
+                            thumbnail: DownloadThumbnail(source: item.source, url: item.source.thumbnailUrl ?? item.onlyTask?.thumbnailUrl),
+                            actions: [
+                              if (item.state == DownloadItemState.failed && item.tasks.any((task) => task.needsRetry && !isGeneratedDownload(task.origin)))
+                                FrostTaskAction(
+                                  label: t.common.retry,
+                                  icon: PivIcons.refreshCw,
+                                  // A retry still running is not asked again.
+                                  onPressed: () => unawaited(
+                                    _run(item.key, (manager) async {
+                                      for (final task in item.tasks.where((task) => task.needsRetry && !isGeneratedDownload(task.origin))) {
+                                        await manager.retry(task.id);
+                                      }
+                                    }),
+                                  ),
+                                ),
+                            ],
+                            onPressed: () => open(AppLocations.downloads(item: item.key)),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
           ),
-        Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: FrostButton.quiet(label: t.downloadEntry.viewAll, onPressed: () => open(AppRoute.downloads.path)),
-        ),
-      ],
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: FrostButton.quiet(label: t.downloadEntry.viewAll, onPressed: () => open(AppRoute.downloads.path)),
+          ),
+        ],
+      ),
     );
+  }
+
+  /// The files and their size, or what stands in the way of them.
+  String _detail(Translations t, DownloadItem item) {
+    final labels = t.settings.downloads;
+    final size = item.tasks.fold<int>(0, (sum, task) => sum + task.receivedBytes);
+    return switch (item.state) {
+      DownloadItemState.collecting => labels.collectingPosts(count: item.collectedPosts ?? 0),
+      DownloadItemState.failed => labels.filesFailed(count: item.failed),
+      DownloadItemState.cancelled => labels.cancelled,
+      // One file's progress is its bar; its size says how far along it is.
+      DownloadItemState.active => [
+        if (item.total > 1) labels.filesProgress(done: item.completed, total: item.total),
+        if (item.onlyTask case final task?) downloadBytesLabel(task) else if (size > 0) formatByteSize(size),
+      ].join(' · '),
+      DownloadItemState.completed => [
+        if (item.total > 1) labels.filesCount(count: item.total),
+        if (size > 0) formatByteSize(size),
+      ].join(' · '),
+    };
   }
 }

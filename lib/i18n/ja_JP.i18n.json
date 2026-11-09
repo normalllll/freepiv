@@ -1,9 +1,7 @@
 {
   "downloadEntry": {
-    "summary": "進行中 $active 件 · 失敗 $failed 件",
     "retryFailed": "失敗を再試行",
     "clearCompleted": "完了を消去",
-    "more": "ほか $count 件",
     "viewAll": "すべて表示"
   },
   "novelText": {

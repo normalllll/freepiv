@@ -87,10 +87,8 @@ class Translations$downloadEntry$zh_Hant_TW extends Translations$downloadEntry$e
 	final TranslationsZhHantTw _root; // ignore: unused_field
 
 	// Translations
-	@override String summary({required Object active, required Object failed}) => '${active} 項進行中 · ${failed} 項失敗';
 	@override String get retryFailed => '重試失敗';
 	@override String get clearCompleted => '清除已完成';
-	@override String more({required Object count}) => '還有 ${count} 項';
 	@override String get viewAll => '查看全部';
 }
 
@@ -1700,10 +1698,8 @@ class Translations$illustDetail$tabs$zh_Hant_TW extends Translations$illustDetai
 extension on TranslationsZhHantTw {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
-			'downloadEntry.summary' => ({required Object active, required Object failed}) => '${active} 項進行中 · ${failed} 項失敗',
 			'downloadEntry.retryFailed' => '重試失敗',
 			'downloadEntry.clearCompleted' => '清除已完成',
-			'downloadEntry.more' => ({required Object count}) => '還有 ${count} 項',
 			'downloadEntry.viewAll' => '查看全部',
 			'novelText.loadFailed' => '正文載入失敗',
 			'signOut.title' => '登出 Pixiv？',
@@ -2212,10 +2208,10 @@ extension on TranslationsZhHantTw {
 			'illust.contextMenu.copyLink' => '複製作品連結',
 			'illust.contextMenu.openOriginal' => '在 Pixiv 開啟',
 			'illust.imageLabels.original' => '原圖',
-			_ => null,
-		} ?? switch (path) {
 			'illust.imageLabels.large' => '大圖',
 			'illust.imageLabels.image' => '圖片',
+			_ => null,
+		} ?? switch (path) {
 			'illust.toast.downloadAllQueued' => ({required Object count}) => '已加入下載佇列：${count} 張圖片',
 			'illust.toast.downloadComplete' => ({required Object name}) => '已儲存 ${name}',
 			'illust.toast.downloadFailed' => '下載失敗',
