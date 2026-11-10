@@ -18,17 +18,12 @@ dependencies:
     git:
       url: https://github.com/normalllll/frost_ui.git
       path: packages/frost_ui
-      ref: v0.3.0
-  frost_window:
-    git:
-      url: https://github.com/normalllll/frost_ui.git
-      path: packages/frost_window
-      ref: v0.3.0
+      ref: main
   frost_data:
     git:
       url: https://github.com/normalllll/frost_ui.git
       path: packages/frost_data
-      ref: v0.3.0
+      ref: main
 
   cupertino_icons: ^2.0.0
   flutter_rust_bridge: 2.14.0-beta.2
@@ -105,3 +100,12 @@ flutter:
     - family: Noto Sans JP
       fonts:
         - asset: assets/fonts/NotoSansJP-Subset.ttf
+
+# frost_data reaches frost_ui by a path inside the same Git checkout, which pub
+# pins to a commit; this keeps both on main. pubspec_overrides.yaml replaces it locally.
+dependency_overrides:
+  frost_ui:
+    git:
+      url: https://github.com/normalllll/frost_ui.git
+      path: packages/frost_ui
+      ref: main
