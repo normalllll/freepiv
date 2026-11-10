@@ -7,6 +7,7 @@ import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
+import 'package:freepiv/features/user_detail/presentation/user_identity_header.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -122,38 +123,46 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
         avatar: (size) => AppUserAvatar(user: userOf(detail.user), size: size),
         // The page header names the author only once the identity header has
         // scrolled away.
-        child: FrostPinnedChrome(
-          chrome: AppFlightChrome(title: AppFlightTitle(name: detail.user.name)),
-          body: NestedScrollView(
-            controller: _outer,
-            headerSliverBuilder: (context, _) => [
-              FrostSliverSectionsHeader(
-                lead: AppFlightLead(child: _UserIdentity(detail: detail)),
-                tabs: FrostTabBar(
-                  controller: _tabs,
-                  scrollable: true,
-                  tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: labels[kind]!)],
+        child: UserBannerBackdrop(
+          controller: _outer,
+          banner: UserBanner(coverUrl: detail.profile.backgroundImageUrl, avatarUrl: detail.user.profileImageUrls.medium),
+          builder: (context, bannerBottom) => FrostPinnedChrome(
+            // The avatar's soft wash needs no plates; a picture does.
+            overMedia: detail.profile.backgroundImageUrl?.isNotEmpty ?? false,
+            chrome: AppFlightChrome(title: AppFlightTitle(name: detail.user.name)),
+            body: NestedScrollView(
+              controller: _outer,
+              headerSliverBuilder: (context, _) => [
+                FrostSliverSectionsHeader(
+                  lead: AppFlightLead(
+                    child: _UserIdentity(detail: detail, bannerBottom: bannerBottom),
+                  ),
+                  tabs: FrostTabBar(
+                    controller: _tabs,
+                    scrollable: true,
+                    tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: labels[kind]!)],
+                  ),
                 ),
-              ),
-            ],
-            body: ListenableBuilder(
-              listenable: _tabs,
-              builder: (context, _) => TabBarView(
-                controller: _tabs,
-                children: [
-                  for (final (index, kind) in UserDetailContent.tabs.indexed)
-                    FrostChromeActiveBody(
-                      active: _tabs.index == index,
-                      child: _UserTab(
-                        storageKey: PageStorageKey(kind),
-                        onRefresh: switch (kind) {
-                          UserContentTabKind.profile => null,
-                          _ => () async => _source(kind)?.refresh(false),
-                        },
-                        slivers: _slivers(context, kind),
+              ],
+              body: ListenableBuilder(
+                listenable: _tabs,
+                builder: (context, _) => TabBarView(
+                  controller: _tabs,
+                  children: [
+                    for (final (index, kind) in UserDetailContent.tabs.indexed)
+                      FrostChromeActiveBody(
+                        active: _tabs.index == index,
+                        child: _UserTab(
+                          storageKey: PageStorageKey(kind),
+                          onRefresh: switch (kind) {
+                            UserContentTabKind.profile => null,
+                            _ => () async => _source(kind)?.refresh(false),
+                          },
+                          slivers: _slivers(context, kind),
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -289,9 +298,10 @@ class _UserTab extends StatelessWidget {
 /// Avatar, name, @account, the stat row, Follow (not on one's own page) and
 /// More, then the two-line bio, which a right-click or long press copies.
 class _UserIdentity extends ConsumerWidget {
-  const _UserIdentity({required this.detail});
+  const _UserIdentity({required this.detail, required this.bannerBottom});
 
   final UserDetailResult detail;
+  final double bannerBottom;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -302,43 +312,39 @@ class _UserIdentity extends ConsumerWidget {
     final web = Uri.parse('https://www.pixiv.net/users/${user.id}');
     return Padding(
       padding: const EdgeInsets.only(bottom: FrostGap.section),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: FrostGap.group,
-        children: [
-          AppIdentityHeader(
-            avatar: const AppFlightAvatar(),
-            name: user.name,
-            subtitle: '@${user.account}',
-            stats: [
-              AppIdentityStat(value: formatCount(profile.totalFollowUsers), caption: t.user.stats.following),
-              AppIdentityStat(value: formatCount(profile.totalIllusts), caption: t.user.stats.illustrations),
-              AppIdentityStat(value: formatCount(profile.totalManga), caption: t.user.stats.manga),
-              AppIdentityStat(value: formatCount(profile.totalNovels), caption: t.user.stats.novels),
-            ],
-            primary: AppFollowButton(user: user),
-            more: [
-              ...followRestrictMenuEntries(context, ref, user),
-              FrostMenuAction(
-                t.userPage.copyLink,
-                leading: const FrostGlyph.icon(PivIcons.link),
-                onSelected: () => unawaited(_copy(web.toString(), t.userPage.linkCopied)),
-              ),
-              FrostMenuAction(t.userPage.openInBrowser, leading: const FrostGlyph.icon(PivIcons.externalLink), onSelected: () => unawaited(_open(web))),
-            ],
-          ),
-          if (bio.isNotEmpty)
-            FrostContextMenuRegion(
-              entries: [
-                FrostMenuAction(
-                  t.userPage.copyBio,
-                  leading: const FrostGlyph.icon(PivIcons.copy),
-                  onSelected: () => unawaited(_copy(bio, t.userPage.bioCopied)),
-                ),
-              ],
-              child: AppPixivText(detail.user.comment ?? '', maxLines: 2),
-            ),
+      child: UserIdentityHeader(
+        bannerBottom: bannerBottom,
+        avatar: const AppFlightAvatar(),
+        name: user.name,
+        subtitle: '@${user.account}',
+        stats: [
+          AppIdentityStat(value: formatCount(profile.totalFollowUsers), caption: t.user.stats.following),
+          AppIdentityStat(value: formatCount(profile.totalIllusts), caption: t.user.stats.illustrations),
+          AppIdentityStat(value: formatCount(profile.totalManga), caption: t.user.stats.manga),
+          AppIdentityStat(value: formatCount(profile.totalNovels), caption: t.user.stats.novels),
         ],
+        primary: AppFollowButton(user: user),
+        more: [
+          ...followRestrictMenuEntries(context, ref, user),
+          FrostMenuAction(
+            t.userPage.copyLink,
+            leading: const FrostGlyph.icon(PivIcons.link),
+            onSelected: () => unawaited(_copy(web.toString(), t.userPage.linkCopied)),
+          ),
+          FrostMenuAction(t.userPage.openInBrowser, leading: const FrostGlyph.icon(PivIcons.externalLink), onSelected: () => unawaited(_open(web))),
+        ],
+        bio: bio.isEmpty
+            ? null
+            : FrostContextMenuRegion(
+                entries: [
+                  FrostMenuAction(
+                    t.userPage.copyBio,
+                    leading: const FrostGlyph.icon(PivIcons.copy),
+                    onSelected: () => unawaited(_copy(bio, t.userPage.bioCopied)),
+                  ),
+                ],
+                child: AppPixivText(detail.user.comment ?? '', maxLines: 2),
+              ),
       ),
     );
   }
@@ -421,40 +427,46 @@ class _UserDetailSkeletonState extends State<_UserDetailSkeleton> with SingleTic
   }
 
   @override
-  Widget build(BuildContext context) => FrostPinnedChrome(
-    chrome: const FrostPageHeader(),
-    body: FrostLoadingScrollView(
-      slivers: [
-        const FrostChromeSpacer(),
-        FrostSliverContentColumn(
-          maxWidth: double.infinity,
-          sliver: SliverToBoxAdapter(
-            child: const AppIdentityHeader(
-              avatar: FrostAvatar(semanticLabel: '', size: FrostAvatarSize.xxlarge),
-              name: 'Sample author',
-              subtitle: '@sample_author',
-              statsLoading: true,
-              stats: [
-                AppIdentityStat(value: '000', caption: '        '),
-                AppIdentityStat(value: '000', caption: '        '),
-              ],
-            ).frostSkeleton(true),
+  Widget build(BuildContext context) => UserBannerBackdrop(
+    banner: FrostMediaFrame.skeleton(aspectRatio: null, radius: 0),
+    builder: (context, bannerBottom) => FrostPinnedChrome(
+      chrome: const FrostPageHeader(),
+      body: FrostLoadingScrollView(
+        slivers: [
+          const FrostChromeSpacer(),
+          FrostSliverContentColumn(
+            maxWidth: double.infinity,
+            sliver: SliverToBoxAdapter(
+              child: UserIdentityHeader(
+                bannerBottom: bannerBottom,
+                avatar: const FrostAvatar(semanticLabel: '', size: FrostAvatarSize.xxlarge),
+                name: 'Sample author',
+                subtitle: '@sample_author',
+                statsLoading: true,
+                stats: const [
+                  AppIdentityStat(value: '000', caption: '        '),
+                  AppIdentityStat(value: '000', caption: '        '),
+                  AppIdentityStat(value: '000', caption: '        '),
+                  AppIdentityStat(value: '000', caption: '        '),
+                ],
+              ).frostSkeleton(true),
+            ),
           ),
-        ),
-        SliverToBoxAdapter(
-          child: IgnorePointer(
-            child: FrostContentColumn(
-              maxWidth: double.infinity,
-              child: FrostTabBar(
-                controller: _tabs,
-                scrollable: true,
-                tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: userTabLabels(context.t)[kind]!)],
+          SliverToBoxAdapter(
+            child: IgnorePointer(
+              child: FrostContentColumn(
+                maxWidth: double.infinity,
+                child: FrostTabBar(
+                  controller: _tabs,
+                  scrollable: true,
+                  tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: userTabLabels(context.t)[kind]!)],
+                ),
               ),
             ),
           ),
-        ),
-        const SliverToBoxAdapter(child: AppArtworkWaterfallSkeleton()),
-      ],
+          const SliverToBoxAdapter(child: AppArtworkWaterfallSkeleton()),
+        ],
+      ),
     ),
   );
 }

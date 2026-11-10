@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
+import 'package:freepiv/features/user_detail/presentation/user_identity_header.dart';
 import 'package:freepiv/ui/compositions/avatar_flight.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -50,11 +51,15 @@ void main() {
       expect(_name, findsNothing);
 
       final sticks = _outer(tester).position.maxScrollExtent;
-      await _scrollTo(tester, sticks * .8);
-      expect(flight.phase.value, AppAvatarFlightPhase.flying);
+      // Somewhere along the flight.
+      Rect? flown;
+      for (var offset = 0.0; offset < sticks && flown == null; offset += 4) {
+        await _scrollTo(tester, offset);
+        if (flight.phase.value == AppAvatarFlightPhase.flying && flight.flyingRect!.width < tester.getSize(_large).width - 1) flown = flight.flyingRect;
+      }
+      final mid = flown!;
       expect(_shown(tester, _large), isFalse, reason: 'hidden in flight');
       expect(_shown(tester, _slot), isFalse);
-      final mid = flight.flyingRect!;
       final large = tester.getSize(_large).width, small = tester.getSize(_slot).width;
       expect(mid.width, inExclusiveRange(small, large), reason: 'between the two sizes');
       expect(mid.height, moreOrLessEquals(mid.width, epsilon: .01));
@@ -75,6 +80,21 @@ void main() {
       expect(_shown(tester, _large), isTrue);
     });
   }
+
+  testWidgets('narrow: the avatar leaves before the name scrolls up beneath it', (tester) async {
+    await _mount(tester, size: phoneSize);
+    final flight = _flight(tester);
+    final name = find.descendant(of: find.byType(UserIdentityHeader), matching: find.text(sampleUserDetail.user.name));
+    final sticks = _outer(tester).position.maxScrollExtent;
+    for (var offset = 0.0; offset <= sticks; offset += 6) {
+      await _scrollTo(tester, offset);
+      if (flight.phase.value != AppAvatarFlightPhase.flying) continue;
+      final top = tester.getTopLeft(name).dy;
+      // The header grows a row once the page has left its top.
+      final header = tester.getBottomLeft(find.byType(FrostPageHeader)).dy;
+      if (top > header) expect(flight.flyingRect!.bottom, lessThanOrEqualTo(top + 1), reason: 'at offset $offset');
+    }
+  });
 
   testWidgets('the flying avatar never takes a press and is a single avatar', (tester) async {
     await _mount(tester);

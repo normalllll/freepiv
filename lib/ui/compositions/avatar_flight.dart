@@ -108,7 +108,10 @@ class AppAvatarFlight {
     final from = Offset(source.localToGlobal(Offset.zero, ancestor: stack).dx, top) & source.size;
     final to = slot.localToGlobal(Offset.zero, ancestor: stack) & slot.size;
     final span = travel.sticks - travel.arrives;
-    final progress = span <= 0 ? 1.0 : ((_scroll.offset - travel.arrives) / span).clamp(0.0, 1.0);
+    // With the name right under the avatar, it lands before the name would
+    // reach it and waits in the header for the tabs.
+    final reach = lead.size.width < _nameUnderAvatarBelow ? math.min(span, source.size.height + FrostGap.related) : span;
+    final progress = reach <= 0 ? 1.0 : ((_scroll.offset - travel.arrives) / reach).clamp(0.0, 1.0);
     return Rect.lerp(from, to, progress);
   }
 
@@ -198,6 +201,9 @@ class _AppAvatarFlightHostState extends State<AppAvatarFlightHost> {
 const _largeSize = FrostAvatarSize.xxlarge;
 const _largeExtent = 72.0;
 const _headerSize = FrostAvatarSize.small;
+
+/// Identity content narrower than this has the name under the avatar.
+const _nameUnderAvatarBelow = 600.0;
 
 class _FlyingAvatarDelegate extends FlowDelegate {
   _FlyingAvatarDelegate(this.flight, ScrollController scroll) : super(repaint: scroll);

@@ -19,13 +19,13 @@ import 'package:freepiv/features/series/watchlist_page.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
+import 'package:freepiv/features/user_detail/presentation/user_identity_header.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/logic/bookmark_options_logic.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/compositions/bookmark_options.dart';
-import 'package:freepiv/ui/compositions/identity_header.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import 'support/pilot_harness.dart';
@@ -247,7 +247,7 @@ void main() {
 
   group('following privately', () {
     List<FrostMenuAction> choices(WidgetTester tester) => tester
-        .widget<AppIdentityHeader>(find.byType(AppIdentityHeader))
+        .widget<UserIdentityHeader>(find.byType(UserIdentityHeader))
         .more
         .whereType<FrostMenuSection>()
         .expand((section) => section.entries)

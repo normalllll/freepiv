@@ -6,12 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
+import 'package:freepiv/features/user_detail/presentation/user_identity_header.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
-import 'package:freepiv/ui/compositions/identity_header.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/ui/compositions/user_card.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -82,7 +82,7 @@ Finder _tab(String label) => find.descendant(of: find.byType(FrostTabBar), match
 void main() {
   testWidgets('the identity header sits over the six tabs and the author\'s works', (tester) async {
     await _mount(tester, detail: sampleUserDetail);
-    expect(find.byType(AppIdentityHeader), findsOneWidget);
+    expect(find.byType(UserIdentityHeader), findsOneWidget);
     expect(find.text('@sample_artist'), findsOneWidget);
     for (final label in [t.user.tabs.illustrations, t.user.tabs.manga, t.user.tabs.novels, t.user.tabs.bookmarks, t.user.tabs.following, t.user.tabs.profile]) {
       expect(_tab(label), findsOneWidget);
@@ -93,17 +93,17 @@ void main() {
 
   testWidgets('the identity avatar is 72 across, loaded and loading', (tester) async {
     await _mount(tester, detail: sampleUserDetail);
-    final header = find.byType(AppIdentityHeader);
+    final header = find.byType(UserIdentityHeader);
     expect(tester.getSize(find.descendant(of: header, matching: find.byType(FrostAvatar)).first), const Size(72, 72));
     final never = Completer<UserDetailResult>();
     await _mount(tester, id: 2000, load: () => never.future);
-    expect(tester.getSize(find.descendant(of: find.byType(AppIdentityHeader), matching: find.byType(FrostAvatar)).first), const Size(72, 72));
+    expect(tester.getSize(find.descendant(of: find.byType(UserIdentityHeader), matching: find.byType(FrostAvatar)).first), const Size(72, 72));
   });
 
   testWidgets('loading: an author known only by id shows the header and feed at their size', (tester) async {
     final never = Completer<UserDetailResult>();
     await _mount(tester, id: 2000, load: () => never.future);
-    expect(find.byType(AppIdentityHeader), findsOneWidget);
+    expect(find.byType(UserIdentityHeader), findsOneWidget);
     expect(find.byType(AppArtworkWaterfallSkeleton), findsOneWidget);
     expect(find.byType(FrostTabBar), findsOneWidget);
   });
@@ -222,7 +222,7 @@ void main() {
       final bar = find.byType(FrostTabBar);
       final header = tester.getRect(find.byType(FrostPageHeader)).bottom;
       final outer = tester.state<NestedScrollViewState>(find.byType(NestedScrollView)).outerController;
-      final identity = tester.getSize(find.byType(AppIdentityHeader)).height;
+      final identity = tester.getSize(find.byType(UserIdentityHeader)).height;
       expect(tester.getTopLeft(bar).dy, greaterThan(header + identity - 1), reason: 'below the identity at first');
       expect(outer.position.maxScrollExtent, lessThan(tester.getBottomLeft(bar).dy), reason: 'the outer view scrolls the identity away, not the tabs');
       // Past the identity, however tall the text makes it.
