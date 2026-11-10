@@ -114,8 +114,8 @@ class RouterShell extends ConsumerWidget {
         child: AppSearchPlacementProbe(child: child),
       ),
     );
-    // An Escape nothing inside the shell took goes back one page; at a
-    // destination's root it does nothing. It has its own intent: the Scaffolds
+    // An Escape nothing inside the shell took leaves a focused text field, or
+    // goes back one page; at a destination's root it only leaves the field. It has its own intent: the Scaffolds
     // around the pages map DismissIntent to their drawers and would swallow it.
     return Shortcuts(
       shortcuts: const {
@@ -164,12 +164,23 @@ class _PageBackAction extends Action<_PageBackIntent> {
   final bool enabled;
   final VoidCallback onBack;
 
+  // Escape first leaves a text field, then the page.
+  static FocusNode? get _editing {
+    final focus = FocusManager.instance.primaryFocus;
+    return focus?.context?.findAncestorStateOfType<EditableTextState>() != null ? focus : null;
+  }
+
   @override
-  bool isEnabled(_PageBackIntent intent) => enabled;
+  bool isEnabled(_PageBackIntent intent) => enabled || _editing != null;
 
   @override
   Object? invoke(_PageBackIntent intent) {
-    onBack();
+    final field = _editing;
+    if (field != null) {
+      field.unfocus();
+    } else {
+      onBack();
+    }
     return null;
   }
 }
