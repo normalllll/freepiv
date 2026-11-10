@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,7 +14,9 @@ import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/downloads/presentation/downloads_page.dart';
 import 'package:freepiv/features/fanbox/browse_page.dart';
 import 'package:freepiv/features/home/presentation/home_page.dart';
+import 'package:freepiv/features/illust/presentation/illust_detail_page.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
+import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// The app itself, with its router, shell wiring and sample data.
@@ -104,6 +108,27 @@ Future<void> _escape(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('back to the first page from deep inside animates only the page on top', (tester) async {
+    await _mount(tester, size: _phone);
+    var firstDone = false;
+    unawaited(AppRouter.router.push<void>(AppLocations.illust(sampleIllusts(count: 1).single.id)).then((_) => firstDone = true));
+    await _frames(tester);
+    await _push(tester, AppLocations.user(2000));
+    expect(AppRouter.rightNavigatorDepth, 2);
+
+    _shell(tester).backToFirst!.onPressed();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(find.byType(UserDetailPage, skipOffstage: false), findsOneWidget, reason: 'the page on top leaves with its animation');
+    expect(find.byType(IllustDetailPage, skipOffstage: false), findsNothing, reason: 'the pages under it go at once');
+
+    await _frames(tester);
+    expect(find.byType(UserDetailPage, skipOffstage: false), findsNothing);
+    expect(AppRouter.rightNavigatorDepth, 0);
+    expect(AppRouter.currentUri.path, AppRoute.home.path);
+    expect(firstDone, isTrue, reason: 'whoever opened a page hears it has closed');
+  });
+
   testWidgets('three destinations and the FANBOX and settings group', (tester) async {
     await _mount(tester);
     final shell = _shell(tester);

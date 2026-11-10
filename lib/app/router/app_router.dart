@@ -309,8 +309,18 @@ class AppRouter {
     return null;
   }
 
+  /// Back to the destination's root in one step: every page above it leaves
+  /// the configuration at once, and the Navigator animates only the top one
+  /// out. Popping them in turn would run each page's exit together.
   static void popRightNavigatorToRoot() {
-    rightNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+    var configuration = router.routerDelegate.currentConfiguration;
+    final right = configuration.matches.whereType<ShellRouteMatch>().where((match) => match.navigatorKey == rightNavigatorKey).firstOrNull;
+    if (right == null || right.matches.length <= 1) return;
+    for (final match in right.matches.skip(1).toList().reversed) {
+      configuration = configuration.remove(match);
+      if (match is ImperativeRouteMatch) match.complete();
+    }
+    router.restore(configuration);
   }
 
   /// How many pages the right navigator holds above the destination's root.
