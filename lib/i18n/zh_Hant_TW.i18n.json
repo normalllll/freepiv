@@ -915,10 +915,6 @@
     "copyTag": "複製標籤",
     "allComments": "查看全部 $count 則留言",
     "moreRelated": "查看更多",
-    "tabs": {
-      "about": "簡介",
-      "comments": "留言"
-    },
     "missing": "作品不存在或無權查看"
   },
   "viewer": {

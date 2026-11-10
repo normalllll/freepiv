@@ -915,10 +915,6 @@
     "copyTag": "タグをコピー",
     "allComments": "コメント $count 件をすべて見る",
     "moreRelated": "もっと見る",
-    "tabs": {
-      "about": "概要",
-      "comments": "コメント"
-    },
     "missing": "作品が存在しないか、閲覧できません"
   },
   "viewer": {

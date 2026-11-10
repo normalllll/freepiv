@@ -915,10 +915,6 @@
     "copyTag": "Copy tag",
     "allComments": "View all $count comments",
     "moreRelated": "View more",
-    "tabs": {
-      "about": "About",
-      "comments": "Comments"
-    },
     "missing": "This work does not exist or is not visible to you"
   },
   "viewer": {

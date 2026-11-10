@@ -165,10 +165,11 @@ class _IllustDetailContentState extends ConsumerState<IllustDetailContent> {
   Widget _wide(BuildContext context, IllustInfoContext info, Widget stage) => _wideLayout(
     context,
     stage: stage,
-    info: _wideInfo(
+    info: _infoBlocks(
+      afterHeading: FrostGap.section,
       heading: IllustInfoHeading(info: info),
       about: IllustAbout(illust: info.illust),
-      comments: IllustCommentsPreview(illust: info.illust),
+      comments: IllustCommentsPanel(illust: info.illust),
       works: IllustAuthorWorks(illust: info.illust),
       related: IllustRelatedPreview(illust: info.illust),
     ),
@@ -183,15 +184,22 @@ abstract final class IllustInfoBlocks {
   static const comments = ValueKey('info-comments');
   static const works = ValueKey('info-works');
   static const related = ValueKey('info-related');
-  static const tabs = ValueKey('info-tabs');
 }
 
-/// The wide info column's blocks in order, with the gaps between them.
-List<Widget> _wideInfo({required Widget heading, required Widget about, required Widget comments, required Widget works, required Widget related}) => [
+/// The info blocks in order, with the gaps between them. The comments stay
+/// one row until they are opened, so nothing below moves when they load.
+List<Widget> _infoBlocks({
+  required double afterHeading,
+  required Widget heading,
+  required Widget about,
+  required Widget comments,
+  required Widget works,
+  required Widget related,
+}) => [
   KeyedSubtree(key: IllustInfoBlocks.heading, child: heading),
-  const SizedBox(height: FrostGap.section),
+  SizedBox(height: afterHeading),
   KeyedSubtree(key: IllustInfoBlocks.about, child: about),
-  const SizedBox(height: FrostGap.section),
+  const SizedBox(height: FrostGap.group),
   KeyedSubtree(key: IllustInfoBlocks.comments, child: comments),
   // The works bring the gap above them, as they may be absent.
   KeyedSubtree(key: IllustInfoBlocks.works, child: works),
@@ -240,35 +248,9 @@ Widget _wideLayout(BuildContext context, {required Widget stage, required List<W
   );
 }
 
-/// The narrow info blocks under the picture: the heading, the About /
-/// Comments tabs, then About with the works, or the comments.
-List<Widget> _narrowInfo({
-  required Widget heading,
-  required Widget tabs,
-  required bool comments,
-  required Widget about,
-  required Widget works,
-  required Widget related,
-  required Widget commentsBlock,
-}) => [
-  const SizedBox(height: FrostGap.group),
-  KeyedSubtree(key: IllustInfoBlocks.heading, child: heading),
-  const SizedBox(height: FrostGap.group),
-  KeyedSubtree(key: IllustInfoBlocks.tabs, child: tabs),
-  const SizedBox(height: FrostGap.group),
-  if (!comments) ...[
-    KeyedSubtree(key: IllustInfoBlocks.about, child: about),
-    // The works bring the gap above them, as they may be absent.
-    KeyedSubtree(key: IllustInfoBlocks.works, child: works),
-    const SizedBox(height: FrostGap.section),
-    KeyedSubtree(key: IllustInfoBlocks.related, child: related),
-  ] else
-    KeyedSubtree(key: IllustInfoBlocks.comments, child: commentsBlock),
-];
-
 /// The narrow layout: the picture edge to edge scrolls with the
-/// info; once it has scrolled away the header shows the title, and the
-/// About / Comments tabs stay under it once they reach it.
+/// info; once it has scrolled away the header shows the title, and the way
+/// back no longer flies in from far above the screen.
 class _NarrowIllustDetail extends StatefulWidget {
   const _NarrowIllustDetail({required this.info, required this.stage, required this.viewportHeight});
 
@@ -280,57 +262,42 @@ class _NarrowIllustDetail extends StatefulWidget {
   State<_NarrowIllustDetail> createState() => _NarrowIllustDetailState();
 }
 
-class _NarrowIllustDetailState extends State<_NarrowIllustDetail> with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(length: 2, vsync: this, animationDuration: Duration.zero)..addListener(() => setState(() {}));
+class _NarrowIllustDetailState extends State<_NarrowIllustDetail> {
   final _imageKey = GlobalKey();
-  final _tabsKey = GlobalKey();
   bool _imageGone = false;
-  bool _tabsPinned = false;
 
-  @override
-  void dispose() {
-    _tabs.dispose();
-    super.dispose();
-  }
-
-  /// Whether [key]'s bottom is above [line]. The list drops what is far from
-  /// the viewport, so a block that is not there keeps its [last] answer.
-  bool _above(GlobalKey key, double line, {required bool last}) {
-    final box = key.currentContext?.findRenderObject();
-    if (box is! RenderBox || !box.attached) return last;
+  /// Whether the picture's bottom is above [line]. The list drops what is far
+  /// from the viewport, so a picture that is not there keeps the last answer.
+  bool _above(double line) {
+    final box = _imageKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.attached) return _imageGone;
     final viewport = context.findRenderObject() as RenderBox?;
-    if (viewport == null) return last;
+    if (viewport == null) return _imageGone;
     final bottom = viewport.globalToLocal(box.localToGlobal(Offset(0, box.size.height))).dy;
     return bottom <= line;
   }
 
+  bool _measuring = false;
+
+  /// A scroll is reported before the list lays out, so the picture is read
+  /// once the frame has placed it.
   bool _scrolled(ScrollNotification notification) {
-    final header = MediaQuery.paddingOf(context).top + FrostPageHeader.verticalHeight;
-    final imageGone = _above(_imageKey, header, last: _imageGone);
-    final tabsPinned = _above(_tabsKey, header, last: _tabsPinned);
-    if (imageGone != _imageGone || tabsPinned != _tabsPinned) {
-      setState(() {
-        _imageGone = imageGone;
-        _tabsPinned = tabsPinned;
-      });
-    }
+    if (_measuring) return false;
+    _measuring = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _measuring = false;
+      if (!mounted) return;
+      final imageGone = _above(MediaQuery.paddingOf(context).top + FrostPageHeader.verticalHeight);
+      if (imageGone != _imageGone) setState(() => _imageGone = imageGone);
+    });
     return false;
   }
 
   @override
   Widget build(BuildContext context) {
-    final t = context.t;
     final info = widget.info;
     final illust = info.illust;
     final ratio = illust.width > 0 && illust.height > 0 ? illust.width / illust.height : 1.0;
-    final tabBar = FrostTabBar(
-      controller: _tabs,
-      scrollable: true,
-      tabs: [
-        FrostTab(label: t.illustDetail.tabs.about),
-        FrostTab(label: t.illustDetail.tabs.comments),
-      ],
-    );
     final header = FrostPageHeader(
       title: _imageGone ? FrostText(illust.title) : null,
       actions: [
@@ -343,44 +310,45 @@ class _NarrowIllustDetailState extends State<_NarrowIllustDetail> with SingleTic
         ),
       ],
     );
-    return FrostMediaSystemChrome(
-      active: !_imageGone,
-      child: FrostPinnedChrome(
-        chrome: _tabsPinned ? FrostHeaderSections(header: header, tabs: tabBar) : header,
-        body: NotificationListener<ScrollNotification>(
-          onNotification: _scrolled,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // A very long picture stops at one screen.
-              final height = math.min(constraints.maxWidth / ratio, widget.viewportHeight);
-              return FrostLoadingScrollView(
-                key: const ValueKey('illust-narrow'),
-                slivers: [
-                  const FrostChromeSpacer(),
-                  SliverToBoxAdapter(
-                    child: SizedBox(key: _imageKey, height: height, child: widget.stage(strip: false)),
+    return FrostPinnedChrome(
+      chrome: header,
+      body: NotificationListener<ScrollNotification>(
+        onNotification: _scrolled,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // A very long picture stops at one screen.
+            final height = math.min(constraints.maxWidth / ratio, widget.viewportHeight);
+            return FrostLoadingScrollView(
+              key: const ValueKey('illust-narrow'),
+              slivers: [
+                const FrostChromeSpacer(),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    key: _imageKey,
+                    height: height,
+                    // From far above the screen a flight back would cross it in a blink.
+                    child: HeroMode(enabled: !_imageGone, child: widget.stage(strip: false)),
                   ),
-                  FrostSliverContentColumn(
-                    maxWidth: FrostMetrics.readingMaxWidth,
-                    sliver: SliverList.list(
-                      children: _narrowInfo(
+                ),
+                FrostSliverContentColumn(
+                  maxWidth: FrostMetrics.readingMaxWidth,
+                  sliver: SliverList.list(
+                    children: [
+                      const SizedBox(height: FrostGap.group),
+                      ..._infoBlocks(
+                        afterHeading: FrostGap.group,
                         heading: IllustInfoHeading(info: info),
-                        tabs: Opacity(
-                          opacity: _tabsPinned ? 0 : 1,
-                          child: KeyedSubtree(key: _tabsKey, child: tabBar),
-                        ),
-                        comments: _tabs.index != 0,
                         about: IllustAbout(illust: illust),
+                        comments: IllustCommentsPanel(illust: illust),
                         works: IllustAuthorWorks(illust: illust),
                         related: IllustRelatedPreview(illust: illust),
-                        commentsBlock: IllustCommentsPreview(illust: illust),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              );
-            },
-          ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -390,25 +358,11 @@ class _NarrowIllustDetailState extends State<_NarrowIllustDetail> with SingleTic
 /// While a work known only by its id loads: the loaded page's own layout,
 /// with the stage and every block of the info column as bones of the same
 /// size, so nothing moves when the work arrives.
-class _IllustDetailSkeleton extends StatefulWidget {
+class _IllustDetailSkeleton extends StatelessWidget {
   const _IllustDetailSkeleton();
 
   @override
-  State<_IllustDetailSkeleton> createState() => _IllustDetailSkeletonState();
-}
-
-class _IllustDetailSkeletonState extends State<_IllustDetailSkeleton> with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(length: 2, vsync: this, animationDuration: Duration.zero);
-
-  @override
-  void dispose() {
-    _tabs.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final t = context.t;
     return LayoutBuilder(
       builder: (context, constraints) {
         final wide = constraints.maxWidth >= IllustDetailContent.sideBySideFrom && constraints.maxWidth > constraints.maxHeight;
@@ -416,10 +370,11 @@ class _IllustDetailSkeletonState extends State<_IllustDetailSkeleton> with Singl
           return _wideLayout(
             context,
             stage: Center(child: FrostMediaFrame.skeleton(aspectRatio: 3 / 4, radius: 0)),
-            info: _wideInfo(
+            info: _infoBlocks(
+              afterHeading: FrostGap.section,
               heading: const IllustInfoHeadingSkeleton(),
               about: const IllustAboutSkeleton(),
-              comments: const IllustCommentsLoading(),
+              comments: const IllustCommentsPanelSkeleton(),
               works: const IllustAuthorWorksLoading(),
               related: const IllustRelatedLoading(),
             ),
@@ -433,32 +388,22 @@ class _IllustDetailSkeletonState extends State<_IllustDetailSkeleton> with Singl
               slivers: [
                 const FrostChromeSpacer(),
                 SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: math.min(body.maxWidth, constraints.maxHeight),
-                    child: FrostMediaFrame.skeleton(aspectRatio: null, radius: 0),
-                  ),
+                  child: SizedBox(height: math.min(body.maxWidth, constraints.maxHeight), child: FrostMediaFrame.skeleton(aspectRatio: null, radius: 0)),
                 ),
                 FrostSliverContentColumn(
                   maxWidth: FrostMetrics.readingMaxWidth,
                   sliver: SliverList.list(
-                    children: _narrowInfo(
-                      heading: const IllustInfoHeadingSkeleton(),
-                      tabs: IgnorePointer(
-                        child: FrostTabBar(
-                          controller: _tabs,
-                          scrollable: true,
-                          tabs: [
-                            FrostTab(label: t.illustDetail.tabs.about),
-                            FrostTab(label: t.illustDetail.tabs.comments),
-                          ],
-                        ),
+                    children: [
+                      const SizedBox(height: FrostGap.group),
+                      ..._infoBlocks(
+                        afterHeading: FrostGap.group,
+                        heading: const IllustInfoHeadingSkeleton(),
+                        about: const IllustAboutSkeleton(),
+                        comments: const IllustCommentsPanelSkeleton(),
+                        works: const IllustAuthorWorksLoading(),
+                        related: const IllustRelatedLoading(),
                       ),
-                      comments: false,
-                      about: const IllustAboutSkeleton(),
-                      works: const IllustAuthorWorksLoading(),
-                      related: const IllustRelatedLoading(),
-                      commentsBlock: const SizedBox.shrink(),
-                    ),
+                    ],
                   ),
                 ),
               ],

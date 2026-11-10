@@ -198,6 +198,7 @@ final sampleOverrideMap = <Object, Override>{
     return source;
   }),
   illustCommentsProvider: illustCommentsProvider.overrideWith2((_) => _SampleIllustComments()),
+  illustCommentTotalProvider: illustCommentTotalProvider.overrideWith((ref, illustId) async => sampleComments().length),
   illustUserWorksProvider: illustUserWorksProvider.overrideWith2((_) => _SampleUserWorks()),
   illustRelatedWorksProvider: illustRelatedWorksProvider.overrideWith2((_) => _SampleRelatedWorks()),
   userDetailProvider: userDetailProvider.overrideWith2((_) => _SampleUserDetail()),

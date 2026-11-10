@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
@@ -312,26 +313,34 @@ class _IllustAboutState extends State<IllustAbout> {
   }
 }
 
-/// The first comments and the way to all of them.
-class IllustCommentsPreview extends ConsumerWidget {
-  const IllustCommentsPreview({required this.illust, super.key});
+/// The comments behind one row, as the work's details are: the row's height
+/// is known before they load, so loading them moves nothing on the page.
+/// Opened, the first few and the way to all of them.
+class IllustCommentsPanel extends ConsumerWidget {
+  const IllustCommentsPanel({required this.illust, super.key});
 
   final Illust illust;
 
-  /// Comments the preview shows.
-  static const shown = 3;
+  /// Comments shown when open.
+  static const shown = 5;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.t;
     final provider = illustCommentsProvider(illust.id);
-    final total = illust.totalComments;
-    final value = ref.watch(provider);
-    if (value.isLoading && !value.hasValue) return IllustCommentsLoading(total: total);
-    return AppCommentsPreview(
-      value: value,
-      total: total,
-      onRetry: () => unawaited(ref.read(provider.notifier).reload()),
-      location: AppLocations.illustComments(illust.id),
+    // Only the number in the row's text arrives late; the row keeps its height.
+    final total = illust.totalComments ?? ref.watch(illustCommentTotalProvider(illust.id)).asData?.value;
+    return FrostDisclosure(
+      title: total == null ? t.illust.section.comments : t.illust.section.commentsWithCount(count: total),
+      child: AppCommentsPreview(
+        value: ref.watch(provider),
+        total: total,
+        onRetry: () => unawaited(ref.read(provider.notifier).reload()),
+        location: AppLocations.illustComments(illust.id),
+        titled: false,
+        shown: shown,
+        skeletonRows: total == null ? shown : math.min(shown, total),
+      ),
     );
   }
 }
@@ -394,6 +403,9 @@ class IllustRelatedPreview extends ConsumerStatefulWidget {
 
   static const shown = 8;
 
+  /// Equal squares, so the block's height is known before the works load.
+  static const tileMinWidth = 140.0;
+
   @override
   ConsumerState<IllustRelatedPreview> createState() => _IllustRelatedPreviewState();
 }
@@ -414,14 +426,9 @@ class _IllustRelatedPreviewState extends ConsumerState<IllustRelatedPreview> {
       stream: source.rebuild,
       builder: (context, _) {
         final works = source.items.take(IllustRelatedPreview.shown).toList();
+        final loading = works.isEmpty && source.lastError == null && !source.initialized;
         final Widget body = switch (source.phase) {
-          _ when works.isNotEmpty => FrostWaterfallGrid<Illust>(
-            items: works,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            itemBuilder: (context, work, index) => AppArtworkCard(illust: work),
-          ),
+          _ when works.isNotEmpty => _RelatedTiles(children: [for (final work in works) AppArtworkCard.tile(illust: work)]),
           _ when source.lastError != null => Row(
             children: [
               Expanded(
@@ -431,7 +438,7 @@ class _IllustRelatedPreviewState extends ConsumerState<IllustRelatedPreview> {
             ],
           ),
           _ when source.initialized => FrostText(t.illust.related.empty, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
-          _ => const AppArtworkWaterfallSkeleton(count: IllustRelatedPreview.shown, padding: EdgeInsets.zero),
+          _ => const _RelatedTilesSkeleton(),
         };
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -441,6 +448,7 @@ class _IllustRelatedPreviewState extends ConsumerState<IllustRelatedPreview> {
               title: t.illust.section.relatedWorks,
               actionLabel: works.isEmpty ? null : t.illustDetail.moreRelated,
               onAction: works.isEmpty ? null : () => unawaited(GoRouter.of(context).push(AppLocations.illustRelated(widget.illust.id), extra: widget.illust)),
+              trailing: loading ? const [_RelatedMoreBone()] : const [],
             ),
             body,
           ],
@@ -475,38 +483,14 @@ class IllustAboutSkeleton extends StatelessWidget {
   Widget build(BuildContext context) => appBones(IllustAbout(illust: illustPlaceholder()));
 }
 
-/// The comments section while its comments load: the same header, comment
-/// rows as bones and the way to the comments page.
-class IllustCommentsLoading extends StatelessWidget {
-  const IllustCommentsLoading({this.total, super.key});
-
-  final int? total;
+/// The comments row of a work not yet loaded.
+class IllustCommentsPanelSkeleton extends StatelessWidget {
+  const IllustCommentsPanelSkeleton({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final t = context.t;
-    final total = this.total;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: FrostGap.related,
-      children: [
-        AppLoadingSection<void>(
-          title: total == null ? t.illust.section.comments : t.illust.section.commentsWithCount(count: total),
-          value: const AsyncLoading(),
-          onRetry: () {},
-          failed: '',
-          builder: (_) => const SizedBox.shrink(),
-          skeleton: const AppCommentRowsSkeleton(count: AppCommentsPreview.shown),
-        ),
-        appBones(
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: FrostButton.quiet(label: AppCommentsPreview.entryLabel(t, total), edgeAlignment: FrostButtonEdgeAlignment.start, onPressed: () {}),
-          ),
-        ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => IgnorePointer(
+    child: appBones(FrostDisclosure(title: context.t.illust.section.commentsWithCount(count: 0), child: const SizedBox.shrink())),
+  );
 }
 
 /// The author's works while they load: the same shelf of square tiles.
@@ -535,6 +519,58 @@ class IllustAuthorWorksLoading extends StatelessWidget {
   }
 }
 
+/// Holds the place of "more" while the works load, so that the title's row
+/// does not grow when it arrives.
+class _RelatedMoreBone extends StatelessWidget {
+  const _RelatedMoreBone();
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+    child: appBones(FrostButton.quiet(label: context.t.illustDetail.moreRelated, size: FrostControlSize.compact, onPressed: () {})),
+  );
+}
+
+class _RelatedTilesSkeleton extends StatelessWidget {
+  const _RelatedTilesSkeleton();
+
+  @override
+  Widget build(BuildContext context) =>
+      _RelatedTiles(children: [for (var index = 0; index < IllustRelatedPreview.shown; index++) FrostMediaCard.skeleton(aspectRatio: 1, footer: null)]);
+}
+
+/// Equal squares in as many columns as fit the width it is given. FrostGrid
+/// sets aside the sidebar's width for the page's own column, which would leave
+/// one column in the info column beside the picture.
+class _RelatedTiles extends StatelessWidget {
+  const _RelatedTiles({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final gap = FrostGap.of(context).grid;
+    final minimum = IllustRelatedPreview.tileMinWidth * math.max(1.0, MediaQuery.textScalerOf(context).scale(14) / 14);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = math.max(1, ((constraints.maxWidth + gap) / (minimum + gap)).floor());
+        final rows = <Widget>[];
+        for (var start = 0; start < children.length; start += columns) {
+          rows.add(
+            Row(
+              spacing: gap,
+              children: [
+                for (var index = start; index < start + columns; index++)
+                  Expanded(child: AspectRatio(aspectRatio: 1, child: index < children.length ? children[index] : null)),
+              ],
+            ),
+          );
+        }
+        return Column(spacing: gap, children: rows);
+      },
+    );
+  }
+}
+
 /// The related works while they load.
 class IllustRelatedLoading extends StatelessWidget {
   const IllustRelatedLoading({super.key});
@@ -544,8 +580,8 @@ class IllustRelatedLoading extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     spacing: FrostGap.related,
     children: [
-      FrostSectionHeader(title: context.t.illust.section.relatedWorks),
-      const AppArtworkWaterfallSkeleton(count: IllustRelatedPreview.shown, padding: EdgeInsets.zero),
+      FrostSectionHeader(title: context.t.illust.section.relatedWorks, trailing: const [_RelatedMoreBone()]),
+      const _RelatedTilesSkeleton(),
     ],
   );
 }

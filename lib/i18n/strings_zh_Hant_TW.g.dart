@@ -768,7 +768,6 @@ class Translations$illustDetail$zh_Hant_TW extends Translations$illustDetail$en_
 	@override String get copyTag => '複製標籤';
 	@override String allComments({required Object count}) => '查看全部 ${count} 則留言';
 	@override String get moreRelated => '查看更多';
-	@override late final Translations$illustDetail$tabs$zh_Hant_TW tabs = Translations$illustDetail$tabs$zh_Hant_TW.internal(_root);
 	@override String get missing => '作品不存在或無權查看';
 }
 
@@ -1816,17 +1815,6 @@ class Translations$illustDetail$ugoira$zh_Hant_TW extends Translations$illustDet
 	@override String get saving => '正在儲存 GIF';
 }
 
-// Path: illustDetail.tabs
-class Translations$illustDetail$tabs$zh_Hant_TW extends Translations$illustDetail$tabs$en_US {
-	Translations$illustDetail$tabs$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
-
-	final TranslationsZhHantTw _root; // ignore: unused_field
-
-	// Translations
-	@override String get about => '簡介';
-	@override String get comments => '留言';
-}
-
 /// The flat map containing all translations for locale <zh-Hant-TW>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -2604,8 +2592,6 @@ extension on TranslationsZhHantTw {
 			'illustDetail.copyTag' => '複製標籤',
 			'illustDetail.allComments' => ({required Object count}) => '查看全部 ${count} 則留言',
 			'illustDetail.moreRelated' => '查看更多',
-			'illustDetail.tabs.about' => '簡介',
-			'illustDetail.tabs.comments' => '留言',
 			'illustDetail.missing' => '作品不存在或無權查看',
 			'viewer.position' => ({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}',
 			'viewer.loading' => '正在載入原圖',

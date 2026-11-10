@@ -98,7 +98,16 @@ class AppCommentBody extends StatelessWidget {
 /// The first comments of a work and the way to all of them, loading
 /// and failing on their own.
 class AppCommentsPreview extends StatelessWidget {
-  const AppCommentsPreview({required this.value, required this.total, required this.onRetry, required this.location, super.key});
+  const AppCommentsPreview({
+    required this.value,
+    required this.total,
+    required this.onRetry,
+    required this.location,
+    this.shown = defaultShown,
+    this.titled = true,
+    this.skeletonRows,
+    super.key,
+  });
 
   final AsyncValue<CommentPageResult> value;
   final int? total;
@@ -107,8 +116,16 @@ class AppCommentsPreview extends StatelessWidget {
   /// The comments page.
   final String location;
 
-  /// Comments the preview shows.
-  static const shown = 3;
+  /// Comments the preview shows by default.
+  static const defaultShown = 3;
+
+  final int shown;
+
+  /// Whether it has its own title; false inside a panel that has one.
+  final bool titled;
+
+  /// Rows of its skeleton, when the count is known; [shown] otherwise.
+  final int? skeletonRows;
 
   @override
   Widget build(BuildContext context) {
@@ -121,11 +138,15 @@ class AppCommentsPreview extends StatelessWidget {
       spacing: FrostGap.related,
       children: [
         AppLoadingSection(
-          title: total == null ? t.illust.section.comments : t.illust.section.commentsWithCount(count: total),
+          title: !titled
+              ? null
+              : total == null
+              ? t.illust.section.comments
+              : t.illust.section.commentsWithCount(count: total),
           value: value,
           onRetry: onRetry,
           failed: t.illust.comments.failed,
-          skeleton: const AppCommentRowsSkeleton(count: shown),
+          skeleton: AppCommentRowsSkeleton(count: skeletonRows ?? shown),
           builder: (page) {
             if (page.comments.isEmpty) return FrostText(t.illust.comments.empty, role: FrostTextRole.footnote, tone: FrostTextTone.secondary);
             return FutureBuilder(

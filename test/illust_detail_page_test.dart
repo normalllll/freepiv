@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/dev/sample_data.dart';
+import 'package:freepiv/dev/sample_images.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
 import 'package:freepiv/features/illust/presentation/illust_detail_page.dart';
 import 'package:freepiv/features/illust/presentation/illust_info.dart';
@@ -32,6 +33,15 @@ class _FailingComments extends IllustComments {
   Future<CommentPageResult> build(int illustId) async => throw StateError('offline');
 }
 
+class _GatedComments extends IllustComments {
+  _GatedComments(this.gate);
+
+  final Completer<CommentPageResult> gate;
+
+  @override
+  Future<CommentPageResult> build(int illustId) => gate.future;
+}
+
 class _NoComments extends IllustComments {
   @override
   Future<CommentPageResult> build(int illustId) async => const CommentPageResult(comments: []);
@@ -42,7 +52,7 @@ Illust _work({
   String author = 'Sample artist',
   List<Tag> tags = const [Tag(name: 'landscape')],
   int pages = 1,
-  int comments = 6,
+  int? comments = 6,
   bool bookmarked = false,
 }) {
   final base = sampleIllusts(count: 1).single;
@@ -95,6 +105,17 @@ Future<void> _mount(
   overrides: {if (load != null) illustDetailProvider: illustDetailProvider.overrideWith2((_) => _Detail(load)), ...overrides},
 );
 
+Future<void> _openComments(WidgetTester tester, {int count = 6}) async {
+  final row = find.text(t.illust.section.commentsWithCount(count: count));
+  await tester.scrollUntilVisible(row, 200, scrollable: _infoScroller());
+  await Scrollable.ensureVisible(tester.element(row), alignment: .5);
+  await settlePilot(tester);
+  await tester.tap(row);
+  await settlePilot(tester);
+}
+
+Finder _infoScroller() => _scroller(find.byKey(const ValueKey('illust-narrow')).evaluate().isNotEmpty ? 'illust-narrow' : 'illust-info');
+
 Finder _scroller(String key) => find.descendant(of: find.byKey(ValueKey(key)), matching: find.byType(Scrollable)).first;
 
 void main() {
@@ -102,7 +123,9 @@ void main() {
     await _mount(tester, illust: _work());
     expect(find.byType(IllustInfoHeading), findsOneWidget);
     expect(find.widgetWithText(FrostButton, 'Bookmark 20'), findsOneWidget);
-    expect(find.byType(IllustCommentsPreview), findsOneWidget);
+    expect(find.byType(IllustCommentsPanel), findsOneWidget);
+    expect(find.text('Sample creator 1'), findsNothing, reason: 'closed until asked for');
+    await _openComments(tester);
     expect(find.text('Sample creator 1'), findsOneWidget);
     await tester.scrollUntilVisible(find.byType(IllustRelatedPreview), 300, scrollable: _scroller('illust-info'));
     expect(find.byType(IllustRelatedPreview), findsOneWidget);
@@ -129,14 +152,7 @@ void main() {
         await settlePilot(tester, frames: 3);
         final origin = tester.getTopLeft(find.byKey(IllustInfoBlocks.heading)).dy;
         return {
-          for (final key in [
-            IllustInfoBlocks.heading,
-            IllustInfoBlocks.tabs,
-            IllustInfoBlocks.about,
-            IllustInfoBlocks.comments,
-            IllustInfoBlocks.works,
-            IllustInfoBlocks.related,
-          ])
+          for (final key in [IllustInfoBlocks.heading, IllustInfoBlocks.about, IllustInfoBlocks.comments, IllustInfoBlocks.works, IllustInfoBlocks.related])
             if (find.byKey(key).evaluate().isNotEmpty) key: tester.getTopLeft(find.byKey(key)).dy - origin,
         };
       }
@@ -186,14 +202,16 @@ void main() {
 
   testWidgets('partial failure: comments that fail retry in their own section while the rest shows', (tester) async {
     await _mount(tester, illust: _work(), overrides: {illustCommentsProvider: illustCommentsProvider.overrideWith2((_) => _FailingComments())});
-    expect(find.text(t.illust.comments.failed), findsOneWidget);
     expect(find.byType(IllustInfoHeading), findsOneWidget);
+    await _openComments(tester);
+    expect(find.text(t.illust.comments.failed), findsOneWidget);
     await tester.scrollUntilVisible(find.byType(IllustRelatedPreview), 300, scrollable: _scroller('illust-info'));
   });
 
   testWidgets('with comments counted but none loaded, and with failed comments, the entry to all of them stays', (tester) async {
     for (final comments in [() => _NoComments(), () => _FailingComments()]) {
       await _mount(tester, illust: _work(), overrides: {illustCommentsProvider: illustCommentsProvider.overrideWith2((_) => comments())});
+      await _openComments(tester);
       final open = find.text(t.illustDetail.allComments(count: 6));
       await tester.ensureVisible(open);
       await tester.tap(open);
@@ -202,8 +220,51 @@ void main() {
     }
   });
 
+  testWidgets('a work whose list left the count out shows it when it arrives, and the row keeps its height', (tester) async {
+    final gate = Completer<int?>();
+    await _mount(
+      tester,
+      illust: _work(comments: null),
+      overrides: {illustCommentTotalProvider: illustCommentTotalProvider.overrideWith((ref, illustId) => gate.future)},
+    );
+    final plain = find.text(t.illust.section.comments);
+    await tester.scrollUntilVisible(plain, 200, scrollable: _infoScroller());
+    final height = tester.getSize(find.byType(IllustCommentsPanel)).height;
+    gate.complete(38);
+    await settlePilot(tester);
+    expect(plain, findsNothing);
+    expect(tester.getSize(find.byType(IllustCommentsPanel)).height, height);
+    await _openComments(tester, count: 38);
+    final all = find.text(t.illustDetail.allComments(count: 38));
+    await tester.ensureVisible(all);
+    expect(all, findsOneWidget);
+  });
+
+  testWidgets('a work that came with its count does not ask for it, and one that cannot get it stays plain', (tester) async {
+    var asked = 0;
+    await _mount(
+      tester,
+      illust: _work(),
+      overrides: {
+        illustCommentTotalProvider: illustCommentTotalProvider.overrideWith((ref, illustId) async {
+          asked++;
+          return 1;
+        }),
+      },
+    );
+    expect(asked, 0);
+    await _mount(
+      tester,
+      illust: _work(comments: null),
+      overrides: {illustCommentTotalProvider: illustCommentTotalProvider.overrideWith((ref, illustId) async => throw StateError('offline'))},
+    );
+    await tester.scrollUntilVisible(find.text(t.illust.section.comments), 200, scrollable: _infoScroller());
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('with no comments: the empty line, then Write a comment at its edge, opening the comments page', (tester) async {
     await _mount(tester, illust: _work(comments: 0), overrides: {illustCommentsProvider: illustCommentsProvider.overrideWith2((_) => _NoComments())});
+    await _openComments(tester, count: 0);
     expect(find.text(t.illust.comments.open), findsNothing);
     final empty = find.text(t.illust.comments.empty);
     final write = find.text(t.illust.comments.write);
@@ -220,6 +281,7 @@ void main() {
 
   testWidgets('with no comments but a failed preview the plain entry stays', (tester) async {
     await _mount(tester, illust: _work(comments: 0), overrides: {illustCommentsProvider: illustCommentsProvider.overrideWith2((_) => _FailingComments())});
+    await _openComments(tester, count: 0);
     final open = find.text(t.illust.comments.open);
     await tester.ensureVisible(open);
     expect(open, findsOneWidget);
@@ -270,15 +332,57 @@ void main() {
     }
   });
 
-  testWidgets('the narrow layout has About and Comments tabs', (tester) async {
+  testWidgets('the narrow layout has no tabs: About, the comments row, the works', (tester) async {
     await _mount(tester, illust: _work(), size: phoneSize);
-    expect(find.text(t.illustDetail.tabs.about), findsWidgets);
-    await tester.drag(_scroller('illust-narrow'), const Offset(0, -500));
+    expect(find.byType(FrostTabBar), findsNothing);
+    expect(find.byType(FrostMediaSystemChrome), findsNothing, reason: 'the picture starts under the header: the status bar is over the glass');
+    await tester.scrollUntilVisible(find.byType(IllustCommentsPanel), 200, scrollable: _infoScroller());
     await settlePilot(tester);
-    await tester.tap(find.text(t.illustDetail.tabs.comments).first);
+  });
+
+  testWidgets('opened, the comments end with the way to all of them, opening their page', (tester) async {
+    await _mount(tester, illust: _work(), size: phoneSize);
+    await _openComments(tester);
+    final all = find.text(t.illustDetail.allComments(count: 6));
+    await tester.scrollUntilVisible(all, 200, scrollable: _infoScroller());
+    await Scrollable.ensureVisible(tester.element(all), alignment: .5);
     await settlePilot(tester);
-    await tester.scrollUntilVisible(find.text('Sample creator 1'), 300, scrollable: _scroller('illust-narrow'));
-    expect(find.byType(IllustRelatedPreview), findsNothing);
+    await tester.tap(all);
+    await settlePilot(tester);
+    expect(openedLocations, contains(AppLocations.illustComments(_work().id)));
+  });
+
+  for (final size in [desktopSize, phoneSize]) {
+    testWidgets('comments loading behind their row move nothing on the page (${size.width.toInt()} wide)', (tester) async {
+      final gate = Completer<CommentPageResult>();
+      await _mount(tester, illust: _work(), size: size, overrides: {illustCommentsProvider: illustCommentsProvider.overrideWith2((_) => _GatedComments(gate))});
+      final works = find.byKey(IllustInfoBlocks.works);
+      await tester.scrollUntilVisible(works, 200, scrollable: _infoScroller());
+      await settlePilot(tester, frames: 3);
+      final before = tester.getTopLeft(works).dy;
+      gate.complete(CommentPageResult(comments: sampleComments()));
+      await settlePilot(tester);
+      expect(tester.getTopLeft(works).dy, before);
+    });
+  }
+
+  testWidgets('once the picture has scrolled away, the way back does not fly from it', (tester) async {
+    final tag = FrostMediaHeroTag(image: const SampleImage(seed: 1, width: 10, height: 14), aspectRatio: 10 / 14);
+    await mountPilotPage(
+      tester,
+      IllustDetailPage(illust: _work(), heroTag: tag),
+      size: phoneSize,
+    );
+    bool flies() => tester
+        .widgetList<HeroMode>(find.ancestor(of: find.byType(FrostMediaHero, skipOffstage: false), matching: find.byType(HeroMode, skipOffstage: false)))
+        .every((mode) => mode.enabled);
+    expect(flies(), isTrue);
+    await tester.drag(_scroller('illust-narrow'), Offset(0, -phoneSize.height * 2));
+    await settlePilot(tester);
+    expect(flies(), isFalse);
+    await tester.drag(_scroller('illust-narrow'), Offset(0, phoneSize.height * 2));
+    await settlePilot(tester);
+    expect(flies(), isTrue);
   });
 
   for (final size in [desktopSize, phoneSize]) {
@@ -299,12 +403,21 @@ void main() {
       };
       final loading = columns();
       expect(loading, isNotEmpty, reason: 'the skeleton shows');
+      final preview = find.byType(IllustRelatedPreview);
+      final heightLoading = tester.getSize(preview).height;
 
       gate.complete(IllustPageResult(illusts: sampleIllusts(count: 8), rankingIllusts: const []));
       await settlePilot(tester);
       final loaded = columns();
       expect(loaded.length, 2, reason: 'the loaded grid has two columns');
       expect(loading, loaded, reason: 'the skeleton has the same columns at the same edges');
+      expect(tester.getSize(preview).height, moreOrLessEquals(heightLoading, epsilon: .5), reason: 'equal squares and a title row of one height');
+      final cards = find.descendant(of: preview, matching: find.byType(FrostMediaCard));
+      expect(cards, findsWidgets);
+      for (final card in tester.elementList(cards)) {
+        final box = card.renderObject! as RenderBox;
+        expect(box.size.width, moreOrLessEquals(box.size.height, epsilon: .5), reason: 'a square tile');
+      }
     });
   }
 

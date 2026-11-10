@@ -18,7 +18,8 @@ class AppLoadingSection<T> extends StatelessWidget {
     this.action,
   });
 
-  final String title;
+  /// Null inside something that already names it.
+  final String? title;
   final AsyncValue<T> value;
   final VoidCallback onRetry;
   final String failed;
@@ -31,7 +32,7 @@ class AppLoadingSection<T> extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     spacing: FrostGap.related,
     children: [
-      FrostSectionHeader(title: title, trailing: [?action]),
+      if (title case final title?) FrostSectionHeader(title: title, trailing: [?action]),
       value.when(
         data: builder,
         loading: () => skeleton ?? const AppRowsSkeleton(count: 2),

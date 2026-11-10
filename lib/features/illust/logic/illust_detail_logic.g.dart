@@ -98,6 +98,90 @@ abstract class _$IllustDetail extends $AsyncNotifier<Illust> {
   }
 }
 
+/// How many comments a work has. List responses leave the count out, so a
+/// work handed over by a list asks for it here, while its page is open.
+
+@ProviderFor(illustCommentTotal)
+final illustCommentTotalProvider = IllustCommentTotalFamily._();
+
+/// How many comments a work has. List responses leave the count out, so a
+/// work handed over by a list asks for it here, while its page is open.
+
+final class IllustCommentTotalProvider
+    extends $FunctionalProvider<AsyncValue<int?>, int?, FutureOr<int?>>
+    with $FutureModifier<int?>, $FutureProvider<int?> {
+  /// How many comments a work has. List responses leave the count out, so a
+  /// work handed over by a list asks for it here, while its page is open.
+  IllustCommentTotalProvider._({
+    required IllustCommentTotalFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'illustCommentTotalProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$illustCommentTotalHash();
+
+  @override
+  String toString() {
+    return r'illustCommentTotalProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<int?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<int?> create(Ref ref) {
+    final argument = this.argument as int;
+    return illustCommentTotal(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is IllustCommentTotalProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$illustCommentTotalHash() =>
+    r'b0c905fb63b3d2119bd8762405c013ee863e7a33';
+
+/// How many comments a work has. List responses leave the count out, so a
+/// work handed over by a list asks for it here, while its page is open.
+
+final class IllustCommentTotalFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<int?>, int> {
+  IllustCommentTotalFamily._()
+    : super(
+        retry: null,
+        name: r'illustCommentTotalProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// How many comments a work has. List responses leave the count out, so a
+  /// work handed over by a list asks for it here, while its page is open.
+
+  IllustCommentTotalProvider call(int illustId) =>
+      IllustCommentTotalProvider._(argument: illustId, from: this);
+
+  @override
+  String toString() => r'illustCommentTotalProvider';
+}
+
 @ProviderFor(IllustComments)
 final illustCommentsProvider = IllustCommentsFamily._();
 

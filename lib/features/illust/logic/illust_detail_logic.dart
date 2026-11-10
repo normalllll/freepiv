@@ -60,6 +60,14 @@ class IllustDetail extends _$IllustDetail {
   }
 }
 
+/// How many comments a work has. List responses leave the count out, so a
+/// work handed over by a list asks for it here, while its page is open.
+@riverpod
+Future<int?> illustCommentTotal(Ref ref, int illustId) async {
+  final detail = await pixivApi.getIllustDetail(illustId: illustId);
+  return detail.illust.totalComments;
+}
+
 @Riverpod(keepAlive: true)
 class IllustComments extends _$IllustComments {
   @override

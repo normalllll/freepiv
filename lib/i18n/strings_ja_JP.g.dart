@@ -768,7 +768,6 @@ class _Translations$illustDetail$ja_JP extends Translations$illustDetail$en_US {
 	@override String get copyTag => 'タグをコピー';
 	@override String allComments({required Object count}) => 'コメント ${count} 件をすべて見る';
 	@override String get moreRelated => 'もっと見る';
-	@override late final _Translations$illustDetail$tabs$ja_JP tabs = _Translations$illustDetail$tabs$ja_JP._(_root);
 	@override String get missing => '作品が存在しないか、閲覧できません';
 }
 
@@ -1816,17 +1815,6 @@ class _Translations$illustDetail$ugoira$ja_JP extends Translations$illustDetail$
 	@override String get saving => 'GIF を保存中';
 }
 
-// Path: illustDetail.tabs
-class _Translations$illustDetail$tabs$ja_JP extends Translations$illustDetail$tabs$en_US {
-	_Translations$illustDetail$tabs$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
-
-	final TranslationsJaJp _root; // ignore: unused_field
-
-	// Translations
-	@override String get about => '概要';
-	@override String get comments => 'コメント';
-}
-
 /// The flat map containing all translations for locale <ja-JP>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -2604,8 +2592,6 @@ extension on TranslationsJaJp {
 			'illustDetail.copyTag' => 'タグをコピー',
 			'illustDetail.allComments' => ({required Object count}) => 'コメント ${count} 件をすべて見る',
 			'illustDetail.moreRelated' => 'もっと見る',
-			'illustDetail.tabs.about' => '概要',
-			'illustDetail.tabs.comments' => 'コメント',
 			'illustDetail.missing' => '作品が存在しないか、閲覧できません',
 			'viewer.position' => ({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}',
 			'viewer.loading' => '元画像を読み込み中',

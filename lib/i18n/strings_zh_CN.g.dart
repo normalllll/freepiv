@@ -768,7 +768,6 @@ class Translations$illustDetail$zh_CN extends Translations$illustDetail$en_US {
 	@override String get copyTag => '复制标签';
 	@override String allComments({required Object count}) => '查看全部 ${count} 条评论';
 	@override String get moreRelated => '查看更多';
-	@override late final Translations$illustDetail$tabs$zh_CN tabs = Translations$illustDetail$tabs$zh_CN.internal(_root);
 	@override String get missing => '作品不存在或无权查看';
 }
 
@@ -1816,17 +1815,6 @@ class Translations$illustDetail$ugoira$zh_CN extends Translations$illustDetail$u
 	@override String get saving => '正在保存 GIF';
 }
 
-// Path: illustDetail.tabs
-class Translations$illustDetail$tabs$zh_CN extends Translations$illustDetail$tabs$en_US {
-	Translations$illustDetail$tabs$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
-
-	final TranslationsZhCn _root; // ignore: unused_field
-
-	// Translations
-	@override String get about => '简介';
-	@override String get comments => '评论';
-}
-
 /// The flat map containing all translations for locale <zh-CN>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -2604,8 +2592,6 @@ extension on TranslationsZhCn {
 			'illustDetail.copyTag' => '复制标签',
 			'illustDetail.allComments' => ({required Object count}) => '查看全部 ${count} 条评论',
 			'illustDetail.moreRelated' => '查看更多',
-			'illustDetail.tabs.about' => '简介',
-			'illustDetail.tabs.comments' => '评论',
 			'illustDetail.missing' => '作品不存在或无权查看',
 			'viewer.position' => ({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}',
 			'viewer.loading' => '正在加载原图',

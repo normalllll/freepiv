@@ -770,7 +770,6 @@ class Translations$illustDetail$en_US {
 	String get copyTag => 'Copy tag';
 	String allComments({required Object count}) => 'View all ${count} comments';
 	String get moreRelated => 'View more';
-	late final Translations$illustDetail$tabs$en_US tabs = Translations$illustDetail$tabs$en_US.internal(_root);
 	String get missing => 'This work does not exist or is not visible to you';
 }
 
@@ -1818,17 +1817,6 @@ class Translations$illustDetail$ugoira$en_US {
 	String get saving => 'Saving the GIF';
 }
 
-// Path: illustDetail.tabs
-class Translations$illustDetail$tabs$en_US {
-	Translations$illustDetail$tabs$en_US.internal(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-	String get about => 'About';
-	String get comments => 'Comments';
-}
-
 /// The flat map containing all translations for locale <en-US>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -2606,8 +2594,6 @@ extension on Translations {
 			'illustDetail.copyTag' => 'Copy tag',
 			'illustDetail.allComments' => ({required Object count}) => 'View all ${count} comments',
 			'illustDetail.moreRelated' => 'View more',
-			'illustDetail.tabs.about' => 'About',
-			'illustDetail.tabs.comments' => 'Comments',
 			'illustDetail.missing' => 'This work does not exist or is not visible to you',
 			'viewer.position' => ({required Object title, required Object page, required Object total}) => '${title} · ${page} / ${total}',
 			'viewer.loading' => 'Loading the original image',
