@@ -29,3 +29,30 @@ final followersSourceProvider = Provider.autoDispose.family<FollowerListSource, 
   ref.onDispose(source.dispose);
   return source;
 });
+
+/// The signed-in account's My pixiv friends, a page at a time.
+class MypixivListSource extends FrostCursorListSource<UserPreview, UserPageResult> {
+  MypixivListSource({required this.userId});
+
+  final int userId;
+
+  @override
+  Future<UserPageResult> loadFirstPage() => pixivApi.getMypixivUserPage(userId: userId);
+
+  @override
+  Future<UserPageResult> loadNextPage(String nextUrl) => pixivApi.getNextUserPage(url: nextUrl);
+
+  @override
+  String? nextUrlFromPage(UserPageResult page) => page.nextUrl;
+
+  @override
+  List<UserPreview> itemsFromPage(UserPageResult page) => page.userPreviews;
+}
+
+/// The signed-in account's My pixiv friends, by its user ID; loaded on first
+/// watch.
+final mypixivSourceProvider = Provider.autoDispose.family<MypixivListSource, int>((ref, userId) {
+  final source = MypixivListSource(userId: userId);
+  ref.onDispose(source.dispose);
+  return source;
+});

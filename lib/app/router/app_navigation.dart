@@ -18,7 +18,11 @@ class AppRouteDestination {
 const appRouteDestinations = <AppRouteDestination>[
   AppRouteDestination(route: AppRoute.home, icon: PivIcons.home),
   AppRouteDestination(route: AppRoute.newest, icon: PivIcons.activity),
-  AppRouteDestination(route: AppRoute.me, icon: PivIcons.user, owns: {AppRoute.meFollowing, AppRoute.meFollowers, AppRoute.meWatchlist, AppRoute.meProfileEdit, AppRoute.meWorkspaceEdit}),
+  AppRouteDestination(
+    route: AppRoute.me,
+    icon: PivIcons.user,
+    owns: {AppRoute.meFollowing, AppRoute.meFollowers, AppRoute.meMypixiv, AppRoute.meWatchlist, AppRoute.meProfileEdit, AppRoute.meWorkspaceEdit},
+  ),
 ];
 
 /// The destinations without a page stack of their own, in order. The sidebar
@@ -73,7 +77,12 @@ String appRouteLabel(Translations translations, AppRoute route) {
     AppRoute.discover => translations.common.discover,
     AppRoute.searchIllustResult || AppRoute.searchNovelResult || AppRoute.searchUserResult || AppRoute.tagSearch => translations.navigation.search,
     AppRoute.newest => translations.navigation.activity,
-    AppRoute.fanbox || AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator || AppRoute.fanboxWebLogin => translations.fanbox.title,
+    AppRoute.fanbox ||
+    AppRoute.fanboxBrowse ||
+    AppRoute.fanboxTag ||
+    AppRoute.fanboxPost ||
+    AppRoute.fanboxCreator ||
+    AppRoute.fanboxWebLogin => translations.fanbox.title,
     AppRoute.pixivision || AppRoute.pixivisionBrowse || AppRoute.pixivisionArticle => translations.pixivision.title,
     AppRoute.ranking || AppRoute.legacyRankingIllust || AppRoute.legacyRankingManga || AppRoute.legacyRankingNovel => translations.navigation.ranking,
     AppRoute.me => translations.navigation.me,
@@ -83,6 +92,7 @@ String appRouteLabel(Translations translations, AppRoute route) {
     AppRoute.login => translations.login.title,
     AppRoute.meFollowing => translations.me.following,
     AppRoute.meFollowers => translations.me.followers,
+    AppRoute.meMypixiv => translations.me.mypixiv,
     AppRoute.meWatchlist => translations.me.watchlist,
     AppRoute.meProfileEdit => translations.me.editProfile,
     AppRoute.meWorkspaceEdit => translations.me.workspace,

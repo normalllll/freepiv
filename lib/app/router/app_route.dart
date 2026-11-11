@@ -27,6 +27,7 @@ enum AppRoute {
   login('/login'),
   meFollowing('/me/following'),
   meFollowers('/me/followers'),
+  meMypixiv('/me/mypixiv'),
   meWatchlist('/me/watchlist'),
   meProfileEdit('/me/profile'),
   meWorkspaceEdit('/me/workspace'),

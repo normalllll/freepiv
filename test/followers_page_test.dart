@@ -47,6 +47,7 @@ UserPreview _long(UserPreview preview) => UserPreview(
 );
 
 void main() {
+  _mypixivTests();
   testWidgets('the signed-in account\'s followers fill the grid as user cards', (tester) async {
     await _mount(tester, () async => UserPageResult(userPreviews: sampleUserPreviews(count: 3)));
     expect(find.text(t.me.followers), findsOneWidget);
@@ -87,5 +88,38 @@ void main() {
     );
     expect(find.byType(AppUserCard), findsWidgets);
     expectNoLayoutErrors(tester);
+  });
+}
+
+class _Mypixiv extends MypixivListSource {
+  _Mypixiv(this.first, {required super.userId});
+
+  final Future<UserPageResult> Function() first;
+
+  @override
+  Future<UserPageResult> loadFirstPage() {
+    _askedFor.add(userId);
+    return first();
+  }
+}
+
+void _mypixivTests() {
+  Future<void> mount(WidgetTester tester, Future<UserPageResult> Function() first) {
+    _askedFor.clear();
+    return mountPilotPage(
+      tester,
+      const MypixivPage(),
+      overrides: {mypixivSourceProvider: mypixivSourceProvider.overrideWith((ref, userId) => _Mypixiv(first, userId: userId))},
+    );
+  }
+
+  testWidgets('My pixiv friends of the signed-in account fill the grid, and none says so', (tester) async {
+    await mount(tester, () async => UserPageResult(userPreviews: sampleUserPreviews(count: 3)));
+    expect(find.text(t.me.mypixiv), findsOneWidget);
+    expect(_askedFor, [int.parse(sampleAccount.user.id)]);
+    expect(find.byType(AppUserCard), findsNWidgets(3));
+
+    await mount(tester, () async => const UserPageResult(userPreviews: []));
+    expect(find.text(t.me.emptyMypixiv), findsOneWidget);
   });
 }

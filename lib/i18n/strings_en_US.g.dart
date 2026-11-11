@@ -420,8 +420,10 @@ class Translations$me$en_US {
 	String get openProfile => 'Open profile';
 	String get following => 'My following';
 	String get followers => 'My followers';
+	String get mypixiv => 'My pixiv';
 	String get emptyFollowing => 'No following users';
 	String get emptyFollowers => 'No followers';
+	String get emptyMypixiv => 'No My pixiv friends';
 	String get about => 'About';
 	String get settings => 'Settings';
 	String get watchlist => 'Follow-ups';
@@ -2157,8 +2159,10 @@ extension on Translations {
 			'me.openProfile' => 'Open profile',
 			'me.following' => 'My following',
 			'me.followers' => 'My followers',
+			'me.mypixiv' => 'My pixiv',
 			'me.emptyFollowing' => 'No following users',
 			'me.emptyFollowers' => 'No followers',
+			'me.emptyMypixiv' => 'No My pixiv friends',
 			'me.about' => 'About',
 			'me.settings' => 'Settings',
 			'me.watchlist' => 'Follow-ups',
@@ -2335,10 +2339,10 @@ extension on Translations {
 			'newest.empty.privateFollows' => 'Nothing new from your private follows',
 			'newest.empty.mypixiv' => 'Nothing new from your My pixiv friends',
 			'newest.empty.everyone' => 'No new works yet',
-			'illust.pageJump' => 'Go to page',
-			'illust.contextMenu.download' => 'Download',
 			_ => null,
 		} ?? switch (path) {
+			'illust.pageJump' => 'Go to page',
+			'illust.contextMenu.download' => 'Download',
 			'illust.contextMenu.downloadAll' => 'Download all',
 			'illust.contextMenu.copyImage' => 'Copy image',
 			'illust.contextMenu.copyLink' => 'Copy work link',

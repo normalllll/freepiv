@@ -418,8 +418,10 @@ class _Translations$me$ja_JP extends Translations$me$en_US {
 	@override String get openProfile => 'プロフィールを開く';
 	@override String get following => 'フォロー中';
 	@override String get followers => 'フォロワー';
+	@override String get mypixiv => 'マイピク';
 	@override String get emptyFollowing => 'フォロー中のユーザーはいません';
 	@override String get emptyFollowers => 'フォロワーはいません';
+	@override String get emptyMypixiv => 'マイピクはいません';
 	@override String get about => 'このアプリについて';
 	@override String get settings => '設定';
 	@override String get watchlist => '追いかけ中のシリーズ';
@@ -2155,8 +2157,10 @@ extension on TranslationsJaJp {
 			'me.openProfile' => 'プロフィールを開く',
 			'me.following' => 'フォロー中',
 			'me.followers' => 'フォロワー',
+			'me.mypixiv' => 'マイピク',
 			'me.emptyFollowing' => 'フォロー中のユーザーはいません',
 			'me.emptyFollowers' => 'フォロワーはいません',
+			'me.emptyMypixiv' => 'マイピクはいません',
 			'me.about' => 'このアプリについて',
 			'me.settings' => '設定',
 			'me.watchlist' => '追いかけ中のシリーズ',
@@ -2333,10 +2337,10 @@ extension on TranslationsJaJp {
 			'newest.empty.privateFollows' => '非公開フォローの新着はありません',
 			'newest.empty.mypixiv' => 'マイピクの新着はありません',
 			'newest.empty.everyone' => '新着作品はまだありません',
-			'illust.pageJump' => 'ページへ移動',
-			'illust.contextMenu.download' => 'ダウンロード',
 			_ => null,
 		} ?? switch (path) {
+			'illust.pageJump' => 'ページへ移動',
+			'illust.contextMenu.download' => 'ダウンロード',
 			'illust.contextMenu.downloadAll' => 'すべてダウンロード',
 			'illust.contextMenu.copyImage' => '画像をコピーする',
 			'illust.contextMenu.copyLink' => '作品リンクをコピー',

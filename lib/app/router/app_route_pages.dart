@@ -151,6 +151,10 @@ Page<void> meFollowersPage(BuildContext context, GoRouterState state) {
   return FrostDetailPage(key: state.pageKey, child: const FollowersPage());
 }
 
+Page<void> meMypixivPage(BuildContext context, GoRouterState state) {
+  return FrostDetailPage(key: state.pageKey, child: const MypixivPage());
+}
+
 Page<void> meWatchlistPage(BuildContext context, GoRouterState state) {
   return FrostDetailPage(key: state.pageKey, child: const WatchlistPage());
 }

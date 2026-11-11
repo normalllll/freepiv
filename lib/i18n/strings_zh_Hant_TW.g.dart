@@ -418,8 +418,10 @@ class Translations$me$zh_Hant_TW extends Translations$me$en_US {
 	@override String get openProfile => '開啟個人頁';
 	@override String get following => '我的關注';
 	@override String get followers => '我的粉絲';
+	@override String get mypixiv => '好P友';
 	@override String get emptyFollowing => '尚無關注使用者';
 	@override String get emptyFollowers => '尚無粉絲';
+	@override String get emptyMypixiv => '還沒有好P友';
 	@override String get about => '關於';
 	@override String get settings => '設定';
 	@override String get watchlist => '我的追更';
@@ -2155,8 +2157,10 @@ extension on TranslationsZhHantTw {
 			'me.openProfile' => '開啟個人頁',
 			'me.following' => '我的關注',
 			'me.followers' => '我的粉絲',
+			'me.mypixiv' => '好P友',
 			'me.emptyFollowing' => '尚無關注使用者',
 			'me.emptyFollowers' => '尚無粉絲',
+			'me.emptyMypixiv' => '還沒有好P友',
 			'me.about' => '關於',
 			'me.settings' => '設定',
 			'me.watchlist' => '我的追更',
@@ -2333,10 +2337,10 @@ extension on TranslationsZhHantTw {
 			'newest.empty.privateFollows' => '非公開追蹤的人還沒有新作品',
 			'newest.empty.mypixiv' => '好P友還沒有新作品',
 			'newest.empty.everyone' => '還沒有新作品',
-			'illust.pageJump' => '跳轉頁碼',
-			'illust.contextMenu.download' => '下載',
 			_ => null,
 		} ?? switch (path) {
+			'illust.pageJump' => '跳轉頁碼',
+			'illust.contextMenu.download' => '下載',
 			'illust.contextMenu.downloadAll' => '下載全部',
 			'illust.contextMenu.copyImage' => '複製圖像',
 			'illust.contextMenu.copyLink' => '複製作品連結',

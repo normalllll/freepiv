@@ -55,6 +55,7 @@ void main() {
         AppLocations.fanboxCreator('c'): AppRoute.fanboxCreator,
         AppLocations.pixivisionBrowse(): AppRoute.pixivisionBrowse,
         AppRoute.meFollowing.path: AppRoute.meFollowing,
+        AppRoute.meMypixiv.path: AppRoute.meMypixiv,
         '/ranking/novel': AppRoute.legacyRankingNovel,
       };
       cases.forEach((location, route) => expect(AppRoute.match(location), route, reason: location));
@@ -75,6 +76,7 @@ void main() {
       expect(appRouteDestinations.map((destination) => destination.route), [AppRoute.home, AppRoute.newest, AppRoute.me]);
       expect(appDestinationIndexForPath(AppRoute.me.path), 2);
       expect(appDestinationIndexForPath(AppRoute.meFollowers.path), 2);
+      expect(appDestinationIndexForPath(AppRoute.meMypixiv.path), 2);
       expect(appDestinationIndexForPath(AppRoute.discover.path), isNull);
       expect(appDestinationIndexForPath(AppLocations.illust(1)), isNull);
       expect(isMobileNavigationPath(AppRoute.newest.path), isTrue);
@@ -87,6 +89,7 @@ void main() {
       expect(fallbackPathFor(AppLocations.fanboxPost('p')), AppRoute.fanbox.path);
       expect(fallbackPathFor(AppLocations.pixivisionArticle('u')), AppRoute.pixivision.path);
       expect(fallbackPathFor(AppRoute.meFollowing.path), AppRoute.me.path);
+      expect(fallbackPathFor(AppRoute.meMypixiv.path), AppRoute.me.path);
       expect(fallbackPathFor(AppLocations.search(AppSearchKind.illust, 'q')), AppRoute.discover.path);
       expect(fallbackPathFor(AppLocations.user(1)), AppRoute.home.path);
       expect(fallbackPathFor(AppRoute.home.path), isNull);

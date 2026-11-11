@@ -131,6 +131,7 @@ class _MePageState extends ConsumerState<MePage> {
           children: [
             row(PivIcons.user, t.me.following, AppRoute.meFollowing.path),
             row(PivIcons.users, t.me.followers, AppRoute.meFollowers.path),
+            row(PivIcons.users, t.me.mypixiv, AppRoute.meMypixiv.path),
             row(PivIcons.clock, t.me.watchlist, AppRoute.meWatchlist.path),
           ],
         ),

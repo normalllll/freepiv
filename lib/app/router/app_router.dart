@@ -79,7 +79,10 @@ class AppRouter {
             GoRoute(
               path: AppRoute.pixivision.path,
               name: AppRoute.pixivision.name,
-              pageBuilder: (context, state) => FrostDetailPage(key: state.pageKey, child: PixivisionPage(url: state.uri.queryParameters[AppRouteQuery.url])),
+              pageBuilder: (context, state) => FrostDetailPage(
+                key: state.pageKey,
+                child: PixivisionPage(url: state.uri.queryParameters[AppRouteQuery.url]),
+              ),
             ),
             GoRoute(
               path: AppRoute.fanbox.path,
@@ -105,6 +108,7 @@ class AppRouter {
               GoRoute(path: legacy.path, name: legacy.name, redirect: route_pages.legacyRankingRedirect),
             GoRoute(path: AppRoute.meFollowing.path, name: AppRoute.meFollowing.name, pageBuilder: route_pages.meFollowingPage),
             GoRoute(path: AppRoute.meFollowers.path, name: AppRoute.meFollowers.name, pageBuilder: route_pages.meFollowersPage),
+            GoRoute(path: AppRoute.meMypixiv.path, name: AppRoute.meMypixiv.name, pageBuilder: route_pages.meMypixivPage),
             GoRoute(path: AppRoute.meWatchlist.path, name: AppRoute.meWatchlist.name, pageBuilder: route_pages.meWatchlistPage),
             GoRoute(path: AppRoute.meProfileEdit.path, name: AppRoute.meProfileEdit.name, pageBuilder: route_pages.meProfileEditPage),
             GoRoute(path: AppRoute.meWorkspaceEdit.path, name: AppRoute.meWorkspaceEdit.name, pageBuilder: route_pages.meWorkspaceEditPage),
@@ -123,7 +127,10 @@ class AppRouter {
             GoRoute(
               path: AppRoute.pixivisionBrowse.path,
               name: AppRoute.pixivisionBrowse.name,
-              pageBuilder: (context, state) => FrostDetailPage(key: state.pageKey, child: PixivisionPage(url: state.uri.queryParameters[AppRouteQuery.url])),
+              pageBuilder: (context, state) => FrostDetailPage(
+                key: state.pageKey,
+                child: PixivisionPage(url: state.uri.queryParameters[AppRouteQuery.url]),
+              ),
             ),
             GoRoute(
               path: AppRoute.pixivisionArticle.path,

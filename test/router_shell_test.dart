@@ -182,6 +182,8 @@ void main() {
     }
     await _go(tester, AppRoute.meFollowing.path);
     expect(_shell(tester).selectedIndex, 2, reason: 'a page of Me highlights Me');
+    await _go(tester, AppRoute.meMypixiv.path);
+    expect(_shell(tester).selectedIndex, 2, reason: 'My pixiv belongs to Me');
   });
 
   testWidgets('in the sidebar a secondary page selects its own destination, and the opener takes the highlight back', (tester) async {
@@ -208,6 +210,17 @@ void main() {
     expect(_shell(tester).selectedIndex, 0);
     expect(_shell(tester).secondary!.selectedIndex, isNull);
   });
+
+  for (final (name, size) in [('sidebar', const Size(1147, 717)), ('bottom bar', _phone)]) {
+    testWidgets('My pixiv opens from Me and Back returns to Me with the $name layout', (tester) async {
+      await _mount(tester, size: size, at: AppRoute.me.path);
+      await _push(tester, AppRoute.meMypixiv.path);
+      expect(AppRouter.currentUri.path, AppRoute.meMypixiv.path);
+      expect(_shell(tester).selectedIndex, 2);
+      await _escape(tester);
+      expect(AppRouter.currentUri.path, AppRoute.me.path);
+    });
+  }
 
   testWidgets('in the sidebar layout a secondary destination switches in with no motion', (tester) async {
     await _mount(tester);

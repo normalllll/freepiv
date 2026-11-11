@@ -31,6 +31,9 @@ Future<void> _mount(WidgetTester tester, {Future<UserDetailResult> Function()? d
       overrides: {if (details != null) userDetailProvider: userDetailProvider.overrideWith2((_) => _Details(details))},
     );
 
+/// Tall enough for every row of the grouped list.
+const _tallDesktop = Size(1147, 900);
+
 List<String> _rows(WidgetTester tester) => tester.widgetList<FrostListRow>(find.byType(FrostListRow)).map((row) => row.title).toList();
 
 void main() {
@@ -54,8 +57,19 @@ void main() {
   });
 
   testWidgets('every entry is a row with a chevron, one under another, and opens its page; downloads count what needs attention', (tester) async {
-    await _mount(tester);
-    final labels = [t.me.following, t.me.followers, t.me.watchlist, t.me.editProfile, t.me.workspace, t.fanbox.title, t.navigation.downloads, t.me.about, t.me.settings];
+    await _mount(tester, size: _tallDesktop);
+    final labels = [
+      t.me.following,
+      t.me.followers,
+      t.me.mypixiv,
+      t.me.watchlist,
+      t.me.editProfile,
+      t.me.workspace,
+      t.fanbox.title,
+      t.navigation.downloads,
+      t.me.about,
+      t.me.settings,
+    ];
     expect(_rows(tester), labels);
     final rows = tester.widgetList<FrostListRow>(find.byType(FrostListRow)).toList();
     final tops = [for (final label in labels) tester.getTopLeft(find.widgetWithText(FrostListRow, label)).dy];
@@ -69,6 +83,7 @@ void main() {
     final expected = [
       AppRoute.meFollowing.path,
       AppRoute.meFollowers.path,
+      AppRoute.meMypixiv.path,
       AppRoute.meWatchlist.path,
       AppRoute.meProfileEdit.path,
       AppRoute.meWorkspaceEdit.path,
@@ -78,7 +93,7 @@ void main() {
       AppRoute.settings.path,
     ];
     for (final (index, location) in expected.indexed) {
-      await _mount(tester);
+      await _mount(tester, size: _tallDesktop);
       await tester.tap(find.text(labels[index]));
       await settlePilot(tester);
       expect(openedLocations.last, location);
@@ -94,7 +109,7 @@ void main() {
     await _mount(tester, details: () async => throw StateError('offline'));
     expect(find.byType(FrostStat), findsNothing);
     expect(find.text(sampleAccount.user.name), findsOneWidget);
-    expect(_rows(tester), hasLength(9));
+    expect(_rows(tester), hasLength(10));
   });
 
   testWidgets('signed out: the way to sign in, and the entries that need no account', (tester) async {

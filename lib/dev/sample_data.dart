@@ -240,8 +240,12 @@ final sampleOverrideMap = <Object, Override>{
   fanboxCreatorProvider: fanboxCreatorProvider.overrideWith((ref, id) async => sampleFanboxCreator(id)),
   fanboxCommentsProvider: fanboxCommentsProvider.overrideWith2((_) => SampleFanboxComments()),
   fanboxPlansProvider: fanboxPlansProvider.overrideWith((ref, creatorId) async => sampleFanboxPlans(creatorId)),
-  fanboxTagsProvider: fanboxTagsProvider.overrideWith((ref, creatorId) async => const [FanboxTag(name: 'illustration', count: 42), FanboxTag(name: 'process', count: 12)]),
-  fanboxSupportProvider: fanboxSupportProvider.overrideWith((ref, creatorId) async => FanboxSupport(creatorId: creatorId, fanCardUrl: sampleImageUrl(140, width: 960, height: 600))),
+  fanboxTagsProvider: fanboxTagsProvider.overrideWith(
+    (ref, creatorId) async => const [FanboxTag(name: 'illustration', count: 42), FanboxTag(name: 'process', count: 12)],
+  ),
+  fanboxSupportProvider: fanboxSupportProvider.overrideWith(
+    (ref, creatorId) async => FanboxSupport(creatorId: creatorId, fanCardUrl: sampleImageUrl(140, width: 960, height: 600)),
+  ),
   pixivisionBrowseProvider: pixivisionBrowseProvider.overrideWith2((_) => _SamplePixivision()),
   pixivisionPageLoaderProvider: pixivisionPageLoaderProvider.overrideWithValue(samplePixivisionPage),
   pixivisionTagsProvider: pixivisionTagsProvider.overrideWith((ref, language) async => samplePixivisionTags),
@@ -263,8 +267,14 @@ final sampleOverrideMap = <Object, Override>{
     ref.onDispose(source.dispose);
     return source;
   }),
+  mypixivSourceProvider: mypixivSourceProvider.overrideWith((ref, userId) {
+    final source = SampleMypixiv(userId: userId);
+    ref.onDispose(source.dispose);
+    return source;
+  }),
   workBookmarkOptionsProvider: workBookmarkOptionsProvider.overrideWith(
-    (ref, key) async => const WorkBookmarkOptions(restrict: Restrict.public, chosen: {'landscape'}, tags: ['landscape', 'オリジナル', 'girl', 'reference', 'wallpaper']),
+    (ref, key) async =>
+        const WorkBookmarkOptions(restrict: Restrict.public, chosen: {'landscape'}, tags: ['landscape', 'オリジナル', 'girl', 'reference', 'wallpaper']),
   ),
   userFollowRestrictProvider: userFollowRestrictProvider.overrideWith((ref, args) async => Restrict.public),
   novelSeriesWorksProvider: novelSeriesWorksProvider.overrideWith2((_) => _SampleNovelSeries()),
@@ -560,8 +570,22 @@ IllustSeriesPageResult sampleMangaSeries(int seriesId) {
 List<WatchlistSeries> sampleWatchlist() {
   final works = sampleIllusts(count: 2);
   return [
-    WatchlistSeries(id: 1, title: 'The traveller under the stars', url: works.first.imageUrls.medium, user: works.first.user, publishedContentCount: 12, lastPublishedContentDatetime: '2026-11-01T00:00:00+09:00'),
-    WatchlistSeries(id: 2, title: 'A town by the sea', url: works.last.imageUrls.medium, user: works.last.user, publishedContentCount: 8, lastPublishedContentDatetime: '2026-10-24T00:00:00+09:00'),
+    WatchlistSeries(
+      id: 1,
+      title: 'The traveller under the stars',
+      url: works.first.imageUrls.medium,
+      user: works.first.user,
+      publishedContentCount: 12,
+      lastPublishedContentDatetime: '2026-11-01T00:00:00+09:00',
+    ),
+    WatchlistSeries(
+      id: 2,
+      title: 'A town by the sea',
+      url: works.last.imageUrls.medium,
+      user: works.last.user,
+      publishedContentCount: 8,
+      lastPublishedContentDatetime: '2026-10-24T00:00:00+09:00',
+    ),
     const WatchlistSeries(id: 3, title: '', maskText: '', publishedContentCount: 0),
   ];
 }
@@ -571,8 +595,14 @@ const sampleProfilePresets = ProfilePresets(
     ProfileAddressPreset(id: 14, name: 'Kanagawa', isGlobal: false),
     ProfileAddressPreset(id: 48, name: 'Overseas', isGlobal: true),
   ],
-  countries: [ProfileCountryPreset(code: 'JP', name: 'Japan'), ProfileCountryPreset(code: 'TW', name: 'Taiwan')],
-  jobs: [ProfileJobPreset(id: 0, name: 'Not specified'), ProfileJobPreset(id: 3, name: 'Illustrator')],
+  countries: [
+    ProfileCountryPreset(code: 'JP', name: 'Japan'),
+    ProfileCountryPreset(code: 'TW', name: 'Taiwan'),
+  ],
+  jobs: [
+    ProfileJobPreset(id: 0, name: 'Not specified'),
+    ProfileJobPreset(id: 3, name: 'Illustrator'),
+  ],
 );
 
 class _SampleNovelSeriesSource extends NovelSeriesSource {
@@ -847,7 +877,10 @@ class SampleNewestSource extends NewestListSource {
   Future<Object> loadFirstPage() async {
     if (key.followScope == NewestFollowScope.private) return const IllustPageResult(illusts: [], rankingIllusts: []);
     if (key.isNovel) return NovelPageResult(novels: sampleNovels(), rankingNovels: const []);
-    return IllustPageResult(illusts: sampleIllusts(kind: key.workType == NewestWorkType.manga ? 'manga' : 'illust'), rankingIllusts: const []);
+    return IllustPageResult(
+      illusts: sampleIllusts(kind: key.workType == NewestWorkType.manga ? 'manga' : 'illust'),
+      rankingIllusts: const [],
+    );
   }
 
   @override
@@ -880,7 +913,10 @@ class _SampleRankingManga extends RankingMangaListSource {
   _SampleRankingManga(MangaRankingMode mode) : super(mode: mode);
 
   @override
-  Future<IllustPageResult> loadFirstPage() async => IllustPageResult(illusts: sampleIllusts(kind: 'manga'), rankingIllusts: const []);
+  Future<IllustPageResult> loadFirstPage() async => IllustPageResult(
+    illusts: sampleIllusts(kind: 'manga'),
+    rankingIllusts: const [],
+  );
 
   @override
   Future<IllustPageResult> loadNextPage(String nextUrl) async => const IllustPageResult(illusts: [], rankingIllusts: []);
@@ -902,6 +938,17 @@ class SampleFollowers extends FollowerListSource {
 
   @override
   Future<UserPageResult> loadFirstPage() async => UserPageResult(userPreviews: sampleUserPreviews());
+
+  @override
+  Future<UserPageResult> loadNextPage(String nextUrl) async => const UserPageResult(userPreviews: []);
+}
+
+/// The signed-in account's My pixiv friends in the sample app.
+class SampleMypixiv extends MypixivListSource {
+  SampleMypixiv({required super.userId});
+
+  @override
+  Future<UserPageResult> loadFirstPage() async => UserPageResult(userPreviews: sampleUserPreviews(count: 4));
 
   @override
   Future<UserPageResult> loadNextPage(String nextUrl) async => const UserPageResult(userPreviews: []);
@@ -947,9 +994,24 @@ const samplePixivisionTags = TagDirectory(
     TagGroup(
       name: 'Themes',
       nodes: [
-        TagNode(name: 'Landscape', tag: PixivisionTag(id: 1, name: 'Landscape', url: 'https://www.pixivision.net/en/t/1'), articleCount: 120, children: []),
-        TagNode(name: 'Cats', tag: PixivisionTag(id: 2, name: 'Cats', url: 'https://www.pixivision.net/en/t/2'), articleCount: 64, children: []),
-        TagNode(name: 'Autumn', tag: PixivisionTag(id: 3, name: 'Autumn', url: 'https://www.pixivision.net/en/t/3'), articleCount: 31, children: []),
+        TagNode(
+          name: 'Landscape',
+          tag: PixivisionTag(id: 1, name: 'Landscape', url: 'https://www.pixivision.net/en/t/1'),
+          articleCount: 120,
+          children: [],
+        ),
+        TagNode(
+          name: 'Cats',
+          tag: PixivisionTag(id: 2, name: 'Cats', url: 'https://www.pixivision.net/en/t/2'),
+          articleCount: 64,
+          children: [],
+        ),
+        TagNode(
+          name: 'Autumn',
+          tag: PixivisionTag(id: 3, name: 'Autumn', url: 'https://www.pixivision.net/en/t/3'),
+          articleCount: 31,
+          children: [],
+        ),
       ],
     ),
   ],
@@ -977,7 +1039,17 @@ Article samplePixivisionArticle(String url) => Article(
       works: [],
       embeds: [],
     ),
-    const ArticleBlock(kind: BlockKind.heading, anchor: 'works', headingLevel: 2, html: '<h2>The works</h2>', text: 'The works', images: [], links: [], works: [], embeds: []),
+    const ArticleBlock(
+      kind: BlockKind.heading,
+      anchor: 'works',
+      headingLevel: 2,
+      html: '<h2>The works</h2>',
+      text: 'The works',
+      images: [],
+      links: [],
+      works: [],
+      embeds: [],
+    ),
     for (var index = 0; index < 3; index++)
       ArticleBlock(
         kind: BlockKind.pixivWork,
@@ -1024,8 +1096,7 @@ PixivisionDocument samplePixivisionDocument(String url) {
     article: article,
     imageRatios: {
       for (final block in article.blocks)
-        for (final work in block.works)
-          ?work.preview: 1200 / 800,
+        for (final work in block.works) ?work.preview: 1200 / 800,
     },
   );
 }
@@ -1062,9 +1133,18 @@ FanboxPost sampleFanboxPost(String id) {
             ),
             const FanboxBlock.heading(text: 'Rough sketches'),
             FanboxBlock.image(
-              image: FanboxImage(id: 'img1', originalUrl: sampleImageUrl(130, width: 1200, height: 800), thumbnailUrl: '', width: 1200, height: 800, extension_: 'png'),
+              image: FanboxImage(
+                id: 'img1',
+                originalUrl: sampleImageUrl(130, width: 1200, height: 800),
+                thumbnailUrl: '',
+                width: 1200,
+                height: 800,
+                extension_: 'png',
+              ),
             ),
-            const FanboxBlock.file(file: FanboxFile(id: 'file1', name: 'brushes', extension_: 'zip', size: 2400000, url: 'https://example.test/brushes.zip')),
+            const FanboxBlock.file(
+              file: FanboxFile(id: 'file1', name: 'brushes', extension_: 'zip', size: 2400000, url: 'https://example.test/brushes.zip'),
+            ),
             const FanboxBlock.postLink(postId: '5004', creatorId: 'sample_creator', title: 'Last month’s sketches'),
             const FanboxBlock.unknown(text: '', rawJson: '{}'),
           ],
@@ -1089,7 +1169,8 @@ List<FanboxPlan> sampleFanboxPlans(String creatorId) => [
       creatorId: creatorId,
       user: const FanboxUser(id: '600', name: 'Studio Kite'),
       title: ['Sketch plan', 'Process plan', 'Full plan'][index],
-      description: '${['Rough sketches every month.', 'Sketches and the process behind each piece.', 'Everything: finished pieces, process and files.'][index]}\nPrevious months stay open while you support.',
+      description:
+          '${['Rough sketches every month.', 'Sketches and the process behind each piece.', 'Everything: finished pieces, process and files.'][index]}\nPrevious months stay open while you support.',
       fee: fee,
     ),
 ];

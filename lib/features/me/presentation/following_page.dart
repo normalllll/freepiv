@@ -52,6 +52,16 @@ class FollowersPage extends ConsumerWidget {
   );
 }
 
+/// The signed-in account's My pixiv friends, in the same rows as
+/// [FollowingPage].
+class MypixivPage extends ConsumerWidget {
+  const MypixivPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) =>
+      _AccountUserList(title: context.t.me.mypixiv, emptyTitle: context.t.me.emptyMypixiv, source: (ref, userId) => ref.watch(mypixivSourceProvider(userId)));
+}
+
 class _AccountUserList extends ConsumerWidget {
   const _AccountUserList({required this.title, required this.emptyTitle, required this.source, this.above});
 
