@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/app/immersive_pages.dart';
 import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
@@ -68,9 +69,9 @@ class RouterShell extends ConsumerWidget {
     ];
     final secondaryIndex = appSecondaryIndexForPath(path);
     final sidebar = FrostAutoScaffold.usesHorizontalLayoutOf(context);
-    final shell = ValueListenableBuilder<bool>(
-      valueListenable: DownloadFlight.revealRequested,
-      builder: (context, revealed, _) => FrostShell(
+    final shell = ListenableBuilder(
+      listenable: Listenable.merge([DownloadFlight.revealRequested, immersivePageCount]),
+      builder: (context, _) => FrostShell(
         destinations: sidebar ? [...primary, ...secondary] : primary,
         selectedIndex: sidebar && secondaryIndex != null ? primary.length + secondaryIndex : selectedIndex,
         atDestinationRoot: atDestinationRoot,
@@ -108,7 +109,7 @@ class RouterShell extends ConsumerWidget {
         titleBarSearchPlacement: FrostCaptionSearchPlacement.end,
         routeDepth: routeDepth,
         backToFirst: FrostShellBackToFirst(label: translations.navigation.backToFirst, icon: PivIcons.home, onPressed: onBackToFirst),
-        taskEntry: appDownloadTaskEntry(downloads, revealed: revealed),
+        taskEntry: appDownloadTaskEntry(downloads, revealed: DownloadFlight.revealRequested.value, hidden: immersivePageCount.value > 0),
         child: AppSearchPlacementProbe(child: child),
       ),
     );

@@ -1041,6 +1041,19 @@ class _Translations$profileEdit$ja_JP extends Translations$profileEdit$en_US {
 	@override String get discardMessage => '変更はまだ保存されていません。';
 	@override String get discard => '破棄';
 	@override String get keepEditing => '編集を続ける';
+	@override String get avatar => 'プロフィール画像';
+	@override String get avatarChange => '画像を変更';
+	@override String get avatarHint => 'JPEG / PNG / WebP、30 MB まで';
+	@override String get avatarWorking => '画像を準備しています…';
+	@override String get avatarChanged => '変更済み。保存すると反映されます';
+	@override String get avatarPickAgain => '選び直す';
+	@override String get avatarUndo => '変更を取り消す';
+	@override String get avatarTooLarge => '画像が 30 MB を超えています';
+	@override String get avatarUnreadable => '画像を読み込めません';
+	@override String get avatarPrepareFailed => '画像を処理できません';
+	@override String get cropTitle => 'プロフィール画像を切り抜く';
+	@override String get cropZoom => 'ズーム';
+	@override String get cropDone => '完了';
 }
 
 // Path: workspaceEdit
@@ -2808,6 +2821,19 @@ extension on TranslationsJaJp {
 			'profileEdit.discardMessage' => '変更はまだ保存されていません。',
 			'profileEdit.discard' => '破棄',
 			'profileEdit.keepEditing' => '編集を続ける',
+			'profileEdit.avatar' => 'プロフィール画像',
+			'profileEdit.avatarChange' => '画像を変更',
+			'profileEdit.avatarHint' => 'JPEG / PNG / WebP、30 MB まで',
+			'profileEdit.avatarWorking' => '画像を準備しています…',
+			'profileEdit.avatarChanged' => '変更済み。保存すると反映されます',
+			'profileEdit.avatarPickAgain' => '選び直す',
+			'profileEdit.avatarUndo' => '変更を取り消す',
+			'profileEdit.avatarTooLarge' => '画像が 30 MB を超えています',
+			'profileEdit.avatarUnreadable' => '画像を読み込めません',
+			'profileEdit.avatarPrepareFailed' => '画像を処理できません',
+			'profileEdit.cropTitle' => 'プロフィール画像を切り抜く',
+			'profileEdit.cropZoom' => 'ズーム',
+			'profileEdit.cropDone' => '完了',
 			'workspaceEdit.title' => '作業環境',
 			'workspaceEdit.pc' => 'コンピュータ',
 			'workspaceEdit.monitor' => 'モニター',

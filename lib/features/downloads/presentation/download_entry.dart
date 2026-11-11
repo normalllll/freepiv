@@ -76,7 +76,9 @@ final downloadActivityProvider = Provider<DownloadActivity>((ref) {
 /// layouts open [DownloadEntryPanel] through the entry's panel: anchored to
 /// the sidebar row, or growing from the floating button. The sidebar always
 /// has it; the floating button comes with activity or a flight on its way.
-FrostShellTaskEntry appDownloadTaskEntry(DownloadActivity activity, {required bool revealed}) => FrostShellTaskEntry(
+/// [hidden] takes it away for a page that needs the whole screen.
+FrostShellTaskEntry appDownloadTaskEntry(DownloadActivity activity, {required bool revealed, bool hidden = false}) => FrostShellTaskEntry(
+  visible: !hidden,
   builder: (context, placement) => placement == FrostShellTaskEntryPlacement.floating && !(activity.visible || revealed)
       ? const SizedBox.shrink()
       : DownloadEntryButton(placement: placement),

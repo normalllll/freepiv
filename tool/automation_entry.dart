@@ -13,6 +13,7 @@ import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/features/account/account_actions.dart';
+import 'package:freepiv/features/me/logic/profile_image_logic.dart';
 import 'package:freepiv/dev/sample_data.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
@@ -63,6 +64,7 @@ int _window() {
 }
 
 bool _mouseAdded = false;
+Offset _heldAt = Offset.zero;
 
 Map<String, Object?> _state() => {
   'native': {'pid': pid, 'hwnd': _window(), 'isForeground': _foreground() == _window()},
@@ -151,6 +153,25 @@ void main() {
           GestureBinding.instance.handlePointerEvent(PointerUpEvent(pointer: 9002, kind: PointerDeviceKind.mouse, device: 9, position: from + by));
           await _frame();
           return jsonEncode(_state());
+        case 'pointerDown':
+          // Presses and holds the mouse (see pointerMove and pointerUp), for what shows only while held.
+          final at = Offset(_num(request['x']).toDouble(), _num(request['y']).toDouble());
+          GestureBinding.instance.handlePointerEvent(PointerDownEvent(pointer: 9003, kind: PointerDeviceKind.mouse, device: 9, position: at));
+          _heldAt = at;
+          await _frame();
+          return jsonEncode(_state());
+        case 'pointerMove':
+          final to = _heldAt + Offset(_num(request['dx']).toDouble(), _num(request['dy']).toDouble());
+          GestureBinding.instance.handlePointerEvent(
+            PointerMoveEvent(pointer: 9003, kind: PointerDeviceKind.mouse, device: 9, position: to, delta: to - _heldAt),
+          );
+          _heldAt = to;
+          await _frame();
+          return jsonEncode(_state());
+        case 'pointerUp':
+          GestureBinding.instance.handlePointerEvent(PointerUpEvent(pointer: 9003, kind: PointerDeviceKind.mouse, device: 9, position: _heldAt));
+          await _frame();
+          return jsonEncode(_state());
         case 'go':
           // Opens a location as the app would: a push over the current page.
           unawaited(AppRouter.router.push(request['location']! as String));
@@ -213,6 +234,9 @@ void main() {
       }
     },
   );
+  // The profile image picker answers with a drawn picture instead of opening
+  // the system's file dialog, so the cropper can be driven offline.
+  profileImagePicker = () async => PickedProfileImage.bytes(await _testPicture());
   final present = FlutterError.presentError;
   FlutterError.presentError = (details) {
     _errors.add(details.exceptionAsString());
@@ -222,6 +246,38 @@ void main() {
 }
 
 final _errors = <String>[];
+
+/// A 1200x800 PNG: a sky gradient, a sun and hills, with a grid that makes
+/// panning and zooming easy to see.
+Future<Uint8List> _testPicture() async {
+  const width = 1200.0, height = 800.0;
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  canvas.drawRect(
+    const Rect.fromLTWH(0, 0, width, height),
+    Paint()..shader = ui.Gradient.linear(Offset.zero, const Offset(0, height), const [Color(0xFF7FB6F5), Color(0xFFF7C9D4)]),
+  );
+  final grid = Paint()
+    ..color = const Color(0x33FFFFFF)
+    ..strokeWidth = 2;
+  for (var x = 0.0; x <= width; x += 100) {
+    canvas.drawLine(Offset(x, 0), Offset(x, height), grid);
+  }
+  for (var y = 0.0; y <= height; y += 100) {
+    canvas.drawLine(Offset(0, y), Offset(width, y), grid);
+  }
+  canvas.drawCircle(const Offset(800, 300), 150, Paint()..color = const Color(0xFFFFE08A));
+  canvas.drawCircle(const Offset(300, 640), 340, Paint()..color = const Color(0xFF4E8F6A));
+  canvas.drawCircle(const Offset(900, 760), 300, Paint()..color = const Color(0xFF356C54));
+  final picture = recorder.endRecording();
+  final image = await picture.toImage(width.toInt(), height.toInt());
+  try {
+    return (await image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
+  } finally {
+    image.dispose();
+    picture.dispose();
+  }
+}
 
 /// A context inside the app's provider scope.
 BuildContext _appContext() => AppRouter.rootNavigatorKey.currentContext!;

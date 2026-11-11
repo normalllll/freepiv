@@ -1041,6 +1041,19 @@ class Translations$profileEdit$zh_CN extends Translations$profileEdit$en_US {
 	@override String get discardMessage => '修改还没有保存。';
 	@override String get discard => '放弃';
 	@override String get keepEditing => '继续编辑';
+	@override String get avatar => '头像';
+	@override String get avatarChange => '更换头像';
+	@override String get avatarHint => 'JPEG / PNG / WebP，30 MB 以内';
+	@override String get avatarWorking => '正在处理图片…';
+	@override String get avatarChanged => '已更换，保存后生效';
+	@override String get avatarPickAgain => '重新选择';
+	@override String get avatarUndo => '撤销更换';
+	@override String get avatarTooLarge => '图片超过 30 MB';
+	@override String get avatarUnreadable => '无法读取这张图片';
+	@override String get avatarPrepareFailed => '无法处理这张图片';
+	@override String get cropTitle => '裁剪头像';
+	@override String get cropZoom => '缩放';
+	@override String get cropDone => '完成';
 }
 
 // Path: workspaceEdit
@@ -2808,6 +2821,19 @@ extension on TranslationsZhCn {
 			'profileEdit.discardMessage' => '修改还没有保存。',
 			'profileEdit.discard' => '放弃',
 			'profileEdit.keepEditing' => '继续编辑',
+			'profileEdit.avatar' => '头像',
+			'profileEdit.avatarChange' => '更换头像',
+			'profileEdit.avatarHint' => 'JPEG / PNG / WebP，30 MB 以内',
+			'profileEdit.avatarWorking' => '正在处理图片…',
+			'profileEdit.avatarChanged' => '已更换，保存后生效',
+			'profileEdit.avatarPickAgain' => '重新选择',
+			'profileEdit.avatarUndo' => '撤销更换',
+			'profileEdit.avatarTooLarge' => '图片超过 30 MB',
+			'profileEdit.avatarUnreadable' => '无法读取这张图片',
+			'profileEdit.avatarPrepareFailed' => '无法处理这张图片',
+			'profileEdit.cropTitle' => '裁剪头像',
+			'profileEdit.cropZoom' => '缩放',
+			'profileEdit.cropDone' => '完成',
 			'workspaceEdit.title' => '工作环境',
 			'workspaceEdit.pc' => '电脑',
 			'workspaceEdit.monitor' => '显示器',

@@ -1085,7 +1085,20 @@
     "discardTitle": "変更を破棄しますか？",
     "discardMessage": "変更はまだ保存されていません。",
     "discard": "破棄",
-    "keepEditing": "編集を続ける"
+    "keepEditing": "編集を続ける",
+    "avatar": "プロフィール画像",
+    "avatarChange": "画像を変更",
+    "avatarHint": "JPEG / PNG / WebP、30 MB まで",
+    "avatarWorking": "画像を準備しています…",
+    "avatarChanged": "変更済み。保存すると反映されます",
+    "avatarPickAgain": "選び直す",
+    "avatarUndo": "変更を取り消す",
+    "avatarTooLarge": "画像が 30 MB を超えています",
+    "avatarUnreadable": "画像を読み込めません",
+    "avatarPrepareFailed": "画像を処理できません",
+    "cropTitle": "プロフィール画像を切り抜く",
+    "cropZoom": "ズーム",
+    "cropDone": "完了"
   },
   "workspaceEdit": {
     "title": "作業環境",

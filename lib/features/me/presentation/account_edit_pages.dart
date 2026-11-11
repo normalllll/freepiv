@@ -1,26 +1,36 @@
 import 'dart:async';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/features/me/logic/account_edit_logic.dart';
+import 'package:freepiv/features/me/logic/profile_image_logic.dart';
+import 'package:freepiv/features/me/presentation/profile_avatar_field.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
+import 'package:freepiv/ui/custom/avatar_cropper.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// The chrome of an account form: its title and Save, and a question before
 /// leaving with changes unsaved.
 class _AccountForm extends StatefulWidget {
-  const _AccountForm({required this.title, required this.dirty, required this.busy, required this.onSave, required this.fields});
+  const _AccountForm({required this.title, required this.dirty, required this.busy, required this.onSave, required this.fields, this.blocked = false});
 
   final String title;
   final bool dirty;
   final bool busy;
+
+  /// The page takes no input and cannot be left while this is true.
+  final bool blocked;
   final VoidCallback? onSave;
   final Widget fields;
 
@@ -33,7 +43,7 @@ class _AccountFormState extends State<_AccountForm> {
 
   bool _discarded = false;
 
-  bool get _canSave => widget.dirty && !widget.busy;
+  bool get _canSave => widget.dirty && !widget.busy && !widget.blocked;
 
   Future<void> _confirmLeave() async {
     final t = context.t.profileEdit;
@@ -53,39 +63,44 @@ class _AccountFormState extends State<_AccountForm> {
 
   @override
   Widget build(BuildContext context) => PopScope(
-    canPop: !widget.dirty || _discarded,
+    canPop: !widget.blocked && (!widget.dirty || _discarded),
     onPopInvokedWithResult: (didPop, _) {
-      if (!didPop && widget.dirty) unawaited(_confirmLeave());
+      if (!didPop && !widget.blocked && widget.dirty) unawaited(_confirmLeave());
     },
-    child: FrostPinnedChrome(
-      chrome: FrostContentColumn(
-        maxWidth: FrostMetrics.readingMaxWidth,
-        child: FrostPageHeader(
-          title: FrostText(widget.title),
-          actions: [
-            FrostToolbarItem.custom(
-              minWidth: MediaQuery.textScalerOf(context).scale(_saveMinWidth),
-              plated: true,
-              overflowEntry: FrostMenuAction(context.t.profileEdit.save, onSelected: _canSave ? widget.onSave : null),
-              builder: (context) => FrostButton.prominent(label: context.t.profileEdit.save, onPressed: _canSave ? widget.onSave : null),
-            ),
-          ],
-        ),
-      ),
-      body: FrostLoadingScrollView(
-        slivers: [
-          const FrostChromeSpacer(),
-          FrostSliverContentColumn(
-            maxWidth: FrostMetrics.readingMaxWidth,
-            sliver: SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: FrostGap.section),
-                child: widget.fields,
-              ),
-            ),
+    child: ExcludeFocus(
+      excluding: widget.blocked,
+      child: AbsorbPointer(absorbing: widget.blocked, child: _page(context)),
+    ),
+  );
+
+  Widget _page(BuildContext context) => FrostPinnedChrome(
+    chrome: FrostContentColumn(
+      maxWidth: FrostMetrics.readingMaxWidth,
+      child: FrostPageHeader(
+        title: FrostText(widget.title),
+        actions: [
+          FrostToolbarItem.custom(
+            minWidth: MediaQuery.textScalerOf(context).scale(_saveMinWidth),
+            plated: true,
+            overflowEntry: FrostMenuAction(context.t.profileEdit.save, onSelected: _canSave ? widget.onSave : null),
+            builder: (context) => FrostButton.prominent(label: context.t.profileEdit.save, onPressed: _canSave ? widget.onSave : null),
           ),
         ],
       ),
+    ),
+    body: FrostLoadingScrollView(
+      slivers: [
+        const FrostChromeSpacer(),
+        FrostSliverContentColumn(
+          maxWidth: FrostMetrics.readingMaxWidth,
+          sliver: SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: FrostGap.section),
+              child: widget.fields,
+            ),
+          ),
+        ),
+      ],
     ),
   );
 }
@@ -171,6 +186,18 @@ class _ProfileForm extends ConsumerStatefulWidget {
   ConsumerState<_ProfileForm> createState() => _ProfileFormState();
 }
 
+/// How far choosing a new profile image has got.
+enum _AvatarStep {
+  /// Nothing is under way.
+  idle,
+
+  /// The file picker or the cropper is open and takes the input itself.
+  choosing,
+
+  /// The image is being read, decoded or prepared; the page waits for it.
+  working,
+}
+
 class _ProfileFormState extends ConsumerState<_ProfileForm> {
   final _form = FrostFormController();
   late final String? _account = pixivAccountNotifier.value?.user.id;
@@ -188,12 +215,18 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
   bool _busy = false;
   bool _saved = false;
 
+  /// The cropped JPEG that replaces the profile image on saving.
+  Uint8List? _avatar;
+  String? _avatarError;
+  _AvatarStep _avatarStep = _AvatarStep.idle;
+
   bool get _global => widget.presets.addresses.where((address) => address.id == _address).firstOrNull?.isGlobal ?? false;
 
   bool get _dirty {
     if (_saved) return false;
     final profile = widget.detail.profile;
-    return _name.text != widget.detail.user.name ||
+    return _avatar != null ||
+        _name.text != widget.detail.user.name ||
         _website.text != (profile.webpage ?? '') ||
         _twitter.text != (profile.twitterAccount ?? '') ||
         _bio.text != (widget.detail.user.comment ?? '') ||
@@ -226,6 +259,96 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
   static String _dateText(DateTime date) =>
       '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
+  /// Picks an image, asks which part of it to keep and turns that into the
+  /// JPEG that is uploaded when the form is saved.
+  Future<void> _pickAvatar() async {
+    if (_avatarStep != _AvatarStep.idle || _busy) return;
+    final t = context.t.profileEdit;
+    void step(_AvatarStep next) {
+      if (mounted) setState(() => _avatarStep = next);
+    }
+
+    step(_AvatarStep.choosing);
+    try {
+      final PickedProfileImage? picked;
+      try {
+        picked = await profileImagePicker();
+      } catch (_) {
+        if (mounted) FrostToast.error(t.avatarUnreadable);
+        return;
+      }
+      if (picked == null || !mounted) return;
+      if ((picked.size ?? 0) > profileImageSourceLimit) {
+        FrostToast.error(t.avatarTooLarge);
+        return;
+      }
+      step(_AvatarStep.working);
+      final Uint8List source;
+      try {
+        source = await picked.read();
+      } catch (_) {
+        if (mounted) FrostToast.error(t.avatarUnreadable);
+        return;
+      }
+      if (!mounted) return;
+      if (source.length > profileImageSourceLimit) {
+        FrostToast.error(t.avatarTooLarge);
+        return;
+      }
+      final image = await decodeProfileImageSource(source).then<ui.Image?>((image) => image, onError: (_) => null);
+      if (image == null) {
+        if (mounted) FrostToast.error(t.avatarUnreadable);
+        return;
+      }
+      try {
+        if (!mounted) return;
+        step(_AvatarStep.choosing);
+        final crop = await showAvatarCropper(context, image: image);
+        if (crop == null || !mounted) return;
+        step(_AvatarStep.working);
+        final jpeg = await profileImagePreparer(source, crop);
+        if (!mounted) return;
+        setState(() {
+          _avatar = jpeg;
+          _avatarError = null;
+        });
+      } catch (error) {
+        if (mounted) toastErrorWithCause(t.avatarPrepareFailed, error);
+      } finally {
+        image.dispose();
+      }
+    } finally {
+      step(_AvatarStep.idle);
+    }
+  }
+
+  void _undoAvatar() => setState(() {
+    _avatar = null;
+    _avatarError = null;
+  });
+
+  /// The profile image Pixiv holds now, as the account stores it. Pixiv gives
+  /// one size, which serves for each of the account's. Null when it cannot be
+  /// read: the old one stays until the account is next signed in.
+  Future<LocalUserProfileImageUrls?> _currentAvatarUrls() async {
+    try {
+      final url = (await pixivApi.getUserDetail(userId: widget.userId)).user.profileImageUrls.medium;
+      return url.isEmpty ? null : LocalUserProfileImageUrls(px16X16: url, px50X50: url, px170X170: url);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Pixiv's complaint about the uploaded image, if [error] is one.
+  Future<String?> _avatarComplaint(Object error) async {
+    if (_avatar == null || error is! PixivError) return null;
+    try {
+      return await error.fieldMessage(field: 'profile_image');
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<bool> _save() async {
     final t = context.t.profileEdit;
     final name = _name.text.trim();
@@ -233,8 +356,10 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
       setState(() => _nameError = t.nameRequired);
       return false;
     }
+    final avatar = _avatar;
     setState(() {
       _nameError = null;
+      _avatarError = null;
       _busy = true;
     });
     try {
@@ -249,14 +374,22 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
           twitter: _twitter.text.trim(),
           comment: _bio.text,
           birthday: _birthday,
+          profileImage: avatar == null ? null : ProfileImageUpload(bytes: avatar, fileName: profileImageFileName, mime: profileImageMime),
         ),
       );
+      final avatarUrls = avatar == null ? null : await _currentAvatarUrls();
       if (!mounted || pixivAccountNotifier.value?.user.id != _account) return false;
       ref.invalidate(editableUserDetailProvider(widget.userId));
       ref.invalidate(userDetailProvider(UserDetailArgs(userId: widget.userId)));
       // The account card and settings read the stored account, not the profile.
       // From the API's copy: it holds the access token as last refreshed.
-      if (pixivApi.account() case final account?) updatePixivAccount(account.copyWith(user: account.user.copyWith(name: name)));
+      if (pixivApi.account() case final account?) {
+        updatePixivAccount(
+          account.copyWith(
+            user: account.user.copyWith(name: name, profileImageUrls: avatarUrls ?? account.user.profileImageUrls),
+          ),
+        );
+      }
       FrostToast.success(t.saved);
       setState(() => _saved = true);
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -264,7 +397,15 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
       });
       return true;
     } catch (error) {
-      if (mounted && pixivAccountNotifier.value?.user.id == _account) toastErrorWithCause(t.failed, error);
+      if (mounted && pixivAccountNotifier.value?.user.id == _account) {
+        final complaint = await _avatarComplaint(error);
+        if (!mounted) return false;
+        if (complaint != null) {
+          setState(() => _avatarError = complaint);
+        } else {
+          toastErrorWithCause(t.failed, error);
+        }
+      }
       return false;
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -279,11 +420,23 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
       title: t.title,
       dirty: _dirty,
       busy: _busy,
+      blocked: _avatarStep == _AvatarStep.working,
       onSave: () => unawaited(_form.submit()),
       fields: FrostForm(
         controller: _form,
         onSubmit: _save,
         children: [
+          ProfileAvatarField(
+            name: widget.detail.user.name,
+            userId: widget.userId,
+            imageUrl: widget.detail.user.profileImageUrls.medium,
+            replacement: _avatar,
+            enabled: !_busy && _avatarStep == _AvatarStep.idle,
+            working: _avatarStep == _AvatarStep.working,
+            error: _avatarError,
+            onPick: () => unawaited(_pickAvatar()),
+            onUndo: _undoAvatar,
+          ),
           FrostTextField(controller: _name, label: t.name, error: _nameError, onChanged: _changed),
           FrostPicker<_Gender>.menu(
             label: t.gender,

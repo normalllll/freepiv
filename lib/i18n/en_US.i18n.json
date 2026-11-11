@@ -1085,7 +1085,20 @@
     "discardTitle": "Discard your changes?",
     "discardMessage": "Your changes have not been saved.",
     "discard": "Discard",
-    "keepEditing": "Keep editing"
+    "keepEditing": "Keep editing",
+    "avatar": "Profile image",
+    "avatarChange": "Change image",
+    "avatarHint": "JPEG / PNG / WebP, up to 30 MB",
+    "avatarWorking": "Preparing the image…",
+    "avatarChanged": "Changed. Takes effect after you save.",
+    "avatarPickAgain": "Choose another",
+    "avatarUndo": "Undo change",
+    "avatarTooLarge": "The image is larger than 30 MB",
+    "avatarUnreadable": "Could not read the image",
+    "avatarPrepareFailed": "Could not prepare the image",
+    "cropTitle": "Crop profile image",
+    "cropZoom": "Zoom",
+    "cropDone": "Done"
   },
   "workspaceEdit": {
     "title": "Workspace",

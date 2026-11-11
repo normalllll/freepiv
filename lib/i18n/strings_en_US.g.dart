@@ -1043,6 +1043,19 @@ class Translations$profileEdit$en_US {
 	String get discardMessage => 'Your changes have not been saved.';
 	String get discard => 'Discard';
 	String get keepEditing => 'Keep editing';
+	String get avatar => 'Profile image';
+	String get avatarChange => 'Change image';
+	String get avatarHint => 'JPEG / PNG / WebP, up to 30 MB';
+	String get avatarWorking => 'Preparing the image…';
+	String get avatarChanged => 'Changed. Takes effect after you save.';
+	String get avatarPickAgain => 'Choose another';
+	String get avatarUndo => 'Undo change';
+	String get avatarTooLarge => 'The image is larger than 30 MB';
+	String get avatarUnreadable => 'Could not read the image';
+	String get avatarPrepareFailed => 'Could not prepare the image';
+	String get cropTitle => 'Crop profile image';
+	String get cropZoom => 'Zoom';
+	String get cropDone => 'Done';
 }
 
 // Path: workspaceEdit
@@ -2810,6 +2823,19 @@ extension on Translations {
 			'profileEdit.discardMessage' => 'Your changes have not been saved.',
 			'profileEdit.discard' => 'Discard',
 			'profileEdit.keepEditing' => 'Keep editing',
+			'profileEdit.avatar' => 'Profile image',
+			'profileEdit.avatarChange' => 'Change image',
+			'profileEdit.avatarHint' => 'JPEG / PNG / WebP, up to 30 MB',
+			'profileEdit.avatarWorking' => 'Preparing the image…',
+			'profileEdit.avatarChanged' => 'Changed. Takes effect after you save.',
+			'profileEdit.avatarPickAgain' => 'Choose another',
+			'profileEdit.avatarUndo' => 'Undo change',
+			'profileEdit.avatarTooLarge' => 'The image is larger than 30 MB',
+			'profileEdit.avatarUnreadable' => 'Could not read the image',
+			'profileEdit.avatarPrepareFailed' => 'Could not prepare the image',
+			'profileEdit.cropTitle' => 'Crop profile image',
+			'profileEdit.cropZoom' => 'Zoom',
+			'profileEdit.cropDone' => 'Done',
 			'workspaceEdit.title' => 'Workspace',
 			'workspaceEdit.pc' => 'Computer',
 			'workspaceEdit.monitor' => 'Monitor',

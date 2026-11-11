@@ -1085,7 +1085,20 @@
     "discardTitle": "放棄這些修改？",
     "discardMessage": "修改還沒有儲存。",
     "discard": "放棄",
-    "keepEditing": "繼續編輯"
+    "keepEditing": "繼續編輯",
+    "avatar": "頭像",
+    "avatarChange": "更換頭像",
+    "avatarHint": "JPEG / PNG / WebP，30 MB 以內",
+    "avatarWorking": "正在處理圖片…",
+    "avatarChanged": "已更換，儲存後生效",
+    "avatarPickAgain": "重新選擇",
+    "avatarUndo": "撤銷更換",
+    "avatarTooLarge": "圖片超過 30 MB",
+    "avatarUnreadable": "無法讀取這張圖片",
+    "avatarPrepareFailed": "無法處理這張圖片",
+    "cropTitle": "裁剪頭像",
+    "cropZoom": "縮放",
+    "cropDone": "完成"
   },
   "workspaceEdit": {
     "title": "工作環境",
