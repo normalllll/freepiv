@@ -82,6 +82,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$privacy$zh_Hant_TW privacy = Translations$privacy$zh_Hant_TW.internal(_root);
 	@override late final Translations$bookmarkOptions$zh_Hant_TW bookmarkOptions = Translations$bookmarkOptions$zh_Hant_TW.internal(_root);
 	@override late final Translations$series$zh_Hant_TW series = Translations$series$zh_Hant_TW.internal(_root);
+	@override late final Translations$history$zh_Hant_TW history = Translations$history$zh_Hant_TW.internal(_root);
 	@override late final Translations$watchlist$zh_Hant_TW watchlist = Translations$watchlist$zh_Hant_TW.internal(_root);
 	@override late final Translations$profileEdit$zh_Hant_TW profileEdit = Translations$profileEdit$zh_Hant_TW.internal(_root);
 	@override late final Translations$workspaceEdit$zh_Hant_TW workspaceEdit = Translations$workspaceEdit$zh_Hant_TW.internal(_root);
@@ -448,6 +449,7 @@ class Translations$me$zh_Hant_TW extends Translations$me$en_US {
 	@override String get about => '關於';
 	@override String get settings => '設定';
 	@override String get watchlist => '我的追更';
+	@override String get history => '瀏覽記錄';
 	@override String get editProfile => '編輯資料';
 	@override String get workspace => '工作環境';
 }
@@ -968,6 +970,30 @@ class Translations$series$zh_Hant_TW extends Translations$series$en_US {
 	@override String get watchFailed => '追更操作失敗';
 	@override String get startFromFirst => '從第 1 話開始';
 	@override String get empty => '這個系列還沒有作品';
+}
+
+// Path: history
+class Translations$history$zh_Hant_TW extends Translations$history$en_US {
+	Translations$history$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '瀏覽記錄';
+	@override String get record => '記錄瀏覽歷史';
+	@override String get limit => '保存上限';
+	@override String get illustrations => '插畫·漫畫';
+	@override String get novels => '小說';
+	@override String get localOnly => '只保存在這台裝置上';
+	@override String get empty => '還沒有瀏覽記錄';
+	@override String get open => '開啟';
+	@override String get remove => '從瀏覽記錄中刪除';
+	@override String get clear => '清空瀏覽記錄';
+	@override String get clearMessage => '將清空目前帳號在這台裝置上的瀏覽記錄，無法復原。';
+	@override String get clearConfirm => '清空';
+	@override String get lowerLimitTitle => '調低保存上限？';
+	@override String lowerLimitMessage({required Object count}) => '將刪除最舊的 ${count} 筆瀏覽記錄，無法復原。';
+	@override String get lowerLimitConfirm => '刪除';
 }
 
 // Path: watchlist
@@ -2229,6 +2255,7 @@ extension on TranslationsZhHantTw {
 			'me.about' => '關於',
 			'me.settings' => '設定',
 			'me.watchlist' => '我的追更',
+			'me.history' => '瀏覽記錄',
 			'me.editProfile' => '編輯資料',
 			'me.workspace' => '工作環境',
 			'about.title' => '關於',
@@ -2389,9 +2416,9 @@ extension on TranslationsZhHantTw {
 			'user.error.missingUser' => '缺少使用者 ID 或使用者詳細資訊。',
 			'newest.audience.following' => '關注',
 			'newest.audience.mypixiv' => '好P友',
-			'newest.audience.everyone' => '所有人',
 			_ => null,
 		} ?? switch (path) {
+			'newest.audience.everyone' => '所有人',
 			'newest.workType.illustManga' => '插畫&漫畫',
 			'newest.workType.illust' => '插畫',
 			'newest.workType.manga' => '漫畫',
@@ -2737,6 +2764,21 @@ extension on TranslationsZhHantTw {
 			'series.watchFailed' => '追更操作失敗',
 			'series.startFromFirst' => '從第 1 話開始',
 			'series.empty' => '這個系列還沒有作品',
+			'history.title' => '瀏覽記錄',
+			'history.record' => '記錄瀏覽歷史',
+			'history.limit' => '保存上限',
+			'history.illustrations' => '插畫·漫畫',
+			'history.novels' => '小說',
+			'history.localOnly' => '只保存在這台裝置上',
+			'history.empty' => '還沒有瀏覽記錄',
+			'history.open' => '開啟',
+			'history.remove' => '從瀏覽記錄中刪除',
+			'history.clear' => '清空瀏覽記錄',
+			'history.clearMessage' => '將清空目前帳號在這台裝置上的瀏覽記錄，無法復原。',
+			'history.clearConfirm' => '清空',
+			'history.lowerLimitTitle' => '調低保存上限？',
+			'history.lowerLimitMessage' => ({required Object count}) => '將刪除最舊的 ${count} 筆瀏覽記錄，無法復原。',
+			'history.lowerLimitConfirm' => '刪除',
 			'watchlist.title' => '我的追更',
 			'watchlist.manga' => '漫畫',
 			'watchlist.novels' => '小說',

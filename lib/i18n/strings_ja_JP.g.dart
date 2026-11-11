@@ -82,6 +82,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$privacy$ja_JP privacy = _Translations$privacy$ja_JP._(_root);
 	@override late final _Translations$bookmarkOptions$ja_JP bookmarkOptions = _Translations$bookmarkOptions$ja_JP._(_root);
 	@override late final _Translations$series$ja_JP series = _Translations$series$ja_JP._(_root);
+	@override late final _Translations$history$ja_JP history = _Translations$history$ja_JP._(_root);
 	@override late final _Translations$watchlist$ja_JP watchlist = _Translations$watchlist$ja_JP._(_root);
 	@override late final _Translations$profileEdit$ja_JP profileEdit = _Translations$profileEdit$ja_JP._(_root);
 	@override late final _Translations$workspaceEdit$ja_JP workspaceEdit = _Translations$workspaceEdit$ja_JP._(_root);
@@ -448,6 +449,7 @@ class _Translations$me$ja_JP extends Translations$me$en_US {
 	@override String get about => 'このアプリについて';
 	@override String get settings => '設定';
 	@override String get watchlist => '追いかけ中のシリーズ';
+	@override String get history => '閲覧履歴';
 	@override String get editProfile => 'プロフィール編集';
 	@override String get workspace => '作業環境';
 }
@@ -968,6 +970,30 @@ class _Translations$series$ja_JP extends Translations$series$en_US {
 	@override String get watchFailed => '追いかけ設定を変更できませんでした';
 	@override String get startFromFirst => '第1話から読む';
 	@override String get empty => 'このシリーズにはまだ作品がありません';
+}
+
+// Path: history
+class _Translations$history$ja_JP extends Translations$history$en_US {
+	_Translations$history$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '閲覧履歴';
+	@override String get record => '閲覧履歴を記録';
+	@override String get limit => '保存件数の上限';
+	@override String get illustrations => 'イラスト・マンガ';
+	@override String get novels => '小説';
+	@override String get localOnly => 'この端末にのみ保存されます';
+	@override String get empty => '閲覧履歴はまだありません';
+	@override String get open => '開く';
+	@override String get remove => '閲覧履歴から削除';
+	@override String get clear => '閲覧履歴を消去';
+	@override String get clearMessage => 'この端末にあるこのアカウントの閲覧履歴を消去します。元に戻せません。';
+	@override String get clearConfirm => '消去';
+	@override String get lowerLimitTitle => '上限を下げますか？';
+	@override String lowerLimitMessage({required Object count}) => '閲覧履歴の古い順に ${count} 件を削除します。元に戻せません。';
+	@override String get lowerLimitConfirm => '削除';
 }
 
 // Path: watchlist
@@ -2229,6 +2255,7 @@ extension on TranslationsJaJp {
 			'me.about' => 'このアプリについて',
 			'me.settings' => '設定',
 			'me.watchlist' => '追いかけ中のシリーズ',
+			'me.history' => '閲覧履歴',
 			'me.editProfile' => 'プロフィール編集',
 			'me.workspace' => '作業環境',
 			'about.title' => 'このアプリについて',
@@ -2389,9 +2416,9 @@ extension on TranslationsJaJp {
 			'user.error.missingUser' => 'ユーザー ID またはユーザー詳細がありません。',
 			'newest.audience.following' => 'フォロー中',
 			'newest.audience.mypixiv' => 'マイピク',
-			'newest.audience.everyone' => 'みんな',
 			_ => null,
 		} ?? switch (path) {
+			'newest.audience.everyone' => 'みんな',
 			'newest.workType.illustManga' => 'イラスト・マンガ',
 			'newest.workType.illust' => 'イラスト',
 			'newest.workType.manga' => 'マンガ',
@@ -2737,6 +2764,21 @@ extension on TranslationsJaJp {
 			'series.watchFailed' => '追いかけ設定を変更できませんでした',
 			'series.startFromFirst' => '第1話から読む',
 			'series.empty' => 'このシリーズにはまだ作品がありません',
+			'history.title' => '閲覧履歴',
+			'history.record' => '閲覧履歴を記録',
+			'history.limit' => '保存件数の上限',
+			'history.illustrations' => 'イラスト・マンガ',
+			'history.novels' => '小説',
+			'history.localOnly' => 'この端末にのみ保存されます',
+			'history.empty' => '閲覧履歴はまだありません',
+			'history.open' => '開く',
+			'history.remove' => '閲覧履歴から削除',
+			'history.clear' => '閲覧履歴を消去',
+			'history.clearMessage' => 'この端末にあるこのアカウントの閲覧履歴を消去します。元に戻せません。',
+			'history.clearConfirm' => '消去',
+			'history.lowerLimitTitle' => '上限を下げますか？',
+			'history.lowerLimitMessage' => ({required Object count}) => '閲覧履歴の古い順に ${count} 件を削除します。元に戻せません。',
+			'history.lowerLimitConfirm' => '削除',
 			'watchlist.title' => '追いかけ中のシリーズ',
 			'watchlist.manga' => 'マンガ',
 			'watchlist.novels' => '小説',

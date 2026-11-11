@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:freepiv/core/history/history_service.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -42,19 +43,16 @@ class IllustDetailArgs {
 class IllustDetail extends _$IllustDetail {
   @override
   FutureOr<Illust> build(IllustDetailArgs args) async {
-    final illust = args.illust;
-    if (illust != null) {
-      return illust;
-    }
-
-    final detail = await pixivApi.getIllustDetail(illustId: args.resolvedIllustId);
-    return detail.illust;
+    final illust = args.illust ?? (await pixivApi.getIllustDetail(illustId: args.resolvedIllustId)).illust;
+    unawaited(recordIllustView(illust));
+    return illust;
   }
 
   Future<void> reload() async {
     state = const AsyncLoading<Illust>();
     state = await AsyncValue.guard(() async {
       final detail = await pixivApi.getIllustDetail(illustId: args.resolvedIllustId);
+      unawaited(recordIllustView(detail.illust));
       return detail.illust;
     });
   }

@@ -395,6 +395,7 @@
     "about": "About",
     "settings": "Settings",
     "watchlist": "Follow-ups",
+    "history": "Browsing history",
     "editProfile": "Edit profile",
     "workspace": "Workspace"
   },
@@ -1035,6 +1036,23 @@
     "watchFailed": "Could not change the follow-up",
     "startFromFirst": "Start from episode 1",
     "empty": "This series has no works yet"
+  },
+  "history": {
+    "title": "Browsing history",
+    "record": "Record browsing history",
+    "limit": "Keep up to",
+    "illustrations": "Illustrations & manga",
+    "novels": "Novels",
+    "localOnly": "Stored on this device only",
+    "empty": "No browsing history yet",
+    "open": "Open",
+    "remove": "Remove from browsing history",
+    "clear": "Clear browsing history",
+    "clearMessage": "This clears the browsing history of this account on this device. It cannot be undone.",
+    "clearConfirm": "Clear",
+    "lowerLimitTitle": "Lower the limit?",
+    "lowerLimitMessage": "$count of the oldest entries in the browsing history will be deleted. This cannot be undone.",
+    "lowerLimitConfirm": "Delete"
   },
   "watchlist": {
     "title": "Follow-ups",

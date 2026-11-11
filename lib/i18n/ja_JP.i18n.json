@@ -395,6 +395,7 @@
     "about": "このアプリについて",
     "settings": "設定",
     "watchlist": "追いかけ中のシリーズ",
+    "history": "閲覧履歴",
     "editProfile": "プロフィール編集",
     "workspace": "作業環境"
   },
@@ -1035,6 +1036,23 @@
     "watchFailed": "追いかけ設定を変更できませんでした",
     "startFromFirst": "第1話から読む",
     "empty": "このシリーズにはまだ作品がありません"
+  },
+  "history": {
+    "title": "閲覧履歴",
+    "record": "閲覧履歴を記録",
+    "limit": "保存件数の上限",
+    "illustrations": "イラスト・マンガ",
+    "novels": "小説",
+    "localOnly": "この端末にのみ保存されます",
+    "empty": "閲覧履歴はまだありません",
+    "open": "開く",
+    "remove": "閲覧履歴から削除",
+    "clear": "閲覧履歴を消去",
+    "clearMessage": "この端末にあるこのアカウントの閲覧履歴を消去します。元に戻せません。",
+    "clearConfirm": "消去",
+    "lowerLimitTitle": "上限を下げますか？",
+    "lowerLimitMessage": "閲覧履歴の古い順に $count 件を削除します。元に戻せません。",
+    "lowerLimitConfirm": "削除"
   },
   "watchlist": {
     "title": "追いかけ中のシリーズ",

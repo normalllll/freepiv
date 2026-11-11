@@ -10,6 +10,8 @@ import 'package:freepiv/core/services/pixiv_accounts.dart';
 import 'package:freepiv/features/account/account_actions.dart';
 import 'package:freepiv/features/account/account_row.dart';
 import 'package:freepiv/core/downloads/platform/macos_folder_access.dart';
+import 'package:freepiv/core/history/history_models.dart';
+import 'package:freepiv/features/history/history_actions.dart';
 import 'package:freepiv/features/fanbox/login_logic.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/fanbox/login_panel.dart';
@@ -22,7 +24,7 @@ import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
 /// Settings: Appearance, Language, Images, Network,
-/// Downloads and Accounts as Frost settings sections, the categories beside
+/// Downloads, Browsing history and Accounts as Frost settings sections, the categories beside
 /// the settings on wide windows and a list leading to each on narrow ones.
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({this.openAccount = false, super.key});
@@ -35,22 +37,19 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
-  late int _section = widget.openAccount ? _accountSection : 0;
+  late int _section = widget.openAccount ? _SettingsSection.account.index : 0;
   late bool _sectionOpen = widget.openAccount;
-
-  /// The accounts are the last section.
-  static const _accountSection = 5;
 
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    final sections = <Widget Function()>[
-      () => Column(
+    final sections = <_SettingsSection, Widget Function()>{
+      _SettingsSection.theme: () => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: FrostGap.section,
         children: [const AppearanceSettingsSection(), const BackgroundSettingsSection()],
       ),
-      () => FrostGroupedSection(
+      _SettingsSection.language: () => FrostGroupedSection(
         children: [
           FrostListRow(
             title: t.settings.language.title,
@@ -67,7 +66,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
         ],
       ),
-      () => FrostGroupedSection(
+      _SettingsSection.images: () => FrostGroupedSection(
         header: t.settings.images.title,
         children: [
           FrostSettingsSelectTile<PreviewImageQuality>(
@@ -90,7 +89,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
         ],
       ),
-      () {
+      _SettingsSection.proxy: () {
         final proxy = ref.watch(proxySettingsProvider);
         return FrostGroupedSection(
           header: t.settings.proxy.title,
@@ -104,21 +103,26 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ],
         );
       },
-      () => _DownloadSettings(onChoose: _chooseDirectory),
-      () => const _AccountSettings(),
-    ];
+      _SettingsSection.downloads: () => _DownloadSettings(onChoose: _chooseDirectory),
+      _SettingsSection.history: () => const _HistorySettings(),
+      _SettingsSection.account: () => const _AccountSettings(),
+    };
     final labels = [
-      t.settings.theme.title,
-      t.settings.language.title,
-      t.settings.images.title,
-      t.settings.proxy.title,
-      t.settings.downloads.title,
-      t.settings.account.title,
+      for (final section in _SettingsSection.values)
+        switch (section) {
+          _SettingsSection.theme => t.settings.theme.title,
+          _SettingsSection.language => t.settings.language.title,
+          _SettingsSection.images => t.settings.images.title,
+          _SettingsSection.proxy => t.settings.proxy.title,
+          _SettingsSection.downloads => t.settings.downloads.title,
+          _SettingsSection.history => t.history.title,
+          _SettingsSection.account => t.settings.account.title,
+        },
     ];
     // A section fills its pane, so a short one starts at the top.
     Widget section(int index) => SizedBox.expand(
       child: SingleChildScrollView(
-        child: FrostContentColumn(maxWidth: FrostMetrics.readingMaxWidth, child: sections[index]()),
+        child: FrostContentColumn(maxWidth: FrostMetrics.readingMaxWidth, child: sections[_SettingsSection.values[index]]!()),
       ),
     );
     void openSection(int index) => setState(() {
@@ -174,6 +178,35 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     } catch (error) {
       if (mounted) toastErrorWithCause(t.settings.downloads.directoryUnavailable, error);
     }
+  }
+}
+
+/// The sections of Settings, in the order they are listed.
+enum _SettingsSection { theme, language, images, proxy, downloads, history, account }
+
+/// Whether and how much of the browsing history is kept on this device.
+class _HistorySettings extends ConsumerWidget {
+  const _HistorySettings();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final labels = context.t.history;
+    return FrostGroupedSection(
+      header: labels.title,
+      children: [
+        FrostListRow.toggle(title: labels.record, value: ref.watch(recordHistoryProvider), onChanged: ref.read(recordHistoryProvider.notifier).set),
+        FrostListRow(
+          title: labels.limit,
+          trailing: FrostPicker<HistoryLimit>.menu(
+            label: labels.limit,
+            value: ref.watch(historyLimitProvider),
+            options: [for (final limit in HistoryLimit.values) FrostPickerOption(value: limit, label: '${limit.count}')],
+            onChanged: (limit) => unawaited(changeHistoryLimit(context, ref, limit)),
+          ),
+        ),
+        FrostListRow(title: labels.clear, destructive: true, onPressed: () => unawaited(confirmClearHistory(context))),
+      ],
+    );
   }
 }
 

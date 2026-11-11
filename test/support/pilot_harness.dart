@@ -15,6 +15,8 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
+import 'memory_history.dart';
+
 /// The desktop window and the phone the pilot pages are checked at.
 const desktopSize = Size(1147, 717);
 const phoneSize = Size(390, 844);
@@ -49,6 +51,7 @@ Future<void> mountPilotPage(
   addTearDown(tester.view.reset);
   addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
   await AppSettings.initialize(store: SampleSettingsStore(settings ?? sampleSettings));
+  useMemoryHistory();
   await tester.runAsync(() => LocaleSettings.setLocale(locale));
   addTearDown(() => LocaleSettings.setLocaleSync(AppLocale.enUs));
   if (!signedIn) AppSettings.accounts = AppSettings.accounts.deactivated();

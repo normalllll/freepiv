@@ -8,6 +8,8 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
+import 'memory_history.dart';
+
 /// The error Pixiv answers with when a session is refused.
 const oauthRefused = PixivError(
   kind: PixivErrorKind.httpStatus,
@@ -56,6 +58,7 @@ class FakeAccountApi implements PixivApi {
 /// [failures] (by user ID) making their check fail. Call [restore] when done.
 class FakeAccountApis {
   FakeAccountApis([Map<String, Object> failures = const {}]) : failures = Map.of(failures) {
+    useMemoryHistory();
     _original = pixivApiFactory;
     pixivApiFactory = createFor;
   }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:freepiv/core/downloads/downloader.dart';
+import 'package:freepiv/core/history/history_models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
@@ -16,6 +17,10 @@ final viewerImageQualityProvider = NotifierProvider<ViewerImageQualityNotifier, 
 final downloadSavePathSettingsProvider = NotifierProvider<DownloadSavePathSettingsNotifier, DownloadSavePathSettings>(DownloadSavePathSettingsNotifier.new);
 
 final maxConcurrentDownloadsProvider = NotifierProvider<MaxConcurrentDownloadsNotifier, int>(MaxConcurrentDownloadsNotifier.new);
+
+final recordHistoryProvider = NotifierProvider<RecordHistoryNotifier, bool>(RecordHistoryNotifier.new);
+
+final historyLimitProvider = NotifierProvider<HistoryLimitNotifier, HistoryLimit>(HistoryLimitNotifier.new);
 
 final proxySettingsProvider = NotifierProvider<AppProxySettingsNotifier, AppProxySettings>(AppProxySettingsNotifier.new);
 
@@ -106,6 +111,26 @@ class MaxConcurrentDownloadsNotifier extends Notifier<int> {
     AppSettings.maxConcurrentDownloads = limit;
     state = AppSettings.maxConcurrentDownloads;
     unawaited(downloadManager.refreshQueue());
+  }
+}
+
+class RecordHistoryNotifier extends Notifier<bool> {
+  @override
+  bool build() => AppSettings.recordHistory;
+
+  void set(bool record) {
+    AppSettings.recordHistory = record;
+    state = record;
+  }
+}
+
+class HistoryLimitNotifier extends Notifier<HistoryLimit> {
+  @override
+  HistoryLimit build() => AppSettings.historyLimit;
+
+  void set(HistoryLimit limit) {
+    AppSettings.historyLimit = limit;
+    state = limit;
   }
 }
 

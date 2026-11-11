@@ -82,6 +82,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$privacy$zh_CN privacy = Translations$privacy$zh_CN.internal(_root);
 	@override late final Translations$bookmarkOptions$zh_CN bookmarkOptions = Translations$bookmarkOptions$zh_CN.internal(_root);
 	@override late final Translations$series$zh_CN series = Translations$series$zh_CN.internal(_root);
+	@override late final Translations$history$zh_CN history = Translations$history$zh_CN.internal(_root);
 	@override late final Translations$watchlist$zh_CN watchlist = Translations$watchlist$zh_CN.internal(_root);
 	@override late final Translations$profileEdit$zh_CN profileEdit = Translations$profileEdit$zh_CN.internal(_root);
 	@override late final Translations$workspaceEdit$zh_CN workspaceEdit = Translations$workspaceEdit$zh_CN.internal(_root);
@@ -448,6 +449,7 @@ class Translations$me$zh_CN extends Translations$me$en_US {
 	@override String get about => '关于';
 	@override String get settings => '设置';
 	@override String get watchlist => '我的追更';
+	@override String get history => '浏览记录';
 	@override String get editProfile => '编辑资料';
 	@override String get workspace => '工作环境';
 }
@@ -968,6 +970,30 @@ class Translations$series$zh_CN extends Translations$series$en_US {
 	@override String get watchFailed => '追更操作失败';
 	@override String get startFromFirst => '从第 1 话开始';
 	@override String get empty => '这个系列还没有作品';
+}
+
+// Path: history
+class Translations$history$zh_CN extends Translations$history$en_US {
+	Translations$history$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '浏览记录';
+	@override String get record => '记录浏览历史';
+	@override String get limit => '保存上限';
+	@override String get illustrations => '插画·漫画';
+	@override String get novels => '小说';
+	@override String get localOnly => '只保存在这台设备上';
+	@override String get empty => '还没有浏览记录';
+	@override String get open => '打开';
+	@override String get remove => '从浏览记录中删除';
+	@override String get clear => '清空浏览记录';
+	@override String get clearMessage => '将清空当前账号在这台设备上的浏览记录，无法撤销。';
+	@override String get clearConfirm => '清空';
+	@override String get lowerLimitTitle => '调低保存上限？';
+	@override String lowerLimitMessage({required Object count}) => '将删除最旧的 ${count} 条浏览记录，无法撤销。';
+	@override String get lowerLimitConfirm => '删除';
 }
 
 // Path: watchlist
@@ -2229,6 +2255,7 @@ extension on TranslationsZhCn {
 			'me.about' => '关于',
 			'me.settings' => '设置',
 			'me.watchlist' => '我的追更',
+			'me.history' => '浏览记录',
 			'me.editProfile' => '编辑资料',
 			'me.workspace' => '工作环境',
 			'about.title' => '关于',
@@ -2389,9 +2416,9 @@ extension on TranslationsZhCn {
 			'user.error.missingUser' => '缺少用户 ID 或用户详情。',
 			'newest.audience.following' => '关注',
 			'newest.audience.mypixiv' => '好P友',
-			'newest.audience.everyone' => '所有人',
 			_ => null,
 		} ?? switch (path) {
+			'newest.audience.everyone' => '所有人',
 			'newest.workType.illustManga' => '插画&漫画',
 			'newest.workType.illust' => '插画',
 			'newest.workType.manga' => '漫画',
@@ -2737,6 +2764,21 @@ extension on TranslationsZhCn {
 			'series.watchFailed' => '追更操作失败',
 			'series.startFromFirst' => '从第 1 话开始',
 			'series.empty' => '这个系列还没有作品',
+			'history.title' => '浏览记录',
+			'history.record' => '记录浏览历史',
+			'history.limit' => '保存上限',
+			'history.illustrations' => '插画·漫画',
+			'history.novels' => '小说',
+			'history.localOnly' => '只保存在这台设备上',
+			'history.empty' => '还没有浏览记录',
+			'history.open' => '打开',
+			'history.remove' => '从浏览记录中删除',
+			'history.clear' => '清空浏览记录',
+			'history.clearMessage' => '将清空当前账号在这台设备上的浏览记录，无法撤销。',
+			'history.clearConfirm' => '清空',
+			'history.lowerLimitTitle' => '调低保存上限？',
+			'history.lowerLimitMessage' => ({required Object count}) => '将删除最旧的 ${count} 条浏览记录，无法撤销。',
+			'history.lowerLimitConfirm' => '删除',
 			'watchlist.title' => '我的追更',
 			'watchlist.manga' => '漫画',
 			'watchlist.novels' => '小说',

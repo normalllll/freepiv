@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/core/history/history_models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/core/services/app_storage.dart';
 import 'package:freepiv/core/services/pixiv_accounts.dart';
@@ -126,6 +127,8 @@ class AppSettings {
   static const _readerAutoScrollSpeedKey = 'readerAutoScrollSpeed';
   static const _readerVolumeKeysKey = 'readerVolumeKeys';
   static const _downloadEntryPositionKey = 'downloadEntryPosition';
+  static const _recordHistoryKey = 'recordHistory';
+  static const _historyLimitKey = 'historyLimit';
 
   static const defaultBackgroundIntensity = 100;
   static const minBackgroundIntensity = 10;
@@ -165,6 +168,8 @@ class AppSettings {
     _readerAutoScrollSpeedKey,
     _readerVolumeKeysKey,
     _downloadEntryPositionKey,
+    _recordHistoryKey,
+    _historyLimitKey,
   };
 
   static final Map<String, dynamic> _values = {};
@@ -356,6 +361,17 @@ class AppSettings {
   static set downloadEntryPosition(FrostFloatingEntryPosition value) =>
       _write(_downloadEntryPositionKey, {'edge': value.edge.name, 'fraction': value.fraction});
 
+  /// Whether viewing a work is noted in the browsing history; on until turned
+  /// off.
+  static bool get recordHistory => _values[_recordHistoryKey] != false;
+
+  static set recordHistory(bool value) => _write(_recordHistoryKey, value);
+
+  /// How many works each account's browsing history keeps.
+  static HistoryLimit get historyLimit => HistoryLimit.named(_values[_historyLimitKey]);
+
+  static set historyLimit(HistoryLimit value) => _write(_historyLimitKey, value.name);
+
   static Future<void> initialize({AppSettingsStore? store}) async {
     _store = store ?? await HiveAppSettingsStore.open();
 
@@ -447,7 +463,8 @@ class AppSettings {
       _maxConcurrentDownloadsKey => value is int && _isValidMaxConcurrentDownloads(value),
       _proxyEnabledKey => value is bool,
       _proxyUrlKey => value is String && normalizeProxyUrl(value) != null,
-      _sidebarExpandedKey || _readerVolumeKeysKey => value is bool,
+      _sidebarExpandedKey || _readerVolumeKeysKey || _recordHistoryKey => value is bool,
+      _historyLimitKey => _isEnumSettingValue(value, HistoryLimit.values),
       _windowPlacementKey => _windowPlacementFrom(value) != null,
       _readerFontSizeKey => _inRange(value, readerFontSizeRange),
       _readerLineHeightKey => _inRange(value, readerLineHeightRange),

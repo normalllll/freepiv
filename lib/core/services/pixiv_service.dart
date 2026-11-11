@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
 import 'package:freepiv/core/downloads/downloader.dart';
+import 'package:freepiv/core/history/history_service.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_accounts.dart';
 import 'package:freepiv/core/services/pixiv_api_settings.dart';
@@ -148,7 +149,14 @@ Future<PixivSwitchResult> switchPixivAccount(String id) => _serial(() async {
 Future<void> removePixivAccount(String id) => _serial(() async {
   final book = AppSettings.accounts;
   if (book.entry(id) == null) return;
+  // The entry carries the account's search history; its browsing history is
+  // kept apart and goes with it.
   AppSettings.accounts = book.remove(id);
+  try {
+    await historyRepository.clear(id);
+  } catch (_) {
+    // A history that cannot be cleared does not keep the account from signing out.
+  }
   if (book.activeId != id) return;
   for (final candidate in AppSettings.accounts.usableByRecency()) {
     final api = createPixivApi(account: candidate.session);

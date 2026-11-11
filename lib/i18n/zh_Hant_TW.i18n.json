@@ -395,6 +395,7 @@
     "about": "關於",
     "settings": "設定",
     "watchlist": "我的追更",
+    "history": "瀏覽記錄",
     "editProfile": "編輯資料",
     "workspace": "工作環境"
   },
@@ -1035,6 +1036,23 @@
     "watchFailed": "追更操作失敗",
     "startFromFirst": "從第 1 話開始",
     "empty": "這個系列還沒有作品"
+  },
+  "history": {
+    "title": "瀏覽記錄",
+    "record": "記錄瀏覽歷史",
+    "limit": "保存上限",
+    "illustrations": "插畫·漫畫",
+    "novels": "小說",
+    "localOnly": "只保存在這台裝置上",
+    "empty": "還沒有瀏覽記錄",
+    "open": "開啟",
+    "remove": "從瀏覽記錄中刪除",
+    "clear": "清空瀏覽記錄",
+    "clearMessage": "將清空目前帳號在這台裝置上的瀏覽記錄，無法復原。",
+    "clearConfirm": "清空",
+    "lowerLimitTitle": "調低保存上限？",
+    "lowerLimitMessage": "將刪除最舊的 $count 筆瀏覽記錄，無法復原。",
+    "lowerLimitConfirm": "刪除"
   },
   "watchlist": {
     "title": "我的追更",

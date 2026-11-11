@@ -84,6 +84,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$privacy$en_US privacy = Translations$privacy$en_US.internal(_root);
 	late final Translations$bookmarkOptions$en_US bookmarkOptions = Translations$bookmarkOptions$en_US.internal(_root);
 	late final Translations$series$en_US series = Translations$series$en_US.internal(_root);
+	late final Translations$history$en_US history = Translations$history$en_US.internal(_root);
 	late final Translations$watchlist$en_US watchlist = Translations$watchlist$en_US.internal(_root);
 	late final Translations$profileEdit$en_US profileEdit = Translations$profileEdit$en_US.internal(_root);
 	late final Translations$workspaceEdit$en_US workspaceEdit = Translations$workspaceEdit$en_US.internal(_root);
@@ -450,6 +451,7 @@ class Translations$me$en_US {
 	String get about => 'About';
 	String get settings => 'Settings';
 	String get watchlist => 'Follow-ups';
+	String get history => 'Browsing history';
 	String get editProfile => 'Edit profile';
 	String get workspace => 'Workspace';
 }
@@ -970,6 +972,30 @@ class Translations$series$en_US {
 	String get watchFailed => 'Could not change the follow-up';
 	String get startFromFirst => 'Start from episode 1';
 	String get empty => 'This series has no works yet';
+}
+
+// Path: history
+class Translations$history$en_US {
+	Translations$history$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Browsing history';
+	String get record => 'Record browsing history';
+	String get limit => 'Keep up to';
+	String get illustrations => 'Illustrations & manga';
+	String get novels => 'Novels';
+	String get localOnly => 'Stored on this device only';
+	String get empty => 'No browsing history yet';
+	String get open => 'Open';
+	String get remove => 'Remove from browsing history';
+	String get clear => 'Clear browsing history';
+	String get clearMessage => 'This clears the browsing history of this account on this device. It cannot be undone.';
+	String get clearConfirm => 'Clear';
+	String get lowerLimitTitle => 'Lower the limit?';
+	String lowerLimitMessage({required Object count}) => '${count} of the oldest entries in the browsing history will be deleted. This cannot be undone.';
+	String get lowerLimitConfirm => 'Delete';
 }
 
 // Path: watchlist
@@ -2231,6 +2257,7 @@ extension on Translations {
 			'me.about' => 'About',
 			'me.settings' => 'Settings',
 			'me.watchlist' => 'Follow-ups',
+			'me.history' => 'Browsing history',
 			'me.editProfile' => 'Edit profile',
 			'me.workspace' => 'Workspace',
 			'about.title' => 'About',
@@ -2391,9 +2418,9 @@ extension on Translations {
 			'user.error.missingUser' => 'User id or user detail is missing.',
 			'newest.audience.following' => 'Following',
 			'newest.audience.mypixiv' => 'MyPixiv',
-			'newest.audience.everyone' => 'Everyone',
 			_ => null,
 		} ?? switch (path) {
+			'newest.audience.everyone' => 'Everyone',
 			'newest.workType.illustManga' => 'Illust & Manga',
 			'newest.workType.illust' => 'Illust',
 			'newest.workType.manga' => 'Manga',
@@ -2739,6 +2766,21 @@ extension on Translations {
 			'series.watchFailed' => 'Could not change the follow-up',
 			'series.startFromFirst' => 'Start from episode 1',
 			'series.empty' => 'This series has no works yet',
+			'history.title' => 'Browsing history',
+			'history.record' => 'Record browsing history',
+			'history.limit' => 'Keep up to',
+			'history.illustrations' => 'Illustrations & manga',
+			'history.novels' => 'Novels',
+			'history.localOnly' => 'Stored on this device only',
+			'history.empty' => 'No browsing history yet',
+			'history.open' => 'Open',
+			'history.remove' => 'Remove from browsing history',
+			'history.clear' => 'Clear browsing history',
+			'history.clearMessage' => 'This clears the browsing history of this account on this device. It cannot be undone.',
+			'history.clearConfirm' => 'Clear',
+			'history.lowerLimitTitle' => 'Lower the limit?',
+			'history.lowerLimitMessage' => ({required Object count}) => '${count} of the oldest entries in the browsing history will be deleted. This cannot be undone.',
+			'history.lowerLimitConfirm' => 'Delete',
 			'watchlist.title' => 'Follow-ups',
 			'watchlist.manga' => 'Manga',
 			'watchlist.novels' => 'Novels',

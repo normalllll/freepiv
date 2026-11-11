@@ -50,7 +50,7 @@ final class IllustDetailProvider
   }
 }
 
-String _$illustDetailHash() => r'75fd928f26b4a6e5df65ca8a4045a73872aab01e';
+String _$illustDetailHash() => r'7c60466255bd8796502e0696a80626592516403c';
 
 final class IllustDetailFamily extends $Family
     with

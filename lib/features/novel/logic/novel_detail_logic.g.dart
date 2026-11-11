@@ -101,7 +101,7 @@ final class NovelDetailProvider
   }
 }
 
-String _$novelDetailHash() => r'02d4b74229c8ba0a6375b5323bfb2c56e271ea75';
+String _$novelDetailHash() => r'1200eea1da4902a1ade0d2c68b0671dded413ac0';
 
 /// The novel's details: the work passed in when it opens, or fetched. Its
 /// text loads on its own ([NovelText]), so a failed text leaves the details

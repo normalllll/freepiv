@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:freepiv/core/history/history_service.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -83,9 +84,9 @@ class NovelDetail extends _$NovelDetail {
   }
 
   Future<Novel> _load(NovelDetailArgs args, {required bool useSeed}) async {
-    final novel = useSeed ? args.novel : null;
-    if (novel != null) return novel;
-    return (await pixivApi.getNovelDetail(novelId: args.resolvedNovelId)).novel;
+    final novel = (useSeed ? args.novel : null) ?? (await pixivApi.getNovelDetail(novelId: args.resolvedNovelId)).novel;
+    unawaited(recordNovelView(novel));
+    return novel;
   }
 }
 
