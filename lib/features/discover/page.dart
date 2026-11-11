@@ -98,7 +98,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
       onRefresh: refresh,
       child: FrostPinnedChrome(
         chrome: FrostPageHeader(
-          title: inCaption ? FrostText(t.common.discover) : null,
+          title: FrostText(t.common.discover),
           middle: inCaption
               ? null
               : SearchBox(

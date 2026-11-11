@@ -3,7 +3,6 @@ description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-
 version: 0.2.0+6
 
 environment:
@@ -16,14 +15,11 @@ dependencies:
     sdk: flutter
   frost_ui:
     git:
-      url: https://github.com/normalllll/frost_ui.git
+      url: &frost https://github.com/normalllll/frost_ui.git
       path: packages/frost_ui
-      ref: main
+      ref: &frost_ref 957a16de4670e87a57f02dc6bc12e820f03876fb
   frost_data:
-    git:
-      url: https://github.com/normalllll/frost_ui.git
-      path: packages/frost_data
-      ref: main
+    git: {url: *frost, path: packages/frost_data, ref: *frost_ref}
 
   cupertino_icons: ^2.0.0
   flutter_rust_bridge: 2.14.0-beta.2
@@ -59,7 +55,6 @@ dependencies:
   device_info_plus: ^13.3.0
   crypto: ^3.0.7
 
-
 dev_dependencies:
   flutter_driver:
     sdk: flutter
@@ -78,7 +73,6 @@ dev_dependencies:
   drift_dev: ^2.35.1
 
 flutter:
-
 
   uses-material-design: true
 
@@ -100,12 +94,3 @@ flutter:
     - family: Noto Sans JP
       fonts:
         - asset: assets/fonts/NotoSansJP-Subset.ttf
-
-# frost_data reaches frost_ui by a path inside the same Git checkout, which pub
-# pins to a commit; this keeps both on main. pubspec_overrides.yaml replaces it locally.
-dependency_overrides:
-  frost_ui:
-    git:
-      url: https://github.com/normalllll/frost_ui.git
-      path: packages/frost_ui
-      ref: main

@@ -17,6 +17,7 @@ import 'package:freepiv/features/home/presentation/home_page.dart';
 import 'package:freepiv/features/illust/presentation/illust_detail_page.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
+import 'package:freepiv/ui/compositions/avatar_flight.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// The app itself, with its router, shell wiring and sample data.
@@ -197,7 +198,7 @@ void main() {
     expect(_shell(tester).selectedIndex, 0, reason: 'the bottom bar keeps Home lit under settings');
   });
 
-  testWidgets('page headers paint no title in either layout; the title row or the bottom bar names the page', (tester) async {
+  testWidgets('the title row names every page in the sidebar layout; under the bottom bar only pushed pages paint their title', (tester) async {
     await _mount(tester);
     final roots = {AppRoute.home.path: 'Home', AppRoute.newest.path: 'Newest', AppRoute.me.path: 'Me'};
     for (final MapEntry(key: path, value: title) in roots.entries) {
@@ -217,12 +218,39 @@ void main() {
     tester.view.physicalSize = _phone;
     await _go(tester, AppRoute.me.path);
     expect(_headerTitleShown(tester, 'Me'), isFalse, reason: 'the bottom bar names Me');
-    for (final (route, title) in [(AppRoute.settings, 'Settings')]) {
-      await _go(tester, AppRoute.home.path);
-      await _selectSecondary(tester, route);
-      expect(_headerTitleShown(tester, title), isFalse, reason: '${route.path} pushed under the bottom bar keeps Back only');
-    }
+    await _push(tester, AppRoute.about.path);
+    expect(_headerTitleShown(tester, 'About'), isTrue, reason: 'a pushed page has its title beside Back');
+    await _go(tester, AppRoute.home.path);
+    await _selectSecondary(tester, AppRoute.settings);
+    expect(_headerTitleShown(tester, 'Settings'), isTrue, reason: 'a secondary destination pushed under the bottom bar has its title beside Back');
   });
+
+  for (final (label, size, sidebar) in [('sidebar', const Size(1147, 717), true), ('bottom bar', _phone, false)]) {
+    testWidgets('$label: a user page names its author once the identity has gone; the avatar flies only into a painted header', (tester) async {
+      await _mount(tester, size: size);
+      await _push(tester, AppLocations.user(3000));
+      final name = tester.widget<AppFlightChrome>(find.byType(AppFlightChrome)).name!;
+      final outer = tester.state<NestedScrollViewState>(find.byType(NestedScrollView)).outerController;
+      final flight = AppAvatarFlight.of(tester.element(find.byType(NestedScrollView)));
+      final phases = <AppAvatarFlightPhase>{};
+      flight.phase.addListener(() => phases.add(flight.phase.value));
+      for (var offset = 0.0; offset <= outer.position.maxScrollExtent; offset += 8) {
+        outer.jumpTo(offset);
+        await tester.pump();
+      }
+      outer.jumpTo(outer.position.maxScrollExtent);
+      await _frames(tester);
+      expect(tester.takeException(), isNull, reason: 'the title row builds the title outside the page');
+      expect(flight.phase.value, AppAvatarFlightPhase.header);
+      if (sidebar) {
+        expect(phases, isNot(contains(AppAvatarFlightPhase.flying)), reason: 'the header paints no title to land in');
+        expect(_titleRowShown(tester, name), isTrue);
+      } else {
+        expect(phases, contains(AppAvatarFlightPhase.flying), reason: 'a pushed page paints its title beside Back');
+        expect(_headerTitleShown(tester, name), isTrue);
+      }
+    });
+  }
 
   testWidgets('Downloads is a pushed page with Back, outside the secondary group, reached by the one entry', (tester) async {
     await _mount(tester);

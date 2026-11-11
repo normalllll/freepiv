@@ -23,6 +23,7 @@ class AppDestinationHeader extends ConsumerWidget {
     final account = pixivAccountNotifier.value?.user;
     final avatarUrl = account?.profileImageUrls.px170X170 ?? '';
     return FrostPageHeader(
+      title: FrostText(title),
       leading: [
         if (account != null)
           Semantics(

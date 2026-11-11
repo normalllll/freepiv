@@ -129,7 +129,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
           builder: (context, bannerBottom) => FrostPinnedChrome(
             // The avatar's soft wash needs no plates; a picture does.
             overMedia: detail.profile.backgroundImageUrl?.isNotEmpty ?? false,
-            chrome: AppFlightChrome(title: AppFlightTitle(name: detail.user.name)),
+            chrome: AppFlightChrome(name: detail.user.name),
             body: NestedScrollView(
               controller: _outer,
               headerSliverBuilder: (context, _) => [

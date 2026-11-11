@@ -118,7 +118,7 @@ class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with
       child: AppSectionedPage(
         controller: _tabs,
         header: FrostPageHeader(
-          title: inCaption ? FrostText(_keyword) : null,
+          title: FrostText(_keyword),
           middle: inCaption ? null : SearchBox(onSearch: _submit),
         ),
         tabs: [

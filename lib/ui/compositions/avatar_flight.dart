@@ -152,7 +152,15 @@ class AppAvatarFlightHost extends StatefulWidget {
 }
 
 class _AppAvatarFlightHostState extends State<AppAvatarFlightHost> {
-  late final _flight = AppAvatarFlight._(widget.controller, () => !MediaQuery.disableAnimationsOf(context));
+  // A profile page is pushed, so its header paints the title unless the
+  // shell's sidebar layout puts it in the title row or top bar. There the
+  // avatar would land in a slot nobody sees, so it stays with the identity and
+  // the title row shows it once the identity has gone.
+  late final _flight = AppAvatarFlight._(
+    widget.controller,
+    () =>
+        !MediaQuery.disableAnimationsOf(context) && (FrostShellNavigationScope.maybeOf(context) == null || !FrostAutoScaffold.usesHorizontalLayoutOf(context)),
+  );
 
   @override
   void initState() {
@@ -225,23 +233,27 @@ class _FlyingAvatarDelegate extends FlowDelegate {
   bool shouldRepaint(_FlyingAvatarDelegate oldDelegate) => oldDelegate.flight != flight;
 }
 
-/// The page header, measured so the flight knows where it ends. It holds
-/// [title] once the page has left its top, so that at rest it can leave its
-/// row out and the identity starts at the top of the page.
+/// The page header, measured so the flight knows where it ends. Once the page
+/// has left its top it holds an [AppFlightTitle] naming [name], so that at rest
+/// it can leave its row out and the identity starts at the top of the page.
 class AppFlightChrome extends StatelessWidget {
-  const AppFlightChrome({required this.title, super.key});
+  const AppFlightChrome({required this.name, super.key});
 
-  /// Usually an [AppFlightTitle]; null while there is nothing to name.
-  final Widget? title;
+  /// Who the page is of; null while there is nothing to name.
+  final String? name;
 
   @override
   Widget build(BuildContext context) {
     final flight = AppAvatarFlight.of(context);
+    final scope = context.dependOnInheritedWidgetOfExactType<_FlightScope>()!;
+    final name = this.name;
     return KeyedSubtree(
       key: flight._chrome,
       child: ValueListenableBuilder(
         valueListenable: flight.scrolled,
-        builder: (context, scrolled, _) => FrostPageHeader(title: scrolled ? title : null),
+        builder: (context, scrolled, _) => FrostPageHeader(
+          title: scrolled && name != null ? AppFlightTitle._(flight: flight, avatar: scope.avatar, name: name) : null,
+        ),
       ),
     );
   }
@@ -283,25 +295,31 @@ class AppFlightAvatar extends StatelessWidget {
 /// The header's title: a small avatar and the name. Both keep their place
 /// from the start, so the slot can be measured, and show when the identity
 /// has gone.
+///
+/// Where the shell's title row shows page titles it builds this title outside
+/// the page, so the title carries what it needs; only the header's copy is the
+/// flight's landing slot.
 class AppFlightTitle extends StatelessWidget {
-  const AppFlightTitle({required this.name, super.key});
+  const AppFlightTitle._({required this.flight, required this.avatar, required this.name});
 
+  final AppAvatarFlight flight;
+  final Widget Function(FrostAvatarSize size) avatar;
   final String name;
 
   @override
   Widget build(BuildContext context) {
-    final flight = AppAvatarFlight.of(context);
-    final scope = context.dependOnInheritedWidgetOfExactType<_FlightScope>()!;
+    final inPage = context.dependOnInheritedWidgetOfExactType<_FlightScope>() != null;
     return ValueListenableBuilder(
       valueListenable: flight.phase,
       builder: (context, phase, _) {
         final arrived = phase == AppAvatarFlightPhase.header;
         Widget shown(Widget child) => Visibility(visible: arrived, maintainSize: true, maintainAnimation: true, maintainState: true, child: child);
+        final small = shown(avatar(_headerSize));
         return Row(
           mainAxisSize: MainAxisSize.min,
           spacing: FrostGap.related,
           children: [
-            KeyedSubtree(key: flight._slot, child: shown(scope.avatar(_headerSize))),
+            if (inPage) KeyedSubtree(key: flight._slot, child: small) else small,
             Flexible(child: shown(FrostText(name, content: true, maxLines: 1, overflow: TextOverflow.ellipsis))),
           ],
         );
