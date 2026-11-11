@@ -71,7 +71,7 @@ final class WorkBookmarkOptionsProvider
 }
 
 String _$workBookmarkOptionsHash() =>
-    r'ed9ed3633e90db1329662e80a161dda0ade0bc21';
+    r'4f2392d9c30f21199b63a56c7bcedc30dd99e5eb';
 
 /// Read each time the options open, so they show what Pixiv holds.
 

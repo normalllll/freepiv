@@ -1454,6 +1454,10 @@ class Translations$user$bookmarks$en_US {
 	// Translations
 	String get illustManga => 'Illust & Manga';
 	String get novels => 'Novels';
+	String get tag => 'Tag';
+	String get allTags => 'All';
+	String get uncategorized => 'Uncategorized';
+	String tagCount({required Object name, required Object count}) => '${name} (${count})';
 }
 
 // Path: user.empty
@@ -2310,6 +2314,10 @@ extension on Translations {
 			'user.stats.following' => 'Following',
 			'user.bookmarks.illustManga' => 'Illust & Manga',
 			'user.bookmarks.novels' => 'Novels',
+			'user.bookmarks.tag' => 'Tag',
+			'user.bookmarks.allTags' => 'All',
+			'user.bookmarks.uncategorized' => 'Uncategorized',
+			'user.bookmarks.tagCount' => ({required Object name, required Object count}) => '${name} (${count})',
 			'user.empty.illustrations' => 'No Illusts',
 			'user.empty.manga' => 'No manga',
 			'user.empty.novels' => 'No novels',
@@ -2348,12 +2356,12 @@ extension on Translations {
 			'newest.followScope.compactPrivate' => 'Private',
 			'newest.followScope.compactPublic' => 'Public',
 			'newest.emptyTitle' => 'No newest works',
+			_ => null,
+		} ?? switch (path) {
 			'newest.compactFilter' => ({required Object workType, required Object scope}) => '${workType} · ${scope}',
 			'newest.novelChars' => ({required Object count}) => '${count} chars',
 			'newest.novelPages' => ({required Object count}) => '${count} pages',
 			'newest.empty.following' => 'Nothing new from the people you follow',
-			_ => null,
-		} ?? switch (path) {
 			'newest.empty.privateFollows' => 'Nothing new from your private follows',
 			'newest.empty.mypixiv' => 'Nothing new from your My pixiv friends',
 			'newest.empty.everyone' => 'No new works yet',

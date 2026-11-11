@@ -554,7 +554,11 @@
     },
     "bookmarks": {
       "illustManga": "Illust & Manga",
-      "novels": "Novels"
+      "novels": "Novels",
+      "tag": "Tag",
+      "allTags": "All",
+      "uncategorized": "Uncategorized",
+      "tagCount": "$name ($count)"
     },
     "empty": {
       "illustrations": "No Illusts",

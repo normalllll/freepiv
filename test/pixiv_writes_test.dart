@@ -22,6 +22,7 @@ import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart'
 import 'package:freepiv/features/user_detail/presentation/user_identity_header.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/logic/bookmark_options_logic.dart';
+import 'package:freepiv/shared/logic/bookmark_tags.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -152,6 +153,16 @@ Future<void> _openOptions(WidgetTester tester, {bool bookmarked = false}) async 
   await settlePilot(tester);
 }
 
+/// The bookmark list as the app builds it, so its requests reach the fake API.
+class _RealBookmarks extends UserIllustBookmarks {
+  @override
+  UserIllustBookmarkListSource build({required int userId, Restrict restrict = Restrict.public, BookmarkTagFilter tag = const BookmarkTagFilter.all()}) {
+    final source = UserIllustBookmarkListSource(userId: userId, restrict: restrict, tag: tag);
+    ref.onDispose(source.dispose);
+    return source;
+  }
+}
+
 void main() {
   setUp(() => pixivApi = _api = _Api());
 
@@ -212,11 +223,16 @@ void main() {
     Finder tab(String label) => find.descendant(of: find.byType(FrostTabBar), matching: find.text(label));
 
     testWidgets("one's own bookmarks switch to private", (tester) async {
-      await mountPilotPage(tester, UserDetailPage(userDetail: _detail(_ownId)));
+      await mountPilotPage(
+        tester,
+        UserDetailPage(userDetail: _detail(_ownId)),
+        // The list itself, asking the fake API, instead of the sample list.
+        overrides: {userIllustBookmarksProvider: userIllustBookmarksProvider.overrideWith2((_) => _RealBookmarks())},
+      );
       await tester.tap(tab(t.user.tabs.bookmarks));
       await settlePilot(tester);
       expect(_api.restricts.last, Restrict.public);
-      await tester.tap(find.text(t.privacy.private));
+      await tester.tap(find.text(t.privacy.private).hitTestable().first);
       await settlePilot(tester);
       expect(_api.restricts.last, Restrict.private);
     });

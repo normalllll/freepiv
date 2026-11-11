@@ -30,6 +30,7 @@ import 'package:freepiv/features/search/presentation/widgets/search_box/search_a
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
+import 'package:freepiv/shared/logic/bookmark_tags.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
@@ -267,6 +268,9 @@ final sampleOverrideMap = <Object, Override>{
     ref.onDispose(source.dispose);
     return source;
   }),
+  userIllustBookmarksProvider: userIllustBookmarksProvider.overrideWith2((_) => _SampleUserIllustBookmarksNotifier()),
+  userNovelBookmarksProvider: userNovelBookmarksProvider.overrideWith2((_) => _SampleUserNovelBookmarksNotifier()),
+  bookmarkTagsProvider: bookmarkTagsProvider.overrideWith((ref, key) async => sampleBookmarkTags(restrict: key.restrict)),
   userRelatedSourceProvider: userRelatedSourceProvider.overrideWith((ref, userId) {
     final source = SampleUserRelated(userId: userId);
     ref.onDispose(source.dispose);
@@ -464,7 +468,83 @@ final sampleUserDetail = UserDetailResult(
 
 class _SampleUserDetail extends UserDetail {
   @override
-  FutureOr<UserDetailResult> build(UserDetailArgs args) => args.userDetail ?? sampleUserDetail;
+  FutureOr<UserDetailResult> build(UserDetailArgs args) {
+    if (args.userDetail case final detail?) return detail;
+    // The signed-in account's own page, so its private lists and tags show.
+    if (args.resolvedUserId == int.parse(sampleAccount.user.id)) return sampleOwnUserDetail;
+    return sampleUserDetail;
+  }
+}
+
+/// The sample author's page as the signed-in sample account's own.
+final sampleOwnUserDetail = UserDetailResult(
+  user: UserInfo(
+    id: int.parse(sampleAccount.user.id),
+    name: sampleAccount.user.name,
+    account: sampleAccount.user.account,
+    profileImageUrls: sampleUserDetail.user.profileImageUrls,
+    comment: sampleUserDetail.user.comment,
+    isFollowed: false,
+  ),
+  profile: sampleUserDetail.profile,
+  profilePublicity: sampleUserDetail.profilePublicity,
+  workspace: sampleUserDetail.workspace,
+);
+
+/// The bookmark tags of the sample account: the bookmarks without a tag are
+/// listed among them, the way Pixiv lists them.
+List<BookmarkTag> sampleBookmarkTags({Restrict restrict = Restrict.public}) => restrict == Restrict.public
+    ? const [
+        BookmarkTag(name: BookmarkTagFilter.uncategorizedApiTag, count: 12),
+        BookmarkTag(name: 'landscape', count: 20),
+        BookmarkTag(name: 'オリジナル', count: 9),
+        BookmarkTag(name: 'girl', count: 6),
+        BookmarkTag(name: 'wallpaper', count: 3),
+      ]
+    : const [BookmarkTag(name: BookmarkTagFilter.uncategorizedApiTag, count: 4), BookmarkTag(name: 'reference', count: 7)];
+
+class _SampleUserIllustBookmarks extends UserIllustBookmarkListSource {
+  _SampleUserIllustBookmarks({required super.userId, required super.restrict, required super.tag});
+
+  @override
+  Future<IllustPageResult> loadFirstPage() async => IllustPageResult(
+    illusts: sampleIllusts(count: tag.isAll ? 24 : 7),
+    rankingIllusts: const [],
+  );
+
+  @override
+  Future<IllustPageResult> loadNextPage(String nextUrl) async => const IllustPageResult(illusts: [], rankingIllusts: []);
+}
+
+class _SampleUserIllustBookmarksNotifier extends UserIllustBookmarks {
+  @override
+  UserIllustBookmarkListSource build({required int userId, Restrict restrict = Restrict.public, BookmarkTagFilter tag = const BookmarkTagFilter.all()}) {
+    final source = _SampleUserIllustBookmarks(userId: userId, restrict: restrict, tag: tag);
+    ref.onDispose(source.dispose);
+    return source;
+  }
+}
+
+class _SampleUserNovelBookmarks extends UserNovelBookmarkListSource {
+  _SampleUserNovelBookmarks({required super.userId, required super.restrict, required super.tag});
+
+  @override
+  Future<NovelPageResult> loadFirstPage() async {
+    final novels = sampleNovels(count: tag.isAll ? 12 : 4);
+    return NovelPageResult(novels: novels, rankingNovels: const []);
+  }
+
+  @override
+  Future<NovelPageResult> loadNextPage(String nextUrl) async => const NovelPageResult(novels: [], rankingNovels: []);
+}
+
+class _SampleUserNovelBookmarksNotifier extends UserNovelBookmarks {
+  @override
+  UserNovelBookmarkListSource build({required int userId, Restrict restrict = Restrict.public, BookmarkTagFilter tag = const BookmarkTagFilter.all()}) {
+    final source = _SampleUserNovelBookmarks(userId: userId, restrict: restrict, tag: tag);
+    ref.onDispose(source.dispose);
+    return source;
+  }
 }
 
 class _SampleUserIllusts extends UserIllustListSource {

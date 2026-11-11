@@ -1452,6 +1452,10 @@ class Translations$user$bookmarks$zh_CN extends Translations$user$bookmarks$en_U
 	// Translations
 	@override String get illustManga => '插画&漫画';
 	@override String get novels => '小说';
+	@override String get tag => '标签';
+	@override String get allTags => '全部';
+	@override String get uncategorized => '未分类';
+	@override String tagCount({required Object name, required Object count}) => '${name} (${count})';
 }
 
 // Path: user.empty
@@ -2308,6 +2312,10 @@ extension on TranslationsZhCn {
 			'user.stats.following' => '关注',
 			'user.bookmarks.illustManga' => '插画&漫画',
 			'user.bookmarks.novels' => '小说',
+			'user.bookmarks.tag' => '标签',
+			'user.bookmarks.allTags' => '全部',
+			'user.bookmarks.uncategorized' => '未分类',
+			'user.bookmarks.tagCount' => ({required Object name, required Object count}) => '${name} (${count})',
 			'user.empty.illustrations' => '暂无插画',
 			'user.empty.manga' => '暂无漫画',
 			'user.empty.novels' => '暂无小说',
@@ -2346,12 +2354,12 @@ extension on TranslationsZhCn {
 			'newest.followScope.compactPrivate' => '私密',
 			'newest.followScope.compactPublic' => '公开',
 			'newest.emptyTitle' => '暂无最新作品',
+			_ => null,
+		} ?? switch (path) {
 			'newest.compactFilter' => ({required Object workType, required Object scope}) => '${workType} · ${scope}',
 			'newest.novelChars' => ({required Object count}) => '${count} 字',
 			'newest.novelPages' => ({required Object count}) => '${count} 页',
 			'newest.empty.following' => '关注的人还没有新作品',
-			_ => null,
-		} ?? switch (path) {
 			'newest.empty.privateFollows' => '非公开关注的人还没有新作品',
 			'newest.empty.mypixiv' => '好P友还没有新作品',
 			'newest.empty.everyone' => '还没有新作品',

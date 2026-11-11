@@ -1452,6 +1452,10 @@ class _Translations$user$bookmarks$ja_JP extends Translations$user$bookmarks$en_
 	// Translations
 	@override String get illustManga => 'イラスト・マンガ';
 	@override String get novels => '小説';
+	@override String get tag => 'タグ';
+	@override String get allTags => 'すべて';
+	@override String get uncategorized => '未分類';
+	@override String tagCount({required Object name, required Object count}) => '${name} (${count})';
 }
 
 // Path: user.empty
@@ -2308,6 +2312,10 @@ extension on TranslationsJaJp {
 			'user.stats.following' => 'フォロー',
 			'user.bookmarks.illustManga' => 'イラスト・マンガ',
 			'user.bookmarks.novels' => '小説',
+			'user.bookmarks.tag' => 'タグ',
+			'user.bookmarks.allTags' => 'すべて',
+			'user.bookmarks.uncategorized' => '未分類',
+			'user.bookmarks.tagCount' => ({required Object name, required Object count}) => '${name} (${count})',
 			'user.empty.illustrations' => 'イラストはありません',
 			'user.empty.manga' => 'マンガはありません',
 			'user.empty.novels' => '小説はありません',
@@ -2346,12 +2354,12 @@ extension on TranslationsJaJp {
 			'newest.followScope.compactPrivate' => '非公開',
 			'newest.followScope.compactPublic' => '公開',
 			'newest.emptyTitle' => '最新作品はありません',
+			_ => null,
+		} ?? switch (path) {
 			'newest.compactFilter' => ({required Object workType, required Object scope}) => '${workType} · ${scope}',
 			'newest.novelChars' => ({required Object count}) => '${count} 文字',
 			'newest.novelPages' => ({required Object count}) => '${count} ページ',
 			'newest.empty.following' => 'フォロー中のユーザーの新着はありません',
-			_ => null,
-		} ?? switch (path) {
 			'newest.empty.privateFollows' => '非公開フォローの新着はありません',
 			'newest.empty.mypixiv' => 'マイピクの新着はありません',
 			'newest.empty.everyone' => '新着作品はまだありません',

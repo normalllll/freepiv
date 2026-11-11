@@ -10,7 +10,9 @@ import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart'
 import 'package:freepiv/features/user_detail/presentation/user_identity_header.dart';
 import 'package:freepiv/features/user_detail/presentation/user_related_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/shared/logic/bookmark_tags.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
@@ -83,6 +85,7 @@ Future<void> _mount(
 Finder _tab(String label) => find.descendant(of: find.byType(FrostTabBar), matching: find.text(label));
 
 void main() {
+  _tagTests();
   _relatedTests();
   testWidgets('the identity header sits over the six tabs and the author\'s works', (tester) async {
     await _mount(tester, detail: sampleUserDetail);
@@ -170,7 +173,7 @@ void main() {
       final left = edge(tester);
       expect(tester.getTopLeft(find.byType(AppArtworkCard).first).dx, left, reason: 'the waterfall');
       await show(tester, t.user.tabs.bookmarks);
-      expect(tester.getTopLeft(find.byType(FrostPicker<UserBookmarkKind>)).dx, left, reason: 'the picker');
+      expect(tester.getTopLeft(_filterToolbar).dx, left, reason: 'the filter toolbar');
       await show(tester, t.user.tabs.novels);
       expect(tester.getTopLeft(find.byType(AppNovelRow).first).dx, left, reason: 'the novels');
       await show(tester, t.user.tabs.following);
@@ -434,6 +437,134 @@ void _relatedTests() {
       expect(find.byType(AppUserCard), findsNWidgets(3));
       await mountPilotPage(tester, const UserRelatedPage(userId: 2000), overrides: _relatedOverride(() async => const UserPageResult(userPreviews: [])));
       expect(find.text(t.user.related.empty), findsOneWidget);
+    });
+  });
+}
+
+/// What the Bookmarks tab asked its lists for: restrict and tag, in order.
+final _bookmarkRequests = <(Restrict, BookmarkTagFilter)>[];
+
+class _TaggedBookmarks extends UserIllustBookmarkListSource {
+  _TaggedBookmarks({required super.userId, required super.restrict, required super.tag});
+
+  @override
+  Future<IllustPageResult> loadFirstPage() async => IllustPageResult(illusts: sampleIllusts(count: 4), rankingIllusts: const []);
+}
+
+class _TaggedBookmarksNotifier extends UserIllustBookmarks {
+  @override
+  UserIllustBookmarkListSource build({required int userId, Restrict restrict = Restrict.public, BookmarkTagFilter tag = const BookmarkTagFilter.all()}) {
+    _bookmarkRequests.add((restrict, tag));
+    final source = _TaggedBookmarks(userId: userId, restrict: restrict, tag: tag);
+    ref.onDispose(source.dispose);
+    return source;
+  }
+}
+
+Future<void> _openBookmarks(WidgetTester tester, {required UserDetailResult detail, Future<List<BookmarkTag>> Function(BookmarkTagsKey key)? tags}) async {
+  _bookmarkRequests.clear();
+  await mountPilotPage(
+    tester,
+    UserDetailPage(userDetail: detail),
+    overrides: {
+      userIllustBookmarksProvider: userIllustBookmarksProvider.overrideWith2((_) => _TaggedBookmarksNotifier()),
+      bookmarkTagsProvider: bookmarkTagsProvider.overrideWith((ref, key) => (tags ?? (key) async => sampleBookmarkTags(restrict: key.restrict))(key)),
+    },
+  );
+  await tester.tap(_tab(t.user.tabs.bookmarks));
+  await settlePilot(tester);
+}
+
+/// The tag selector of the filter toolbar, showing [current].
+/// The bookmarks filter toolbar: the one holding the kind picker (the page header has its own).
+final _filterToolbar = find.ancestor(of: find.byType(FrostPicker<UserBookmarkKind>), matching: find.byType(FrostToolbar)).first;
+
+Finder _tagTrigger(String current) => find.descendant(of: _filterToolbar, matching: find.text(current)).hitTestable().first;
+
+Future<void> _openTagMenu(WidgetTester tester, String current) async {
+  await tester.tap(_tagTrigger(current));
+  await settlePilot(tester);
+}
+
+/// Opens the tag menu (the selector shows [current]) and chooses [label].
+Future<void> _pickTag(WidgetTester tester, String current, String label) async {
+  await _openTagMenu(tester, current);
+  await tester.tap(find.text(label).last);
+  await settlePilot(tester);
+}
+
+void _tagTests() {
+  group('bookmarks by tag', () {
+    testWidgets('the filter row is one toolbar: kind, public / private, then the tag selector showing All', (tester) async {
+      await _openBookmarks(tester, detail: sampleOwnUserDetail);
+      expect(_filterToolbar, findsOneWidget);
+      expect(find.byType(FrostPicker<UserBookmarkKind>), findsWidgets);
+      expect(find.byType(FrostPicker<Restrict>), findsWidgets);
+      expect(find.byType(FrostPicker<BookmarkTagFilter>), findsNothing, reason: 'no labelled field: the selector is a button showing its value');
+      expect(find.text('Tag'), findsNothing);
+      final restrict = tester.getTopLeft(find.byType(FrostPicker<Restrict>).first), tag = tester.getTopLeft(_tagTrigger('All'));
+      expect(tag.dx, greaterThan(restrict.dx), reason: 'after the public / private picker');
+      expect((tag.dy - restrict.dy).abs(), lessThan(24), reason: 'in the same row');
+    });
+
+    testWidgets('the menu offers all, uncategorized and each tag with its count', (tester) async {
+      await _openBookmarks(tester, detail: sampleOwnUserDetail);
+      await _openTagMenu(tester, 'All');
+      for (final label in ['Uncategorized (12)', 'landscape (20)', 'オリジナル (9)', 'girl (6)', 'wallpaper (3)']) {
+        expect(find.text(label), findsOneWidget);
+      }
+    });
+
+    testWidgets('another author\'s page has the kind picker in a toolbar and no restrict or tag choice', (tester) async {
+      await _openBookmarks(tester, detail: sampleUserDetail);
+      expect(_filterToolbar, findsOneWidget);
+      expect(find.byType(FrostPicker<UserBookmarkKind>), findsWidgets);
+      expect(find.byType(FrostPicker<Restrict>), findsNothing);
+      expect(find.text('All'), findsNothing);
+    });
+
+    testWidgets('choosing a tag passes it to the list; uncategorized is its own filter; all goes back', (tester) async {
+      await _openBookmarks(tester, detail: sampleOwnUserDetail);
+      expect(_bookmarkRequests.last, (Restrict.public, const BookmarkTagFilter.all()));
+      await _pickTag(tester, 'All', 'landscape (20)');
+      expect(_bookmarkRequests.last, (Restrict.public, const BookmarkTagFilter.named('landscape')));
+      expect(_tagTrigger('landscape (20)'), findsOneWidget, reason: 'the selector shows the choice');
+      await _pickTag(tester, 'landscape (20)', 'Uncategorized (12)');
+      expect(_bookmarkRequests.last, (Restrict.public, const BookmarkTagFilter.uncategorized()));
+      await _pickTag(tester, 'Uncategorized (12)', 'All');
+      expect(_bookmarkRequests.last, (Restrict.public, const BookmarkTagFilter.all()));
+    });
+
+    testWidgets('changing public / private drops a tag the other list does not have, and keeps one it has', (tester) async {
+      Future<List<BookmarkTag>> tags(BookmarkTagsKey key) async => key.restrict == Restrict.public
+          ? const [BookmarkTag(name: 'landscape', count: 3), BookmarkTag(name: 'shared', count: 2)]
+          : const [BookmarkTag(name: 'shared', count: 1)];
+      await _openBookmarks(tester, detail: sampleOwnUserDetail, tags: tags);
+      await _pickTag(tester, 'All', 'landscape (3)');
+      await tester.tap(find.text(t.privacy.private).hitTestable().first);
+      await settlePilot(tester);
+      expect(_bookmarkRequests.last, (Restrict.private, const BookmarkTagFilter.all()));
+      expect(_tagTrigger('All'), findsOneWidget);
+
+      await tester.tap(find.text(t.privacy.public).hitTestable().first);
+      await settlePilot(tester);
+      await _pickTag(tester, 'All', 'shared (2)');
+      await tester.tap(find.text(t.privacy.private).hitTestable().first);
+      await settlePilot(tester);
+      expect(_bookmarkRequests.last, (Restrict.private, const BookmarkTagFilter.named('shared')));
+    });
+
+    testWidgets('while the tags load, or when they fail, only All is offered and nothing is shown to the user', (tester) async {
+      final never = Completer<List<BookmarkTag>>();
+      await _openBookmarks(tester, detail: sampleOwnUserDetail, tags: (_) => never.future);
+      await _openTagMenu(tester, 'All');
+      expect(find.text('Uncategorized (12)'), findsNothing);
+      expect(find.text('All'), findsWidgets);
+
+      await _openBookmarks(tester, detail: sampleOwnUserDetail, tags: (_) async => throw StateError('offline'));
+      await _openTagMenu(tester, 'All');
+      expect(find.text('Uncategorized'), findsNothing);
+      expect(find.byType(AppArtworkCard), findsWidgets, reason: 'the bookmarks still list');
     });
   });
 }

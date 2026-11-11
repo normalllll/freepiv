@@ -554,7 +554,11 @@
     },
     "bookmarks": {
       "illustManga": "イラスト・マンガ",
-      "novels": "小説"
+      "novels": "小説",
+      "tag": "タグ",
+      "allTags": "すべて",
+      "uncategorized": "未分類",
+      "tagCount": "$name ($count)"
     },
     "empty": {
       "illustrations": "イラストはありません",

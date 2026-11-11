@@ -1,5 +1,5 @@
 import 'package:freepiv/core/services/pixiv_service.dart';
-import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart';
+import 'package:freepiv/shared/logic/bookmark_tags.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -31,11 +31,7 @@ Future<WorkBookmarkOptions> workBookmarkOptions(Ref ref, WorkBookmarkKey key) as
   Future<List<String>> own(Restrict restrict) async {
     if (userId == null) return const [];
     try {
-      final page = await pixivApi.getBookmarkTagPage(
-        userId: userId,
-        options: BookmarkTagOptions(restrict: restrict, isNovel: key.novel),
-      );
-      return [for (final tag in page.bookmarkTags) tag.name];
+      return [for (final tag in await readBookmarkTags(userId: userId, restrict: restrict, novel: key.novel)) tag.name];
     } catch (_) {
       return const [];
     }

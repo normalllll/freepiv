@@ -7,6 +7,8 @@ import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
+import 'package:freepiv/features/user_detail/presentation/bookmark_tag_picker.dart';
+import 'package:freepiv/shared/logic/bookmark_tags.dart';
 import 'package:freepiv/features/user_detail/presentation/user_identity_header.dart';
 import 'package:freepiv/features/user_detail/presentation/user_related_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -79,6 +81,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
   final _outer = ScrollController();
   var _bookmarks = UserBookmarkKind.illustManga;
   var _bookmarkRestrict = Restrict.public;
+  var _bookmarkTag = const BookmarkTagFilter.all();
   var _followingRestrict = Restrict.public;
 
   int get _userId => widget.detail.user.id;
@@ -99,18 +102,45 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
     super.dispose();
   }
 
+  /// Which tags the own bookmarks of the chosen kind and privacy are read by.
+  BookmarkTagsKey get _tagsKey => (userId: _userId, restrict: _bookmarkRestrict, novel: _bookmarks == UserBookmarkKind.novel);
+
+  /// The tag the bookmarks are listed by: the chosen one while [tags] offer it,
+  /// all of them otherwise (and always on another author's page).
+  BookmarkTagFilter _shownTag(List<BookmarkTag>? tags) => _ownPage && bookmarkTagsOffer(tags, _bookmarkTag) ? _bookmarkTag : const BookmarkTagFilter.all();
+
+  /// A chosen tag the freshly read [tags] no longer have gives way to all.
+  void _dropMissingTag(List<BookmarkTag> tags) {
+    if (_bookmarkTag.isNamed && !bookmarkTagsOffer(tags, _bookmarkTag)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _bookmarkTag.isNamed && !bookmarkTagsOffer(ref.read(bookmarkTagsProvider(_tagsKey)).asData?.value, _bookmarkTag)) {
+          setState(() => _bookmarkTag = const BookmarkTagFilter.all());
+        }
+      });
+    }
+  }
+
+  /// Reads the own bookmark tags again along with the list.
+  Future<void> _refresh(UserContentTabKind kind) async {
+    if (kind == UserContentTabKind.bookmarks && _ownPage) ref.invalidate(bookmarkTagsProvider(_tagsKey));
+    await _source(kind)?.refresh(false);
+  }
+
   /// The current tab's list; Details has none.
   FrostListSource<Object?>? _source(UserContentTabKind kind) => switch (kind) {
     UserContentTabKind.illust => ref.read(userIllustsProvider(userId: _userId, illustType: IllustType.illust)),
     UserContentTabKind.manga => ref.read(userIllustsProvider(userId: _userId, illustType: IllustType.manga)),
     UserContentTabKind.novel => ref.read(userNovelsProvider(userId: _userId)),
     UserContentTabKind.bookmarks => switch (_bookmarks) {
-      UserBookmarkKind.illustManga => ref.read(userIllustBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict)),
-      UserBookmarkKind.novel => ref.read(userNovelBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict)),
+      UserBookmarkKind.illustManga => ref.read(userIllustBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict, tag: _shownTag(_readTags()))),
+      UserBookmarkKind.novel => ref.read(userNovelBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict, tag: _shownTag(_readTags()))),
     },
     UserContentTabKind.following => ref.read(userFollowingUsersProvider(userId: _userId, restrict: _followingRestrict)),
     UserContentTabKind.profile => null,
   };
+
+  /// The tags as far as they are known.
+  List<BookmarkTag>? _readTags() => _ownPage ? ref.read(bookmarkTagsProvider(_tagsKey)).asData?.value : null;
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +148,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
     final detail = widget.detail;
     final labels = userTabLabels(t);
     return AppRefreshScope(
-      onRefresh: () async => _source(UserDetailContent.tabs[_tabs.index])?.refresh(false),
+      onRefresh: () => _refresh(UserDetailContent.tabs[_tabs.index]),
       child: AppAvatarFlightHost(
         controller: _outer,
         avatar: (size) => AppUserAvatar(user: userOf(detail.user), size: size),
@@ -157,7 +187,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
                           storageKey: PageStorageKey(kind),
                           onRefresh: switch (kind) {
                             UserContentTabKind.profile => null,
-                            _ => () async => _source(kind)?.refresh(false),
+                            _ => () => _refresh(kind),
                           },
                           slivers: _slivers(context, kind),
                         ),
@@ -182,6 +212,10 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
       itemBuilder: (context, illust, index) => AppArtworkCard(illust: illust),
     );
     Widget column(Widget sliver) => FrostSliverContentColumn(maxWidth: double.infinity, sliver: sliver);
+    // Only the own page lists its bookmarks by tag.
+    final tags = kind == UserContentTabKind.bookmarks && _ownPage ? ref.watch(bookmarkTagsProvider(_tagsKey)).asData?.value : null;
+    if (tags != null) _dropMissingTag(tags);
+    final tag = _shownTag(tags);
     return switch (kind) {
       UserContentTabKind.illust => [works(IllustType.illust, t.user.empty.illustrations)],
       UserContentTabKind.manga => [works(IllustType.manga, t.user.empty.manga)],
@@ -200,36 +234,43 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: FrostWrap(
-                  children: [
-                    FrostPicker<UserBookmarkKind>.segmented(
-                      label: t.user.tabs.bookmarks,
-                      value: _bookmarks,
-                      onChanged: (kind) => setState(() => _bookmarks = kind),
-                      options: [
-                        FrostPickerOption(value: UserBookmarkKind.illustManga, label: t.user.bookmarks.illustManga),
-                        FrostPickerOption(value: UserBookmarkKind.novel, label: t.user.bookmarks.novels),
+              child: FrostToolbar(
+                controls: [
+                  FrostToolbarItem.picker<UserBookmarkKind>(
+                    label: t.user.tabs.bookmarks,
+                    value: _bookmarks,
+                    onChanged: (kind) => setState(() => _bookmarks = kind),
+                    choices: [
+                      FrostPickerOption(value: UserBookmarkKind.illustManga, label: t.user.bookmarks.illustManga),
+                      FrostPickerOption(value: UserBookmarkKind.novel, label: t.user.bookmarks.novels),
+                    ],
+                  ),
+                  if (_ownPage)
+                    FrostToolbarItem.picker<Restrict>(
+                      label: t.privacy.label,
+                      value: _bookmarkRestrict,
+                      onChanged: (value) => setState(() => _bookmarkRestrict = value),
+                      choices: [
+                        FrostPickerOption(value: Restrict.public, label: t.privacy.public),
+                        FrostPickerOption(value: Restrict.private, label: t.privacy.private),
                       ],
                     ),
-                    if (_ownPage) AppRestrictPicker(value: _bookmarkRestrict, onChanged: (value) => setState(() => _bookmarkRestrict = value)),
-                  ],
-                ),
+                  if (_ownPage) bookmarkTagToolbarItem(context, tags: tags, value: tag, onChanged: (value) => setState(() => _bookmarkTag = value)),
+                ],
               ),
             ),
           ),
         ),
         switch (_bookmarks) {
           UserBookmarkKind.illustManga => FrostSliverDataWaterfallGrid<Illust>(
-            source: ref.watch(userIllustBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict)),
+            source: ref.watch(userIllustBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict, tag: tag)),
             firstLoadSkeleton: const AppArtworkWaterfallSkeleton(),
             empty: empty(t.user.empty.bookmarkIllustrations),
             itemBuilder: (context, illust, index) => AppArtworkCard(illust: illust),
           ),
           UserBookmarkKind.novel => column(
             FrostSliverDataList<Novel>(
-              source: ref.watch(userNovelBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict)),
+              source: ref.watch(userNovelBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict, tag: tag)),
               firstLoadSkeleton: const AppNovelRowsSkeleton(),
               empty: empty(t.user.empty.bookmarkNovels),
               itemBuilder: (context, novel, index) => AppNovelRow(novel: novel),
