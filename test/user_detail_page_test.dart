@@ -168,12 +168,12 @@ void main() {
       await settlePilot(tester);
     }
 
-    testWidgets('works, Bookmarks picker, Novels, Following and Details', (tester) async {
+    testWidgets('works, bookmarks, Novels, Following and Details', (tester) async {
       await _mount(tester, detail: sampleUserDetail, size: wide);
       final left = edge(tester);
       expect(tester.getTopLeft(find.byType(AppArtworkCard).first).dx, left, reason: 'the waterfall');
       await show(tester, t.user.tabs.bookmarks);
-      expect(tester.getTopLeft(_filterToolbar).dx, left, reason: 'the filter toolbar');
+      expect(tester.getTopLeft(find.byType(AppArtworkCard).hitTestable().first).dx, left, reason: 'the bookmarked works; their choices stick with the tabs');
       await show(tester, t.user.tabs.novels);
       expect(tester.getTopLeft(find.byType(AppNovelRow).first).dx, left, reason: 'the novels');
       await show(tester, t.user.tabs.following);

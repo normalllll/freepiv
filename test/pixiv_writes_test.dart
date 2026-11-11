@@ -237,14 +237,71 @@ void main() {
       expect(_api.restricts.last, Restrict.private);
     });
 
+    Future<void> showTab(WidgetTester tester, String label) async {
+      await tester.ensureVisible(tab(label));
+      await settlePilot(tester);
+      await tester.tap(tab(label));
+      await settlePilot(tester);
+    }
+
+    Future<void> stick(WidgetTester tester) async {
+      final outer = tester.state<NestedScrollViewState>(find.byType(NestedScrollView)).outerController;
+      outer.jumpTo(outer.position.maxScrollExtent);
+      await settlePilot(tester);
+    }
+
+    /// The toolbar of the selected section's choices, if there is one.
+    Finder sectionToolbar() => find.ancestor(of: find.text(t.user.bookmarks.illustManga), matching: find.byType(FrostToolbar));
+
+    testWidgets("wide: one's own Bookmarks and Following choices stick with the tabs", (tester) async {
+      await mountPilotPage(
+        tester,
+        UserDetailPage(userDetail: _detail(_ownId)),
+        overrides: {userIllustBookmarksProvider: userIllustBookmarksProvider.overrideWith2((_) => _RealBookmarks())},
+      );
+      await showTab(tester, t.user.tabs.bookmarks);
+      await stick(tester);
+      expect(find.descendant(of: sectionToolbar(), matching: find.text(t.user.bookmarks.novels)).hitTestable(), findsOneWidget);
+      await tester.tap(find.text(t.privacy.private).hitTestable().first);
+      await settlePilot(tester);
+      expect(_api.restricts.last, Restrict.private);
+      await showTab(tester, t.user.tabs.following);
+      expect(sectionToolbar(), findsNothing, reason: 'each section shows its own choices');
+      expect(find.text(t.privacy.private).hitTestable(), findsOneWidget);
+      await showTab(tester, t.user.tabs.illustrations);
+      expect(find.text(t.privacy.private), findsNothing, reason: 'a section without choices has none');
+      expectNoLayoutErrors(tester);
+    });
+
+    testWidgets("narrow: one's own Bookmarks choices take a row under the stuck tabs", (tester) async {
+      await mountPilotPage(tester, UserDetailPage(userDetail: _detail(_ownId)), size: phoneSize);
+      await showTab(tester, t.user.tabs.bookmarks);
+      await stick(tester);
+      final tabs = tester.getRect(find.byType(FrostTabBar));
+      final row = tester.getRect(sectionToolbar().first);
+      expect(row.top, greaterThanOrEqualTo(tabs.bottom - 1), reason: 'a row of its own below the tabs');
+      expect(
+        find.descendant(of: sectionToolbar().first, matching: find.text(t.privacy.public)).hitTestable(),
+        findsOneWidget,
+        reason: 'visibility in the row',
+      );
+      // The kind, which does not fit beside them, is in the row's overflow menu.
+      final semantics = tester.ensureSemantics();
+      await tester.tap(find.descendant(of: sectionToolbar().first, matching: find.bySemanticsLabel(t.frost.more)).first);
+      await settlePilot(tester);
+      semantics.dispose();
+      expect(find.text('${t.user.tabs.bookmarks} · ${t.user.bookmarks.illustManga}').hitTestable(), findsOneWidget);
+      expectNoLayoutErrors(tester);
+    });
+
     testWidgets("someone else's page has no such choice", (tester) async {
       await mountPilotPage(tester, UserDetailPage(userDetail: _detail(2000)));
       await tester.tap(tab(t.user.tabs.bookmarks));
       await settlePilot(tester);
-      expect(find.byType(AppRestrictPicker), findsNothing);
+      expect(find.text(t.privacy.private), findsNothing);
       await tester.tap(tab(t.user.tabs.following));
       await settlePilot(tester);
-      expect(find.byType(AppRestrictPicker), findsNothing);
+      expect(find.text(t.privacy.private), findsNothing);
     });
 
     testWidgets('Following asks for the list chosen', (tester) async {

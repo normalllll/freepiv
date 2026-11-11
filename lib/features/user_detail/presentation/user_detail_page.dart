@@ -18,7 +18,6 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/compositions/avatar_flight.dart';
-import 'package:freepiv/ui/compositions/bookmark_options.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/identity_header.dart';
@@ -166,14 +165,19 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
             body: NestedScrollView(
               controller: _outer,
               headerSliverBuilder: (context, _) => [
-                FrostSliverSectionsHeader(
-                  lead: AppFlightLead(
-                    child: _UserIdentity(detail: detail, bannerBottom: bannerBottom),
-                  ),
-                  tabs: FrostTabBar(
-                    controller: _tabs,
-                    scrollable: true,
-                    tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: labels[kind]!)],
+                // The selected section's choices stick with the tabs.
+                ListenableBuilder(
+                  listenable: _tabs,
+                  builder: (context, _) => FrostSliverSectionsHeader(
+                    lead: AppFlightLead(
+                      child: _UserIdentity(detail: detail, bannerBottom: bannerBottom),
+                    ),
+                    tabs: FrostTabBar(
+                      controller: _tabs,
+                      scrollable: true,
+                      tabs: [for (final kind in UserDetailContent.tabs) FrostTab(label: labels[kind]!)],
+                    ),
+                    trailing: _sectionControls(context, UserDetailContent.tabs[_tabs.index]),
                   ),
                 ),
               ],
@@ -204,6 +208,49 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
     );
   }
 
+  /// The bookmark tags offered, on the own page's Bookmarks section only.
+  List<BookmarkTag>? _bookmarkTags(UserContentTabKind kind) =>
+      kind == UserContentTabKind.bookmarks && _ownPage ? ref.watch(bookmarkTagsProvider(_tagsKey)).asData?.value : null;
+
+  /// The choices of [kind]'s section, which stick with the tabs; null for a
+  /// section without any.
+  Widget? _sectionControls(BuildContext context, UserContentTabKind kind) {
+    final t = context.t;
+    FrostToolbarItem restrict(Restrict value, ValueChanged<Restrict> onChanged) => FrostToolbarItem.picker<Restrict>(
+      label: t.privacy.label,
+      value: value,
+      onChanged: onChanged,
+      choices: [
+        FrostPickerOption(value: Restrict.public, label: t.privacy.public),
+        FrostPickerOption(value: Restrict.private, label: t.privacy.private),
+      ],
+    );
+    final controls = switch (kind) {
+      UserContentTabKind.bookmarks => [
+        FrostToolbarItem.picker<UserBookmarkKind>(
+          label: t.user.tabs.bookmarks,
+          value: _bookmarks,
+          onChanged: (kind) => setState(() => _bookmarks = kind),
+          choices: [
+            FrostPickerOption(value: UserBookmarkKind.illustManga, label: t.user.bookmarks.illustManga),
+            FrostPickerOption(value: UserBookmarkKind.novel, label: t.user.bookmarks.novels),
+          ],
+        ),
+        if (_ownPage) restrict(_bookmarkRestrict, (value) => setState(() => _bookmarkRestrict = value)),
+        if (_ownPage)
+          bookmarkTagToolbarItem(
+            context,
+            tags: _bookmarkTags(kind),
+            value: _shownTag(_bookmarkTags(kind)),
+            onChanged: (value) => setState(() => _bookmarkTag = value),
+          ),
+      ],
+      UserContentTabKind.following when _ownPage => [restrict(_followingRestrict, (value) => setState(() => _followingRestrict = value))],
+      _ => const <FrostToolbarItem>[],
+    };
+    return controls.isEmpty ? null : FrostToolbar(controls: controls);
+  }
+
   List<Widget> _slivers(BuildContext context, UserContentTabKind kind) {
     final t = context.t;
     Widget empty(String title) => FrostEmptyState(icon: FrostIconSet.of(context).empty, title: title);
@@ -215,7 +262,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
     );
     Widget column(Widget sliver) => FrostSliverContentColumn(maxWidth: double.infinity, sliver: sliver);
     // Only the own page lists its bookmarks by tag.
-    final tags = kind == UserContentTabKind.bookmarks && _ownPage ? ref.watch(bookmarkTagsProvider(_tagsKey)).asData?.value : null;
+    final tags = _bookmarkTags(kind);
     if (tags != null) _dropMissingTag(tags);
     final tag = _shownTag(tags);
     return switch (kind) {
@@ -232,37 +279,6 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
         ),
       ],
       UserContentTabKind.bookmarks => [
-        column(
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
-              child: FrostToolbar(
-                controls: [
-                  FrostToolbarItem.picker<UserBookmarkKind>(
-                    label: t.user.tabs.bookmarks,
-                    value: _bookmarks,
-                    onChanged: (kind) => setState(() => _bookmarks = kind),
-                    choices: [
-                      FrostPickerOption(value: UserBookmarkKind.illustManga, label: t.user.bookmarks.illustManga),
-                      FrostPickerOption(value: UserBookmarkKind.novel, label: t.user.bookmarks.novels),
-                    ],
-                  ),
-                  if (_ownPage)
-                    FrostToolbarItem.picker<Restrict>(
-                      label: t.privacy.label,
-                      value: _bookmarkRestrict,
-                      onChanged: (value) => setState(() => _bookmarkRestrict = value),
-                      choices: [
-                        FrostPickerOption(value: Restrict.public, label: t.privacy.public),
-                        FrostPickerOption(value: Restrict.private, label: t.privacy.private),
-                      ],
-                    ),
-                  if (_ownPage) bookmarkTagToolbarItem(context, tags: tags, value: tag, onChanged: (value) => setState(() => _bookmarkTag = value)),
-                ],
-              ),
-            ),
-          ),
-        ),
         switch (_bookmarks) {
           UserBookmarkKind.illustManga => FrostSliverDataWaterfallGrid<Illust>(
             source: ref.watch(userIllustBookmarksProvider(userId: _userId, restrict: _bookmarkRestrict, tag: tag)),
@@ -281,18 +297,6 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
         },
       ],
       UserContentTabKind.following => [
-        if (_ownPage)
-          column(
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: FrostGap.related),
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: AppRestrictPicker(value: _followingRestrict, onChanged: (value) => setState(() => _followingRestrict = value)),
-                ),
-              ),
-            ),
-          ),
         AppSliverUserGrid(
           source: ref.watch(userFollowingUsersProvider(userId: _userId, restrict: _followingRestrict)),
           empty: empty(t.user.empty.following),
