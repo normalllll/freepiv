@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart' show MaterialLocalizations;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 import 'package:flutter_test/flutter_test.dart';
@@ -251,32 +252,68 @@ void main() {
   });
 
   group('rankings by date', () {
-    final day = DateTime(2024, 3, 5);
-    final otherDay = DateTime(2023, 12, 31);
+    final now = DateTime.now();
+    // Past days the calendar reaches in a few steps; Pixiv ranks up to yesterday.
+    final day = DateTime(now.year, now.month, now.day - 3);
+    final otherDay = DateTime(now.year, now.month, now.day - 40);
+    final today = DateTime(now.year, now.month, now.day);
     setUp(_Api.dates.clear);
 
-    FrostDatePicker picker(WidgetTester tester) => tester.widget<FrostDatePicker>(find.byType(FrostDatePicker).first);
+    Finder dateControl({String? shows}) =>
+        find.bySemanticsLabel(shows == null ? RegExp('^${RegExp.escape(t.ranking.date.label)}, ') : '${t.ranking.date.label}, $shows');
 
+    String fullDate(WidgetTester tester, DateTime date) => MaterialLocalizations.of(tester.element(find.byType(RankingPage))).formatFullDate(date);
+
+    /// Opens the header's date choice and picks [date], stepping the calendar
+    /// to its month, or clears it for null.
     Future<void> pickDate(WidgetTester tester, DateTime? date) async {
-      picker(tester).onChanged!(date);
+      final semantics = tester.ensureSemantics();
+      await tester.tap(dateControl());
       await settlePilot(tester);
+      if (date == null) {
+        await tester.tap(find.text(t.frost.clear).last);
+      } else {
+        final cell = find.bySemanticsLabel(fullDate(tester, date));
+        for (final step in [t.frost.next, t.frost.next, t.frost.previous, t.frost.previous, t.frost.previous, t.frost.previous]) {
+          if (cell.evaluate().isNotEmpty) break;
+          await tester.tap(find.bySemanticsLabel(step).last, warnIfMissed: false);
+          await settlePilot(tester);
+        }
+        await tester.tap(cell.first);
+      }
+      await settlePilot(tester);
+      semantics.dispose();
+    }
+
+    /// Whether the header's date choice shows Latest.
+    bool showsLatest(WidgetTester tester) {
+      final semantics = tester.ensureSemantics();
+      final latest = dateControl(shows: t.ranking.date.latest).evaluate().isNotEmpty;
+      semantics.dispose();
+      return latest;
     }
 
     Ranking notifierOf(WidgetTester tester) => ProviderScope.containerOf(tester.element(find.byType(RankingPage))).read(rankingProvider.notifier);
 
-    testWidgets('the picker offers every day from Pixiv\'s first to yesterday, shows Latest and clears', (tester) async {
+    for (final (label, size) in [('wide', desktopSize), ('narrow', phoneSize)]) {
+      testWidgets('$label: the date is one control in the header row, showing Latest', (tester) async {
+        await _mount(tester, size: size);
+        expect(find.byType(FrostDatePicker), findsNothing, reason: 'no field in the content');
+        expect(find.descendant(of: find.byType(FrostPageHeader), matching: find.text(t.ranking.date.latest).hitTestable()), findsOneWidget);
+        expect(showsLatest(tester), isTrue);
+        expectNoLayoutErrors(tester);
+      });
+    }
+
+    testWidgets('today cannot be picked; Pixiv ranks up to yesterday', (tester) async {
       await _mount(tester);
-      final control = picker(tester);
-      final now = DateTime.now();
-      expect(control.label, t.ranking.date.label);
-      expect(control.placeholder, t.ranking.date.latest);
-      expect(control.help, t.ranking.date.help);
-      expect(control.value, isNull);
-      expect(control.clearable, isTrue);
-      expect(control.showsYear, isTrue);
-      expect(control.firstDate, DateTime(2007, 9, 13));
-      expect(control.lastDate, DateTime(now.year, now.month, now.day - 1));
-      expect(find.byType(FrostDatePicker), findsWidgets);
+      final semantics = tester.ensureSemantics();
+      await tester.tap(dateControl());
+      await settlePilot(tester);
+      await tester.tap(find.bySemanticsLabel(fullDate(tester, today)).first, warnIfMissed: false);
+      await settlePilot(tester);
+      semantics.dispose();
+      expect(_requestedOn, [(IllustRankingMode.day, null)]);
     });
 
     testWidgets('picking a day asks for that day\'s ranking, and the request spells it year-month-day', (tester) async {
@@ -284,8 +321,8 @@ void main() {
       expect(_requestedOn, [(IllustRankingMode.day, null)]);
       await pickDate(tester, day);
       expect(_requestedOn.last, (IllustRankingMode.day, day));
-      expect(picker(tester).value, day);
-      expect(rankingApiDate(day), '2024-03-05');
+      expect(showsLatest(tester), isFalse);
+      expect(rankingApiDate(DateTime(2024, 3, 5)), '2024-03-05');
       expect(rankingApiDate(DateTime(2007, 9, 13)), '2007-09-13');
       expect(find.byType(AppArtworkCard), findsWidgets);
     });
@@ -298,7 +335,7 @@ void main() {
       final dated = notifierOf(tester).illustSourceFor(IllustRankingMode.day);
       expect(dated, isNot(same(latest)));
       await pickDate(tester, null);
-      expect(picker(tester).value, isNull);
+      expect(showsLatest(tester), isTrue);
       expect(notifierOf(tester).illustSourceFor(IllustRankingMode.day), same(latest), reason: 'the latest ranking is kept');
       expect(_requestedOn, hasLength(asked), reason: 'nothing asked for again');
 
@@ -313,18 +350,18 @@ void main() {
       await _mount(tester);
       await pickDate(tester, day);
       await _showKind(tester, t.ranking.types.manga);
-      expect(picker(tester).value, day);
+      expect(showsLatest(tester), isFalse);
       expect(_requestedOn.last, (MangaRankingMode.day, day));
       await _pickMode(tester, MangaRankingMode.week);
-      expect(picker(tester).value, day);
+      expect(showsLatest(tester), isFalse);
       expect(_requestedOn.last, (MangaRankingMode.week, day));
       await _showKind(tester, t.ranking.types.novels);
-      expect(picker(tester).value, day);
+      expect(showsLatest(tester), isFalse);
       expect(_requestedOn.last, (NovelRankingMode.week, day));
       await _pickMode(tester, NovelRankingMode.dayR18);
       expect(_requestedOn.last, (NovelRankingMode.dayR18, day));
       await _showKind(tester, t.ranking.types.illustrations);
-      expect(picker(tester).value, day);
+      expect(showsLatest(tester), isFalse);
     });
 
     group('a day with no ranking', () {
@@ -352,7 +389,7 @@ void main() {
         );
         await pickDate(tester, day);
         expect(find.text(t.ranking.date.empty), findsOneWidget);
-        expect(_Api.dates.last, 'illust day 2024-03-05');
+        expect(_Api.dates.last, 'illust day ${rankingApiDate(day)}');
         await pickDate(tester, null);
         expect(find.text(t.ranking.date.empty), findsNothing);
         expect(find.byType(AppArtworkCard), findsWidgets);
@@ -363,6 +400,7 @@ void main() {
           onDate: (_) async => const IllustPageResult(illusts: [], rankingIllusts: []),
         );
         pixivApi = api;
+        final day = DateTime(2024, 3, 5);
         await RankingIllustListSource(mode: IllustRankingMode.week, date: day).refresh(true);
         await RankingMangaListSource(mode: MangaRankingMode.month, date: day).refresh(true);
         await RankingNovelListSource(mode: NovelRankingMode.dayR18, date: day).refresh(true);

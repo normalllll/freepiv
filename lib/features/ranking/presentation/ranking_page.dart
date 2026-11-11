@@ -159,21 +159,23 @@ class _RankingPageState extends ConsumerState<RankingPage> with SingleTickerProv
     _load();
   }
 
-  /// The day the rankings are of: clearing it goes back to the latest. Pixiv
-  /// keeps rankings from its first day to yesterday.
-  Widget _datePicker(BuildContext context, DateTime? date) {
+  /// The day the rankings are of, in the header row so it slides away and
+  /// returns with it: clearing it goes back to the latest. Pixiv keeps
+  /// rankings from its first day to yesterday. It keeps its place in the row,
+  /// and the title menu truncates first.
+  FrostToolbarItem _date(BuildContext context, DateTime? date) {
     final t = context.t.ranking.date;
     final now = DateTime.now();
-    return FrostDatePicker(
+    return FrostToolbarItem.date(
       label: t.label,
       placeholder: t.latest,
-      help: t.help,
       value: date,
       onChanged: _selectDate,
       firstDate: _firstRankingDay,
       lastDate: DateTime(now.year, now.month, now.day - 1),
       showsYear: true,
       clearable: true,
+      priority: FrostToolbarPriority.high,
     );
   }
 
@@ -199,6 +201,7 @@ class _RankingPageState extends ConsumerState<RankingPage> with SingleTickerProv
             ],
           ),
         ],
+        actions: [_date(context, state.date)],
       ),
       tabs: [
         FrostTab(label: t.ranking.types.illustrations),
@@ -217,24 +220,8 @@ class _RankingPageState extends ConsumerState<RankingPage> with SingleTickerProv
         final empty = date == null
             ? FrostEmptyState(icon: FrostIconSet.of(context).empty, title: t.ranking.emptyTitle, message: t.ranking.emptyMessage)
             : FrostEmptyState(icon: FrostIconSet.of(context).empty, title: t.ranking.date.empty);
-        final picker = FrostSliverContentColumn(
-          maxWidth: kind == AppRankingKind.novel ? FrostMetrics.readingMaxWidth : double.infinity,
-          sliver: SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: FrostGap.related),
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: FrostMetrics.filterMaxWidth),
-                  child: _datePicker(context, date),
-                ),
-              ),
-            ),
-          ),
-        );
         if (kind == AppRankingKind.novel) {
           return [
-            picker,
             FrostSliverContentColumn(
               maxWidth: FrostMetrics.readingMaxWidth,
               sliver: FrostSliverDataList<Novel>(
@@ -247,7 +234,6 @@ class _RankingPageState extends ConsumerState<RankingPage> with SingleTickerProv
           ];
         }
         return [
-          picker,
           FrostSliverDataWaterfallGrid<Illust>(
             source: source as FrostListSource<Illust>,
             firstLoadSkeleton: const AppArtworkWaterfallSkeleton(),

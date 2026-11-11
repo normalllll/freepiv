@@ -1320,7 +1320,6 @@ class Translations$ranking$date$zh_Hant_TW extends Translations$ranking$date$en_
 	// Translations
 	@override String get label => '日期';
 	@override String get latest => '最新';
-	@override String get help => '週榜和月榜統計到所選日期為止。';
 	@override String get empty => '這一天沒有這個排行';
 }
 
@@ -2342,7 +2341,6 @@ extension on TranslationsZhHantTw {
 			'ranking.emptyMessage' => '下拉即可重新取得排行榜。',
 			'ranking.date.label' => '日期',
 			'ranking.date.latest' => '最新',
-			'ranking.date.help' => '週榜和月榜統計到所選日期為止。',
 			'ranking.date.empty' => '這一天沒有這個排行',
 			'ranking.types.illustrations' => '插畫',
 			'ranking.types.manga' => '漫畫',
@@ -2461,9 +2459,9 @@ extension on TranslationsZhHantTw {
 			'user.error.missingUser' => '缺少使用者 ID 或使用者詳細資訊。',
 			'newest.audience.following' => '關注',
 			'newest.audience.mypixiv' => '好P友',
+			'newest.audience.everyone' => '所有人',
 			_ => null,
 		} ?? switch (path) {
-			'newest.audience.everyone' => '所有人',
 			'newest.workType.illustManga' => '插畫&漫畫',
 			'newest.workType.illust' => '插畫',
 			'newest.workType.manga' => '漫畫',

@@ -1320,7 +1320,6 @@ class _Translations$ranking$date$ja_JP extends Translations$ranking$date$en_US {
 	// Translations
 	@override String get label => '日付';
 	@override String get latest => '最新';
-	@override String get help => '週間・月間ランキングはその日までの集計です。';
 	@override String get empty => 'この日のランキングはありません';
 }
 
@@ -2342,7 +2341,6 @@ extension on TranslationsJaJp {
 			'ranking.emptyMessage' => '下に引っ張るとランキングを再取得できます。',
 			'ranking.date.label' => '日付',
 			'ranking.date.latest' => '最新',
-			'ranking.date.help' => '週間・月間ランキングはその日までの集計です。',
 			'ranking.date.empty' => 'この日のランキングはありません',
 			'ranking.types.illustrations' => 'イラスト',
 			'ranking.types.manga' => 'マンガ',
@@ -2461,9 +2459,9 @@ extension on TranslationsJaJp {
 			'user.error.missingUser' => 'ユーザー ID またはユーザー詳細がありません。',
 			'newest.audience.following' => 'フォロー中',
 			'newest.audience.mypixiv' => 'マイピク',
+			'newest.audience.everyone' => 'みんな',
 			_ => null,
 		} ?? switch (path) {
-			'newest.audience.everyone' => 'みんな',
 			'newest.workType.illustManga' => 'イラスト・マンガ',
 			'newest.workType.illust' => 'イラスト',
 			'newest.workType.manga' => 'マンガ',

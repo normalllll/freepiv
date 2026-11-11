@@ -444,7 +444,6 @@
     "date": {
       "label": "Date",
       "latest": "Latest",
-      "help": "Weekly and monthly rankings run up to that day.",
       "empty": "No ranking for this day"
     },
     "types": {

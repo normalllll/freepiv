@@ -1322,7 +1322,6 @@ class Translations$ranking$date$en_US {
 	// Translations
 	String get label => 'Date';
 	String get latest => 'Latest';
-	String get help => 'Weekly and monthly rankings run up to that day.';
 	String get empty => 'No ranking for this day';
 }
 
@@ -2344,7 +2343,6 @@ extension on Translations {
 			'ranking.emptyMessage' => 'Pull down to fetch the ranking again.',
 			'ranking.date.label' => 'Date',
 			'ranking.date.latest' => 'Latest',
-			'ranking.date.help' => 'Weekly and monthly rankings run up to that day.',
 			'ranking.date.empty' => 'No ranking for this day',
 			'ranking.types.illustrations' => 'Illust',
 			'ranking.types.manga' => 'Manga',
@@ -2463,9 +2461,9 @@ extension on Translations {
 			'user.error.missingUser' => 'User id or user detail is missing.',
 			'newest.audience.following' => 'Following',
 			'newest.audience.mypixiv' => 'MyPixiv',
+			'newest.audience.everyone' => 'Everyone',
 			_ => null,
 		} ?? switch (path) {
-			'newest.audience.everyone' => 'Everyone',
 			'newest.workType.illustManga' => 'Illust & Manga',
 			'newest.workType.illust' => 'Illust',
 			'newest.workType.manga' => 'Manga',
