@@ -90,6 +90,7 @@ String appRouteLabel(Translations translations, AppRoute route) {
     AppRoute.settings => translations.navigation.settings,
     AppRoute.downloads => translations.settings.downloads.tasksTitle,
     AppRoute.login => translations.login.title,
+    AppRoute.accountsAdd => translations.accounts.addTitle,
     AppRoute.meFollowing => translations.me.following,
     AppRoute.meFollowers => translations.me.followers,
     AppRoute.meMypixiv => translations.me.mypixiv,

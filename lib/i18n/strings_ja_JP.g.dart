@@ -42,6 +42,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$downloadEntry$ja_JP downloadEntry = _Translations$downloadEntry$ja_JP._(_root);
 	@override late final _Translations$novelText$ja_JP novelText = _Translations$novelText$ja_JP._(_root);
 	@override late final _Translations$signOut$ja_JP signOut = _Translations$signOut$ja_JP._(_root);
+	@override late final _Translations$accounts$ja_JP accounts = _Translations$accounts$ja_JP._(_root);
 	@override late final _Translations$appSearch$ja_JP appSearch = _Translations$appSearch$ja_JP._(_root);
 	@override late final _Translations$frost$ja_JP frost = _Translations$frost$ja_JP._(_root);
 	@override late final _Translations$nativeWindow$ja_JP nativeWindow = _Translations$nativeWindow$ja_JP._(_root);
@@ -118,6 +119,28 @@ class _Translations$signOut$ja_JP extends Translations$signOut$en_US {
 	@override String get title => 'pixiv からログアウトしますか？';
 	@override String get message => '閲覧するには再度ログインが必要です。ダウンロードと設定はこの端末に残ります。';
 	@override String get confirm => 'ログアウト';
+}
+
+// Path: accounts
+class _Translations$accounts$ja_JP extends Translations$accounts$en_US {
+	_Translations$accounts$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get switchAccount => 'アカウントを切り替え';
+	@override String get current => '現在';
+	@override String switchTo({required Object name}) => '${name} に切り替え';
+	@override String get needsSignIn => '再ログインが必要';
+	@override String get add => 'アカウントを追加';
+	@override String get manage => 'アカウントを管理';
+	@override String get signOutOne => 'このアカウントからログアウト';
+	@override String signOutTitle({required Object name}) => '${name} からログアウトしますか？';
+	@override String get signOutMessage => 'このアカウントはアプリから削除されます。ダウンロードと設定はこの端末に残ります。';
+	@override String switched({required Object name}) => '${name} に切り替えました';
+	@override String get switchFailed => 'アカウントを切り替えられませんでした';
+	@override String get addTitle => 'アカウントを追加';
+	@override String get addIntro => 'ブラウザで別の pixiv アカウントにログインします。現在のアカウントはログインしたままです。';
 }
 
 // Path: appSearch
@@ -1212,7 +1235,6 @@ class _Translations$settings$account$ja_JP extends Translations$settings$account
 	@override String get title => 'アカウント';
 	@override String get signedOutSubtitle => 'ログインすると Pixiv アカウントが表示されます';
 	@override String get notSignedIn => '未ログイン';
-	@override String get signOut => 'ログアウト';
 	@override String get showAi => 'AI 生成作品を表示';
 	@override String get showAiHelp => 'この設定は pixiv アカウントに保存されます';
 	@override String get showAiFailed => '設定を変更できませんでした';
@@ -1863,6 +1885,19 @@ extension on TranslationsJaJp {
 			'signOut.title' => 'pixiv からログアウトしますか？',
 			'signOut.message' => '閲覧するには再度ログインが必要です。ダウンロードと設定はこの端末に残ります。',
 			'signOut.confirm' => 'ログアウト',
+			'accounts.switchAccount' => 'アカウントを切り替え',
+			'accounts.current' => '現在',
+			'accounts.switchTo' => ({required Object name}) => '${name} に切り替え',
+			'accounts.needsSignIn' => '再ログインが必要',
+			'accounts.add' => 'アカウントを追加',
+			'accounts.manage' => 'アカウントを管理',
+			'accounts.signOutOne' => 'このアカウントからログアウト',
+			'accounts.signOutTitle' => ({required Object name}) => '${name} からログアウトしますか？',
+			'accounts.signOutMessage' => 'このアカウントはアプリから削除されます。ダウンロードと設定はこの端末に残ります。',
+			'accounts.switched' => ({required Object name}) => '${name} に切り替えました',
+			'accounts.switchFailed' => 'アカウントを切り替えられませんでした',
+			'accounts.addTitle' => 'アカウントを追加',
+			'accounts.addIntro' => 'ブラウザで別の pixiv アカウントにログインします。現在のアカウントはログインしたままです。',
 			'appSearch.placeholder' => 'イラスト・小説・ユーザーを検索',
 			'appSearch.allHistory' => 'すべての履歴',
 			'appSearch.allTrendingTags' => 'すべての人気タグ',
@@ -2180,7 +2215,6 @@ extension on TranslationsJaJp {
 			'settings.account.title' => 'アカウント',
 			'settings.account.signedOutSubtitle' => 'ログインすると Pixiv アカウントが表示されます',
 			'settings.account.notSignedIn' => '未ログイン',
-			'settings.account.signOut' => 'ログアウト',
 			'settings.account.showAi' => 'AI 生成作品を表示',
 			'settings.account.showAiHelp' => 'この設定は pixiv アカウントに保存されます',
 			'settings.account.showAiFailed' => '設定を変更できませんでした',
@@ -2356,6 +2390,8 @@ extension on TranslationsJaJp {
 			'newest.audience.following' => 'フォロー中',
 			'newest.audience.mypixiv' => 'マイピク',
 			'newest.audience.everyone' => 'みんな',
+			_ => null,
+		} ?? switch (path) {
 			'newest.workType.illustManga' => 'イラスト・マンガ',
 			'newest.workType.illust' => 'イラスト',
 			'newest.workType.manga' => 'マンガ',
@@ -2368,8 +2404,6 @@ extension on TranslationsJaJp {
 			'newest.followScope.all' => 'すべてのフォロー',
 			'newest.followScope.private' => '非公開フォロー',
 			'newest.followScope.public' => '公開フォロー',
-			_ => null,
-		} ?? switch (path) {
 			'newest.followScope.compactAll' => 'すべて',
 			'newest.followScope.compactPrivate' => '非公開',
 			'newest.followScope.compactPublic' => '公開',

@@ -3,6 +3,7 @@ import 'package:freepiv/ui/compositions/pixiv_image.dart' show pixivImageProvide
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:freepiv/app/account_scope.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/app/theme/appearance_logic.dart';
@@ -28,17 +29,27 @@ class FreepivApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     FrostToast.systemConfirmsClipboardCopies = systemConfirmsClipboardCopies;
-    return ProviderScope(
+    return AccountScope(
       overrides: overrides,
-      child: TranslationProvider(child: _FreepivMaterialApp(windowController: windowController)),
+      builder: (context, accountId) => TranslationProvider(
+        // TranslationProvider keeps its element across scopes; this key starts
+        // everything below it over for the account.
+        child: KeyedSubtree(
+          key: ValueKey(accountId),
+          child: _FreepivMaterialApp(windowController: windowController, scopeId: accountId),
+        ),
+      ),
     );
   }
 }
 
 class _FreepivMaterialApp extends ConsumerStatefulWidget {
-  const _FreepivMaterialApp({required this.windowController});
+  const _FreepivMaterialApp({required this.windowController, required this.scopeId});
 
   final FrostWindowController windowController;
+
+  /// The account the scope is for; keys what the app builds, see [AccountScope].
+  final String? scopeId;
 
   @override
   ConsumerState<_FreepivMaterialApp> createState() => _FreepivMaterialAppState();
@@ -52,10 +63,13 @@ class _FreepivMaterialAppState extends ConsumerState<_FreepivMaterialApp> {
   final FrostWindowTitleRegistry _windowTitles = FrostWindowTitleRegistry();
   late final WindowTitleRouterBridge _routerBridge;
 
+  /// The router of the scope this was mounted in; a later one belongs to the next scope.
+  final _router = AppRouter.router;
+
   @override
   void initState() {
     super.initState();
-    _routerBridge = WindowTitleRouterBridge(_windowTitles, AppRouter.router);
+    _routerBridge = WindowTitleRouterBridge(_windowTitles, _router);
   }
 
   @override
@@ -86,7 +100,7 @@ class _FreepivMaterialAppState extends ConsumerState<_FreepivMaterialApp> {
         locale: selectedLocale?.flutterLocale,
         supportedLocales: AppLocaleUtils.supportedLocales,
         localizationsDelegates: const [GlobalMaterialLocalizations.delegate, GlobalWidgetsLocalizations.delegate, GlobalCupertinoLocalizations.delegate],
-        routerConfig: AppRouter.router,
+        routerConfig: _router,
         builder: (context, child) {
           return FrostWindowTitleScope(
             registry: _windowTitles,

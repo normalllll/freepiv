@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/core/services/app_settings.dart';
+import 'package:freepiv/core/services/pixiv_accounts.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/core/utils/text_format.dart';
 import 'package:freepiv/dev/sample_data.dart';
@@ -12,6 +14,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:frost_ui/frost_ui.dart';
 
+import 'support/account_fakes.dart';
 import 'support/pilot_harness.dart';
 
 class _Details extends UserDetail {
@@ -21,15 +24,22 @@ class _Details extends UserDetail {
   FutureOr<UserDetailResult> build(UserDetailArgs args) => answer();
 }
 
-Future<void> _mount(WidgetTester tester, {Future<UserDetailResult> Function()? details, Size size = desktopSize, double textScale = 1, bool signedIn = true}) =>
-    mountPilotPage(
-      tester,
-      const MePage(),
-      size: size,
-      textScale: textScale,
-      signedIn: signedIn,
-      overrides: {if (details != null) userDetailProvider: userDetailProvider.overrideWith2((_) => _Details(details))},
-    );
+Future<void> _mount(
+  WidgetTester tester, {
+  Future<UserDetailResult> Function()? details,
+  Size size = desktopSize,
+  double textScale = 1,
+  bool signedIn = true,
+  Map<String, dynamic>? settings,
+}) => mountPilotPage(
+  tester,
+  const MePage(),
+  size: size,
+  textScale: textScale,
+  signedIn: signedIn,
+  settings: settings,
+  overrides: {if (details != null) userDetailProvider: userDetailProvider.overrideWith2((_) => _Details(details))},
+);
 
 /// Tall enough for every row of the grouped list.
 const _tallDesktop = Size(1147, 900);
@@ -124,6 +134,97 @@ void main() {
     expectNoLayoutErrors(tester);
     await _mount(tester);
     expect(tester.getSize(find.byType(FrostListRow).first).width, lessThanOrEqualTo(FrostMetrics.readingMaxWidth));
+  });
+
+  group('switching accounts from the card', () {
+    Finder switchButton() => find.bySemanticsLabel(t.accounts.switchAccount);
+
+    Future<void> open(WidgetTester tester, {Map<String, dynamic>? settings, Size size = desktopSize, double textScale = 1}) async {
+      await _mount(tester, settings: settings ?? accountSettings(), size: size, textScale: textScale);
+      await tester.tap(switchButton().first);
+      await settlePilot(tester, frames: 8);
+    }
+
+    testWidgets('the card has a Switch account icon button beside My profile, which opens the accounts, adding and managing', (tester) async {
+      await _mount(tester, settings: accountSettings());
+      expect(find.text(t.accounts.switchAccount), findsNothing, reason: 'an icon, its label kept for tooltips and accessibility');
+      expect(switchButton(), findsWidgets);
+      final profile = tester.getRect(find.text(t.me.profile));
+      final switcher = tester.getRect(switchButton().first);
+      expect(switcher.left, greaterThan(profile.right), reason: 'beside My profile, at the end');
+
+      await tester.tap(switchButton().first);
+      await settlePilot(tester, frames: 8);
+
+      expect(find.text(t.accounts.switchAccount), findsOneWidget, reason: 'the popover is titled');
+      expect(find.text('@${sampleAccount.user.account}'), findsWidgets);
+      expect(find.text(sampleSecondAccount.user.name), findsOneWidget);
+      expect(
+        find.byWidgetPredicate((widget) => widget is Semantics && widget.properties.label == t.accounts.current),
+        findsOneWidget,
+        reason: 'the current account is checked',
+      );
+      expect(find.byTooltip(t.accounts.switchTo(name: sampleSecondAccount.user.name)), findsOneWidget);
+      expect(find.text(t.accounts.add), findsOneWidget);
+      expect(find.text(t.accounts.manage), findsOneWidget);
+      expect(find.text(t.accounts.signOutOne), findsNothing, reason: 'signing out stays in the settings');
+    });
+
+    testWidgets('the account rows have the avatar size of the other user rows, and no more menu', (tester) async {
+      await open(tester);
+
+      final row = find.widgetWithText(FrostListRow, sampleSecondAccount.user.name);
+      final avatar = tester.widget<FrostAvatar>(find.descendant(of: row, matching: find.byType(FrostAvatar)));
+      expect(avatar.size, FrostAvatarSize.regular);
+      expect(find.descendant(of: row, matching: find.bySemanticsLabel(FrostScope.labelsOf(tester.element(row)).more)), findsNothing);
+    });
+
+    testWidgets('Add account and Manage accounts close the popover and open their pages', (tester) async {
+      await open(tester);
+      await tester.tap(find.text(t.accounts.add));
+      await settlePilot(tester);
+      expect(openedLocations.last, AppRoute.accountsAdd.path);
+      expect(find.text(t.accounts.manage), findsNothing, reason: 'the popover closed');
+
+      await open(tester);
+      await tester.tap(find.text(t.accounts.manage));
+      await settlePilot(tester);
+      expect(openedLocations.last, AppLocations.settings(account: true));
+    });
+
+    testWidgets('an account that needs signing in says so and opens the add page', (tester) async {
+      await open(tester, settings: accountSettings(secondState: PixivAccountState.needsSignIn));
+      final entry = find.text('@${sampleSecondAccount.user.account} · ${t.accounts.needsSignIn}');
+      expect(entry, findsOneWidget);
+
+      await tester.tap(entry);
+      await settlePilot(tester);
+
+      expect(openedLocations.last, AppRoute.accountsAdd.path);
+    });
+
+    testWidgets('tapping another account closes the popover and switches to it', (tester) async {
+      final apis = FakeAccountApis();
+      addTearDown(apis.restore);
+      await open(tester);
+      pixivApi = apis.createFor(sampleAccount);
+
+      await tester.tap(find.text(sampleSecondAccount.user.name));
+      await settlePilot(tester);
+
+      expect(AppSettings.accounts.activeId, '1001');
+      expect(find.text(t.accounts.manage), findsNothing, reason: 'the popover closed');
+    });
+
+    testWidgets('a phone opens a sheet, at double text size too', (tester) async {
+      await open(tester, size: phoneSize);
+      expect(find.text(t.accounts.manage), findsOneWidget);
+      expectNoLayoutErrors(tester);
+
+      await open(tester, size: phoneSize, textScale: 2);
+      expect(find.text(t.accounts.manage), findsOneWidget);
+      expectNoLayoutErrors(tester);
+    });
   });
 
   test('the Me strings exist in all four languages', () => expectLocalesComplete(['me']));

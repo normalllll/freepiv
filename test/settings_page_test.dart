@@ -5,8 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/theme/system_transparency.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/core/services/pixiv_accounts.dart';
+import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/settings/presentation/appearance_settings_section.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
@@ -14,6 +17,7 @@ import 'package:freepiv/src/rust/api/proxy.dart' as system_proxy;
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
 
+import 'support/account_fakes.dart';
 import 'support/pilot_harness.dart';
 
 void main() {
@@ -171,6 +175,105 @@ void main() {
     await tester.enterText(hex, '#12');
     await settlePilot(tester, frames: 2);
     expect(find.text(t.settings.theme.invalidHex), findsOneWidget);
+  });
+
+  group('accounts section', () {
+    Future<void> openAccounts(WidgetTester tester, {Map<String, dynamic>? settings}) async {
+      await mountPilotPage(tester, const SettingsPage(), settings: settings ?? accountSettings());
+      await tester.tap(find.text(t.settings.account.title).first);
+      await settlePilot(tester, frames: 4);
+    }
+
+    testWidgets('lists every account, checks the current one, switches on tap for the others, then Add account', (tester) async {
+      await openAccounts(tester);
+
+      expect(find.text(sampleAccount.user.name), findsOneWidget);
+      expect(find.text(sampleSecondAccount.user.name), findsOneWidget);
+      expect(
+        find.byWidgetPredicate((widget) => widget is Semantics && widget.properties.label == t.accounts.current),
+        findsOneWidget,
+        reason: 'a check labelled for assistive technology, not text',
+      );
+      expect(find.text(t.accounts.current), findsNothing);
+      expect(find.byTooltip(t.accounts.switchTo(name: sampleSecondAccount.user.name)), findsOneWidget, reason: 'the other usable account only');
+      expect(find.byTooltip(t.accounts.switchTo(name: sampleAccount.user.name)), findsNothing);
+      expect(find.text(t.settings.account.showAi), findsOneWidget, reason: 'for the current account only');
+      final add = tester.getTopLeft(find.text(t.accounts.add)).dy;
+      expect(tester.getTopLeft(find.text(sampleSecondAccount.user.name)).dy, lessThan(add));
+      expect(tester.getTopLeft(find.text(t.settings.account.showAi)).dy, greaterThan(add), reason: 'the AI setting of the current account follows the list');
+    });
+
+    testWidgets('an account that needs signing in says so, does not switch and opens the add page', (tester) async {
+      await openAccounts(tester, settings: accountSettings(secondState: PixivAccountState.needsSignIn));
+
+      expect(find.byTooltip(t.accounts.switchTo(name: sampleSecondAccount.user.name)), findsNothing);
+      final row = find.text('@${sampleSecondAccount.user.account} · ${t.accounts.needsSignIn}');
+      expect(row, findsOneWidget);
+      await tester.tap(row);
+      await settlePilot(tester);
+      expect(openedLocations.last, AppRoute.accountsAdd.path);
+    });
+
+    testWidgets('tapping another usable account switches to it', (tester) async {
+      final apis = FakeAccountApis();
+      addTearDown(apis.restore);
+      await openAccounts(tester);
+      pixivApi = apis.createFor(sampleAccount);
+
+      await tester.tap(find.text(sampleSecondAccount.user.name));
+      await settlePilot(tester);
+
+      expect(AppSettings.accounts.activeId, '1001');
+      expect(pixivAccountNotifier.value?.user.id, '1001');
+    });
+
+    testWidgets('tapping the current account does nothing', (tester) async {
+      final apis = FakeAccountApis();
+      addTearDown(apis.restore);
+      await openAccounts(tester);
+      pixivApi = apis.createFor(sampleAccount);
+
+      await tester.tap(find.text(sampleAccount.user.name));
+      await settlePilot(tester);
+
+      expect(AppSettings.accounts.activeId, '1000');
+      expect(apis.created, hasLength(1));
+    });
+
+    testWidgets('Add account opens the add page', (tester) async {
+      await openAccounts(tester);
+
+      await tester.tap(find.text(t.accounts.add));
+      await settlePilot(tester);
+
+      expect(openedLocations.last, AppRoute.accountsAdd.path);
+    });
+
+    testWidgets("an account's more menu signs it out after a confirmation", (tester) async {
+      await openAccounts(tester);
+      final more = find.descendant(
+        of: find.widgetWithText(FrostListRow, sampleSecondAccount.user.name),
+        matching: find.bySemanticsLabel(FrostScope.labelsOf(tester.element(find.byType(SettingsPage))).more),
+      );
+      await tester.tap(more.first);
+      await settlePilot(tester, frames: 6);
+      await tester.tap(find.text(t.accounts.signOutOne));
+      await settlePilot(tester, frames: 6);
+      expect(find.text(t.accounts.signOutTitle(name: sampleSecondAccount.user.name)), findsOneWidget);
+      expect(AppSettings.accounts.entries, hasLength(2), reason: 'nothing happens before the confirmation');
+
+      await tester.tap(find.text(t.signOut.confirm).last);
+      await settlePilot(tester, frames: 6);
+
+      expect(AppSettings.accounts.entries.map((entry) => entry.id), ['1000']);
+      expect(find.text(sampleSecondAccount.user.name), findsNothing);
+    });
+
+    testWidgets('opened for managing, a narrow window starts on the accounts', (tester) async {
+      await mountPilotPage(tester, const SettingsPage(openAccount: true), size: phoneSize, settings: accountSettings());
+      expect(find.text(t.accounts.add), findsOneWidget);
+      expect(find.text(t.settings.images.title), findsNothing);
+    });
   });
 
   test('the settings strings exist in all four languages', () => expectLocalesComplete(['settings', 'signOut', 'fanbox']));

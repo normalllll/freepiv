@@ -18,7 +18,9 @@ Future<void> main() async {
   pixivImageOverride = sampleImageProvider;
   await RustLib.init();
   // Signed in, so the router opens the home page instead of the login page.
-  pixivAccountNotifier.value = sampleAccount;
+  pixivApiFactory = samplePixivApiFor;
+  pixivApi = createPixivApi(account: AppSettings.accounts.active?.session);
+  pixivAccountNotifier.value = pixivApi.account();
   final window = await prepareAppWindow();
   runApp(FreepivApp(windowController: window, overrides: sampleOverrides));
   await showAppWindow(binding, window);

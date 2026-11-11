@@ -44,6 +44,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$downloadEntry$en_US downloadEntry = Translations$downloadEntry$en_US.internal(_root);
 	late final Translations$novelText$en_US novelText = Translations$novelText$en_US.internal(_root);
 	late final Translations$signOut$en_US signOut = Translations$signOut$en_US.internal(_root);
+	late final Translations$accounts$en_US accounts = Translations$accounts$en_US.internal(_root);
 	late final Translations$appSearch$en_US appSearch = Translations$appSearch$en_US.internal(_root);
 	late final Translations$frost$en_US frost = Translations$frost$en_US.internal(_root);
 	late final Translations$nativeWindow$en_US nativeWindow = Translations$nativeWindow$en_US.internal(_root);
@@ -120,6 +121,28 @@ class Translations$signOut$en_US {
 	String get title => 'Sign out of Pixiv?';
 	String get message => 'You need to sign in again to browse. Downloads and settings stay on this device.';
 	String get confirm => 'Sign out';
+}
+
+// Path: accounts
+class Translations$accounts$en_US {
+	Translations$accounts$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get switchAccount => 'Switch account';
+	String get current => 'Current';
+	String switchTo({required Object name}) => 'Switch to ${name}';
+	String get needsSignIn => 'Needs sign-in';
+	String get add => 'Add account';
+	String get manage => 'Manage accounts';
+	String get signOutOne => 'Sign out of this account';
+	String signOutTitle({required Object name}) => 'Sign out of ${name}?';
+	String get signOutMessage => 'The account is removed from this app. Downloads and settings stay on this device.';
+	String switched({required Object name}) => 'Switched to ${name}';
+	String get switchFailed => 'Could not switch account';
+	String get addTitle => 'Add account';
+	String get addIntro => 'Sign in with another Pixiv account in the browser. The current account stays signed in.';
 }
 
 // Path: appSearch
@@ -1214,7 +1237,6 @@ class Translations$settings$account$en_US {
 	String get title => 'Account';
 	String get signedOutSubtitle => 'Sign in to show your Pixiv account';
 	String get notSignedIn => 'Not signed in';
-	String get signOut => 'Sign out';
 	String get showAi => 'Show AI-generated works';
 	String get showAiHelp => 'This setting is saved to your pixiv account';
 	String get showAiFailed => 'Could not change the setting';
@@ -1865,6 +1887,19 @@ extension on Translations {
 			'signOut.title' => 'Sign out of Pixiv?',
 			'signOut.message' => 'You need to sign in again to browse. Downloads and settings stay on this device.',
 			'signOut.confirm' => 'Sign out',
+			'accounts.switchAccount' => 'Switch account',
+			'accounts.current' => 'Current',
+			'accounts.switchTo' => ({required Object name}) => 'Switch to ${name}',
+			'accounts.needsSignIn' => 'Needs sign-in',
+			'accounts.add' => 'Add account',
+			'accounts.manage' => 'Manage accounts',
+			'accounts.signOutOne' => 'Sign out of this account',
+			'accounts.signOutTitle' => ({required Object name}) => 'Sign out of ${name}?',
+			'accounts.signOutMessage' => 'The account is removed from this app. Downloads and settings stay on this device.',
+			'accounts.switched' => ({required Object name}) => 'Switched to ${name}',
+			'accounts.switchFailed' => 'Could not switch account',
+			'accounts.addTitle' => 'Add account',
+			'accounts.addIntro' => 'Sign in with another Pixiv account in the browser. The current account stays signed in.',
 			'appSearch.placeholder' => 'Search illustrations, novels, users',
 			'appSearch.allHistory' => 'All history',
 			'appSearch.allTrendingTags' => 'All trending tags',
@@ -2182,7 +2217,6 @@ extension on Translations {
 			'settings.account.title' => 'Account',
 			'settings.account.signedOutSubtitle' => 'Sign in to show your Pixiv account',
 			'settings.account.notSignedIn' => 'Not signed in',
-			'settings.account.signOut' => 'Sign out',
 			'settings.account.showAi' => 'Show AI-generated works',
 			'settings.account.showAiHelp' => 'This setting is saved to your pixiv account',
 			'settings.account.showAiFailed' => 'Could not change the setting',
@@ -2358,6 +2392,8 @@ extension on Translations {
 			'newest.audience.following' => 'Following',
 			'newest.audience.mypixiv' => 'MyPixiv',
 			'newest.audience.everyone' => 'Everyone',
+			_ => null,
+		} ?? switch (path) {
 			'newest.workType.illustManga' => 'Illust & Manga',
 			'newest.workType.illust' => 'Illust',
 			'newest.workType.manga' => 'Manga',
@@ -2370,8 +2406,6 @@ extension on Translations {
 			'newest.followScope.all' => 'All follows',
 			'newest.followScope.private' => 'Private follows',
 			'newest.followScope.public' => 'Public follows',
-			_ => null,
-		} ?? switch (path) {
 			'newest.followScope.compactAll' => 'All',
 			'newest.followScope.compactPrivate' => 'Private',
 			'newest.followScope.compactPublic' => 'Public',

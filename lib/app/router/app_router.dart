@@ -22,20 +22,52 @@ import 'package:go_router/go_router.dart';
 class AppRouter {
   const AppRouter._();
 
-  static final rootNavigatorKey = GlobalKey<NavigatorState>();
-  static final rightNavigatorKey = GlobalKey<NavigatorState>();
+  static GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+  static GlobalKey<NavigatorState> _rightNavigatorKey = GlobalKey<NavigatorState>();
   static String? _pendingProtectedTarget;
 
-  static final SingleTopGoRouter router = SingleTopGoRouter(
-    navigatorKey: rootNavigatorKey,
-    initialLocation: AppRoute.home.path,
+  /// The navigator keys and the router of the current account scope. They are
+  /// replaced together by [replace], so a scope that starts over has no
+  /// navigator, page or key of the previous one to carry along.
+  static GlobalKey<NavigatorState> get rootNavigatorKey => _rootNavigatorKey;
+  static GlobalKey<NavigatorState> get rightNavigatorKey => _rightNavigatorKey;
+  static SingleTopGoRouter get router => _router;
+  static SingleTopGoRouter _router = _create(AppRoute.home.path);
+
+  /// Builds a new router with new navigator keys for the account scope that is
+  /// about to mount, and disposes the previous router once that scope has been
+  /// built. A signed-in scope opens the page that was waiting behind the login
+  /// page, or the home page; a signed-out one is sent to the login page.
+  static void replace() {
+    final previous = _router;
+    final pending = _pendingProtectedTarget;
+    final resume =
+        pixivAccountNotifier.value != null && pending != null && pending.startsWith('/') && !pending.startsWith('//') && pending != AppRoute.login.path;
+    if (resume) _pendingProtectedTarget = null;
+    if (_watchingSwitch) {
+      previous.routerDelegate.removeListener(_trackSwitchedSecondary);
+      _watchingSwitch = false;
+    }
+    _opener = null;
+    _switchedSecondary = null;
+    _switchPending = false;
+    appRootRouteActivity.clear();
+    _rootNavigatorKey = GlobalKey<NavigatorState>();
+    _rightNavigatorKey = GlobalKey<NavigatorState>();
+    _router = _create(resume ? pending : AppRoute.home.path);
+    WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+  }
+
+  static SingleTopGoRouter _create(String initialLocation) => SingleTopGoRouter(
+    navigatorKey: _rootNavigatorKey,
+    initialLocation: initialLocation,
     refreshListenable: pixivAccountNotifier,
     observers: [appRootRouteActivity],
     config: RoutingConfig(
       redirect: _redirect,
       routes: [
         ShellRoute(
-          navigatorKey: rightNavigatorKey,
+          navigatorKey: _rightNavigatorKey,
           builder: (context, state, child) {
             final location = currentUri;
             return RouterShell(
@@ -75,6 +107,7 @@ class AppRouter {
             GoRoute(path: AppRoute.discover.path, name: AppRoute.discover.name, pageBuilder: route_pages.discoverPage),
             // Inside the shell, so the download entry stays reachable while signed out.
             GoRoute(path: AppRoute.login.path, name: AppRoute.login.name, pageBuilder: route_pages.loginPage),
+            GoRoute(path: AppRoute.accountsAdd.path, name: AppRoute.accountsAdd.name, pageBuilder: route_pages.accountsAddPage),
             GoRoute(path: AppRoute.downloads.path, name: AppRoute.downloads.name, pageBuilder: route_pages.downloadsPage),
             GoRoute(
               path: AppRoute.pixivision.path,

@@ -12,6 +12,21 @@
     "message": "需要重新登录才能浏览。下载记录和设置会保留在这台设备上。",
     "confirm": "退出登录"
   },
+  "accounts": {
+    "switchAccount": "切换账号",
+    "current": "当前",
+    "switchTo": "切换到 $name",
+    "needsSignIn": "需要重新登录",
+    "add": "添加账号",
+    "manage": "管理账号",
+    "signOutOne": "退出此账号",
+    "signOutTitle": "退出 $name 的登录？",
+    "signOutMessage": "此账号会从应用中移除。下载记录和设置会保留在这台设备上。",
+    "switched": "已切换到 $name",
+    "switchFailed": "无法切换账号",
+    "addTitle": "添加账号",
+    "addIntro": "在浏览器中登录另一个 Pixiv 账号，当前账号保持登录。"
+  },
   "appSearch": {
     "placeholder": "搜索插画、小说、用户",
     "allHistory": "全部历史",
@@ -363,7 +378,6 @@
       "title": "账号",
       "signedOutSubtitle": "登录后显示 Pixiv 账号",
       "notSignedIn": "未登录",
-      "signOut": "退出登录",
       "showAi": "显示 AI 作品",
       "showAiHelp": "这项设置会同步到你的 pixiv 账号",
       "showAiFailed": "设置修改失败"

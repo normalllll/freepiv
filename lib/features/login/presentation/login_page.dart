@@ -3,12 +3,15 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app_links/app_links.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/account/account_actions.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Where the sign-in stands.
@@ -20,7 +23,11 @@ enum LoginStage { idle, opening, waiting, exchanging, signedIn }
 /// token exchange shows a bar; a failure shows why with its details. Tokens,
 /// callback addresses and raw responses never show.
 class LoginPage extends ConsumerStatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({this.addsAccount = false, super.key});
+
+  /// Signing in as another account over the current one, which stays
+  /// signed in until the new one is: the page can be left again.
+  final bool addsAccount;
 
   @override
   ConsumerState<LoginPage> createState() => _LoginPageState();
@@ -75,7 +82,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     try {
       final account = await pixivApi.initAccountAuthToken(code: code);
       if (!mounted) return;
-      setPixivAccount(account);
+      final router = GoRouter.of(context);
+      final sameAccount = pixivAccountNotifier.value?.user.id == account.user.id;
+      await signInPixivAccount(account);
+      if (widget.addsAccount) {
+        // Signed out, the new scope's router leaves this page. A page pushed over
+        // another account's starts a new scope too, unless it signed in as the
+        // same user: then it is left for the home page here.
+        if (sameAccount) router.go(AppRoute.home.path);
+        announceSwitched(account.user.name);
+      }
+      if (!mounted) return;
       setState(() {
         _account = account;
         _stage = LoginStage.signedIn;
@@ -106,13 +123,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    final account = _account ?? (appServicesInitialized ? pixivApi.account() : null);
+    final account = widget.addsAccount ? null : _account ?? (appServicesInitialized ? pixivApi.account() : null);
     final proxy = ref.watch(proxySettingsProvider);
     final waiting = _stage == LoginStage.waiting;
     return FrostPinnedChrome(
       chrome: FrostContentColumn(
         maxWidth: FrostMetrics.readingMaxWidth,
-        child: FrostPageHeader(title: FrostText(t.login.title)),
+        child: FrostPageHeader(title: FrostText(widget.addsAccount ? t.accounts.addTitle : t.login.title)),
       ),
       body: FrostLoadingScrollView(
         slivers: [
@@ -131,7 +148,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       Image.asset('assets/icon-512.png', width: _iconExtent, height: _iconExtent, cacheWidth: 256, excludeFromSemantics: true),
                       FrostText('freepiv', role: FrostTextRole.title1, textAlign: TextAlign.center),
                       FrostText(
-                        account == null ? t.loginPage.intro : t.login.signedInAs(name: account.user.name),
+                        account == null ? (widget.addsAccount ? t.accounts.addIntro : t.loginPage.intro) : t.login.signedInAs(name: account.user.name),
                         tone: FrostTextTone.secondary,
                         textAlign: TextAlign.center,
                       ),

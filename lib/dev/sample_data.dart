@@ -30,6 +30,7 @@ import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_autocomplete_session.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart' show PixivApi;
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/shared/logic/bookmark_tags.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -57,6 +58,7 @@ final sampleSettings = <String, dynamic>{
         lastUsed: DateTime.utc(2026, 11, 1),
         searchHistory: const ['初音ミク', 'landscape', 'オリジナル', 'cat', 'ブルーアーカイブ', 'scenery'],
       ),
+      PixivAccountEntry(session: sampleSecondAccount, lastUsed: DateTime.utc(2026, 10, 1)),
     ],
     activeId: sampleAccount.user.id,
   ).toJson(),
@@ -80,6 +82,50 @@ const sampleAccount = UserAccountResult(
     requirePolicyAgreement: false,
   ),
 );
+
+/// A second signed-in account, for switching.
+const sampleSecondAccount = UserAccountResult(
+  accessToken: 'sample-second',
+  expiresIn: 3600,
+  tokenType: 'bearer',
+  scope: '',
+  refreshToken: 'sample-second',
+  user: LocalUser(
+    profileImageUrls: LocalUserProfileImageUrls(px16X16: '', px50X50: '', px170X170: ''),
+    id: '1001',
+    name: 'Second sample user',
+    account: 'second_user',
+    mailAddress: 'second@example.test',
+    isPremium: false,
+    xRestrict: 0,
+    isMailAuthorized: true,
+    requirePolicyAgreement: false,
+  ),
+);
+
+/// A client that answers for the sample accounts: it holds an account and
+/// returns the sample profile for the one request an account switch makes.
+/// Any other request fails as it would offline.
+class SamplePixivApi implements PixivApi {
+  SamplePixivApi(this._account);
+
+  UserAccountResult? _account;
+
+  @override
+  UserAccountResult? account() => _account;
+
+  @override
+  void setAccount({UserAccountResult? account}) => _account = account;
+
+  @override
+  Future<UserDetailResult> getUserDetail({required int userId}) async => sampleUserDetail;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw StateError('offline: ${invocation.memberName}');
+}
+
+/// [SamplePixivApi] as the way accounts get their client.
+PixivApi samplePixivApiFor(UserAccountResult? account) => SamplePixivApi(account);
 
 const _artist = User(
   id: 2000,

@@ -4,7 +4,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/core/services/pixiv_accounts.dart';
+import 'package:freepiv/features/account/account_actions.dart';
+import 'package:freepiv/features/account/account_row.dart';
 import 'package:freepiv/core/downloads/platform/macos_folder_access.dart';
 import 'package:freepiv/features/fanbox/login_logic.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
@@ -12,24 +16,30 @@ import 'package:freepiv/features/fanbox/login_panel.dart';
 import 'package:freepiv/features/me/logic/account_edit_logic.dart';
 import 'package:freepiv/features/settings/presentation/appearance_settings_section.dart';
 import 'package:freepiv/features/settings/presentation/background_settings_section.dart';
-import 'package:freepiv/features/settings/presentation/pixiv_sign_out.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
+import 'package:go_router/go_router.dart';
 
 /// Settings: Appearance, Language, Images, Network,
 /// Downloads and Accounts as Frost settings sections, the categories beside
 /// the settings on wide windows and a list leading to each on narrow ones.
 class SettingsPage extends ConsumerStatefulWidget {
-  const SettingsPage({super.key});
+  const SettingsPage({this.openAccount = false, super.key});
+
+  /// Opens on the accounts, as the account menu's "Manage accounts" does.
+  final bool openAccount;
 
   @override
   ConsumerState<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
-  int _section = 0;
-  bool _sectionOpen = false;
+  late int _section = widget.openAccount ? _accountSection : 0;
+  late bool _sectionOpen = widget.openAccount;
+
+  /// The accounts are the last section.
+  static const _accountSection = 5;
 
   @override
   Widget build(BuildContext context) {
@@ -271,18 +281,22 @@ class _AccountSettings extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: FrostGap.section,
       children: [
-        ValueListenableBuilder(
-          valueListenable: pixivAccountNotifier,
-          builder: (context, account, _) => FrostGroupedSection(
+        ValueListenableBuilder<PixivAccountBook>(
+          valueListenable: AppSettings.accountsListenable,
+          builder: (context, book, _) => FrostGroupedSection(
             header: 'Pixiv',
             children: [
-              FrostListRow(
-                title: account == null ? t.settings.account.notSignedIn : account.user.name,
-                contentTitle: account != null,
-                subtitle: FrostRowSubtitle(account == null ? t.settings.account.signedOutSubtitle : '@${account.user.account}'),
-              ),
-              if (account != null) _AiShowRow(accountId: account.user.id),
-              if (account != null) FrostListRow(title: t.settings.account.signOut, destructive: true, onPressed: () => unawaited(confirmPixivSignOut(context))),
+              if (book.active == null) FrostListRow(title: t.settings.account.notSignedIn, subtitle: FrostRowSubtitle(t.settings.account.signedOutSubtitle)),
+              for (final account in book.entries) AccountRow(account: account, active: account.id == book.activeId, withSignOut: true),
+              if (book.active == null)
+                FrostListRow(
+                  title: t.login.signInToPixiv,
+                  accessory: FrostRowAccessory.chevron,
+                  onPressed: () => unawaited(GoRouter.of(context).push(AppRoute.login.path)),
+                )
+              else
+                FrostListRow(title: t.accounts.add, accessory: FrostRowAccessory.chevron, onPressed: () => openAddAccount(context)),
+              if (book.active case final active?) _AiShowRow(accountId: active.id),
             ],
           ),
         ),

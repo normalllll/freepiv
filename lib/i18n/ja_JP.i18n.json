@@ -12,6 +12,21 @@
     "message": "閲覧するには再度ログインが必要です。ダウンロードと設定はこの端末に残ります。",
     "confirm": "ログアウト"
   },
+  "accounts": {
+    "switchAccount": "アカウントを切り替え",
+    "current": "現在",
+    "switchTo": "$name に切り替え",
+    "needsSignIn": "再ログインが必要",
+    "add": "アカウントを追加",
+    "manage": "アカウントを管理",
+    "signOutOne": "このアカウントからログアウト",
+    "signOutTitle": "$name からログアウトしますか？",
+    "signOutMessage": "このアカウントはアプリから削除されます。ダウンロードと設定はこの端末に残ります。",
+    "switched": "$name に切り替えました",
+    "switchFailed": "アカウントを切り替えられませんでした",
+    "addTitle": "アカウントを追加",
+    "addIntro": "ブラウザで別の pixiv アカウントにログインします。現在のアカウントはログインしたままです。"
+  },
   "appSearch": {
     "placeholder": "イラスト・小説・ユーザーを検索",
     "allHistory": "すべての履歴",
@@ -363,7 +378,6 @@
       "title": "アカウント",
       "signedOutSubtitle": "ログインすると Pixiv アカウントが表示されます",
       "notSignedIn": "未ログイン",
-      "signOut": "ログアウト",
       "showAi": "AI 生成作品を表示",
       "showAiHelp": "この設定は pixiv アカウントに保存されます",
       "showAiFailed": "設定を変更できませんでした"

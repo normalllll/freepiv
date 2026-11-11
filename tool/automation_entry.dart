@@ -10,7 +10,9 @@ import 'dart:ui' as ui;
 import 'package:frost_ui/frost_ui.dart' show FrostToast;
 
 import 'package:freepiv/app/router/app_router.dart';
+import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
+import 'package:freepiv/features/account/account_actions.dart';
 import 'package:freepiv/dev/sample_data.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
@@ -156,8 +158,18 @@ void main() {
           return jsonEncode(_state());
         case 'signedOut':
           // The sign-in page as a signed-out user sees it, and back.
-          pixivAccountNotifier.value = request['value'] == 'true' ? null : sampleAccount;
+          if (request['value'] == 'true') {
+            AppSettings.accounts = AppSettings.accounts.deactivated();
+            pixivAccountNotifier.value = null;
+          } else {
+            await signInPixivAccount(sampleAccount);
+          }
           AppRouter.router.go(request['value'] == 'true' ? '/login' : '/');
+          await _frame();
+          return jsonEncode(_state());
+        case 'switchAccount':
+          // Switches to the stored account with this ID, as the account menu does.
+          await switchToAccount(AppRouter.rootNavigatorKey.currentContext!, request['value']! as String);
           await _frame();
           return jsonEncode(_state());
         case 'destination':

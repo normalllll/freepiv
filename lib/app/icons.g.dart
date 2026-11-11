@@ -71,6 +71,7 @@ abstract final class FreepivIcons {
   static const smile = IconData(0xE941, fontFamily: 'FreepivIcons');
   static const bookOpen = IconData(0xE942, fontFamily: 'FreepivIcons');
   static const history = IconData(0xE943, fontFamily: 'FreepivIcons');
+  static const arrowLeftRight = IconData(0xE944, fontFamily: 'FreepivIcons');
 
   static const all = <IconData>[
     clock,
@@ -141,6 +142,7 @@ abstract final class FreepivIcons {
     smile,
     bookOpen,
     history,
+    arrowLeftRight,
   ];
   static const names = <String>[
     'clock',
@@ -211,5 +213,6 @@ abstract final class FreepivIcons {
     'smile',
     'book-open',
     'history',
+    'arrow-left-right',
   ];
 }

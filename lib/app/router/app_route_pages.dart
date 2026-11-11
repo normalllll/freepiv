@@ -40,6 +40,12 @@ Page<void> loginPage(BuildContext context, GoRouterState state) {
   return const NoTransitionPage(child: LoginPage());
 }
 
+/// The sign-in page of another account, pushed over the current one: Back
+/// cancels.
+Page<void> accountsAddPage(BuildContext context, GoRouterState state) {
+  return FrostDetailPage(key: state.pageKey, child: const LoginPage(addsAccount: true));
+}
+
 Page<void> homePage(BuildContext context, GoRouterState state) {
   return const NoTransitionPage(child: HomePage());
 }
@@ -182,7 +188,10 @@ Page<void> _seriesPage(GoRouterState state, AppSeriesKind kind) {
 }
 
 Page<void> settingsPage(BuildContext context, GoRouterState state) {
-  return FrostDetailPage.secondaryDestination(key: state.pageKey, child: const SettingsPage());
+  return FrostDetailPage.secondaryDestination(
+    key: state.pageKey,
+    child: SettingsPage(openAccount: state.uri.queryParameters[AppRouteQuery.section] == AppRouteQuery.accountSection),
+  );
 }
 
 Page<void> aboutPage(BuildContext context, GoRouterState state) {

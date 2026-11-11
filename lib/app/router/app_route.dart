@@ -25,6 +25,7 @@ enum AppRoute {
   pixivisionBrowse('/pixivision/browse'),
   pixivisionArticle('/pixivision/article'),
   login('/login'),
+  accountsAdd('/accounts/add'),
   meFollowing('/me/following'),
   meFollowers('/me/followers'),
   meMypixiv('/me/mypixiv'),
@@ -111,6 +112,9 @@ abstract final class AppRouteQuery {
   static const type = 'type';
   static const mode = 'mode';
 
+  /// The [section] value that opens the settings on the accounts.
+  static const accountSection = 'account';
+
   /// Set to [on] to open the discover page with its search focused.
   static const focus = 'focus';
   static const on = '1';
@@ -176,6 +180,9 @@ abstract final class AppLocations {
   /// [section] (a DiscoverSection name) opens it scrolled to that section.
   static String discover({bool focusSearch = false, String? section}) =>
       AppRoute.discover._location(query: {AppRouteQuery.focus: focusSearch ? AppRouteQuery.on : null, AppRouteQuery.section: section});
+
+  /// The settings, on the accounts when [account] is set.
+  static String settings({bool account = false}) => AppRoute.settings._location(query: {AppRouteQuery.section: account ? AppRouteQuery.accountSection : null});
 
   static String downloads({String? item}) => AppRoute.downloads._location(query: {AppRouteQuery.item: item});
 

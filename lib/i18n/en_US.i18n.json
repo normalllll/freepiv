@@ -12,6 +12,21 @@
     "message": "You need to sign in again to browse. Downloads and settings stay on this device.",
     "confirm": "Sign out"
   },
+  "accounts": {
+    "switchAccount": "Switch account",
+    "current": "Current",
+    "switchTo": "Switch to $name",
+    "needsSignIn": "Needs sign-in",
+    "add": "Add account",
+    "manage": "Manage accounts",
+    "signOutOne": "Sign out of this account",
+    "signOutTitle": "Sign out of $name?",
+    "signOutMessage": "The account is removed from this app. Downloads and settings stay on this device.",
+    "switched": "Switched to $name",
+    "switchFailed": "Could not switch account",
+    "addTitle": "Add account",
+    "addIntro": "Sign in with another Pixiv account in the browser. The current account stays signed in."
+  },
   "appSearch": {
     "placeholder": "Search illustrations, novels, users",
     "allHistory": "All history",
@@ -363,7 +378,6 @@
       "title": "Account",
       "signedOutSubtitle": "Sign in to show your Pixiv account",
       "notSignedIn": "Not signed in",
-      "signOut": "Sign out",
       "showAi": "Show AI-generated works",
       "showAiHelp": "This setting is saved to your pixiv account",
       "showAiFailed": "Could not change the setting"

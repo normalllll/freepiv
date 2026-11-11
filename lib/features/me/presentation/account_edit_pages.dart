@@ -256,7 +256,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
       ref.invalidate(userDetailProvider(UserDetailArgs(userId: widget.userId)));
       // The account card and settings read the stored account, not the profile.
       // From the API's copy: it holds the access token as last refreshed.
-      if (pixivApi.account() case final account?) setPixivAccount(account.copyWith(user: account.user.copyWith(name: name)));
+      if (pixivApi.account() case final account?) updatePixivAccount(account.copyWith(user: account.user.copyWith(name: name)));
       FrostToast.success(t.saved);
       setState(() => _saved = true);
       WidgetsBinding.instance.addPostFrameCallback((_) {

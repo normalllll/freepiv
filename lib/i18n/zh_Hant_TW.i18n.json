@@ -12,6 +12,21 @@
     "message": "需要重新登入才能瀏覽。下載紀錄與設定會保留在這台裝置上。",
     "confirm": "登出"
   },
+  "accounts": {
+    "switchAccount": "切換帳號",
+    "current": "目前",
+    "switchTo": "切換到 $name",
+    "needsSignIn": "需要重新登入",
+    "add": "新增帳號",
+    "manage": "管理帳號",
+    "signOutOne": "登出此帳號",
+    "signOutTitle": "登出 $name？",
+    "signOutMessage": "此帳號會從應用程式中移除。下載紀錄與設定會保留在這台裝置上。",
+    "switched": "已切換到 $name",
+    "switchFailed": "無法切換帳號",
+    "addTitle": "新增帳號",
+    "addIntro": "在瀏覽器中登入另一個 Pixiv 帳號，目前帳號保持登入。"
+  },
   "appSearch": {
     "placeholder": "搜尋插畫、小說、使用者",
     "allHistory": "全部紀錄",
@@ -363,7 +378,6 @@
       "title": "帳號",
       "signedOutSubtitle": "登入後顯示 Pixiv 帳號",
       "notSignedIn": "尚未登入",
-      "signOut": "登出",
       "showAi": "顯示 AI 作品",
       "showAiHelp": "這項設定會同步到你的 pixiv 帳號",
       "showAiFailed": "設定修改失敗"

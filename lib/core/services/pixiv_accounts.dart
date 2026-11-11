@@ -122,6 +122,14 @@ class PixivAccountBook {
   /// No account is current.
   PixivAccountBook deactivated() => PixivAccountBook(entries: entries);
 
+  /// With no current account but a usable one stored, the usable account used
+  /// last is current: how a start goes on after an operation was cut short.
+  PixivAccountBook withFallbackActive() {
+    if (activeId != null) return this;
+    final recent = usableByRecency();
+    return recent.isEmpty ? this : PixivAccountBook(entries: entries, activeId: recent.first.id);
+  }
+
   /// The usable accounts other than [excluding], the one used last first.
   List<PixivAccountEntry> usableByRecency({String? excluding}) {
     return entries.where((entry) => entry.usable && entry.id != excluding).toList()..sort((a, b) => b.lastUsed.compareTo(a.lastUsed));

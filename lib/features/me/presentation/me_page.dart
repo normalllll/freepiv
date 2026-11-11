@@ -9,6 +9,7 @@ import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/core/utils/text_format.dart';
+import 'package:freepiv/features/account/account_menu.dart';
 import 'package:freepiv/features/downloads/presentation/download_entry.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -186,6 +187,15 @@ class _AccountCard extends ConsumerWidget {
     // Beside the name, unless large text needs that line for the name.
     final largeText = MediaQuery.textScalerOf(context).scale(1) >= _inlineProfileMaxTextScale;
     final profileLink = FrostButton.quiet(label: t.me.profile, onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.user(user.id))));
+    final switchAccount = AccountSwitchPopover(
+      builder: (context, focusNode, toggle) => FrostButton.icon(icon: PivIcons.switchAccount, label: t.accounts.switchAccount, onPressed: toggle),
+    );
+    final actions = Wrap(
+      alignment: WrapAlignment.end,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: FrostGap.related,
+      children: [profileLink, switchAccount],
+    );
     return FrostSurface(
       role: FrostSurfaceRole.module,
       edge: FrostSurfaceEdge.none,
@@ -218,7 +228,7 @@ class _AccountCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                if (!largeText) profileLink,
+                if (!largeText) actions,
               ],
             ),
             if (stats.isNotEmpty)
@@ -230,7 +240,7 @@ class _AccountCard extends ConsumerWidget {
                     loading ? FrostStat.skeleton(value: value, unit: null, caption: caption) : FrostStat(value: value, caption: caption),
                 ],
               ),
-            if (largeText) Align(alignment: AlignmentDirectional.centerEnd, child: profileLink),
+            if (largeText) Align(alignment: AlignmentDirectional.centerEnd, child: actions),
           ],
         ),
       ),

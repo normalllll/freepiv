@@ -170,7 +170,12 @@ class AppSettings {
   static final Map<String, dynamic> _values = {};
   static AppSettingsStore? _store;
 
-  static PixivAccountBook _accounts = const PixivAccountBook();
+  /// The stored accounts; pages that list them listen to it.
+  static final accountsListenable = ValueNotifier<PixivAccountBook>(const PixivAccountBook());
+
+  static PixivAccountBook get _accounts => accountsListenable.value;
+
+  static set _accounts(PixivAccountBook value) => accountsListenable.value = value;
 
   static PixivAccountBook get accounts => _accounts;
 
@@ -359,6 +364,8 @@ class AppSettings {
       ..clear()
       ..addAll(_filterSettings(stored));
     _accounts = PixivAccountBook.fromJson(_values[accountsKey]) ?? const PixivAccountBook();
+    final resumed = _accounts.withFallbackActive();
+    if (resumed != _accounts) accounts = resumed;
     await _migrate(stored);
   }
 

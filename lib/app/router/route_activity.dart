@@ -8,6 +8,12 @@ class AppRouteActivity extends NavigatorObserver with ChangeNotifier {
 
   Route<dynamic>? get top => _stack.lastOrNull;
 
+  /// Forgets the routes of a navigator that is gone.
+  void clear() {
+    _stack.clear();
+    notifyListeners();
+  }
+
   /// Whether a popup (dialog, sheet, menu) is on top of this navigator.
   bool get popupOnTop => top is PopupRoute;
 

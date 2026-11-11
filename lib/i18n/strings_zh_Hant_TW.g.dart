@@ -42,6 +42,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$downloadEntry$zh_Hant_TW downloadEntry = Translations$downloadEntry$zh_Hant_TW.internal(_root);
 	@override late final Translations$novelText$zh_Hant_TW novelText = Translations$novelText$zh_Hant_TW.internal(_root);
 	@override late final Translations$signOut$zh_Hant_TW signOut = Translations$signOut$zh_Hant_TW.internal(_root);
+	@override late final Translations$accounts$zh_Hant_TW accounts = Translations$accounts$zh_Hant_TW.internal(_root);
 	@override late final Translations$appSearch$zh_Hant_TW appSearch = Translations$appSearch$zh_Hant_TW.internal(_root);
 	@override late final Translations$frost$zh_Hant_TW frost = Translations$frost$zh_Hant_TW.internal(_root);
 	@override late final Translations$nativeWindow$zh_Hant_TW nativeWindow = Translations$nativeWindow$zh_Hant_TW.internal(_root);
@@ -118,6 +119,28 @@ class Translations$signOut$zh_Hant_TW extends Translations$signOut$en_US {
 	@override String get title => '登出 Pixiv？';
 	@override String get message => '需要重新登入才能瀏覽。下載紀錄與設定會保留在這台裝置上。';
 	@override String get confirm => '登出';
+}
+
+// Path: accounts
+class Translations$accounts$zh_Hant_TW extends Translations$accounts$en_US {
+	Translations$accounts$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get switchAccount => '切換帳號';
+	@override String get current => '目前';
+	@override String switchTo({required Object name}) => '切換到 ${name}';
+	@override String get needsSignIn => '需要重新登入';
+	@override String get add => '新增帳號';
+	@override String get manage => '管理帳號';
+	@override String get signOutOne => '登出此帳號';
+	@override String signOutTitle({required Object name}) => '登出 ${name}？';
+	@override String get signOutMessage => '此帳號會從應用程式中移除。下載紀錄與設定會保留在這台裝置上。';
+	@override String switched({required Object name}) => '已切換到 ${name}';
+	@override String get switchFailed => '無法切換帳號';
+	@override String get addTitle => '新增帳號';
+	@override String get addIntro => '在瀏覽器中登入另一個 Pixiv 帳號，目前帳號保持登入。';
 }
 
 // Path: appSearch
@@ -1212,7 +1235,6 @@ class Translations$settings$account$zh_Hant_TW extends Translations$settings$acc
 	@override String get title => '帳號';
 	@override String get signedOutSubtitle => '登入後顯示 Pixiv 帳號';
 	@override String get notSignedIn => '尚未登入';
-	@override String get signOut => '登出';
 	@override String get showAi => '顯示 AI 作品';
 	@override String get showAiHelp => '這項設定會同步到你的 pixiv 帳號';
 	@override String get showAiFailed => '設定修改失敗';
@@ -1863,6 +1885,19 @@ extension on TranslationsZhHantTw {
 			'signOut.title' => '登出 Pixiv？',
 			'signOut.message' => '需要重新登入才能瀏覽。下載紀錄與設定會保留在這台裝置上。',
 			'signOut.confirm' => '登出',
+			'accounts.switchAccount' => '切換帳號',
+			'accounts.current' => '目前',
+			'accounts.switchTo' => ({required Object name}) => '切換到 ${name}',
+			'accounts.needsSignIn' => '需要重新登入',
+			'accounts.add' => '新增帳號',
+			'accounts.manage' => '管理帳號',
+			'accounts.signOutOne' => '登出此帳號',
+			'accounts.signOutTitle' => ({required Object name}) => '登出 ${name}？',
+			'accounts.signOutMessage' => '此帳號會從應用程式中移除。下載紀錄與設定會保留在這台裝置上。',
+			'accounts.switched' => ({required Object name}) => '已切換到 ${name}',
+			'accounts.switchFailed' => '無法切換帳號',
+			'accounts.addTitle' => '新增帳號',
+			'accounts.addIntro' => '在瀏覽器中登入另一個 Pixiv 帳號，目前帳號保持登入。',
 			'appSearch.placeholder' => '搜尋插畫、小說、使用者',
 			'appSearch.allHistory' => '全部紀錄',
 			'appSearch.allTrendingTags' => '全部熱門標籤',
@@ -2180,7 +2215,6 @@ extension on TranslationsZhHantTw {
 			'settings.account.title' => '帳號',
 			'settings.account.signedOutSubtitle' => '登入後顯示 Pixiv 帳號',
 			'settings.account.notSignedIn' => '尚未登入',
-			'settings.account.signOut' => '登出',
 			'settings.account.showAi' => '顯示 AI 作品',
 			'settings.account.showAiHelp' => '這項設定會同步到你的 pixiv 帳號',
 			'settings.account.showAiFailed' => '設定修改失敗',
@@ -2356,6 +2390,8 @@ extension on TranslationsZhHantTw {
 			'newest.audience.following' => '關注',
 			'newest.audience.mypixiv' => '好P友',
 			'newest.audience.everyone' => '所有人',
+			_ => null,
+		} ?? switch (path) {
 			'newest.workType.illustManga' => '插畫&漫畫',
 			'newest.workType.illust' => '插畫',
 			'newest.workType.manga' => '漫畫',
@@ -2368,8 +2404,6 @@ extension on TranslationsZhHantTw {
 			'newest.followScope.all' => '全部關注',
 			'newest.followScope.private' => '私人關注',
 			'newest.followScope.public' => '公開關注',
-			_ => null,
-		} ?? switch (path) {
 			'newest.followScope.compactAll' => '全部',
 			'newest.followScope.compactPrivate' => '私人',
 			'newest.followScope.compactPublic' => '公開',

@@ -193,6 +193,7 @@ abstract final class PivIcons {
   static const link = FrostIconData.glyph(FreepivIcons.link);
   static const tags = FrostIconData.glyph(FreepivIcons.tags);
   static const users = FrostIconData.glyph(FreepivIcons.userRound);
+  static const switchAccount = FrostIconData.glyph(FreepivIcons.arrowLeftRight);
   static const trash = FrostIconData.glyph(FreepivIcons.trash);
   static const images = FrostIconData.glyph(FreepivIcons.images);
   static const folder = FrostIconData.glyph(FreepivIcons.folder);
@@ -220,4 +221,3 @@ abstract final class PivMetrics {
 /// cause. Technical detail stays out of toasts; it lives in the collapsed
 /// error details.
 void toastErrorWithCause(String message, Object error) => FrostToast.error(t.common.errorWithCause(message: message, cause: formatPixivError(error)));
-
