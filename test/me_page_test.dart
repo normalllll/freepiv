@@ -55,7 +55,7 @@ void main() {
 
   testWidgets('every entry is a row with a chevron, one under another, and opens its page; downloads count what needs attention', (tester) async {
     await _mount(tester);
-    final labels = [t.me.following, t.me.followers, t.me.watchlist, t.me.editProfile, t.me.workspace, t.navigation.downloads, t.me.about, t.me.settings];
+    final labels = [t.me.following, t.me.followers, t.me.watchlist, t.me.editProfile, t.me.workspace, t.fanbox.title, t.navigation.downloads, t.me.about, t.me.settings];
     expect(_rows(tester), labels);
     final rows = tester.widgetList<FrostListRow>(find.byType(FrostListRow)).toList();
     final tops = [for (final label in labels) tester.getTopLeft(find.widgetWithText(FrostListRow, label)).dy];
@@ -72,6 +72,7 @@ void main() {
       AppRoute.meWatchlist.path,
       AppRoute.meProfileEdit.path,
       AppRoute.meWorkspaceEdit.path,
+      AppRoute.fanbox.path,
       AppRoute.downloads.path,
       AppRoute.about.path,
       AppRoute.settings.path,
@@ -93,14 +94,14 @@ void main() {
     await _mount(tester, details: () async => throw StateError('offline'));
     expect(find.byType(FrostStat), findsNothing);
     expect(find.text(sampleAccount.user.name), findsOneWidget);
-    expect(_rows(tester), hasLength(8));
+    expect(_rows(tester), hasLength(9));
   });
 
   testWidgets('signed out: the way to sign in, and the entries that need no account', (tester) async {
     pixivAccountNotifier.value = null;
     await _mount(tester, signedIn: false);
     expect(find.text(t.login.signInToPixiv), findsOneWidget);
-    expect(_rows(tester), [t.navigation.downloads, t.me.about, t.me.settings]);
+    expect(_rows(tester), [t.fanbox.title, t.navigation.downloads, t.me.about, t.me.settings]);
   });
 
   testWidgets('a phone at double text size fits the card and the rows in a width-limited column', (tester) async {

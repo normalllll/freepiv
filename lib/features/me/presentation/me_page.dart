@@ -138,6 +138,7 @@ class _MePageState extends ConsumerState<MePage> {
         FrostGroupedSection(
           children: [row(PivIcons.smile, t.me.editProfile, AppRoute.meProfileEdit.path), row(PivIcons.folder, t.me.workspace, AppRoute.meWorkspaceEdit.path)],
         ),
+      FrostGroupedSection(children: [row(PivIcons.heart, t.fanbox.title, AppRoute.fanbox.path)]),
       FrostGroupedSection(
         children: [
           row(

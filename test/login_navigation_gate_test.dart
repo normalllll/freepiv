@@ -44,7 +44,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Me reaches downloads settings and about after sign-in', (tester) async {
+  testWidgets('Me reaches FANBOX, downloads, settings and about after sign-in', (tester) async {
     pixivAccountNotifier.value = const UserAccountResult(
       accessToken: '',
       expiresIn: 0,
@@ -68,6 +68,7 @@ void main() {
       initialLocation: AppRoute.me.path,
       routes: [
         GoRoute(path: AppRoute.me.path, name: AppRoute.me.name, builder: (_, _) => const MePage()),
+        GoRoute(path: AppRoute.fanbox.path, name: AppRoute.fanbox.name, builder: (_, _) => const Text('FANBOX destination')),
         GoRoute(
           path: AppRoute.downloads.path,
           name: AppRoute.downloads.name,
@@ -95,13 +96,15 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text(t.fanbox.title), findsNothing);
 
     for (final (label, destination) in [
+      (t.fanbox.title, 'FANBOX destination'),
       (t.navigation.downloads, 'Downloads destination'),
       (t.me.settings, 'Settings destination'),
       (t.me.about, 'About destination'),
     ]) {
+      await tester.ensureVisible(find.text(label));
+      await tester.pumpAndSettle();
       await tester.tap(find.text(label));
       await tester.pumpAndSettle();
       expect(find.text(destination), findsOneWidget);
