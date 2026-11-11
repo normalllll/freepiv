@@ -1,5 +1,5 @@
 // The sample app with the Flutter Driver hooks the flutter-ui-automation
-// tool needs (state, settle, appScreenshot, input). Debug builds only:
+// tool needs (state, settle, appScreenshot, prepareCapture, input). Debug builds only:
 // flutter build windows --debug -t tool/automation_entry.dart
 import 'dart:async';
 import 'dart:convert';
@@ -75,13 +75,136 @@ Future<void> _frame() async {
   await WidgetsBinding.instance.endOfFrame.timeout(const Duration(seconds: 3));
 }
 
+/// Pumps frames until no animation is running, at most [timeout].
+Future<Map<String, Object?>> _settle(Duration timeout) async {
+  final binding = WidgetsBinding.instance;
+  final clock = Stopwatch()..start();
+  var frames = 0;
+  do {
+    await _frame();
+    frames++;
+  } while (binding.transientCallbackCount > 0 && clock.elapsed < timeout);
+  return {
+    'settled': binding.transientCallbackCount == 0,
+    'settleFrames': frames,
+    'settleMs': clock.elapsedMilliseconds,
+    'pendingTransientCallbacks': binding.transientCallbackCount,
+  };
+}
+
+// The app's own pixels, which app screenshots read; the presentation marker
+// paints above this boundary, so it reaches native captures only.
+final _appBoundary = GlobalKey();
+final _markerBits = GlobalKey();
+
+/// The marker's token, and whether a native capture holds it on screen.
+final _marker = ValueNotifier((token: 0, shown: false));
+
+/// Open holds by ID, each until its expiry: concurrent captures release
+/// their own, and a lost controller cannot leave the marker up.
+final _holds = <int, DateTime>{};
+var _holdSequence = 0;
+Timer? _markerExpiry;
+
+void _scheduleMarkerExpiry() {
+  _markerExpiry?.cancel();
+  _marker.value = (token: _marker.value.token, shown: _holds.isNotEmpty);
+  if (_holds.isEmpty) return;
+  final next = _holds.values.reduce((a, b) => a.isBefore(b) ? a : b);
+  _markerExpiry = Timer(next.difference(DateTime.now()), () {
+    final now = DateTime.now();
+    _holds.removeWhere((_, until) => !until.isAfter(now));
+    _scheduleMarkerExpiry();
+  });
+}
+
+Map<String, double>? _rect(GlobalKey key) {
+  final box = key.currentContext?.findRenderObject();
+  if (box is! RenderBox || !box.hasSize) return null;
+  final offset = box.localToGlobal(Offset.zero);
+  return {'x': offset.dx, 'y': offset.dy, 'width': box.size.width, 'height': box.size.height};
+}
+
+/// The app inside the screenshot boundary, with the marker above it.
+Widget _captureHost(Widget app) => Directionality(
+  textDirection: TextDirection.ltr,
+  child: Stack(
+    fit: StackFit.expand,
+    children: [
+      RepaintBoundary(key: _appBoundary, child: app),
+      ValueListenableBuilder(
+        valueListenable: _marker,
+        builder: (context, marker, _) => marker.shown
+            ? Positioned(
+                right: 8,
+                top: 8,
+                child: IgnorePointer(
+                  child: _PresentationMarker(bitsKey: _markerBits, token: marker.token),
+                ),
+              )
+            : const SizedBox.shrink(),
+      ),
+    ],
+  ),
+);
+
+/// The flutter-ui-automation presentation marker: an 8×4 dot matrix reading
+/// row-major 1010, the 24-bit token, 0101, pink for 1 and aqua for 0. Its
+/// colours and geometry must match the tool's decoders.
+class _PresentationMarker extends StatelessWidget {
+  const _PresentationMarker({required this.bitsKey, required this.token});
+
+  final Key bitsKey;
+  final int token;
+
+  static const _one = Color(0xFFFF8FB1), _zero = Color(0xFF38BDD8);
+  static const _columns = 8, _rows = 4;
+  static const _pitch = 9.0, _dot = 7.0;
+
+  Color _cell(int index) => (0xa << 28 | token << 4 | 0x5) >> (31 - index) & 1 == 1 ? _one : _zero;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: const Color(0xFF111827),
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: const Color(0x59FF8FB1)),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(7),
+      child: SizedBox(
+        key: bitsKey,
+        width: _columns * _pitch,
+        height: _rows * _pitch,
+        child: Column(
+          children: [
+            for (var row = 0; row < _rows; row++)
+              Row(
+                children: [
+                  for (var column = 0; column < _columns; column++)
+                    SizedBox.square(
+                      dimension: _pitch,
+                      child: Padding(
+                        padding: const EdgeInsets.all((_pitch - _dot) / 2),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(color: _cell(row * _columns + column), borderRadius: BorderRadius.circular(2)),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 Future<Map<String, Object?>> _screenshot() async {
   await _frame();
-  final view = WidgetsBinding.instance.renderViews.first;
-  final ratio = view.flutterView.devicePixelRatio;
-  final layer = view.debugLayer! as OffsetLayer;
-  // The root layer already scales by the device ratio.
-  final image = await layer.toImage(Offset.zero & (view.size * ratio));
+  final ratio = WidgetsBinding.instance.renderViews.first.flutterView.devicePixelRatio;
+  final boundary = _appBoundary.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final image = await boundary.toImage(pixelRatio: ratio);
   try {
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     return {'png': base64Encode(bytes!.buffer.asUint8List()), 'width': image.width, 'height': image.height, 'pixelRatio': ratio};
@@ -110,6 +233,37 @@ void main() {
         case 'settle':
           await _frame();
           return jsonEncode({'refreshed': true});
+        case 'prepareCapture':
+          // A fresh token painted above the app: the native capture accepts
+          // only frames that show it, so blank or stale frames are rejected.
+          final settle = request['settle'] == false || request['settle'] == 'false'
+              ? null
+              : await _settle(Duration(milliseconds: _num(request['settleMs'] ?? 3000).toInt()));
+          final visibleUntil = DateTime.now().add(Duration(milliseconds: _num(request['holdMs'] ?? 12000).toInt()));
+          final hold = ++_holdSequence;
+          _holds[hold] = visibleUntil;
+          _marker.value = (token: (_marker.value.token + 1) & 0xffffff, shown: true);
+          _scheduleMarkerExpiry();
+          await _frame();
+          return jsonEncode({
+            ...?settle,
+            'token': _marker.value.token,
+            'hold': hold,
+            'visibleUntilMs': visibleUntil.millisecondsSinceEpoch,
+            'rect': _rect(_markerBits),
+            'pixelRatio': WidgetsBinding.instance.renderViews.first.flutterView.devicePixelRatio,
+            'native': _state()['native'],
+          });
+        case 'releaseCapture':
+          final hold = _num(request['hold']).toInt();
+          _holds.remove(hold);
+          _scheduleMarkerExpiry();
+          await _frame();
+          return jsonEncode({'released': hold, 'probeVisible': _holds.isNotEmpty});
+        case 'unfocus':
+          FocusManager.instance.primaryFocus?.unfocus();
+          await _frame();
+          return jsonEncode(_state());
         case 'appScreenshot':
           return jsonEncode(await _screenshot());
         case 'tapAt':
@@ -238,6 +392,11 @@ void main() {
           _setWindowPos(_window(), 0, 0, 0, (_num(request['width']) * ratio).round(), (_num(request['height']) * ratio).round(), _noMoveNoZOrderNoActivate);
           await _frame();
           return jsonEncode(_state());
+        case 'profileImageReadDelay':
+          // How long reading the picked profile image takes, in milliseconds,
+          // as a large file on a slow disk would, so the wait can be seen.
+          _profileImageReadDelay = Duration(milliseconds: _num(request['value'] ?? 0).toInt());
+          return jsonEncode(_state());
         default:
           throw UnsupportedError('${request['command']}');
       }
@@ -245,16 +404,28 @@ void main() {
   );
   // The profile image picker answers with a drawn picture instead of opening
   // the system's file dialog, so the cropper can be driven offline.
-  profileImagePicker = () async => PickedProfileImage.bytes(await _testPicture());
+  profileImagePicker = () async {
+    final picture = await _testPicture();
+    return PickedProfileImage(
+      size: picture.length,
+      read: () async {
+        await Future<void>.delayed(_profileImageReadDelay);
+        return picture;
+      },
+    );
+  };
   final present = FlutterError.presentError;
   FlutterError.presentError = (details) {
     _errors.add(details.exceptionAsString());
     present(details);
   };
-  app.main();
+  app.runSampleApp(wrap: _captureHost);
 }
 
 final _errors = <String>[];
+
+/// Set by the profileImageReadDelay hook.
+var _profileImageReadDelay = Duration.zero;
 
 /// A 1200x800 PNG: a sky gradient, a sun and hills, with a grid that makes
 /// panning and zooming easy to see.

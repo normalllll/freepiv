@@ -13,7 +13,11 @@ import 'package:freepiv/dev/sample_images.dart';
 import 'package:freepiv/src/rust/frb_generated.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 
-Future<void> main() async {
+Future<void> main() => runSampleApp();
+
+/// Starts the app on sample data. [wrap] puts test instrumentation, such as
+/// the automation entry's capture boundary, around the app.
+Future<void> runSampleApp({Widget Function(Widget app)? wrap}) async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
   await AppSettings.initialize(store: SampleSettingsStore(sampleSettings));
   pixivImageOverride = sampleImageProvider;
@@ -24,6 +28,7 @@ Future<void> main() async {
   pixivApi = createPixivApi(account: AppSettings.accounts.active?.session);
   pixivAccountNotifier.value = pixivApi.account();
   final window = await prepareAppWindow();
-  runApp(FreepivApp(windowController: window, overrides: sampleOverrides));
+  final app = FreepivApp(windowController: window, overrides: sampleOverrides);
+  runApp(wrap == null ? app : wrap(app));
   await showAppWindow(binding, window);
 }
