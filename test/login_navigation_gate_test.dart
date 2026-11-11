@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
@@ -11,10 +11,10 @@ import 'package:freepiv/features/me/presentation/me_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:go_router/go_router.dart';
-import 'support/test_theme.dart';
+import 'support/frost_test_app.dart';
 
 void main() {
-  testWidgets('signed-out application routes return to login while proxy setup remains available', (tester) async {
+  testWidgets('signed-out application routes return to login while proxy setup remains available', variant: TargetPlatformVariant.only(TargetPlatform.android), (tester) async {
     pixivAccountNotifier.value = null;
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -24,11 +24,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: TranslationProvider(
-          child: MaterialApp.router(
-            theme: TestTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
-            routerConfig: AppRouter.router,
-            builder: (context, child) => FrostLayoutScope(child: child!),
-          ),
+          child: frostTestRouterApp(AppRouter.router),
         ),
       ),
     );
@@ -75,17 +71,17 @@ void main() {
         GoRoute(
           path: AppRoute.downloads.path,
           name: AppRoute.downloads.name,
-          builder: (_, _) => const Scaffold(body: Text('Downloads destination')),
+          builder: (_, _) => const Text('Downloads destination'),
         ),
         GoRoute(
           path: AppRoute.settings.path,
           name: AppRoute.settings.name,
-          builder: (_, _) => const Scaffold(body: Text('Settings destination')),
+          builder: (_, _) => const Text('Settings destination'),
         ),
         GoRoute(
           path: AppRoute.about.path,
           name: AppRoute.about.name,
-          builder: (_, _) => const Scaffold(body: Text('About destination')),
+          builder: (_, _) => const Text('About destination'),
         ),
       ],
     );

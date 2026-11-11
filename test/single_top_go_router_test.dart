@@ -1,9 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/router/single_top_go_router.dart';
 import 'package:go_router/go_router.dart';
+
+import 'support/frost_test_app.dart';
 
 void main() {
   testWidgets('pushing the page on top again does nothing; another page still pushes', (tester) async {
@@ -17,7 +19,7 @@ void main() {
       ),
     );
     addTearDown(router.dispose);
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpWidget(frostTestRouterApp(router));
 
     unawaited(router.pushNamed('work', pathParameters: {'id': '7'}));
     await tester.pumpAndSettle();

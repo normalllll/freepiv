@@ -1,17 +1,16 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/features/fanbox/browse_page.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/ui/compositions/fanbox_rows.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/fanbox.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'support/test_theme.dart';
+import 'support/frost_test_app.dart';
 
 FanboxPost _post(String id) => FanboxPost(
   id: id,
@@ -31,7 +30,7 @@ FanboxPost _post(String id) => FanboxPost(
 );
 
 void main() {
-  testWidgets('each bookmark loads on its own; one failure fails only its row and retries alone', (tester) async {
+  testWidgets('each bookmark loads on its own; one failure fails only its row and retries alone', variant: TargetPlatformVariant.only(TargetPlatform.windows), (tester) async {
     final slow = Completer<FanboxPost>();
     var brokenAttempts = 0;
     await tester.pumpWidget(
@@ -46,20 +45,14 @@ void main() {
           fanboxPostProvider('c').overrideWith((ref) => slow.future),
         ],
         child: TranslationProvider(
-          child: FrostScope(
-            config: freepivFrostConfig,
-            child: MaterialApp(
-              theme: TestTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-              home: const Scaffold(
-                body: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      FanboxEntryView(entry: FanboxBookmarkEntry('a')),
-                      FanboxEntryView(entry: FanboxBookmarkEntry('b')),
-                      FanboxEntryView(entry: FanboxBookmarkEntry('c')),
-                    ],
-                  ),
-                ),
+          child: frostTestApp(
+            home: const SingleChildScrollView(
+              child: Column(
+                children: [
+                  FanboxEntryView(entry: FanboxBookmarkEntry('a')),
+                  FanboxEntryView(entry: FanboxBookmarkEntry('b')),
+                  FanboxEntryView(entry: FanboxBookmarkEntry('c')),
+                ],
               ),
             ),
           ),
@@ -85,7 +78,7 @@ void main() {
     expect(find.text('Post a'), findsOneWidget);
   });
 
-  testWidgets('a loaded row stays loaded when scrolled away and back, and keeps its card while it reloads', (tester) async {
+  testWidgets('a loaded row stays loaded when scrolled away and back, and keeps its card while it reloads', variant: TargetPlatformVariant.only(TargetPlatform.windows), (tester) async {
     final api = _Api();
     final container = ProviderContainer(retry: (_, _) => null, overrides: [fanboxApiProvider.overrideWith((ref) async => api)]);
     addTearDown(container.dispose);
@@ -95,18 +88,12 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: TranslationProvider(
-          child: FrostScope(
-            config: freepivFrostConfig,
-            child: MaterialApp(
-              theme: TestTheme.light(platform: TargetPlatform.windows, locale: const Locale('en')),
-              home: Scaffold(
-                body: ListView.builder(
-                  controller: scroll,
-                  scrollCacheExtent: const ScrollCacheExtent.pixels(0),
-                  itemCount: 40,
-                  itemBuilder: (context, index) => FanboxEntryView(entry: FanboxBookmarkEntry('$index')),
-                ),
-              ),
+          child: frostTestApp(
+            home: ListView.builder(
+              controller: scroll,
+              scrollCacheExtent: const ScrollCacheExtent.pixels(0),
+              itemCount: 40,
+              itemBuilder: (context, index) => FanboxEntryView(entry: FanboxBookmarkEntry('$index')),
             ),
           ),
         ),

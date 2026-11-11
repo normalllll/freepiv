@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frost_data/frost_data.dart';
 
@@ -14,21 +14,29 @@ void main() {
     var phase = FrostLoadPhase.loading;
     late StateSetter setPhase;
     await tester.pumpWidget(
-      MaterialApp(
-        home: PrimaryScrollController(
-          controller: controller,
-          automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
-          child: StatefulBuilder(
-            builder: (context, setState) {
-              setPhase = setState;
-              return FrostLoadStateSwitcher(phase: phase, child: _scrollBody(phase.name));
-            },
+      MediaQuery(
+        data: MediaQueryData.fromView(tester.view),
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: PrimaryScrollController(
+            controller: controller,
+            automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                setPhase = setState;
+                return FrostLoadStateSwitcher(phase: phase, child: _scrollBody(phase.name));
+              },
+            ),
           ),
         ),
       ),
     );
     // Cached content on a revisit must not fade in.
-    expect(tester.widget<FadeTransition>(find.ancestor(of: find.text('loading 0'), matching: find.byType(FadeTransition)).first).opacity.value, 1);
+    final fading = find.ancestor(
+      of: find.text('loading 0'),
+      matching: find.byWidgetPredicate((widget) => (widget is Opacity && widget.opacity < 1) || (widget is FadeTransition && widget.opacity.value < 1)),
+    );
+    expect(fading, findsNothing);
 
     setPhase(() => phase = FrostLoadPhase.content);
     await tester.pump();

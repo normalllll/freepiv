@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
@@ -15,8 +15,8 @@ void main() {
       routes: [
         GoRoute(
           path: '/',
-          builder: (context, _) => Scaffold(
-            body: Builder(
+          builder: (context, _) => Center(
+            child: Builder(
               builder: (context) => FrostButton(
                 label: 'Sign out',
                 onPressed: () => confirmPixivSignOut(context, signOut: () => signedOut.add('out')),

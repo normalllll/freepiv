@@ -1,8 +1,13 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'support/test_theme.dart';
+import 'package:frost_ui/frost_ui.dart';
+import 'package:go_router/go_router.dart';
+
+import 'support/frost_test_app.dart';
 
 class _Counter extends StatefulWidget {
   const _Counter({super.key});
@@ -35,26 +40,27 @@ Future<GlobalKey<NavigatorState>> _pumpApp(WidgetTester tester, Size size) async
   tester.view.physicalSize = size;
   addTearDown(tester.view.reset);
   final navigator = GlobalKey<NavigatorState>();
-  await tester.pumpWidget(
-    ProviderScope(
-      child: MaterialApp(
-        navigatorKey: navigator,
-        theme: TestTheme.dark(platform: TargetPlatform.android, locale: const Locale('en')),
-        home: const Scaffold(body: Text('Home')),
+  // The app's pages: a root page with a detail page pushed above it.
+  final router = GoRouter(
+    navigatorKey: navigator,
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (_, _) => const Text('Home'),
+        routes: [GoRoute(path: 'detail', pageBuilder: (_, state) => FrostDetailPage<void>(key: state.pageKey, child: const _Counter(key: ValueKey('detail'))))],
       ),
-    ),
+    ],
   );
-  navigator.currentState!.push(
-    MaterialPageRoute<void>(
-      builder: (_) => const Scaffold(body: _Counter(key: ValueKey('detail'))),
-    ),
-  );
+  addTearDown(router.dispose);
+  await tester.pumpWidget(ProviderScope(child: frostTestRouterApp(router, brightness: Brightness.dark)));
+  await tester.pumpAndSettle();
+  unawaited(router.push('/detail'));
   await tester.pumpAndSettle();
   return navigator;
 }
 
 void main() {
-  testWidgets('a committed back swipe pops the page', (tester) async {
+  testWidgets('a committed back swipe pops the page', variant: TargetPlatformVariant.only(TargetPlatform.android), (tester) async {
     final navigator = await _pumpApp(tester, const Size(400, 800));
 
     await _backGesture(tester, 'startBackGesture', progress: 0);

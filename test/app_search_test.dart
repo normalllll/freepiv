@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
@@ -28,14 +28,12 @@ class _Page extends StatelessWidget {
   final String location;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: Column(
-      children: [
-        Text('at $location'),
-        const SizedBox(width: 520, child: AppTitleBarSearch()),
-        SizedBox(width: 520, child: SearchBox(onSearch: (_) {})),
-      ],
-    ),
+  Widget build(BuildContext context) => Column(
+    children: [
+      Text('at $location'),
+      const SizedBox(width: 520, child: AppTitleBarSearch()),
+      SizedBox(width: 520, child: SearchBox(onSearch: (_) {})),
+    ],
   );
 }
 

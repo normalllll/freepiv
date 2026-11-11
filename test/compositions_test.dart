@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/ui/compositions/composer_bar.dart';
@@ -17,11 +17,9 @@ Widget _host(Widget child, {double width = 800, double textScale = 1}) => FrostA
         path: '/',
         builder: (context, _) => MediaQuery(
           data: MediaQueryData(size: Size(width, 700), textScaler: TextScaler.linear(textScale)),
-          child: Scaffold(
-            body: Align(
-              alignment: Alignment.topLeft,
-              child: SizedBox(width: width, child: child),
-            ),
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(width: width, child: child),
           ),
         ),
       ),

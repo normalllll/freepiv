@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
@@ -8,6 +7,7 @@ import 'package:freepiv/app/theme/appearance_logic.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 
 class _MemoryStore implements AppSettingsStore {
@@ -18,34 +18,31 @@ class _MemoryStore implements AppSettingsStore {
   Future<void> write(String key, dynamic value) async => values[key] = value;
 }
 
-class _DeviceAppearanceApp extends ConsumerWidget {
+class _DeviceAppearanceApp extends ConsumerStatefulWidget {
   const _DeviceAppearanceApp();
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final appearance = ref.watch(appearanceProvider).settings;
-    const locale = Locale('en', 'US');
-    return MaterialApp(
-      locale: locale,
-      theme: FrostTheme.build(
-        config: freepivFrostConfig,
-        brightness: Brightness.light,
-        platform: defaultTargetPlatform,
-        locale: locale,
-        tone: appearance.effectiveToneFor(Brightness.light),
-        accent: appearance.lightAccent,
-      ),
-      darkTheme: FrostTheme.build(
-        config: freepivFrostConfig,
-        brightness: Brightness.dark,
-        platform: defaultTargetPlatform,
-        locale: locale,
-        tone: appearance.effectiveToneFor(Brightness.dark),
-        accent: appearance.darkAccent,
-      ),
-      themeMode: appearance.mode,
-      home: const SettingsPage(),
-    );
+  ConsumerState<_DeviceAppearanceApp> createState() => _DeviceAppearanceAppState();
+}
+
+/// The settings page in the app's own host, following the appearance it edits.
+class _DeviceAppearanceAppState extends ConsumerState<_DeviceAppearanceApp> {
+  final _router = GoRouter(routes: [GoRoute(path: '/', builder: (_, _) => const SettingsPage())]);
+
+  @override
+  void dispose() {
+    _router.dispose();
+    super.dispose();
   }
+
+  @override
+  Widget build(BuildContext context) => FrostApp.router(
+    config: freepivFrostConfig,
+    title: 'freepiv',
+    locale: const Locale('en', 'US'),
+    appearance: ref.watch(appearanceProvider).settings,
+    routerConfig: _router,
+  );
 }
 
 void main() {
@@ -101,14 +98,15 @@ void main() {
     await tester.ensureVisible(find.text(t.settings.theme.custom));
     await tester.tap(find.text(t.settings.theme.custom));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).last, '#FFFFFF');
+    await tester.enterText(find.byType(FrostTextField).last, '#FFFFFF');
     await tester.pumpAndSettle();
     expect(find.text(t.settings.theme.rejectedLight), findsOneWidget);
-    expect(tester.widget<FilledButton>(find.byType(FilledButton).last).onPressed, isNull);
+    final apply = find.widgetWithText(FrostButton, t.common.apply);
+    expect(tester.widget<FrostButton>(apply).onPressed, isNull);
     final media = MediaQuery.of(tester.element(find.text(t.settings.theme.rejectedLight)));
     final keyboardTop = media.size.height - media.viewInsets.bottom;
-    expect(tester.getBottomLeft(find.byType(FilledButton).last).dy, lessThan(keyboardTop));
-    expect(tester.getBottomLeft(find.widgetWithText(TextButton, t.common.cancel)).dy, lessThan(keyboardTop));
+    expect(tester.getBottomLeft(apply).dy, lessThan(keyboardTop));
+    expect(tester.getBottomLeft(find.widgetWithText(FrostButton, t.common.cancel)).dy, lessThan(keyboardTop));
     debugPrint('APPEARANCE_DEVICE_STAGE: unsafe_rejected');
   });
 }

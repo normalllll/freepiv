@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
@@ -20,8 +20,9 @@ void main() {
     );
     await tester.runAsync(() async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Image(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Image(
             image: provider,
             errorBuilder: (_, error, _) {
               displayedError = error;
@@ -43,7 +44,7 @@ void main() {
   testWidgets('a media stream retry can recover without leaving an unhandled failure', (tester) async {
     final bytes = await tester.runAsync(() async {
       final recorder = ui.PictureRecorder();
-      Canvas(recorder).drawColor(Colors.blue, BlendMode.src);
+      Canvas(recorder).drawColor(const Color(0xFF2196F3), BlendMode.src);
       final picture = recorder.endRecording();
       final image = await picture.toImage(2, 2);
       try {
@@ -62,8 +63,9 @@ void main() {
     );
     await tester.runAsync(() async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Image(image: provider, errorBuilder: (_, _, _) => const Text('Failure')),
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Image(image: provider, errorBuilder: (_, _, _) => const Text('Failure')),
         ),
       );
       await Future<void>.delayed(const Duration(milliseconds: 300));

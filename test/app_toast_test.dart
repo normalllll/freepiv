@@ -1,24 +1,21 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
-import 'support/test_theme.dart';
+import 'support/frost_test_app.dart';
 
-Future<void> _pumpHost(WidgetTester tester, TargetPlatform platform, {bool reduceMotion = false}) async {
+/// The app's toast host, dark, on the test variant's platform.
+Future<void> _pumpHost(WidgetTester tester, {bool reduceMotion = false}) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = const Size(900, 700);
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     ProviderScope(
-      child: MaterialApp(
-        theme: TestTheme.dark(platform: platform, locale: const Locale('en')),
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(disableAnimations: reduceMotion),
-          child: FrostToastHost(child: child!),
-        ),
-        home: const Scaffold(body: SizedBox.expand()),
+      child: MediaQuery(
+        data: MediaQueryData.fromView(tester.view).copyWith(disableAnimations: reduceMotion),
+        child: frostTestApp(brightness: Brightness.dark, home: const SizedBox.expand()),
       ),
     ),
   );
@@ -28,8 +25,8 @@ void main() {
   errorToastTests();
   duplicateToastTests();
 
-  testWidgets('touch: swiping the capsule up dismisses it; a short drag springs back', (tester) async {
-    await _pumpHost(tester, TargetPlatform.android);
+  testWidgets('touch: swiping the capsule up dismisses it; a short drag springs back', variant: TargetPlatformVariant.only(TargetPlatform.android), (tester) async {
+    await _pumpHost(tester);
     FrostToast.success('Link copied');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
@@ -41,8 +38,8 @@ void main() {
     expect(find.text('Link copied'), findsNothing);
   });
 
-  testWidgets('reduced motion shows and removes notices without movement', (tester) async {
-    await _pumpHost(tester, TargetPlatform.android, reduceMotion: true);
+  testWidgets('reduced motion shows and removes notices without movement', variant: TargetPlatformVariant.only(TargetPlatform.android), (tester) async {
+    await _pumpHost(tester, reduceMotion: true);
     FrostToast.success('Link copied');
     await tester.pump();
     await tester.pump();
@@ -58,8 +55,8 @@ void main() {
 }
 
 void errorToastTests() {
-  testWidgets('a failed action shows one readable line without technical detail', (tester) async {
-    await _pumpHost(tester, TargetPlatform.android);
+  testWidgets('a failed action shows one readable line without technical detail', variant: TargetPlatformVariant.only(TargetPlatform.android), (tester) async {
+    await _pumpHost(tester);
     toastErrorWithCause('Bookmark failed', const PixivError(kind: PixivErrorKind.httpClient, message: 'reqwest display: error sending request'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
@@ -72,8 +69,8 @@ void errorToastTests() {
 }
 
 void duplicateToastTests() {
-  testWidgets('desktop: identical notices fold into one card with a count', (tester) async {
-    await _pumpHost(tester, TargetPlatform.windows);
+  testWidgets('desktop: identical notices fold into one card with a count', variant: TargetPlatformVariant.only(TargetPlatform.windows), (tester) async {
+    await _pumpHost(tester);
     for (var i = 0; i < 3; i++) {
       FrostToast.success('Link copied');
       await tester.pump();

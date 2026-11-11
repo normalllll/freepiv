@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
@@ -62,8 +62,8 @@ void main() {
       expect(validateAccent(parseAccentHex(dark)!, Brightness.dark, freepivFrostConfig.palettes).canApply, isFalse);
     }
     // Pure black and white match the text colour, so they are never an accent.
-    expect(validateAccent(Colors.black, Brightness.light, freepivFrostConfig.palettes).canApply, isFalse);
-    expect(validateAccent(Colors.white, Brightness.dark, freepivFrostConfig.palettes).canApply, isFalse);
+    expect(validateAccent(const Color(0xFF000000), Brightness.light, freepivFrostConfig.palettes).canApply, isFalse);
+    expect(validateAccent(const Color(0xFFFFFFFF), Brightness.dark, freepivFrostConfig.palettes).canApply, isFalse);
   });
 
   test('severity uses the raw minimum contrast on both sides of each threshold', () {
@@ -115,7 +115,7 @@ void main() {
   test('the persistence boundary refuses unsafe accents without touching disk', () async {
     final store = MemorySettingsStore();
     await AppSettings.initialize(store: store);
-    await expectLater(AppSettings.saveAppearance(FrostAppearance.initial(FrostPalettes.pink).copyWith(lightAccent: Colors.white)), throwsArgumentError);
+    await expectLater(AppSettings.saveAppearance(FrostAppearance.initial(FrostPalettes.pink).copyWith(lightAccent: const Color(0xFFFFFFFF))), throwsArgumentError);
     expect(store.writes, isEmpty);
     expect(AppSettings.appearance.lightAccent, FrostPalettes.pink.lightDefaultAccent);
   });

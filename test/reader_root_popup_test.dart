@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/route_activity.dart';
 import 'package:freepiv/core/platform/reader_volume_keys.dart';
 import 'package:freepiv/core/services/app_settings.dart';
@@ -13,7 +12,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:frost_ui/frost_ui.dart';
-import 'support/test_theme.dart';
+import 'support/frost_test_app.dart';
 
 const _novel = Novel(
   id: 7,
@@ -64,7 +63,7 @@ const _text = WebviewNovel(
 );
 
 void main() {
-  testWidgets('a dialog of the root navigator releases the volume keys until it closes', (tester) async {
+  testWidgets('a dialog of the root navigator releases the volume keys until it closes', variant: TargetPlatformVariant.only(TargetPlatform.android), (tester) async {
     await AppSettings.initialize(store: SampleSettingsStore({'readerVolumeKeys': true}));
     const channel = MethodChannel('test/reader_volume_keys');
     final enabled = <bool>[];
@@ -78,16 +77,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: TranslationProvider(
-          child: FrostScope(
-            config: freepivFrostConfig,
-            child: MaterialApp(
-              navigatorKey: navigator,
-              navigatorObservers: [appRootRouteActivity],
-              theme: TestTheme.light(platform: TargetPlatform.android, locale: const Locale('en', 'US')),
-              home: NovelReaderContent(
-                detail: const NovelDetailData(novel: _novel, webviewNovel: _text),
-                volumeKeys: ReaderVolumeKeys(channel: channel, supported: true),
-              ),
+          child: frostTestApp(
+            navigatorKey: navigator,
+            observers: [appRootRouteActivity],
+            home: NovelReaderContent(
+              detail: const NovelDetailData(novel: _novel, webviewNovel: _text),
+              volumeKeys: ReaderVolumeKeys(channel: channel, supported: true),
             ),
           ),
         ),
@@ -96,7 +91,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(enabled.last, isTrue);
 
-    showDialog<void>(
+    showFrostDialog<void>(
       context: navigator.currentContext!,
       builder: (_) => const Center(child: Text('dialog')),
     );
