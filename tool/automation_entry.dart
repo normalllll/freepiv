@@ -118,6 +118,15 @@ void main() {
           GestureBinding.instance.handlePointerEvent(PointerUpEvent(pointer: 9001, kind: PointerDeviceKind.mouse, device: 9, position: at));
           await _frame();
           return jsonEncode(_state());
+        case 'secondaryTapAt':
+          // A right click, which opens a context menu.
+          final at = Offset(_num(request['x']).toDouble(), _num(request['y']).toDouble());
+          GestureBinding.instance.handlePointerEvent(
+            PointerDownEvent(pointer: 9004, kind: PointerDeviceKind.mouse, device: 9, position: at, buttons: kSecondaryMouseButton),
+          );
+          GestureBinding.instance.handlePointerEvent(PointerUpEvent(pointer: 9004, kind: PointerDeviceKind.mouse, device: 9, position: at));
+          await _frame();
+          return jsonEncode(_state());
         case 'hoverAt':
           final at = Offset(_num(request['x']).toDouble(), _num(request['y']).toDouble());
           if (!_mouseAdded) {
