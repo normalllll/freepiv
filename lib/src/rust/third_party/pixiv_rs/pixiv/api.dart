@@ -5,7 +5,6 @@
 
 import '../../../frb_generated.dart';
 import '../error.dart';
-import '../pixivision.dart';
 import 'enums.dart';
 import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
@@ -98,8 +97,6 @@ abstract class PixivApi implements RustOpaqueInterface {
 
   Future<SearchNovelPageResult> getNextSearchNovelPage({required String url});
 
-  Future<SpotlightPage> getNextSpotlightArticlePage({required String url});
-
   Future<UserPageResult> getNextUserPage({required String url});
 
   Future<WatchlistPageResult> getNextWatchlistPage({required String url});
@@ -113,8 +110,6 @@ abstract class PixivApi implements RustOpaqueInterface {
   Future<CommentPageResult> getNovelCommentReplyPage({required int commentId});
 
   Future<NovelDetailResult> getNovelDetail({required int novelId});
-
-  Future<String> getNovelHtml({required int novelId});
 
   Future<NovelPageResult> getNovelRankingPage({required NovelRankingMode mode});
 
@@ -148,14 +143,6 @@ abstract class PixivApi implements RustOpaqueInterface {
     required SearchOptions options,
   });
 
-  Future<SearchIllustPageResult> getSearchIllustPageWithAi({
-    required String word,
-    required SearchSort sort,
-    required SearchTarget target,
-    required SearchOptions options,
-    SearchAiMode? aiMode,
-  });
-
   Future<SearchNovelPageResult> getSearchNovelPage({
     required String word,
     required SearchSort sort,
@@ -181,10 +168,6 @@ abstract class PixivApi implements RustOpaqueInterface {
   });
 
   Future<UserPageResult> getSearchUserPage({required String word});
-
-  Future<SpotlightPage> getSpotlightArticlePage({
-    required SpotlightCategory category,
-  });
 
   Future<TrendingTagListResult> getTrendingTagList();
 

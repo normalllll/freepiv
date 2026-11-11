@@ -533,9 +533,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
 
   @protected
-  List<SpotlightArticle> dco_decode_list_spotlight_article(dynamic raw);
-
-  @protected
   List<Tag> dco_decode_list_tag(dynamic raw);
 
   @protected
@@ -710,15 +707,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SeriesCoverImageUrls dco_decode_series_cover_image_urls(dynamic raw);
-
-  @protected
-  SpotlightArticle dco_decode_spotlight_article(dynamic raw);
-
-  @protected
-  SpotlightCategory dco_decode_spotlight_category(dynamic raw);
-
-  @protected
-  SpotlightPage dco_decode_spotlight_page(dynamic raw);
 
   @protected
   Stamp dco_decode_stamp(dynamic raw);
@@ -1374,11 +1362,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  List<SpotlightArticle> sse_decode_list_spotlight_article(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   List<Tag> sse_decode_list_tag(SseDeserializer deserializer);
 
   @protected
@@ -1581,15 +1564,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SeriesCoverImageUrls sse_decode_series_cover_image_urls(
     SseDeserializer deserializer,
   );
-
-  @protected
-  SpotlightArticle sse_decode_spotlight_article(SseDeserializer deserializer);
-
-  @protected
-  SpotlightCategory sse_decode_spotlight_category(SseDeserializer deserializer);
-
-  @protected
-  SpotlightPage sse_decode_spotlight_page(SseDeserializer deserializer);
 
   @protected
   Stamp sse_decode_stamp(SseDeserializer deserializer);
@@ -2389,12 +2363,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_list_spotlight_article(
-    List<SpotlightArticle> self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_list_tag(List<Tag> self, SseSerializer serializer);
 
   @protected
@@ -2654,21 +2622,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     SeriesCoverImageUrls self,
     SseSerializer serializer,
   );
-
-  @protected
-  void sse_encode_spotlight_article(
-    SpotlightArticle self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_spotlight_category(
-    SpotlightCategory self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_spotlight_page(SpotlightPage self, SseSerializer serializer);
 
   @protected
   void sse_encode_stamp(Stamp self, SseSerializer serializer);

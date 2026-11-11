@@ -20,8 +20,6 @@ abstract class FanboxApi implements RustOpaqueInterface {
 
   Future<void> deleteComment({required String commentId});
 
-  Future<void> downloadMedia({required String url, required String path});
-
   Future<void> followCreator({required String userId});
 
   Future<FanboxCommentPage> getComments({required String postId});
@@ -71,8 +69,6 @@ abstract class FanboxApi implements RustOpaqueInterface {
     language: language,
     acceptInvalidCerts: acceptInvalidCerts,
   );
-
-  Future<void> refreshCsrfToken();
 
   Future<FanboxCreatorPage> searchCreators({
     required String keyword,
