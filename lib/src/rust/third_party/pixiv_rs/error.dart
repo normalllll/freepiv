@@ -23,6 +23,11 @@ class PixivError implements FrbException {
     this.url,
   });
 
+  /// Pixiv's message for one request field (such as `profile_image`), read
+  /// from the error body, when the body carries one.
+  Future<String?> fieldMessage({required String field}) => RustLib.instance.api
+      .pixivRsErrorPixivErrorFieldMessage(that: this, field: field);
+
   static Future<PixivError> httpStatus({
     required int status,
     required String body,

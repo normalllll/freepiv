@@ -10,8 +10,8 @@ import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'responses.dart';
 
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `ApiRequest`, `Endpoint`, `RawResponse`, `RequestBody`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `ApiRequest`, `Endpoint`, `MultipartField`, `RawResponse`, `RequestBody`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 // These functions have error during generation (see debug logs or enable `stop_on_error: true` for more details): `bookmark_total`, `date_range`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PixivApi>>
@@ -433,6 +433,33 @@ class PixivApiConfig {
           proxy == other.proxy;
 }
 
+/// A new profile image sent along with the profile edit.
+class ProfileImageUpload {
+  final Uint8List bytes;
+  final String fileName;
+
+  /// For example `image/jpeg`.
+  final String mime;
+
+  const ProfileImageUpload({
+    required this.bytes,
+    required this.fileName,
+    required this.mime,
+  });
+
+  @override
+  int get hashCode => bytes.hashCode ^ fileName.hashCode ^ mime.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProfileImageUpload &&
+          runtimeType == other.runtimeType &&
+          bytes == other.bytes &&
+          fileName == other.fileName &&
+          mime == other.mime;
+}
+
 enum SearchAiMode { hide_, show_ }
 
 class SearchOptions {
@@ -496,8 +523,9 @@ class SearchOptions {
           tool == other.tool;
 }
 
-/// Every field Pixiv's profile form submits. Publicity and the profile image
-/// are not part of this request and keep their server values.
+/// Every field Pixiv's profile form submits. Publicity is not part of this
+/// request and keeps its server value; the profile image is replaced only
+/// when `profile_image` is set.
 class UserProfileEdit {
   final String userName;
 
@@ -514,6 +542,7 @@ class UserProfileEdit {
 
   /// `YYYY-MM-DD`, or empty when unset.
   final String birthday;
+  final ProfileImageUpload? profileImage;
 
   const UserProfileEdit({
     required this.userName,
@@ -525,6 +554,7 @@ class UserProfileEdit {
     required this.twitter,
     required this.comment,
     required this.birthday,
+    this.profileImage,
   });
 
   @override
@@ -537,7 +567,8 @@ class UserProfileEdit {
       webpage.hashCode ^
       twitter.hashCode ^
       comment.hashCode ^
-      birthday.hashCode;
+      birthday.hashCode ^
+      profileImage.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -552,7 +583,8 @@ class UserProfileEdit {
           webpage == other.webpage &&
           twitter == other.twitter &&
           comment == other.comment &&
-          birthday == other.birthday;
+          birthday == other.birthday &&
+          profileImage == other.profileImage;
 }
 
 /// The whole workspace form; a field left empty is cleared on Pixiv.

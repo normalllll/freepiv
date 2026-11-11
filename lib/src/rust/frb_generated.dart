@@ -77,7 +77,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.14.0-beta.2';
 
   @override
-  int get rustContentHash => -5048572;
+  int get rustContentHash => -1487804706;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -862,6 +862,11 @@ abstract class RustLibApi extends BaseApi {
     required String targetIp,
     required String language,
     required String deviceName,
+  });
+
+  Future<String?> pixivRsErrorPixivErrorFieldMessage({
+    required PixivError that,
+    required String field,
   });
 
   Future<PixivError> pixivRsErrorPixivErrorHttpStatus({
@@ -7063,6 +7068,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<String?> pixivRsErrorPixivErrorFieldMessage({
+    required PixivError that,
+    required String field,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_box_autoadd_pixiv_error(that, serializer);
+          sse_encode_String(field, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 167,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_opt_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kPixivRsErrorPixivErrorFieldMessageConstMeta,
+        argValues: [that, field],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kPixivRsErrorPixivErrorFieldMessageConstMeta =>
+      const TaskConstMeta(
+        debugName: "pixiv_error_field_message",
+        argNames: ["that", "field"],
+      );
+
+  @override
   Future<PixivError> pixivRsErrorPixivErrorHttpStatus({
     required int status,
     required String body,
@@ -7076,7 +7116,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 167,
+            funcId: 168,
             port: port_,
           );
         },
@@ -7106,7 +7146,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 168,
+            funcId: 169,
             port: port_,
           );
         },
@@ -7141,7 +7181,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 169,
+            funcId: 170,
             port: port_,
           );
         },
@@ -7170,7 +7210,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 170,
+            funcId: 171,
             port: port_,
           );
         },
@@ -7198,7 +7238,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 171,
+            funcId: 172,
             port: port_,
           );
         },
@@ -7231,7 +7271,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 172,
+            funcId: 173,
             port: port_,
           );
         },
@@ -7264,7 +7304,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 173,
+            funcId: 174,
             port: port_,
           );
         },
@@ -7294,7 +7334,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 174,
+            funcId: 175,
             port: port_,
           );
         },
@@ -7324,7 +7364,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 175,
+            funcId: 176,
             port: port_,
           );
         },
@@ -7357,7 +7397,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 176,
+            funcId: 177,
             port: port_,
           );
         },
@@ -7390,7 +7430,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 177,
+            funcId: 178,
             port: port_,
           );
         },
@@ -7430,7 +7470,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 178,
+              funcId: 179,
               port: port_,
             );
           },
@@ -7462,7 +7502,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 179,
+            funcId: 180,
             port: port_,
           );
         },
@@ -7494,7 +7534,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 180,
+            funcId: 181,
             port: port_,
           );
         },
@@ -7527,7 +7567,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 181,
+            funcId: 182,
             port: port_,
           );
         },
@@ -8200,6 +8240,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PixivError dco_decode_box_autoadd_pixiv_error(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_pixiv_error(raw);
+  }
+
+  @protected
   PixivisionConfig dco_decode_box_autoadd_pixivision_config(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_pixivision_config(raw);
@@ -8209,6 +8255,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PixivisionTag dco_decode_box_autoadd_pixivision_tag(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_pixivision_tag(raw);
+  }
+
+  @protected
+  ProfileImageUpload dco_decode_box_autoadd_profile_image_upload(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_profile_image_upload(raw);
   }
 
   @protected
@@ -9392,6 +9444,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ProfileImageUpload? dco_decode_opt_box_autoadd_profile_image_upload(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null
+        ? null
+        : dco_decode_box_autoadd_profile_image_upload(raw);
+  }
+
+  @protected
   Restrict? dco_decode_opt_box_autoadd_restrict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_restrict(raw);
@@ -9561,6 +9623,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     return ProfileCountryPreset(
       code: dco_decode_String(arr[0]),
       name: dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
+  ProfileImageUpload dco_decode_profile_image_upload(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = dcoDecodeList(raw);
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return ProfileImageUpload(
+      bytes: dco_decode_list_prim_u_8_strict(arr[0]),
+      fileName: dco_decode_String(arr[1]),
+      mime: dco_decode_String(arr[2]),
     );
   }
 
@@ -10022,8 +10097,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   UserProfileEdit dco_decode_user_profile_edit(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = dcoDecodeList(raw);
-    if (arr.length != 9)
-      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
+    if (arr.length != 10)
+      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
     return UserProfileEdit(
       userName: dco_decode_String(arr[0]),
       gender: dco_decode_String(arr[1]),
@@ -10034,6 +10109,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       twitter: dco_decode_String(arr[6]),
       comment: dco_decode_String(arr[7]),
       birthday: dco_decode_String(arr[8]),
+      profileImage: dco_decode_opt_box_autoadd_profile_image_upload(arr[9]),
     );
   }
 
@@ -10947,6 +11023,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PixivError sse_decode_box_autoadd_pixiv_error(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_pixiv_error(deserializer));
+  }
+
+  @protected
   PixivisionConfig sse_decode_box_autoadd_pixivision_config(
     SseDeserializer deserializer,
   ) {
@@ -10960,6 +11042,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_pixivision_tag(deserializer));
+  }
+
+  @protected
+  ProfileImageUpload sse_decode_box_autoadd_profile_image_upload(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_profile_image_upload(deserializer));
   }
 
   @protected
@@ -12599,6 +12689,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ProfileImageUpload? sse_decode_opt_box_autoadd_profile_image_upload(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_profile_image_upload(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   Restrict? sse_decode_opt_box_autoadd_restrict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -12832,6 +12935,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_code = sse_decode_String(deserializer);
     var var_name = sse_decode_String(deserializer);
     return ProfileCountryPreset(code: var_code, name: var_name);
+  }
+
+  @protected
+  ProfileImageUpload sse_decode_profile_image_upload(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_bytes = sse_decode_list_prim_u_8_strict(deserializer);
+    var var_fileName = sse_decode_String(deserializer);
+    var var_mime = sse_decode_String(deserializer);
+    return ProfileImageUpload(
+      bytes: var_bytes,
+      fileName: var_fileName,
+      mime: var_mime,
+    );
   }
 
   @protected
@@ -13317,6 +13435,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_twitter = sse_decode_String(deserializer);
     var var_comment = sse_decode_String(deserializer);
     var var_birthday = sse_decode_String(deserializer);
+    var var_profileImage = sse_decode_opt_box_autoadd_profile_image_upload(
+      deserializer,
+    );
     return UserProfileEdit(
       userName: var_userName,
       gender: var_gender,
@@ -13327,6 +13448,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       twitter: var_twitter,
       comment: var_comment,
       birthday: var_birthday,
+      profileImage: var_profileImage,
     );
   }
 
@@ -14277,6 +14399,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_pixiv_error(
+    PixivError self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_pixiv_error(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_pixivision_config(
     PixivisionConfig self,
     SseSerializer serializer,
@@ -14292,6 +14423,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_pixivision_tag(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_profile_image_upload(
+    ProfileImageUpload self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_profile_image_upload(self, serializer);
   }
 
   @protected
@@ -15642,6 +15782,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_profile_image_upload(
+    ProfileImageUpload? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_profile_image_upload(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_restrict(
     Restrict? self,
     SseSerializer serializer,
@@ -15853,6 +16006,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.code, serializer);
     sse_encode_String(self.name, serializer);
+  }
+
+  @protected
+  void sse_encode_profile_image_upload(
+    ProfileImageUpload self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_prim_u_8_strict(self.bytes, serializer);
+    sse_encode_String(self.fileName, serializer);
+    sse_encode_String(self.mime, serializer);
   }
 
   @protected
@@ -16251,6 +16415,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.twitter, serializer);
     sse_encode_String(self.comment, serializer);
     sse_encode_String(self.birthday, serializer);
+    sse_encode_opt_box_autoadd_profile_image_upload(
+      self.profileImage,
+      serializer,
+    );
   }
 
   @protected

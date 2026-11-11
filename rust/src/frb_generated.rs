@@ -47,7 +47,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.14.0-beta.2";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -5048572;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1487804706;
 
 // Section: executor
 
@@ -8698,6 +8698,42 @@ fn wire__pixiv_rs__pixiv__auth__pixiv_auth_config_new_impl(
         },
     )
 }
+fn wire__pixiv_rs__error__pixiv_error_field_message_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "pixiv_error_field_message",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <pixiv_rs::error::PixivError>::sse_decode(&mut deserializer);
+            let api_field = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Ok::<_, ()>(pixiv_rs::error::PixivError::field_message(
+                        &api_that, &api_field,
+                    ))?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
 fn wire__pixiv_rs__error__pixiv_error_http_status_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -9791,6 +9827,12 @@ const _: fn() = || {
         let _: String = ProfileCountryPreset.name;
     }
     {
+        let ProfileImageUpload = None::<pixiv_rs::pixiv::api::ProfileImageUpload>.unwrap();
+        let _: Vec<u8> = ProfileImageUpload.bytes;
+        let _: String = ProfileImageUpload.file_name;
+        let _: String = ProfileImageUpload.mime;
+    }
+    {
         let ProfileImageUrls = None::<pixiv_rs::pixiv::models::ProfileImageUrls>.unwrap();
         let _: String = ProfileImageUrls.medium;
     }
@@ -9996,6 +10038,7 @@ const _: fn() = || {
         let _: String = UserProfileEdit.twitter;
         let _: String = UserProfileEdit.comment;
         let _: String = UserProfileEdit.birthday;
+        let _: Option<pixiv_rs::pixiv::api::ProfileImageUpload> = UserProfileEdit.profile_image;
     }
     {
         let UserProfilePublicity =
@@ -12346,6 +12389,19 @@ impl SseDecode for Option<pixiv_rs::pixivision::PixivisionTag> {
     }
 }
 
+impl SseDecode for Option<pixiv_rs::pixiv::api::ProfileImageUpload> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<pixiv_rs::pixiv::api::ProfileImageUpload>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<pixiv_rs::pixiv::enums::Restrict> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -12598,6 +12654,20 @@ impl SseDecode for pixiv_rs::pixiv::responses::ProfileCountryPreset {
         return pixiv_rs::pixiv::responses::ProfileCountryPreset {
             code: var_code,
             name: var_name,
+        };
+    }
+}
+
+impl SseDecode for pixiv_rs::pixiv::api::ProfileImageUpload {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_bytes = <Vec<u8>>::sse_decode(deserializer);
+        let mut var_fileName = <String>::sse_decode(deserializer);
+        let mut var_mime = <String>::sse_decode(deserializer);
+        return pixiv_rs::pixiv::api::ProfileImageUpload {
+            bytes: var_bytes,
+            file_name: var_fileName,
+            mime: var_mime,
         };
     }
 }
@@ -13179,6 +13249,8 @@ impl SseDecode for pixiv_rs::pixiv::api::UserProfileEdit {
         let mut var_twitter = <String>::sse_decode(deserializer);
         let mut var_comment = <String>::sse_decode(deserializer);
         let mut var_birthday = <String>::sse_decode(deserializer);
+        let mut var_profileImage =
+            <Option<pixiv_rs::pixiv::api::ProfileImageUpload>>::sse_decode(deserializer);
         return pixiv_rs::pixiv::api::UserProfileEdit {
             user_name: var_userName,
             gender: var_gender,
@@ -13189,6 +13261,7 @@ impl SseDecode for pixiv_rs::pixiv::api::UserProfileEdit {
             twitter: var_twitter,
             comment: var_comment,
             birthday: var_birthday,
+            profile_image: var_profileImage,
         };
     }
 }
@@ -14256,77 +14329,80 @@ fn pde_ffi_dispatcher_primary_impl(
             data_len,
         ),
         167 => {
+            wire__pixiv_rs__error__pixiv_error_field_message_impl(port, ptr, rust_vec_len, data_len)
+        }
+        168 => {
             wire__pixiv_rs__error__pixiv_error_http_status_impl(port, ptr, rust_vec_len, data_len)
         }
-        168 => wire__pixiv_rs__error__pixiv_error_missing_account_impl(
+        169 => wire__pixiv_rs__error__pixiv_error_missing_account_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        169 => wire__pixiv_rs__error__pixiv_error_new_impl(port, ptr, rust_vec_len, data_len),
-        170 => wire__pixiv_rs__pixivision__pixivision_config_default_impl(
+        170 => wire__pixiv_rs__error__pixiv_error_new_impl(port, ptr, rust_vec_len, data_len),
+        171 => wire__pixiv_rs__pixivision__pixivision_config_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        171 => wire__pixiv_rs__pixiv__enums__restrict_as_pixiv_param_impl(
+        172 => wire__pixiv_rs__pixiv__enums__restrict_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        172 => wire__pixiv_rs__pixiv__enums__search_content_type_as_pixiv_param_impl(
+        173 => wire__pixiv_rs__pixiv__enums__search_content_type_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        173 => wire__pixiv_rs__pixiv__enums__search_novel_target_as_pixiv_param_impl(
+        174 => wire__pixiv_rs__pixiv__enums__search_novel_target_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        174 => wire__pixiv_rs__pixiv__api__search_options_default_impl(
+        175 => wire__pixiv_rs__pixiv__api__search_options_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        175 => wire__pixiv_rs__pixiv__enums__search_ratio_as_pixiv_param_impl(
+        176 => wire__pixiv_rs__pixiv__enums__search_ratio_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        176 => wire__pixiv_rs__pixiv__enums__search_sort_as_pixiv_param_impl(
+        177 => wire__pixiv_rs__pixiv__enums__search_sort_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        177 => wire__pixiv_rs__pixiv__enums__search_target_as_pixiv_param_impl(
+        178 => wire__pixiv_rs__pixiv__enums__search_target_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        178 => wire__crate__api__media__stream_media_impl(port, ptr, rust_vec_len, data_len),
-        179 => wire__pixiv_rs__pixiv__responses__webview_novel_image_urls_default_impl(
+        179 => wire__crate__api__media__stream_media_impl(port, ptr, rust_vec_len, data_len),
+        180 => wire__pixiv_rs__pixiv__responses__webview_novel_image_urls_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        180 => wire__pixiv_rs__pixiv__enums__work_type_as_pixiv_param_impl(
+        181 => wire__pixiv_rs__pixiv__enums__work_type_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        181 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
+        182 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
             port,
             ptr,
             rust_vec_len,
@@ -16458,6 +16534,28 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::Pr
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::api::ProfileImageUpload> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.bytes.into_into_dart().into_dart(),
+            self.0.file_name.into_into_dart().into_dart(),
+            self.0.mime.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<pixiv_rs::pixiv::api::ProfileImageUpload>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::api::ProfileImageUpload>>
+    for pixiv_rs::pixiv::api::ProfileImageUpload
+{
+    fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::api::ProfileImageUpload> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::models::ProfileImageUrls> {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [self.0.medium.into_into_dart().into_dart()].into_dart()
@@ -17269,6 +17367,7 @@ impl flutter_rust_bridge::IntoDart for FrbWrapper<pixiv_rs::pixiv::api::UserProf
             self.0.twitter.into_into_dart().into_dart(),
             self.0.comment.into_into_dart().into_dart(),
             self.0.birthday.into_into_dart().into_dart(),
+            self.0.profile_image.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -19317,6 +19416,16 @@ impl SseEncode for Option<pixiv_rs::pixivision::PixivisionTag> {
     }
 }
 
+impl SseEncode for Option<pixiv_rs::pixiv::api::ProfileImageUpload> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <pixiv_rs::pixiv::api::ProfileImageUpload>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<pixiv_rs::pixiv::enums::Restrict> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -19518,6 +19627,15 @@ impl SseEncode for pixiv_rs::pixiv::responses::ProfileCountryPreset {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.code, serializer);
         <String>::sse_encode(self.name, serializer);
+    }
+}
+
+impl SseEncode for pixiv_rs::pixiv::api::ProfileImageUpload {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<u8>>::sse_encode(self.bytes, serializer);
+        <String>::sse_encode(self.file_name, serializer);
+        <String>::sse_encode(self.mime, serializer);
     }
 }
 
@@ -19983,6 +20101,10 @@ impl SseEncode for pixiv_rs::pixiv::api::UserProfileEdit {
         <String>::sse_encode(self.twitter, serializer);
         <String>::sse_encode(self.comment, serializer);
         <String>::sse_encode(self.birthday, serializer);
+        <Option<pixiv_rs::pixiv::api::ProfileImageUpload>>::sse_encode(
+            self.profile_image,
+            serializer,
+        );
     }
 }
 

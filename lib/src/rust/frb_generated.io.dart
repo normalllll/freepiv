@@ -324,10 +324,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PixivAuthConfig dco_decode_box_autoadd_pixiv_auth_config(dynamic raw);
 
   @protected
+  PixivError dco_decode_box_autoadd_pixiv_error(dynamic raw);
+
+  @protected
   PixivisionConfig dco_decode_box_autoadd_pixivision_config(dynamic raw);
 
   @protected
   PixivisionTag dco_decode_box_autoadd_pixivision_tag(dynamic raw);
+
+  @protected
+  ProfileImageUpload dco_decode_box_autoadd_profile_image_upload(dynamic raw);
 
   @protected
   Restrict dco_decode_box_autoadd_restrict(dynamic raw);
@@ -697,6 +703,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PixivisionTag? dco_decode_opt_box_autoadd_pixivision_tag(dynamic raw);
 
   @protected
+  ProfileImageUpload? dco_decode_opt_box_autoadd_profile_image_upload(
+    dynamic raw,
+  );
+
+  @protected
   Restrict? dco_decode_opt_box_autoadd_restrict(dynamic raw);
 
   @protected
@@ -756,6 +767,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ProfileCountryPreset dco_decode_profile_country_preset(dynamic raw);
+
+  @protected
+  ProfileImageUpload dco_decode_profile_image_upload(dynamic raw);
 
   @protected
   ProfileImageUrls dco_decode_profile_image_urls(dynamic raw);
@@ -1220,12 +1234,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  PixivError sse_decode_box_autoadd_pixiv_error(SseDeserializer deserializer);
+
+  @protected
   PixivisionConfig sse_decode_box_autoadd_pixivision_config(
     SseDeserializer deserializer,
   );
 
   @protected
   PixivisionTag sse_decode_box_autoadd_pixivision_tag(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ProfileImageUpload sse_decode_box_autoadd_profile_image_upload(
     SseDeserializer deserializer,
   );
 
@@ -1679,6 +1701,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ProfileImageUpload? sse_decode_opt_box_autoadd_profile_image_upload(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   Restrict? sse_decode_opt_box_autoadd_restrict(SseDeserializer deserializer);
 
   @protected
@@ -1742,6 +1769,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ProfileCountryPreset sse_decode_profile_country_preset(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ProfileImageUpload sse_decode_profile_image_upload(
     SseDeserializer deserializer,
   );
 
@@ -2307,6 +2339,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_pixiv_error(
+    PixivError self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_pixivision_config(
     PixivisionConfig self,
     SseSerializer serializer,
@@ -2315,6 +2353,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_pixivision_tag(
     PixivisionTag self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_profile_image_upload(
+    ProfileImageUpload self,
     SseSerializer serializer,
   );
 
@@ -2880,6 +2924,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_profile_image_upload(
+    ProfileImageUpload? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_restrict(
     Restrict? self,
     SseSerializer serializer,
@@ -2966,6 +3016,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_profile_country_preset(
     ProfileCountryPreset self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_profile_image_upload(
+    ProfileImageUpload self,
     SseSerializer serializer,
   );
 
