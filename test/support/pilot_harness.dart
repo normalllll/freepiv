@@ -40,7 +40,7 @@ Future<void> mountPilotPage(
   bool signedIn = true,
   String location = '/',
   Object? extra,
-  Map<String, dynamic> settings = sampleSettings,
+  Map<String, dynamic>? settings,
   List<NavigatorObserver> observers = const [],
 }) async {
   tester.view.physicalSize = size;
@@ -48,9 +48,10 @@ Future<void> mountPilotPage(
   tester.platformDispatcher.textScaleFactorTestValue = textScale;
   addTearDown(tester.view.reset);
   addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-  await AppSettings.initialize(store: SampleSettingsStore(settings));
+  await AppSettings.initialize(store: SampleSettingsStore(settings ?? sampleSettings));
   await tester.runAsync(() => LocaleSettings.setLocale(locale));
   addTearDown(() => LocaleSettings.setLocaleSync(AppLocale.enUs));
+  if (!signedIn) AppSettings.accounts = AppSettings.accounts.deactivated();
   if (signedIn) {
     pixivAccountNotifier.value = sampleAccount;
     addTearDown(() => pixivAccountNotifier.value = null);

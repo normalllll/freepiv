@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/core/services/app_storage.dart';
+import 'package:freepiv/core/services/pixiv_accounts.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/widgets.dart';
@@ -98,16 +99,14 @@ class AppSettings {
 
   static const boxName = 'app_settings';
 
-  static const _searchHistoryKey = 'searchHistory';
+  /// The stored Pixiv accounts and which one is current.
+  static const accountsKey = 'accounts';
 
-  static List<String> get searchHistory => switch (_values[_searchHistoryKey]) {
-    final List values => List.unmodifiable(values.whereType<String>().take(30)),
-    _ => const [],
-  };
+  /// Before several accounts were kept, one session and one search history
+  /// were stored under these keys; the first start with accounts moves them.
+  static const _legacyAccountSessionKey = 'accountSession';
+  static const _legacySearchHistoryKey = 'searchHistory';
 
-  static set searchHistory(List<String> value) => _write(_searchHistoryKey, value.take(30).toList());
-
-  static const _accountSessionKey = 'accountSession';
   static const _themeModeKey = 'themeMode';
   static const _appearanceKey = 'appearance';
   static const _backgroundMaterialKey = 'backgroundMaterial';
@@ -146,8 +145,7 @@ class AppSettings {
   static const readerAutoScrollSpeedRange = (min: 12.0, max: 96.0, fallback: 36.0);
 
   static const _settingKeys = {
-    _searchHistoryKey,
-    _accountSessionKey,
+    accountsKey,
     _themeModeKey,
     _appearanceKey,
     _backgroundMaterialKey,
@@ -172,12 +170,21 @@ class AppSettings {
   static final Map<String, dynamic> _values = {};
   static AppSettingsStore? _store;
 
-  static UserAccountResult? get accountSession {
-    return _accountSessionFromJson(_values[_accountSessionKey]);
+  static PixivAccountBook _accounts = const PixivAccountBook();
+
+  static PixivAccountBook get accounts => _accounts;
+
+  static set accounts(PixivAccountBook value) {
+    _accounts = value;
+    _write(accountsKey, value.isEmpty ? null : value.toJson());
   }
 
-  static set accountSession(UserAccountResult? value) {
-    _write(_accountSessionKey, value == null ? null : _accountSessionToJson(value));
+  /// What the current account searched for; nothing while signed out.
+  static List<String> get searchHistory => _accounts.active?.searchHistory ?? const [];
+
+  static set searchHistory(List<String> value) {
+    final active = _accounts.active;
+    if (active != null) accounts = _accounts.withEntry(active.copyWith(searchHistory: value));
   }
 
   static int? get themeMode => _values[_themeModeKey] as int?;
@@ -351,12 +358,35 @@ class AppSettings {
     _values
       ..clear()
       ..addAll(_filterSettings(stored));
+    _accounts = PixivAccountBook.fromJson(_values[accountsKey]) ?? const PixivAccountBook();
     await _migrate(stored);
   }
 
-  /// Reduce transparency became the Off background; retired keys are removed
-  /// so they do not stay in the box.
+  /// Reduce transparency became the Off background, and the one stored session
+  /// with its search history became the only stored account; retired keys are
+  /// removed so they do not stay in the box.
   static Future<void> _migrate(Map<String, dynamic> stored) async {
+    if (stored.containsKey(_legacyAccountSessionKey)) {
+      final session = _legacySession(stored[_legacyAccountSessionKey]);
+      if (_accounts.isEmpty && session != null) {
+        final history = stored[_legacySearchHistoryKey];
+        final migrated = PixivAccountBook(
+          entries: [
+            PixivAccountEntry(
+              session: session,
+              lastUsed: DateTime.now(),
+              searchHistory: history is List ? history.whereType<String>().take(PixivAccountEntry.searchHistoryLimit).toList() : const [],
+            ),
+          ],
+          activeId: session.user.id,
+        );
+        _accounts = migrated;
+        _values[accountsKey] = migrated.toJson();
+        await _activeStore.write(accountsKey, migrated.toJson());
+      }
+      await _activeStore.write(_legacyAccountSessionKey, null);
+      await _activeStore.write(_legacySearchHistoryKey, null);
+    }
     if (stored[_legacyReduceTransparencyKey] == true && !_values.containsKey(_backgroundMaterialKey)) {
       _values[_backgroundMaterialKey] = BackgroundMaterial.off.name;
       await _activeStore.write(_backgroundMaterialKey, BackgroundMaterial.off.name);
@@ -392,8 +422,7 @@ class AppSettings {
     }
 
     return switch (key) {
-      _searchHistoryKey => value is List && value.every((item) => item is String),
-      _accountSessionKey => _accountSessionFromJson(value) != null,
+      accountsKey => PixivAccountBook.fromJson(value) != null,
       _themeModeKey => value is int && value >= 0 && value <= 2,
       _appearanceKey => value is Map && value['version'] == 1,
       _backgroundMaterialKey => _isEnumSettingValue(value, BackgroundMaterial.values),
@@ -611,11 +640,7 @@ String _cleanProxyHostInput(String host) {
   return trimmed;
 }
 
-Map<String, dynamic> _accountSessionToJson(UserAccountResult account) {
-  return _jsonMap(account.toJson()) ?? <String, dynamic>{};
-}
-
-UserAccountResult? _accountSessionFromJson(Object? value) {
+UserAccountResult? _legacySession(Object? value) {
   final json = _jsonMap(value);
   if (json == null) {
     return null;

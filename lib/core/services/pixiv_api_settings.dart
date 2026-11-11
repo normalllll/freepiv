@@ -16,7 +16,7 @@ PixivApiConfig buildPixivApiConfig({UserAccountResult? account}) {
     targetIp: PixivApiSettings.targetIp,
     language: AppSettings.localeCode ?? LocaleSettings.currentLocale.languageTag,
     deviceName: PixivApiSettings.deviceName,
-    account: account ?? AppSettings.accountSession,
+    account: account,
     acceptInvalidCerts: PixivApiSettings.acceptInvalidCerts,
     proxy: AppSettings.proxySettings.activeUrl,
   );

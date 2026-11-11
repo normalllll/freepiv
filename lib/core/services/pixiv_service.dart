@@ -22,14 +22,17 @@ Future<void> initializeAppServices() async {
   await RustLib.init();
   await initializeDownloadManager();
 
-  pixivApi = _createPixivApi();
+  pixivApi = _createPixivApi(account: AppSettings.accounts.active?.session);
   pixivAccountNotifier.value = pixivApi.account();
   _appServicesInitialized = true;
 }
 
+/// Makes [account] the current account, or with null signs the current one
+/// out. An account the app already keeps is updated, not added again.
 void setPixivAccount(UserAccountResult? account) {
   pixivApi.setAccount(account: account);
-  AppSettings.accountSession = account;
+  final book = AppSettings.accounts;
+  AppSettings.accounts = account == null ? (book.activeId == null ? book : book.remove(book.activeId!)) : book.activate(account, DateTime.now());
   pixivAccountNotifier.value = account;
 }
 

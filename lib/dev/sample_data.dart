@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:freepiv/dev/sample_images.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/core/services/app_settings.dart';
+import 'package:freepiv/core/services/pixiv_accounts.dart';
 import 'package:freepiv/features/downloads/presentation/download_entry.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
@@ -47,9 +48,18 @@ class SampleSettingsStore implements AppSettingsStore {
   Future<void> write(String key, dynamic value) async => value == null ? values.remove(key) : values[key] = value;
 }
 
-/// A first run with some searches behind it.
-const sampleSettings = <String, dynamic>{
-  'searchHistory': ['初音ミク', 'landscape', 'オリジナル', 'cat', 'ブルーアーカイブ', 'scenery'],
+/// The sample account signed in, with some searches behind it.
+final sampleSettings = <String, dynamic>{
+  AppSettings.accountsKey: PixivAccountBook(
+    entries: [
+      PixivAccountEntry(
+        session: sampleAccount,
+        lastUsed: DateTime.utc(2026, 11, 1),
+        searchHistory: const ['初音ミク', 'landscape', 'オリジナル', 'cat', 'ブルーアーカイブ', 'scenery'],
+      ),
+    ],
+    activeId: sampleAccount.user.id,
+  ).toJson(),
 };
 
 const sampleAccount = UserAccountResult(
