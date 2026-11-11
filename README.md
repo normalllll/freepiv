@@ -1,3 +1,5 @@
+<img src="icon-512.png" width="128" alt="freepiv">
+
 # freepiv
 
 English | [Simplified Chinese](README_zh_cn.md)
@@ -8,13 +10,14 @@ Browse illustrations and manga, read novels and articles, follow creators, and d
 
 [Download](https://github.com/normalllll/freepiv/releases/latest) | [Features](#features) | [Screenshots](#screenshots)
 
-![Screenshot](screenshots/0.webp)
+![freepiv home page on Windows](screenshots/0.webp)
 
 ## Features
 
 - **Pixiv browsing:** Recommendations, rankings, followed creators' updates, illustrations, manga, animated artwork, and novels.
 - **Search and discovery:** Search works and users, filter results, browse tags, and revisit recent searches.
-- **Your library:** Follow creators, bookmark works, and browse your account's collections.
+- **Your library:** Follow creators publicly or privately, bookmark works with tags, follow series updates, and keep a browsing history on your device.
+- **Accounts and filtering:** Switch between several Pixiv accounts, edit your profile and profile image, and hide tags and users you block.
 - **FANBOX:** Browse followed and recommended creators, read posts, view creator plans, and download accessible attachments. Paid posts show their required support tier; access follows your FANBOX account's subscriptions.
 - **pixivision:** Discover articles by category, tag, or keyword, explore popular articles, and open featured works and creators in the app.
 - **Download management:** Track Pixiv and FANBOX tasks in a floating panel, cancel downloads, retry failures, and clear completed tasks. FANBOX files are organized in a separate folder.
@@ -28,7 +31,7 @@ Download packages from [GitHub Releases](https://github.com/normalllll/freepiv/r
 |----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Android  | [ARM64 APK](https://github.com/normalllll/freepiv/releases/latest/download/app-arm64-v8a-release.apk)                                                                                                                                                                        | Suitable for most current phones. Choose the [universal APK](https://github.com/normalllll/freepiv/releases/latest/download/app-universal-release.apk) if unsure about your architecture |
 | Windows  | [windows-x64.zip](https://github.com/normalllll/freepiv/releases/latest/download/windows-x64.zip)                                                                                                                                                                            | Extract the complete archive and run freepiv.exe                                                                                                                                         |
-| Linux    | [DEB](https://github.com/normalllll/freepiv/releases/latest/download/linux_amd64.deb), [RPM](https://github.com/normalllll/freepiv/releases/latest/download/linux_amd64.rpm), or [tar.gz](https://github.com/normalllll/freepiv/releases/latest/download/linux-amd64.tar.gz) | x86_64 builds for Ubuntu 24.04 or compatible systems. Choose your distribution's package, or extract the archive and run freepiv                                                         |
+| Linux    | x86_64: [DEB](https://github.com/normalllll/freepiv/releases/latest/download/linux_amd64.deb), [RPM](https://github.com/normalllll/freepiv/releases/latest/download/linux_amd64.rpm), or [tar.gz](https://github.com/normalllll/freepiv/releases/latest/download/linux-amd64.tar.gz)<br>ARM64: [DEB](https://github.com/normalllll/freepiv/releases/latest/download/linux_arm64.deb), [RPM](https://github.com/normalllll/freepiv/releases/latest/download/linux_arm64.rpm), or [tar.gz](https://github.com/normalllll/freepiv/releases/latest/download/linux-arm64.tar.gz) | Built for Ubuntu 24.04 or compatible systems. Choose your distribution's package, or extract the archive and run freepiv |
 | macOS    | [Apple Silicon](https://github.com/normalllll/freepiv/releases/latest/download/macos-arm64-nosigned.zip), [Intel](https://github.com/normalllll/freepiv/releases/latest/download/macos-x86_64-nosigned.zip)                                                                  | Extract and move the app to Applications. Builds are not notarized                                                                                                                       |
 | iOS      | [ios-nosigned.ipa](https://github.com/normalllll/freepiv/releases/latest/download/ios-nosigned.ipa)                                                                                                                                                                          | Requires your own signing method before installation                                                                                                                                     |
 
@@ -36,7 +39,7 @@ Android ARM32 and x86_64 packages are also available. Check each release's asset
 
 ## Getting started
 
-Sign in to Pixiv to browse your recommendations, follows, and bookmarks. Open **Discover** for search and pixivision, or **Me → FANBOX** for creator posts. FANBOX uses a separate sign-in, managed in Settings.
+Sign in to Pixiv to browse your recommendations, follows, and bookmarks. Search from the title bar (on a phone, from the search field on Home), find pixivision on Home, and open **FANBOX** from the sidebar (on a phone, **Me → FANBOX**) for creator posts. FANBOX uses a separate sign-in, managed in Settings.
 
 FANBOX browser sign-in is available on Windows, Android, and iOS. Windows requires WebView2 Runtime; manual cookie sign-in remains available when browser sign-in is unavailable. If content fails to load, check your connection and the app's proxy settings.
 
@@ -48,14 +51,17 @@ Report bugs or suggest features in [Issues](https://github.com/normalllll/freepi
 
 ### Desktop
 
-| ![Desktop Screenshot 1](screenshots/desktop/img0.webp) | ![Desktop Screenshot 2](screenshots/desktop/img1.webp) |
-|:------------------------------------------------------:|:------------------------------------------------------:|
-| ![Desktop Screenshot 3](screenshots/desktop/img2.webp) | ![Desktop Screenshot 4](screenshots/desktop/img3.webp) |
+| ![Illustration details](screenshots/desktop/img0.webp) | ![Title bar search](screenshots/desktop/img1.webp) |
+|:------------------------------------------------------:|:--------------------------------------------------:|
+|                  Illustration details                  |                  Title bar search                  |
+|      ![FANBOX feed](screenshots/desktop/img2.webp)      |      ![pixivision](screenshots/desktop/img3.webp)      |
+|                      FANBOX feed                       |                     pixivision                     |
 
 ### Mobile
 
-| ![Mobile Screenshot 1](screenshots/mobile/img0.webp) | ![Mobile Screenshot 2](screenshots/mobile/img1.webp) | ![Mobile Screenshot 3](screenshots/mobile/img2.webp) | ![Mobile Screenshot 4](screenshots/mobile/img3.webp) |
-|:----------------------------------------------------:|:----------------------------------------------------:|:----------------------------------------------------:|:----------------------------------------------------:|
+| ![Creator profile](screenshots/mobile/img0.webp) | ![Followed creators](screenshots/mobile/img1.webp) | ![Rankings](screenshots/mobile/img2.webp) | ![Novel reader](screenshots/mobile/img3.webp) |
+|:------------------------------------------------:|:--------------------------------------------------:|:-----------------------------------------:|:---------------------------------------------:|
+|                 Creator profile                  |                 Followed creators                  |                 Rankings                  |                 Novel reader                  |
 
 ## License
 
