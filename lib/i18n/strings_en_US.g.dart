@@ -533,6 +533,7 @@ class Translations$user$en_US {
 	// Translations
 	String get noPublicWorks => 'No public works';
 	late final Translations$user$tabs$en_US tabs = Translations$user$tabs$en_US.internal(_root);
+	late final Translations$user$related$en_US related = Translations$user$related$en_US.internal(_root);
 	late final Translations$user$stats$en_US stats = Translations$user$stats$en_US.internal(_root);
 	late final Translations$user$bookmarks$en_US bookmarks = Translations$user$bookmarks$en_US.internal(_root);
 	late final Translations$user$empty$en_US empty = Translations$user$empty$en_US.internal(_root);
@@ -1419,6 +1420,18 @@ class Translations$user$tabs$en_US {
 	String get profile => 'Details';
 }
 
+// Path: user.related
+class Translations$user$related$en_US {
+	Translations$user$related$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Related users';
+	String get viewAll => 'View all';
+	String get empty => 'No related users';
+}
+
 // Path: user.stats
 class Translations$user$stats$en_US {
 	Translations$user$stats$en_US.internal(this._root);
@@ -2288,6 +2301,9 @@ extension on Translations {
 			'user.tabs.bookmarks' => 'Bookmarks',
 			'user.tabs.following' => 'Following',
 			'user.tabs.profile' => 'Details',
+			'user.related.title' => 'Related users',
+			'user.related.viewAll' => 'View all',
+			'user.related.empty' => 'No related users',
 			'user.stats.illustrations' => 'Illusts',
 			'user.stats.manga' => 'Manga',
 			'user.stats.novels' => 'Novels',
@@ -2336,11 +2352,11 @@ extension on Translations {
 			'newest.novelChars' => ({required Object count}) => '${count} chars',
 			'newest.novelPages' => ({required Object count}) => '${count} pages',
 			'newest.empty.following' => 'Nothing new from the people you follow',
+			_ => null,
+		} ?? switch (path) {
 			'newest.empty.privateFollows' => 'Nothing new from your private follows',
 			'newest.empty.mypixiv' => 'Nothing new from your My pixiv friends',
 			'newest.empty.everyone' => 'No new works yet',
-			_ => null,
-		} ?? switch (path) {
 			'illust.pageJump' => 'Go to page',
 			'illust.contextMenu.download' => 'Download',
 			'illust.contextMenu.downloadAll' => 'Download all',

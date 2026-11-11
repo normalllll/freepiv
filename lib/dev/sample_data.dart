@@ -267,6 +267,11 @@ final sampleOverrideMap = <Object, Override>{
     ref.onDispose(source.dispose);
     return source;
   }),
+  userRelatedSourceProvider: userRelatedSourceProvider.overrideWith((ref, userId) {
+    final source = SampleUserRelated(userId: userId);
+    ref.onDispose(source.dispose);
+    return source;
+  }),
   mypixivSourceProvider: mypixivSourceProvider.overrideWith((ref, userId) {
     final source = SampleMypixiv(userId: userId);
     ref.onDispose(source.dispose);
@@ -949,6 +954,21 @@ class SampleMypixiv extends MypixivListSource {
 
   @override
   Future<UserPageResult> loadFirstPage() async => UserPageResult(userPreviews: sampleUserPreviews(count: 4));
+
+  @override
+  Future<UserPageResult> loadNextPage(String nextUrl) async => const UserPageResult(userPreviews: []);
+}
+
+/// The authors related to a sample author: enough for the section's six rows
+/// and a second page.
+class SampleUserRelated extends UserRelatedListSource {
+  SampleUserRelated({required super.userId});
+
+  @override
+  Future<UserPageResult> loadFirstPage() async => UserPageResult(userPreviews: sampleUserPreviews(count: 8));
+
+  @override
+  Future<UserPageResult> loadOffsetPage(int offset) async => const UserPageResult(userPreviews: []);
 
   @override
   Future<UserPageResult> loadNextPage(String nextUrl) async => const UserPageResult(userPreviews: []);

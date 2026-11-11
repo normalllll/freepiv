@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
 import 'package:freepiv/features/user_detail/presentation/user_identity_header.dart';
+import 'package:freepiv/features/user_detail/presentation/user_related_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -14,6 +16,7 @@ import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/ui/compositions/user_card.dart';
+import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import 'support/pilot_harness.dart';
@@ -80,6 +83,7 @@ Future<void> _mount(
 Finder _tab(String label) => find.descendant(of: find.byType(FrostTabBar), matching: find.text(label));
 
 void main() {
+  _relatedTests();
   testWidgets('the identity header sits over the six tabs and the author\'s works', (tester) async {
     await _mount(tester, detail: sampleUserDetail);
     expect(find.byType(UserIdentityHeader), findsOneWidget);
@@ -246,4 +250,190 @@ void main() {
   }
 
   test('the author page strings exist in all four languages', () => expectLocalesComplete(['user', 'userPage']));
+}
+
+class _Related extends UserRelatedListSource {
+  _Related(this.pages, {required super.userId, this.repeats = false});
+
+  /// The pages in order, each with the next URL it names (or none).
+  final List<({int count, String? next})> pages;
+
+  /// Every page lists the same authors from the first on, as Pixiv answers;
+  /// otherwise each page lists authors not served before.
+  final bool repeats;
+
+  /// What was asked for, in order: `offset N` or `url U`.
+  final asked = <String>[];
+  var _served = 0;
+  var _authors = 0;
+
+  UserPageResult _page() {
+    final index = _served++;
+    final page = index < pages.length ? pages[index] : (count: 0, next: null);
+    final first = repeats ? 0 : _authors;
+    _authors += page.count;
+    return UserPageResult(
+      userPreviews: sampleUserPreviews(count: first + page.count).sublist(first),
+      nextUrl: page.next,
+    );
+  }
+
+  @override
+  Future<UserPageResult> loadOffsetPage(int offset) async {
+    asked.add('offset $offset');
+    return _page();
+  }
+
+  @override
+  Future<UserPageResult> loadNextPage(String nextUrl) async {
+    asked.add('url $nextUrl');
+    return _page();
+  }
+}
+
+class _FirstRelated extends UserRelatedListSource {
+  _FirstRelated(this.first, {required super.userId});
+
+  final Future<UserPageResult> Function() first;
+
+  @override
+  Future<UserPageResult> loadFirstPage() => first();
+}
+
+Map<Object, Override> _relatedOverride(Future<UserPageResult> Function() first) => {
+  userRelatedSourceProvider: userRelatedSourceProvider.overrideWith((ref, userId) {
+    final source = _FirstRelated(first, userId: userId);
+    ref.onDispose(source.dispose);
+    return source;
+  }),
+};
+
+Future<void> _mountRelated(WidgetTester tester, Future<UserPageResult> Function() first, {UserDetailResult? detail}) =>
+    mountPilotPage(tester, UserDetailPage(userDetail: detail ?? sampleUserDetail), overrides: _relatedOverride(first));
+
+UserDetailResult _detailWith({required int id, UserProfile? profile}) => UserDetailResult(
+  user: UserInfo(id: id, name: 'Author $id', account: 'author_$id', profileImageUrls: sampleUserDetail.user.profileImageUrls, comment: '', isFollowed: false),
+  profile: profile ?? sampleUserDetail.profile,
+  profilePublicity: sampleUserDetail.profilePublicity,
+  workspace: sampleUserDetail.workspace,
+);
+
+void _relatedTests() {
+  group('related users', () {
+    Future<void> openDetails(WidgetTester tester) async {
+      await tester.tap(_tab(t.user.tabs.profile));
+      await settlePilot(tester);
+    }
+
+    testWidgets('the end of Details lists six authors with follow buttons, and View all opens the full list', (tester) async {
+      await _mountRelated(tester, () async => UserPageResult(userPreviews: sampleUserPreviews(count: 8)));
+      await openDetails(tester);
+      expect(find.text(t.user.related.title), findsOneWidget);
+      expect(find.widgetWithText(FrostListRow, 'Sample creator 1'), findsOneWidget);
+      expect(find.widgetWithText(FrostListRow, 'サンプルの作者 6'), findsOneWidget);
+      expect(find.widgetWithText(FrostListRow, 'Sample creator 7'), findsNothing, reason: 'only six rows');
+      expect(find.descendant(of: find.byType(FrostListRow), matching: find.byType(AppFollowButton)), findsNWidgets(6));
+      await tester.tap(find.text(t.user.related.viewAll));
+      await settlePilot(tester);
+      expect(openedLocations.last, AppLocations.userRelated(sampleUserDetail.user.id));
+    });
+
+    testWidgets('a row opens its author', (tester) async {
+      await _mountRelated(tester, () async => UserPageResult(userPreviews: sampleUserPreviews(count: 2)));
+      await openDetails(tester);
+      await tester.tap(find.text('Sample creator 1'));
+      await settlePilot(tester);
+      expect(openedLocations.last, AppLocations.user(3000));
+    });
+
+    testWidgets('the section is hidden when there are none, when the request fails and on one\'s own page', (tester) async {
+      await _mountRelated(tester, () async => const UserPageResult(userPreviews: []));
+      await openDetails(tester);
+      expect(find.text(t.user.related.title), findsNothing);
+
+      await _mountRelated(tester, () async => throw StateError('offline'));
+      await openDetails(tester);
+      expect(find.text(t.user.related.title), findsNothing);
+
+      await _mountRelated(
+        tester,
+        () async => UserPageResult(userPreviews: sampleUserPreviews(count: 3)),
+        detail: _detailWith(id: int.parse(sampleAccount.user.id)),
+      );
+      await openDetails(tester);
+      expect(find.text(t.user.related.title), findsNothing);
+    });
+
+    testWidgets('the section shows when the profile has no details to list', (tester) async {
+      const bare = UserProfile(
+        gender: '',
+        birth: '',
+        birthDay: '',
+        birthYear: 0,
+        region: '',
+        addressId: 0,
+        countryCode: '',
+        job: '',
+        jobId: 0,
+        totalFollowUsers: 0,
+        totalMypixivUsers: 0,
+        totalIllusts: 0,
+        totalManga: 0,
+        totalNovels: 0,
+        totalIllustBookmarksPublic: 0,
+        totalIllustSeries: 0,
+        totalNovelSeries: 0,
+        isPremium: false,
+        isUsingCustomProfileImage: false,
+      );
+      await _mountRelated(
+        tester,
+        () async => UserPageResult(userPreviews: sampleUserPreviews(count: 2)),
+        detail: _detailWith(id: 2000, profile: bare),
+      );
+      await openDetails(tester);
+      expect(find.text(t.user.empty.profile), findsOneWidget);
+      expect(find.text(t.user.related.title), findsOneWidget);
+    });
+
+    test('the list pages by next URL, by offset without one, and stops on an empty page', () async {
+      final byUrl = _Related([(count: 3, next: 'https://next/1'), (count: 2, next: null)], userId: 1);
+      await byUrl.refresh(true);
+      expect(byUrl.items, hasLength(3));
+      await byUrl.loadMore();
+      expect(byUrl.items, hasLength(5));
+      expect(byUrl.asked, ['offset 0', 'url https://next/1']);
+
+      final byOffset = _Related([(count: 3, next: null), (count: 2, next: null), (count: 0, next: null)], userId: 1);
+      await byOffset.refresh(true);
+      await byOffset.loadMore();
+      expect(byOffset.items, hasLength(5));
+      expect(byOffset.hasMore, isTrue);
+      await byOffset.loadMore();
+      expect(byOffset.asked, ['offset 0', 'offset 3', 'offset 5'], reason: 'the offset follows what has been read');
+      expect(byOffset.hasMore, isFalse, reason: 'an empty page ends the list');
+    });
+
+    test('a page of authors already listed ends the list without repeating them', () async {
+      final related = _Related([(count: 3, next: null), (count: 3, next: null), (count: 3, next: null)], userId: 1, repeats: true);
+      await related.refresh(true);
+      await related.loadMore();
+      expect(related.items.map((preview) => preview.user.id), [3000, 3001, 3002], reason: 'Pixiv answers the second page with the first again');
+      expect(related.hasMore, isFalse);
+      await related.loadMore();
+      expect(related.asked, ['offset 0', 'offset 3'], reason: 'nothing more is asked for');
+    });
+
+    testWidgets('the full page lists user cards, and none says so', (tester) async {
+      await mountPilotPage(
+        tester,
+        const UserRelatedPage(userId: 2000),
+        overrides: _relatedOverride(() async => UserPageResult(userPreviews: sampleUserPreviews(count: 3))),
+      );
+      expect(find.text(t.user.related.title), findsOneWidget);
+      expect(find.byType(AppUserCard), findsNWidgets(3));
+      await mountPilotPage(tester, const UserRelatedPage(userId: 2000), overrides: _relatedOverride(() async => const UserPageResult(userPreviews: [])));
+      expect(find.text(t.user.related.empty), findsOneWidget);
+    });
+  });
 }

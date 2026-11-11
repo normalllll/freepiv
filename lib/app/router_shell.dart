@@ -191,6 +191,7 @@ String? fallbackPathFor(String path) {
   final id = route?.parameterIn(path, AppRouteParam.id);
   return switch (route) {
     AppRoute.illustRelated || AppRoute.illustComments when id != null => AppLocations.illust(id),
+    AppRoute.userRelated when id != null => AppLocations.user(id),
     AppRoute.novelReader || AppRoute.novelComments when id != null => AppLocations.novel(id),
     AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator || AppRoute.fanboxWebLogin => AppRoute.fanbox.path,
     AppRoute.pixivisionBrowse || AppRoute.pixivisionArticle => AppRoute.pixivision.path,

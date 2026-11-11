@@ -531,6 +531,7 @@ class Translations$user$zh_Hant_TW extends Translations$user$en_US {
 	// Translations
 	@override String get noPublicWorks => '尚無公開作品';
 	@override late final Translations$user$tabs$zh_Hant_TW tabs = Translations$user$tabs$zh_Hant_TW.internal(_root);
+	@override late final Translations$user$related$zh_Hant_TW related = Translations$user$related$zh_Hant_TW.internal(_root);
 	@override late final Translations$user$stats$zh_Hant_TW stats = Translations$user$stats$zh_Hant_TW.internal(_root);
 	@override late final Translations$user$bookmarks$zh_Hant_TW bookmarks = Translations$user$bookmarks$zh_Hant_TW.internal(_root);
 	@override late final Translations$user$empty$zh_Hant_TW empty = Translations$user$empty$zh_Hant_TW.internal(_root);
@@ -1417,6 +1418,18 @@ class Translations$user$tabs$zh_Hant_TW extends Translations$user$tabs$en_US {
 	@override String get profile => '詳細資訊';
 }
 
+// Path: user.related
+class Translations$user$related$zh_Hant_TW extends Translations$user$related$en_US {
+	Translations$user$related$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '相關使用者';
+	@override String get viewAll => '查看全部';
+	@override String get empty => '尚無相關使用者';
+}
+
 // Path: user.stats
 class Translations$user$stats$zh_Hant_TW extends Translations$user$stats$en_US {
 	Translations$user$stats$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
@@ -2286,6 +2299,9 @@ extension on TranslationsZhHantTw {
 			'user.tabs.bookmarks' => '收藏',
 			'user.tabs.following' => '關注',
 			'user.tabs.profile' => '詳細資訊',
+			'user.related.title' => '相關使用者',
+			'user.related.viewAll' => '查看全部',
+			'user.related.empty' => '尚無相關使用者',
 			'user.stats.illustrations' => '插畫',
 			'user.stats.manga' => '漫畫',
 			'user.stats.novels' => '小說',
@@ -2334,11 +2350,11 @@ extension on TranslationsZhHantTw {
 			'newest.novelChars' => ({required Object count}) => '${count} 字',
 			'newest.novelPages' => ({required Object count}) => '${count} 頁',
 			'newest.empty.following' => '追蹤的人還沒有新作品',
+			_ => null,
+		} ?? switch (path) {
 			'newest.empty.privateFollows' => '非公開追蹤的人還沒有新作品',
 			'newest.empty.mypixiv' => '好P友還沒有新作品',
 			'newest.empty.everyone' => '還沒有新作品',
-			_ => null,
-		} ?? switch (path) {
 			'illust.pageJump' => '跳轉頁碼',
 			'illust.contextMenu.download' => '下載',
 			'illust.contextMenu.downloadAll' => '下載全部',

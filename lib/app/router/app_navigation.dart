@@ -96,6 +96,7 @@ String appRouteLabel(Translations translations, AppRoute route) {
     AppRoute.meWatchlist => translations.me.watchlist,
     AppRoute.meProfileEdit => translations.me.editProfile,
     AppRoute.meWorkspaceEdit => translations.me.workspace,
+    AppRoute.userRelated => translations.user.related.title,
     AppRoute.mangaSeries || AppRoute.novelSeries => translations.series.title,
     AppRoute.originalImageViewer ||
     AppRoute.illustDetail ||

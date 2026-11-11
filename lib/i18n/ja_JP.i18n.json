@@ -541,6 +541,11 @@
       "following": "フォロー",
       "profile": "詳細"
     },
+    "related": {
+      "title": "関連ユーザー",
+      "viewAll": "すべて見る",
+      "empty": "関連ユーザーはいません"
+    },
     "stats": {
       "illustrations": "イラスト",
       "manga": "マンガ",

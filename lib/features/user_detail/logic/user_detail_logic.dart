@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider;
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -249,3 +250,66 @@ class UserFollowingListSource extends FrostCursorListSource<UserPreview, UserPag
     return page.userPreviews;
   }
 }
+
+/// The authors Pixiv relates to [userId], a page at a time.
+///
+/// A page that names a next URL is followed by it; one that does not is
+/// followed by the offset of what has been read so far. Pixiv relates a fixed
+/// set of authors and answers a later page with the same ones again, so a
+/// page that brings no author not yet listed ends the list.
+class UserRelatedListSource extends FrostListSource<UserPreview> {
+  UserRelatedListSource({required this.userId});
+
+  final int userId;
+  String? _nextUrl;
+  var _read = 0;
+
+  /// The authors listed so far, by ID.
+  final _listed = <int>{};
+
+  @override
+  Future<List<UserPreview>> initList() async {
+    _nextUrl = null;
+    _read = 0;
+    _listed.clear();
+    return _apply(await loadFirstPage());
+  }
+
+  @override
+  Future<List<UserPreview>> nextList() async {
+    final nextUrl = _nextUrl;
+    return _apply(nextUrl == null || nextUrl.isEmpty ? await loadOffsetPage(_read) : await loadNextPage(nextUrl));
+  }
+
+  Future<UserPageResult> loadFirstPage() => loadOffsetPage(0);
+
+  Future<UserPageResult> loadOffsetPage(int offset) => pixivApi.getUserRelatedPage(offset: offset, seedUserId: userId);
+
+  Future<UserPageResult> loadNextPage(String nextUrl) => pixivApi.getNextUserPage(url: nextUrl);
+
+  @override
+  void clearData() {
+    _nextUrl = null;
+    _read = 0;
+    _listed.clear();
+    super.clearData();
+  }
+
+  List<UserPreview> _apply(UserPageResult page) {
+    _nextUrl = page.nextUrl;
+    _read += page.userPreviews.length;
+    final fresh = [
+      for (final preview in page.userPreviews)
+        if (_listed.add(preview.user.id)) preview,
+    ];
+    return fresh;
+  }
+}
+
+/// The related authors of [userId], shared by the author page's section and
+/// its full list; loaded on first watch.
+final userRelatedSourceProvider = Provider.autoDispose.family<UserRelatedListSource, int>((ref, userId) {
+  final source = UserRelatedListSource(userId: userId);
+  ref.onDispose(source.dispose);
+  return source;
+});

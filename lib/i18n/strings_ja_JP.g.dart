@@ -531,6 +531,7 @@ class _Translations$user$ja_JP extends Translations$user$en_US {
 	// Translations
 	@override String get noPublicWorks => '公開作品はありません';
 	@override late final _Translations$user$tabs$ja_JP tabs = _Translations$user$tabs$ja_JP._(_root);
+	@override late final _Translations$user$related$ja_JP related = _Translations$user$related$ja_JP._(_root);
 	@override late final _Translations$user$stats$ja_JP stats = _Translations$user$stats$ja_JP._(_root);
 	@override late final _Translations$user$bookmarks$ja_JP bookmarks = _Translations$user$bookmarks$ja_JP._(_root);
 	@override late final _Translations$user$empty$ja_JP empty = _Translations$user$empty$ja_JP._(_root);
@@ -1417,6 +1418,18 @@ class _Translations$user$tabs$ja_JP extends Translations$user$tabs$en_US {
 	@override String get profile => '詳細';
 }
 
+// Path: user.related
+class _Translations$user$related$ja_JP extends Translations$user$related$en_US {
+	_Translations$user$related$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '関連ユーザー';
+	@override String get viewAll => 'すべて見る';
+	@override String get empty => '関連ユーザーはいません';
+}
+
 // Path: user.stats
 class _Translations$user$stats$ja_JP extends Translations$user$stats$en_US {
 	_Translations$user$stats$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
@@ -2286,6 +2299,9 @@ extension on TranslationsJaJp {
 			'user.tabs.bookmarks' => 'ブックマーク',
 			'user.tabs.following' => 'フォロー',
 			'user.tabs.profile' => '詳細',
+			'user.related.title' => '関連ユーザー',
+			'user.related.viewAll' => 'すべて見る',
+			'user.related.empty' => '関連ユーザーはいません',
 			'user.stats.illustrations' => 'イラスト',
 			'user.stats.manga' => 'マンガ',
 			'user.stats.novels' => '小説',
@@ -2334,11 +2350,11 @@ extension on TranslationsJaJp {
 			'newest.novelChars' => ({required Object count}) => '${count} 文字',
 			'newest.novelPages' => ({required Object count}) => '${count} ページ',
 			'newest.empty.following' => 'フォロー中のユーザーの新着はありません',
+			_ => null,
+		} ?? switch (path) {
 			'newest.empty.privateFollows' => '非公開フォローの新着はありません',
 			'newest.empty.mypixiv' => 'マイピクの新着はありません',
 			'newest.empty.everyone' => '新着作品はまだありません',
-			_ => null,
-		} ?? switch (path) {
 			'illust.pageJump' => 'ページへ移動',
 			'illust.contextMenu.download' => 'ダウンロード',
 			'illust.contextMenu.downloadAll' => 'すべてダウンロード',

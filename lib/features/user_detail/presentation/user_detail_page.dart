@@ -8,6 +8,7 @@ import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/user_identity_header.dart';
+import 'package:freepiv/features/user_detail/presentation/user_related_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -254,7 +255,26 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
           empty: empty(t.user.empty.following),
         ),
       ],
-      UserContentTabKind.profile => [column(SliverToBoxAdapter(child: UserProfileDetails(detail: widget.detail)))],
+      UserContentTabKind.profile => [
+        column(
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                UserProfileDetails(detail: widget.detail),
+                if (!_ownPage)
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: FrostMetrics.readingMaxWidth),
+                      child: UserRelatedSection(userId: _userId),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
     };
   }
 }

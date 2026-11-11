@@ -124,6 +124,7 @@ class AppRouter {
             GoRoute(path: AppRoute.novelReader.path, name: AppRoute.novelReader.name, pageBuilder: route_pages.novelReaderPage),
             GoRoute(path: AppRoute.novelComments.path, name: AppRoute.novelComments.name, pageBuilder: route_pages.novelCommentsPage),
             GoRoute(path: AppRoute.userDetail.path, name: AppRoute.userDetail.name, pageBuilder: route_pages.userDetailPage),
+            GoRoute(path: AppRoute.userRelated.path, name: AppRoute.userRelated.name, pageBuilder: route_pages.userRelatedPage),
             GoRoute(
               path: AppRoute.pixivisionBrowse.path,
               name: AppRoute.pixivisionBrowse.name,

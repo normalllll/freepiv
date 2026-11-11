@@ -29,6 +29,7 @@ import 'package:freepiv/features/discover/discover_sections.dart';
 import 'package:freepiv/features/search/presentation/search_user_result_page.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/features/user_detail/presentation/user_detail_page.dart';
+import 'package:freepiv/features/user_detail/presentation/user_related_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -329,5 +330,14 @@ Page<void> _missingRoutePage({required LocalKey key, required String message}) {
   return FrostDetailPage(
     key: key,
     child: AppPageError.notFound(message: message),
+  );
+}
+
+Page<void> userRelatedPage(BuildContext context, GoRouterState state) {
+  final userId = int.tryParse(state.pathParameters[AppRouteParam.id] ?? '');
+  if (userId == null) return _missingRoutePage(key: state.pageKey, message: t.user.error.missingUser);
+  return FrostDetailPage(
+    key: state.pageKey,
+    child: UserRelatedPage(userId: userId),
   );
 }

@@ -541,6 +541,11 @@
       "following": "關注",
       "profile": "詳細資訊"
     },
+    "related": {
+      "title": "相關使用者",
+      "viewAll": "查看全部",
+      "empty": "尚無相關使用者"
+    },
     "stats": {
       "illustrations": "插畫",
       "manga": "漫畫",

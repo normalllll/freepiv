@@ -43,7 +43,8 @@ enum AppRoute {
   novelComments('/novel/:${AppRouteParam.id}/comments'),
   mangaSeries('/series/manga/:${AppRouteParam.id}'),
   novelSeries('/series/novel/:${AppRouteParam.id}'),
-  userDetail('/user/:${AppRouteParam.id}');
+  userDetail('/user/:${AppRouteParam.id}'),
+  userRelated('/user/:${AppRouteParam.id}/related');
 
   const AppRoute(this.path);
 
@@ -149,6 +150,9 @@ abstract final class AppLocations {
   /// An author's page, on their public bookmarks when [bookmarks] is set.
   static String user(Object id, {bool bookmarks = false}) =>
       AppRoute.userDetail._location(parameters: {AppRouteParam.id: id}, query: {AppRouteQuery.tab: bookmarks ? AppRouteQuery.bookmarksTab : null});
+
+  /// The authors related to the author [id].
+  static String userRelated(Object id) => AppRoute.userRelated._location(parameters: {AppRouteParam.id: id});
 
   /// The result page of [kind] for [query].
   static String search(AppSearchKind kind, String query) => searchRoute(kind)._location(query: {AppRouteQuery.query: query});
