@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
+import 'package:freepiv/core/services/app_storage.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:flutter/widgets.dart';
@@ -64,7 +65,7 @@ final class HiveAppSettingsStore implements AppSettingsStore {
   HiveAppSettingsStore(this._box);
 
   static Future<HiveAppSettingsStore> open() async {
-    await Hive.initFlutter();
+    await initializeHiveStorage();
     return HiveAppSettingsStore(await Hive.openBox<dynamic>(AppSettings.boxName));
   }
 
