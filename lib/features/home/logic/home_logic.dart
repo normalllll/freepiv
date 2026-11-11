@@ -1,3 +1,6 @@
+import 'package:freepiv/core/block/block_filter.dart';
+import 'package:freepiv/core/block/block_list.dart';
+import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -9,14 +12,24 @@ part 'home_logic.g.dart';
 
 enum HomeType { illustrations, manga, novels, users }
 
-class HomeIllustListSource extends FrostCursorListSource<Illust, IllustPageResult> {
+class HomeIllustListSource extends FrostCursorListSource<Illust, IllustPageResult> with BlockFilteredCursorList<Illust, IllustPageResult> {
   HomeIllustListSource({required this.illustType});
 
   final IllustType illustType;
 
   List<Illust> _rankingIllusts = const [];
 
-  List<Illust> get rankingIllusts => _rankingIllusts;
+  /// The ranking shelf, without what the block list hides.
+  List<Illust> get rankingIllusts => [
+    for (final illust in _rankingIllusts)
+      if (!AppSettings.blockList.hidesIllust(illust)) illust,
+  ];
+
+  @override
+  bool isBlocked(BlockList blocks, Illust item) => blocks.hidesIllust(item);
+
+  @override
+  void didChangeBlockList(BlockList blocks) => notifyDataChanged();
 
   @override
   Future<IllustPageResult> loadFirstPage() {
@@ -50,10 +63,20 @@ class HomeIllustListSource extends FrostCursorListSource<Illust, IllustPageResul
   }
 }
 
-class HomeNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> {
+class HomeNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> with BlockFilteredCursorList<Novel, NovelPageResult> {
   List<Novel> _rankingNovels = const [];
 
-  List<Novel> get rankingNovels => _rankingNovels;
+  /// The ranking shelf, without what the block list hides.
+  List<Novel> get rankingNovels => [
+    for (final novel in _rankingNovels)
+      if (!AppSettings.blockList.hidesNovel(novel)) novel,
+  ];
+
+  @override
+  bool isBlocked(BlockList blocks, Novel item) => blocks.hidesNovel(item);
+
+  @override
+  void didChangeBlockList(BlockList blocks) => notifyDataChanged();
 
   @override
   Future<NovelPageResult> loadFirstPage() {
@@ -87,7 +110,10 @@ class HomeNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> 
   }
 }
 
-class HomeUserListSource extends FrostCursorListSource<UserPreview, UserPageResult> {
+class HomeUserListSource extends FrostCursorListSource<UserPreview, UserPageResult> with BlockFilteredCursorList<UserPreview, UserPageResult> {
+  @override
+  bool isBlocked(BlockList blocks, UserPreview item) => blocks.hidesPreview(item);
+
   @override
   Future<UserPageResult> loadFirstPage() {
     return pixivApi.getRecommendedUserPage();

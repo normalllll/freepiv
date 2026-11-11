@@ -1,3 +1,5 @@
+import 'package:freepiv/core/block/block_filter.dart';
+import 'package:freepiv/core/block/block_list.dart';
 import 'dart:async';
 
 import 'package:freepiv/core/history/history_service.dart';
@@ -102,10 +104,13 @@ class IllustRelatedWorks extends _$IllustRelatedWorks {
   }
 }
 
-class IllustRelatedListSource extends FrostCursorListSource<Illust, IllustPageResult> {
+class IllustRelatedListSource extends FrostCursorListSource<Illust, IllustPageResult> with BlockFilteredCursorList<Illust, IllustPageResult> {
   IllustRelatedListSource({required this.illustId});
 
   final int illustId;
+
+  @override
+  bool isBlocked(BlockList blocks, Illust item) => blocks.hidesIllust(item);
 
   @override
   Future<IllustPageResult> loadFirstPage() {
@@ -125,6 +130,9 @@ class IllustRelatedListSource extends FrostCursorListSource<Illust, IllustPageRe
   /// Pixiv can list the work itself among those like it; it is left out.
   @override
   List<Illust> itemsFromPage(IllustPageResult page) {
-    return [for (final illust in page.illusts) if (illust.id != illustId) illust];
+    return [
+      for (final illust in page.illusts)
+        if (illust.id != illustId) illust,
+    ];
   }
 }

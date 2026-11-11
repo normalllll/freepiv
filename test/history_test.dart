@@ -237,6 +237,7 @@ void main() {
         t.settings.proxy.title,
         t.settings.downloads.title,
         t.history.title,
+        t.block.title,
         t.settings.account.title,
       ]);
 

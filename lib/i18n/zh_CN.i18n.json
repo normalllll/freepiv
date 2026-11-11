@@ -1054,6 +1054,21 @@
     "lowerLimitMessage": "将删除最旧的 $count 条浏览记录，无法撤销。",
     "lowerLimitConfirm": "删除"
   },
+  "block": {
+    "title": "屏蔽",
+    "localOnly": "只在这台设备上生效，不影响 pixiv 账号",
+    "tags": "标签",
+    "users": "用户",
+    "addTag": "添加标签",
+    "tagName": "标签名",
+    "tagPlaceholder": "输入标签原文",
+    "emptyTags": "还没有屏蔽的标签",
+    "emptyUsers": "还没有屏蔽的用户，可在作者页或作品菜单里添加",
+    "remove": "取消屏蔽 $name",
+    "tagExists": "这个标签已经在屏蔽列表里",
+    "add": "添加",
+    "tagRequired": "请输入标签"
+  },
   "watchlist": {
     "title": "我的追更",
     "manga": "漫画",

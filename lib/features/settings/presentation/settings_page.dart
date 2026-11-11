@@ -18,13 +18,14 @@ import 'package:freepiv/features/fanbox/login_panel.dart';
 import 'package:freepiv/features/me/logic/account_edit_logic.dart';
 import 'package:freepiv/features/settings/presentation/appearance_settings_section.dart';
 import 'package:freepiv/features/settings/presentation/background_settings_section.dart';
+import 'package:freepiv/features/settings/presentation/block_settings_section.dart';
 import 'package:freepiv/features/settings/presentation/proxy_settings_dialog.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
 /// Settings: Appearance, Language, Images, Network,
-/// Downloads, Browsing history and Accounts as Frost settings sections, the categories beside
+/// Downloads, Browsing history, Block list and Accounts as Frost settings sections, the categories beside
 /// the settings on wide windows and a list leading to each on narrow ones.
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({this.openAccount = false, super.key});
@@ -105,6 +106,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       },
       _SettingsSection.downloads: () => _DownloadSettings(onChoose: _chooseDirectory),
       _SettingsSection.history: () => const _HistorySettings(),
+      _SettingsSection.block: () => const BlockSettingsSection(),
       _SettingsSection.account: () => const _AccountSettings(),
     };
     final labels = [
@@ -116,6 +118,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           _SettingsSection.proxy => t.settings.proxy.title,
           _SettingsSection.downloads => t.settings.downloads.title,
           _SettingsSection.history => t.history.title,
+          _SettingsSection.block => t.block.title,
           _SettingsSection.account => t.settings.account.title,
         },
     ];
@@ -182,7 +185,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 }
 
 /// The sections of Settings, in the order they are listed.
-enum _SettingsSection { theme, language, images, proxy, downloads, history, account }
+enum _SettingsSection { theme, language, images, proxy, downloads, history, block, account }
 
 /// Whether and how much of the browsing history is kept on this device.
 class _HistorySettings extends ConsumerWidget {

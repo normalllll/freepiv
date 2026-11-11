@@ -32,6 +32,7 @@ void main() {
           t.settings.proxy.title,
           t.settings.downloads.title,
           t.history.title,
+          t.block.title,
           t.settings.account.title,
         ];
         for (final label in labels) {
@@ -50,7 +51,7 @@ void main() {
   testWidgets('the sections of a narrow window sit together on a card and open with a tap', (tester) async {
     await mountPilotPage(tester, const SettingsPage(), size: phoneSize);
     expect(find.byType(FrostGroupedSection), findsOneWidget);
-    expect(find.descendant(of: find.byType(FrostGroupedSection), matching: find.byType(FrostListRow)), findsNWidgets(7));
+    expect(find.descendant(of: find.byType(FrostGroupedSection), matching: find.byType(FrostListRow)), findsNWidgets(8));
     await tester.tap(find.text(t.settings.account.title).first);
     await settlePilot(tester, frames: 4);
     expect(find.text(t.settings.images.title), findsNothing, reason: 'the section replaced the list');

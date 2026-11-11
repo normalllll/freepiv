@@ -1054,6 +1054,21 @@
     "lowerLimitMessage": "將刪除最舊的 $count 筆瀏覽記錄，無法復原。",
     "lowerLimitConfirm": "刪除"
   },
+  "block": {
+    "title": "封鎖",
+    "localOnly": "只在這台裝置上生效，不影響 pixiv 帳號",
+    "tags": "標籤",
+    "users": "使用者",
+    "addTag": "新增標籤",
+    "tagName": "標籤名稱",
+    "tagPlaceholder": "輸入標籤原文",
+    "emptyTags": "還沒有封鎖的標籤",
+    "emptyUsers": "還沒有封鎖的使用者，可在作者頁或作品選單中新增",
+    "remove": "取消封鎖 $name",
+    "tagExists": "這個標籤已經在封鎖清單中",
+    "add": "新增",
+    "tagRequired": "請輸入標籤"
+  },
   "watchlist": {
     "title": "我的追更",
     "manga": "漫畫",

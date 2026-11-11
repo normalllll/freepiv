@@ -85,6 +85,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$bookmarkOptions$en_US bookmarkOptions = Translations$bookmarkOptions$en_US.internal(_root);
 	late final Translations$series$en_US series = Translations$series$en_US.internal(_root);
 	late final Translations$history$en_US history = Translations$history$en_US.internal(_root);
+	late final Translations$block$en_US block = Translations$block$en_US.internal(_root);
 	late final Translations$watchlist$en_US watchlist = Translations$watchlist$en_US.internal(_root);
 	late final Translations$profileEdit$en_US profileEdit = Translations$profileEdit$en_US.internal(_root);
 	late final Translations$workspaceEdit$en_US workspaceEdit = Translations$workspaceEdit$en_US.internal(_root);
@@ -996,6 +997,28 @@ class Translations$history$en_US {
 	String get lowerLimitTitle => 'Lower the limit?';
 	String lowerLimitMessage({required Object count}) => '${count} of the oldest entries in the browsing history will be deleted. This cannot be undone.';
 	String get lowerLimitConfirm => 'Delete';
+}
+
+// Path: block
+class Translations$block$en_US {
+	Translations$block$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Block list';
+	String get localOnly => 'Applies only on this device and does not change your pixiv account';
+	String get tags => 'Tags';
+	String get users => 'Users';
+	String get addTag => 'Add a tag';
+	String get tagName => 'Tag';
+	String get tagPlaceholder => 'Type the tag exactly';
+	String get emptyTags => 'No blocked tags';
+	String get emptyUsers => 'No blocked users. Add them from an author page or a work’s menu.';
+	String remove({required Object name}) => 'Unblock ${name}';
+	String get tagExists => 'This tag is already blocked';
+	String get add => 'Add';
+	String get tagRequired => 'Enter a tag';
 }
 
 // Path: watchlist
@@ -2794,6 +2817,19 @@ extension on Translations {
 			'history.lowerLimitTitle' => 'Lower the limit?',
 			'history.lowerLimitMessage' => ({required Object count}) => '${count} of the oldest entries in the browsing history will be deleted. This cannot be undone.',
 			'history.lowerLimitConfirm' => 'Delete',
+			'block.title' => 'Block list',
+			'block.localOnly' => 'Applies only on this device and does not change your pixiv account',
+			'block.tags' => 'Tags',
+			'block.users' => 'Users',
+			'block.addTag' => 'Add a tag',
+			'block.tagName' => 'Tag',
+			'block.tagPlaceholder' => 'Type the tag exactly',
+			'block.emptyTags' => 'No blocked tags',
+			'block.emptyUsers' => 'No blocked users. Add them from an author page or a work’s menu.',
+			'block.remove' => ({required Object name}) => 'Unblock ${name}',
+			'block.tagExists' => 'This tag is already blocked',
+			'block.add' => 'Add',
+			'block.tagRequired' => 'Enter a tag',
 			'watchlist.title' => 'Follow-ups',
 			'watchlist.manga' => 'Manga',
 			'watchlist.novels' => 'Novels',

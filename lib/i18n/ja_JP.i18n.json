@@ -1054,6 +1054,21 @@
     "lowerLimitMessage": "閲覧履歴の古い順に $count 件を削除します。元に戻せません。",
     "lowerLimitConfirm": "削除"
   },
+  "block": {
+    "title": "ブロック",
+    "localOnly": "この端末だけに適用され、pixiv アカウントには影響しません",
+    "tags": "タグ",
+    "users": "ユーザー",
+    "addTag": "タグを追加",
+    "tagName": "タグ名",
+    "tagPlaceholder": "タグ名をそのまま入力",
+    "emptyTags": "ブロックしているタグはありません",
+    "emptyUsers": "ブロックしているユーザーはいません。作者ページや作品のメニューから追加できます",
+    "remove": "$name のブロックを解除",
+    "tagExists": "このタグはすでにブロックしています",
+    "add": "追加",
+    "tagRequired": "タグを入力してください"
+  },
   "watchlist": {
     "title": "追いかけ中のシリーズ",
     "manga": "マンガ",

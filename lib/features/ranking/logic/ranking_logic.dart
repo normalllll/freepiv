@@ -1,3 +1,5 @@
+import 'package:freepiv/core/block/block_filter.dart';
+import 'package:freepiv/core/block/block_list.dart';
 import 'package:flutter/foundation.dart' show protected;
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
@@ -79,13 +81,16 @@ Future<T> _pastRanking<T>(Future<T> Function() load, T empty) async {
   }
 }
 
-class RankingIllustListSource extends FrostCursorListSource<Illust, IllustPageResult> {
+class RankingIllustListSource extends FrostCursorListSource<Illust, IllustPageResult> with BlockFilteredCursorList<Illust, IllustPageResult> {
   RankingIllustListSource({required this.mode, this.date});
 
   final IllustRankingMode mode;
 
   /// The day of the ranking; null for the latest.
   final DateTime? date;
+
+  @override
+  bool isBlocked(BlockList blocks, Illust item) => blocks.hidesIllust(item);
 
   @override
   Future<IllustPageResult> loadFirstPage() {
@@ -113,13 +118,16 @@ class RankingIllustListSource extends FrostCursorListSource<Illust, IllustPageRe
   }
 }
 
-class RankingMangaListSource extends FrostCursorListSource<Illust, IllustPageResult> {
+class RankingMangaListSource extends FrostCursorListSource<Illust, IllustPageResult> with BlockFilteredCursorList<Illust, IllustPageResult> {
   RankingMangaListSource({required this.mode, this.date});
 
   final MangaRankingMode mode;
 
   /// The day of the ranking; null for the latest.
   final DateTime? date;
+
+  @override
+  bool isBlocked(BlockList blocks, Illust item) => blocks.hidesIllust(item);
 
   @override
   Future<IllustPageResult> loadFirstPage() {
@@ -147,13 +155,16 @@ class RankingMangaListSource extends FrostCursorListSource<Illust, IllustPageRes
   }
 }
 
-class RankingNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> {
+class RankingNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> with BlockFilteredCursorList<Novel, NovelPageResult> {
   RankingNovelListSource({required this.mode, this.date});
 
   final NovelRankingMode mode;
 
   /// The day of the ranking; null for the latest.
   final DateTime? date;
+
+  @override
+  bool isBlocked(BlockList blocks, Novel item) => blocks.hidesNovel(item);
 
   @override
   Future<NovelPageResult> loadFirstPage() {

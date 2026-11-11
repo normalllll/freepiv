@@ -83,6 +83,7 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$bookmarkOptions$zh_CN bookmarkOptions = Translations$bookmarkOptions$zh_CN.internal(_root);
 	@override late final Translations$series$zh_CN series = Translations$series$zh_CN.internal(_root);
 	@override late final Translations$history$zh_CN history = Translations$history$zh_CN.internal(_root);
+	@override late final Translations$block$zh_CN block = Translations$block$zh_CN.internal(_root);
 	@override late final Translations$watchlist$zh_CN watchlist = Translations$watchlist$zh_CN.internal(_root);
 	@override late final Translations$profileEdit$zh_CN profileEdit = Translations$profileEdit$zh_CN.internal(_root);
 	@override late final Translations$workspaceEdit$zh_CN workspaceEdit = Translations$workspaceEdit$zh_CN.internal(_root);
@@ -994,6 +995,28 @@ class Translations$history$zh_CN extends Translations$history$en_US {
 	@override String get lowerLimitTitle => '调低保存上限？';
 	@override String lowerLimitMessage({required Object count}) => '将删除最旧的 ${count} 条浏览记录，无法撤销。';
 	@override String get lowerLimitConfirm => '删除';
+}
+
+// Path: block
+class Translations$block$zh_CN extends Translations$block$en_US {
+	Translations$block$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+	final TranslationsZhCn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '屏蔽';
+	@override String get localOnly => '只在这台设备上生效，不影响 pixiv 账号';
+	@override String get tags => '标签';
+	@override String get users => '用户';
+	@override String get addTag => '添加标签';
+	@override String get tagName => '标签名';
+	@override String get tagPlaceholder => '输入标签原文';
+	@override String get emptyTags => '还没有屏蔽的标签';
+	@override String get emptyUsers => '还没有屏蔽的用户，可在作者页或作品菜单里添加';
+	@override String remove({required Object name}) => '取消屏蔽 ${name}';
+	@override String get tagExists => '这个标签已经在屏蔽列表里';
+	@override String get add => '添加';
+	@override String get tagRequired => '请输入标签';
 }
 
 // Path: watchlist
@@ -2792,6 +2815,19 @@ extension on TranslationsZhCn {
 			'history.lowerLimitTitle' => '调低保存上限？',
 			'history.lowerLimitMessage' => ({required Object count}) => '将删除最旧的 ${count} 条浏览记录，无法撤销。',
 			'history.lowerLimitConfirm' => '删除',
+			'block.title' => '屏蔽',
+			'block.localOnly' => '只在这台设备上生效，不影响 pixiv 账号',
+			'block.tags' => '标签',
+			'block.users' => '用户',
+			'block.addTag' => '添加标签',
+			'block.tagName' => '标签名',
+			'block.tagPlaceholder' => '输入标签原文',
+			'block.emptyTags' => '还没有屏蔽的标签',
+			'block.emptyUsers' => '还没有屏蔽的用户，可在作者页或作品菜单里添加',
+			'block.remove' => ({required Object name}) => '取消屏蔽 ${name}',
+			'block.tagExists' => '这个标签已经在屏蔽列表里',
+			'block.add' => '添加',
+			'block.tagRequired' => '请输入标签',
 			'watchlist.title' => '我的追更',
 			'watchlist.manga' => '漫画',
 			'watchlist.novels' => '小说',

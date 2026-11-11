@@ -1,3 +1,5 @@
+import 'package:freepiv/core/block/block_filter.dart';
+import 'package:freepiv/core/block/block_list.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
@@ -172,13 +174,16 @@ SearchUserListSource searchUserResultSource(Ref ref, String keyword) {
   return source;
 }
 
-class SearchIllustListSource extends FrostCursorListSource<Illust, SearchIllustPageResult> {
+class SearchIllustListSource extends FrostCursorListSource<Illust, SearchIllustPageResult> with BlockFilteredCursorList<Illust, SearchIllustPageResult> {
   SearchIllustListSource({required this.request});
 
   final SearchResultRequest request;
   int? _searchSpanLimit;
 
   int? get searchSpanLimit => _searchSpanLimit;
+
+  @override
+  bool isBlocked(BlockList blocks, Illust item) => blocks.hidesIllust(item);
 
   @override
   Future<SearchIllustPageResult> loadFirstPage() async {
@@ -223,13 +228,16 @@ class SearchIllustListSource extends FrostCursorListSource<Illust, SearchIllustP
   }
 }
 
-class SearchNovelListSource extends FrostCursorListSource<Novel, SearchNovelPageResult> {
+class SearchNovelListSource extends FrostCursorListSource<Novel, SearchNovelPageResult> with BlockFilteredCursorList<Novel, SearchNovelPageResult> {
   SearchNovelListSource({required this.request});
 
   final SearchResultRequest request;
   int? _searchSpanLimit;
 
   int? get searchSpanLimit => _searchSpanLimit;
+
+  @override
+  bool isBlocked(BlockList blocks, Novel item) => blocks.hidesNovel(item);
 
   @override
   Future<SearchNovelPageResult> loadFirstPage() async {
@@ -272,10 +280,13 @@ class SearchNovelListSource extends FrostCursorListSource<Novel, SearchNovelPage
   }
 }
 
-class SearchUserListSource extends FrostCursorListSource<UserPreview, UserPageResult> {
+class SearchUserListSource extends FrostCursorListSource<UserPreview, UserPageResult> with BlockFilteredCursorList<UserPreview, UserPageResult> {
   SearchUserListSource({required this.keyword});
 
   final String keyword;
+
+  @override
+  bool isBlocked(BlockList blocks, UserPreview item) => blocks.hidesPreview(item);
 
   @override
   Future<UserPageResult> loadFirstPage() async {

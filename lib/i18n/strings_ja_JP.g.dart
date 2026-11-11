@@ -83,6 +83,7 @@ class TranslationsJaJp extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final _Translations$bookmarkOptions$ja_JP bookmarkOptions = _Translations$bookmarkOptions$ja_JP._(_root);
 	@override late final _Translations$series$ja_JP series = _Translations$series$ja_JP._(_root);
 	@override late final _Translations$history$ja_JP history = _Translations$history$ja_JP._(_root);
+	@override late final _Translations$block$ja_JP block = _Translations$block$ja_JP._(_root);
 	@override late final _Translations$watchlist$ja_JP watchlist = _Translations$watchlist$ja_JP._(_root);
 	@override late final _Translations$profileEdit$ja_JP profileEdit = _Translations$profileEdit$ja_JP._(_root);
 	@override late final _Translations$workspaceEdit$ja_JP workspaceEdit = _Translations$workspaceEdit$ja_JP._(_root);
@@ -994,6 +995,28 @@ class _Translations$history$ja_JP extends Translations$history$en_US {
 	@override String get lowerLimitTitle => '上限を下げますか？';
 	@override String lowerLimitMessage({required Object count}) => '閲覧履歴の古い順に ${count} 件を削除します。元に戻せません。';
 	@override String get lowerLimitConfirm => '削除';
+}
+
+// Path: block
+class _Translations$block$ja_JP extends Translations$block$en_US {
+	_Translations$block$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'ブロック';
+	@override String get localOnly => 'この端末だけに適用され、pixiv アカウントには影響しません';
+	@override String get tags => 'タグ';
+	@override String get users => 'ユーザー';
+	@override String get addTag => 'タグを追加';
+	@override String get tagName => 'タグ名';
+	@override String get tagPlaceholder => 'タグ名をそのまま入力';
+	@override String get emptyTags => 'ブロックしているタグはありません';
+	@override String get emptyUsers => 'ブロックしているユーザーはいません。作者ページや作品のメニューから追加できます';
+	@override String remove({required Object name}) => '${name} のブロックを解除';
+	@override String get tagExists => 'このタグはすでにブロックしています';
+	@override String get add => '追加';
+	@override String get tagRequired => 'タグを入力してください';
 }
 
 // Path: watchlist
@@ -2792,6 +2815,19 @@ extension on TranslationsJaJp {
 			'history.lowerLimitTitle' => '上限を下げますか？',
 			'history.lowerLimitMessage' => ({required Object count}) => '閲覧履歴の古い順に ${count} 件を削除します。元に戻せません。',
 			'history.lowerLimitConfirm' => '削除',
+			'block.title' => 'ブロック',
+			'block.localOnly' => 'この端末だけに適用され、pixiv アカウントには影響しません',
+			'block.tags' => 'タグ',
+			'block.users' => 'ユーザー',
+			'block.addTag' => 'タグを追加',
+			'block.tagName' => 'タグ名',
+			'block.tagPlaceholder' => 'タグ名をそのまま入力',
+			'block.emptyTags' => 'ブロックしているタグはありません',
+			'block.emptyUsers' => 'ブロックしているユーザーはいません。作者ページや作品のメニューから追加できます',
+			'block.remove' => ({required Object name}) => '${name} のブロックを解除',
+			'block.tagExists' => 'このタグはすでにブロックしています',
+			'block.add' => '追加',
+			'block.tagRequired' => 'タグを入力してください',
 			'watchlist.title' => '追いかけ中のシリーズ',
 			'watchlist.manga' => 'マンガ',
 			'watchlist.novels' => '小説',

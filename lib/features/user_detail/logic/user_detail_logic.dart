@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider, FutureProvider;
+import 'package:freepiv/core/block/block_filter.dart';
+import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/shared/logic/bookmark_tags.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart' show BookmarkPageOptions;
@@ -287,19 +289,43 @@ class UserRelatedListSource extends FrostListSource<UserPreview> {
   /// The authors listed so far, by ID.
   final _listed = <int>{};
 
+  /// Whether the last page read brought new authors, which is when there is
+  /// another to read.
+  var _more = true;
+  late final BlockFilterState _blocks = BlockFilterState((blocks) => removeWhere(blocks.hidesPreview));
+
   @override
-  Future<List<UserPreview>> initList() async {
+  Future<List<UserPreview>> initList() => _readUnblocked(() async {
     _nextUrl = null;
     _read = 0;
     _listed.clear();
     return _apply(await loadFirstPage());
-  }
+  });
 
   @override
-  Future<List<UserPreview>> nextList() async {
+  Future<List<UserPreview>> nextList() => _readUnblocked(_readNext);
+
+  Future<List<UserPreview>> _readNext() async {
     final nextUrl = _nextUrl;
     return _apply(nextUrl == null || nextUrl.isEmpty ? await loadOffsetPage(_read) : await loadNextPage(nextUrl));
   }
+
+  /// The users of a page the block list leaves, reading on where it hides
+  /// the whole of one.
+  Future<List<UserPreview>> _readUnblocked(Future<List<UserPreview>> Function() readFirst) {
+    _blocks.watch();
+    final load = _blocks.beginLoad();
+    return readUnblocked(
+      readFirst: readFirst,
+      readNext: _readNext,
+      isBlocked: (preview) => AppSettings.blockList.hidesPreview(preview),
+      hasNext: () => _more,
+      mayAsk: () => !isDisposed && _blocks.isCurrent(load),
+    );
+  }
+
+  @override
+  bool hasMoreByResult(List<UserPreview> list) => _more;
 
   Future<UserPageResult> loadFirstPage() => loadOffsetPage(0);
 
@@ -309,10 +335,18 @@ class UserRelatedListSource extends FrostListSource<UserPreview> {
 
   @override
   void clearData() {
+    _blocks.beginLoad();
     _nextUrl = null;
     _read = 0;
     _listed.clear();
+    _more = true;
     super.clearData();
+  }
+
+  @override
+  void dispose() {
+    _blocks.dispose();
+    super.dispose();
   }
 
   List<UserPreview> _apply(UserPageResult page) {
@@ -322,6 +356,7 @@ class UserRelatedListSource extends FrostListSource<UserPreview> {
       for (final preview in page.userPreviews)
         if (_listed.add(preview.user.id)) preview,
     ];
+    _more = fresh.isNotEmpty;
     return fresh;
   }
 }

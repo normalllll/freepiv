@@ -1,3 +1,5 @@
+import 'package:freepiv/core/block/block_filter.dart';
+import 'package:freepiv/core/block/block_list.dart';
 import 'dart:async';
 
 import 'package:freepiv/core/history/history_service.dart';
@@ -148,10 +150,13 @@ class NovelRelatedWorks extends _$NovelRelatedWorks {
   }
 }
 
-class NovelRelatedListSource extends FrostCursorListSource<Novel, NovelPageResult> {
+class NovelRelatedListSource extends FrostCursorListSource<Novel, NovelPageResult> with BlockFilteredCursorList<Novel, NovelPageResult> {
   NovelRelatedListSource({required this.novelId});
 
   final int novelId;
+
+  @override
+  bool isBlocked(BlockList blocks, Novel item) => blocks.hidesNovel(item);
 
   @override
   Future<NovelPageResult> loadFirstPage() {

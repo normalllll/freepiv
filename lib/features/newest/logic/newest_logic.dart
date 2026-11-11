@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart' show protected;
+import 'package:freepiv/core/block/block_filter.dart';
+import 'package:freepiv/core/block/block_list.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -150,10 +152,16 @@ class NewestState {
   }
 }
 
-class NewestListSource extends FrostCursorListSource<NewestItem, Object> {
+class NewestListSource extends FrostCursorListSource<NewestItem, Object> with BlockFilteredCursorList<NewestItem, Object> {
   NewestListSource({required this.key});
 
   final NewestFeedKey key;
+
+  @override
+  bool isBlocked(BlockList blocks, NewestItem item) => switch (item) {
+    NewestIllust(:final illust) => blocks.hidesIllust(illust),
+    NewestNovel(:final novel) => blocks.hidesNovel(novel),
+  };
 
   @override
   Future<Object> loadFirstPage() {

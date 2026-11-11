@@ -1054,6 +1054,21 @@
     "lowerLimitMessage": "$count of the oldest entries in the browsing history will be deleted. This cannot be undone.",
     "lowerLimitConfirm": "Delete"
   },
+  "block": {
+    "title": "Block list",
+    "localOnly": "Applies only on this device and does not change your pixiv account",
+    "tags": "Tags",
+    "users": "Users",
+    "addTag": "Add a tag",
+    "tagName": "Tag",
+    "tagPlaceholder": "Type the tag exactly",
+    "emptyTags": "No blocked tags",
+    "emptyUsers": "No blocked users. Add them from an author page or a work’s menu.",
+    "remove": "Unblock $name",
+    "tagExists": "This tag is already blocked",
+    "add": "Add",
+    "tagRequired": "Enter a tag"
+  },
   "watchlist": {
     "title": "Follow-ups",
     "manga": "Manga",

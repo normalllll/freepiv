@@ -83,6 +83,7 @@ class TranslationsZhHantTw extends Translations with BaseTranslations<AppLocale,
 	@override late final Translations$bookmarkOptions$zh_Hant_TW bookmarkOptions = Translations$bookmarkOptions$zh_Hant_TW.internal(_root);
 	@override late final Translations$series$zh_Hant_TW series = Translations$series$zh_Hant_TW.internal(_root);
 	@override late final Translations$history$zh_Hant_TW history = Translations$history$zh_Hant_TW.internal(_root);
+	@override late final Translations$block$zh_Hant_TW block = Translations$block$zh_Hant_TW.internal(_root);
 	@override late final Translations$watchlist$zh_Hant_TW watchlist = Translations$watchlist$zh_Hant_TW.internal(_root);
 	@override late final Translations$profileEdit$zh_Hant_TW profileEdit = Translations$profileEdit$zh_Hant_TW.internal(_root);
 	@override late final Translations$workspaceEdit$zh_Hant_TW workspaceEdit = Translations$workspaceEdit$zh_Hant_TW.internal(_root);
@@ -994,6 +995,28 @@ class Translations$history$zh_Hant_TW extends Translations$history$en_US {
 	@override String get lowerLimitTitle => '調低保存上限？';
 	@override String lowerLimitMessage({required Object count}) => '將刪除最舊的 ${count} 筆瀏覽記錄，無法復原。';
 	@override String get lowerLimitConfirm => '刪除';
+}
+
+// Path: block
+class Translations$block$zh_Hant_TW extends Translations$block$en_US {
+	Translations$block$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '封鎖';
+	@override String get localOnly => '只在這台裝置上生效，不影響 pixiv 帳號';
+	@override String get tags => '標籤';
+	@override String get users => '使用者';
+	@override String get addTag => '新增標籤';
+	@override String get tagName => '標籤名稱';
+	@override String get tagPlaceholder => '輸入標籤原文';
+	@override String get emptyTags => '還沒有封鎖的標籤';
+	@override String get emptyUsers => '還沒有封鎖的使用者，可在作者頁或作品選單中新增';
+	@override String remove({required Object name}) => '取消封鎖 ${name}';
+	@override String get tagExists => '這個標籤已經在封鎖清單中';
+	@override String get add => '新增';
+	@override String get tagRequired => '請輸入標籤';
 }
 
 // Path: watchlist
@@ -2792,6 +2815,19 @@ extension on TranslationsZhHantTw {
 			'history.lowerLimitTitle' => '調低保存上限？',
 			'history.lowerLimitMessage' => ({required Object count}) => '將刪除最舊的 ${count} 筆瀏覽記錄，無法復原。',
 			'history.lowerLimitConfirm' => '刪除',
+			'block.title' => '封鎖',
+			'block.localOnly' => '只在這台裝置上生效，不影響 pixiv 帳號',
+			'block.tags' => '標籤',
+			'block.users' => '使用者',
+			'block.addTag' => '新增標籤',
+			'block.tagName' => '標籤名稱',
+			'block.tagPlaceholder' => '輸入標籤原文',
+			'block.emptyTags' => '還沒有封鎖的標籤',
+			'block.emptyUsers' => '還沒有封鎖的使用者，可在作者頁或作品選單中新增',
+			'block.remove' => ({required Object name}) => '取消封鎖 ${name}',
+			'block.tagExists' => '這個標籤已經在封鎖清單中',
+			'block.add' => '新增',
+			'block.tagRequired' => '請輸入標籤',
 			'watchlist.title' => '我的追更',
 			'watchlist.manga' => '漫畫',
 			'watchlist.novels' => '小說',

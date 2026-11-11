@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/core/block/block_list.dart';
 import 'package:freepiv/core/history/history_models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/core/services/app_storage.dart';
@@ -129,6 +130,7 @@ class AppSettings {
   static const _downloadEntryPositionKey = 'downloadEntryPosition';
   static const _recordHistoryKey = 'recordHistory';
   static const _historyLimitKey = 'historyLimit';
+  static const _blockListKey = 'blockList';
 
   static const defaultBackgroundIntensity = 100;
   static const minBackgroundIntensity = 10;
@@ -170,6 +172,7 @@ class AppSettings {
     _downloadEntryPositionKey,
     _recordHistoryKey,
     _historyLimitKey,
+    _blockListKey,
   };
 
   static final Map<String, dynamic> _values = {};
@@ -372,6 +375,17 @@ class AppSettings {
 
   static set historyLimit(HistoryLimit value) => _write(_historyLimitKey, value.name);
 
+  /// The tags and users hidden on this device; the lists that hide them
+  /// listen to it.
+  static final blockListListenable = ValueNotifier<BlockList>(const BlockList());
+
+  static BlockList get blockList => blockListListenable.value;
+
+  static set blockList(BlockList value) {
+    blockListListenable.value = value;
+    _write(_blockListKey, value.isEmpty ? null : value.toJson());
+  }
+
   static Future<void> initialize({AppSettingsStore? store}) async {
     _store = store ?? await HiveAppSettingsStore.open();
 
@@ -380,6 +394,7 @@ class AppSettings {
       ..clear()
       ..addAll(_filterSettings(stored));
     _accounts = PixivAccountBook.fromJson(_values[accountsKey]) ?? const PixivAccountBook();
+    blockListListenable.value = BlockList.fromJson(_values[_blockListKey]) ?? const BlockList();
     final resumed = _accounts.withFallbackActive();
     if (resumed != _accounts) accounts = resumed;
     await _migrate(stored);
@@ -465,6 +480,7 @@ class AppSettings {
       _proxyUrlKey => value is String && normalizeProxyUrl(value) != null,
       _sidebarExpandedKey || _readerVolumeKeysKey || _recordHistoryKey => value is bool,
       _historyLimitKey => _isEnumSettingValue(value, HistoryLimit.values),
+      _blockListKey => BlockList.fromJson(value) != null,
       _windowPlacementKey => _windowPlacementFrom(value) != null,
       _readerFontSizeKey => _inRange(value, readerFontSizeRange),
       _readerLineHeightKey => _inRange(value, readerLineHeightRange),
