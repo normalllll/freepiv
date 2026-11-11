@@ -83,6 +83,50 @@ void main() {
     });
   });
 
+  group('an account list that cannot be read', () {
+    Map<String, dynamic> stored() => PixivAccountBook(
+      entries: [
+        PixivAccountEntry(session: sampleAccount, lastUsed: DateTime.utc(2026), searchHistory: const ['miku']),
+      ],
+      activeId: sampleAccount.user.id,
+    ).toJson();
+
+    for (final (name, damage) in <(String, void Function(Map<String, dynamic>))>[
+      ('an entry without a session', (book) => (book['entries']! as List).first.remove('session')),
+      ('an unknown state', (book) => (book['entries']! as List).first['state'] = 'gone'),
+      ('a current account that is not stored', (book) => book['activeId'] = '42'),
+      ('the same account twice', (book) => (book['entries']! as List).add((book['entries']! as List).first)),
+    ]) {
+      test('$name resets to signed out and keeps the other settings', () async {
+        final book = stored();
+        damage(book);
+        final store = await _start({AppSettings.accountsKey: book, 'themeMode': 2, 'proxyEnabled': true});
+
+        expect(AppSettings.accounts.isEmpty, isTrue);
+        expect(AppSettings.accounts.active, isNull);
+        expect(AppSettings.themeMode, 2);
+        expect(AppSettings.proxyEnabled, isTrue);
+        expect(store.values.containsKey(AppSettings.accountsKey), isFalse, reason: 'the unreadable list is cleared from storage');
+        expect(store.values['themeMode'], 2);
+      });
+    }
+
+    test('a value that is not a list at all resets too', () async {
+      final store = await _start({AppSettings.accountsKey: 'garbage', 'themeMode': 1});
+
+      expect(AppSettings.accounts.isEmpty, isTrue);
+      expect(store.values.containsKey(AppSettings.accountsKey), isFalse);
+      expect(store.values['themeMode'], 1);
+    });
+
+    test('signing in afterwards stores a fresh list', () async {
+      final store = await _start({AppSettings.accountsKey: 'garbage'});
+
+      AppSettings.accounts = AppSettings.accounts.activate(sampleAccount, DateTime.utc(2026));
+      expect(PixivAccountBook.fromJson(store.values[AppSettings.accountsKey])?.activeId, sampleAccount.user.id);
+    });
+  });
+
   test('signing in as a stored user updates its entry instead of adding one', () {
     final at = DateTime.utc(2026, 11, 1);
     final book = const PixivAccountBook()

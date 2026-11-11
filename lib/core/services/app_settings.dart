@@ -366,6 +366,11 @@ class AppSettings {
   /// with its search history became the only stored account; retired keys are
   /// removed so they do not stay in the box.
   static Future<void> _migrate(Map<String, dynamic> stored) async {
+    // A stored list that cannot be read is cleared and the app starts signed
+    // out; the other settings are not touched.
+    if (stored.containsKey(accountsKey) && !_values.containsKey(accountsKey)) {
+      await _activeStore.write(accountsKey, null);
+    }
     if (stored.containsKey(_legacyAccountSessionKey)) {
       final session = _legacySession(stored[_legacyAccountSessionKey]);
       if (_accounts.isEmpty && session != null) {
