@@ -166,7 +166,7 @@ void main() {
       await mount(tester, const []);
       expect(shell(tester).taskEntry!.visible, isTrue);
       expect(find.byType(FrostShellTaskButton), findsOneWidget);
-      expect(shell(tester).secondary!.destinations.map((destination) => destination.label), isNot(contains(t.navigation.downloads)));
+      expect(shell(tester).destinations.map((destination) => destination.label), isNot(contains(t.navigation.downloads)));
     });
 
     testWidgets('the floating placement builds nothing when idle, the button with activity or a flight', (tester) async {

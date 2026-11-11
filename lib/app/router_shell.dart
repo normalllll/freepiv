@@ -13,18 +13,11 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
-/// The destinations kept off the phone's bottom bar, in order.
-const appSecondaryRoutes = [AppRoute.fanbox, AppRoute.settings];
-
-/// The secondary destination a location belongs to.
-int? appSecondaryIndexForPath(String path) => switch (AppRoute.match(path)) {
-  AppRoute.fanbox || AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator || AppRoute.fanboxWebLogin => 0,
-  AppRoute.settings => 1,
-  _ => null,
-};
-
-/// freepiv's routes on the shared navigation shell: the three destinations,
-/// the secondary group, Back, and the keys that act on the visible page.
+/// freepiv's routes on the shared navigation shell: the destinations, Back,
+/// and the keys that act on the visible page. The sidebar has room for every
+/// destination, so it lists FANBOX and settings after the primary ones; the
+/// bottom bar keeps the primary ones alone and hands the others to the
+/// shell's secondary group, which it keeps off the bar.
 class RouterShell extends ConsumerWidget {
   const RouterShell({
     required this.location,
@@ -67,23 +60,28 @@ class RouterShell extends ConsumerWidget {
     // to go back to from it.
     final canGoBack = !atDestinationRoot && AppRoute.match(path) != AppRoute.login;
     final downloads = ref.watch(downloadActivityProvider);
+    final primary = [
+      for (final destination in appRouteDestinations) FrostNavDestination(icon: destination.icon, label: appRouteDestinationLabel(translations, destination)),
+    ];
+    final secondary = [
+      for (final route in appSecondaryRoutes) FrostNavDestination(icon: _secondaryIcon(route), label: appRouteNavigationLabel(translations, route)),
+    ];
+    final secondaryIndex = appSecondaryIndexForPath(path);
+    final sidebar = FrostAutoScaffold.usesHorizontalLayoutOf(context);
     final shell = ValueListenableBuilder<bool>(
       valueListenable: DownloadFlight.revealRequested,
       builder: (context, revealed, _) => FrostShell(
-        destinations: [
-          for (final destination in appRouteDestinations)
-            FrostNavDestination(icon: destination.icon, label: appRouteDestinationLabel(translations, destination)),
-        ],
-        selectedIndex: selectedIndex,
+        destinations: sidebar ? [...primary, ...secondary] : primary,
+        selectedIndex: sidebar && secondaryIndex != null ? primary.length + secondaryIndex : selectedIndex,
         atDestinationRoot: atDestinationRoot,
-        onDestinationSelected: onDestinationSelected,
-        secondary: FrostShellSecondary(
-          destinations: [
-            for (final route in appSecondaryRoutes) FrostNavDestination(icon: _secondaryIcon(route), label: appRouteNavigationLabel(translations, route)),
-          ],
-          selectedIndex: appSecondaryIndexForPath(path),
-          onSelected: (index) => onSecondarySelected(appSecondaryRoutes[index]),
-        ),
+        onDestinationSelected: (index) => index < primary.length ? onDestinationSelected(index) : onSecondarySelected(appShellRouteAt(index)),
+        secondary: sidebar
+            ? null
+            : FrostShellSecondary(
+                destinations: secondary,
+                selectedIndex: secondaryIndex,
+                onSelected: (index) => onSecondarySelected(appSecondaryRoutes[index]),
+              ),
         canGoBack: canGoBack,
         onBack: onBack,
         showsMobileNavigation: true,

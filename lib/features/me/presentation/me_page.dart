@@ -43,7 +43,7 @@ class _MePageState extends ConsumerState<MePage> {
   /// Selecting Me again scrolls back to the top.
   void _reselected() {
     final signal = _reselection?.value;
-    if (signal == null || signal.sequence == 0 || appRouteDestinations[signal.index].route != AppRoute.me || !_scroll.hasClients) return;
+    if (signal == null || signal.sequence == 0 || appShellRouteAt(signal.index) != AppRoute.me || !_scroll.hasClients) return;
     final duration = FrostMotion.duration(context, FrostMotion.navigation);
     if (duration == Duration.zero) {
       _scroll.jumpTo(0);

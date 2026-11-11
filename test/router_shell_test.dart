@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/app.dart';
 import 'package:freepiv/app/refresh/app_refresh.dart';
+import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/app_router.dart';
-import 'package:freepiv/app/router_shell.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
@@ -98,10 +98,26 @@ bool _titleRowShown(WidgetTester tester, String title) {
   });
 }
 
+/// Chooses a secondary destination where the layout shows it: among the
+/// sidebar's destinations, or in the shell's secondary group with the bottom
+/// bar.
+void _chooseSecondary(WidgetTester tester, AppRoute route) {
+  final shell = _shell(tester);
+  final index = appSecondaryRoutes.indexOf(route);
+  if (shell.secondary case final secondary?) {
+    secondary.onSelected(index);
+  } else {
+    shell.onDestinationSelected(appRouteDestinations.length + index);
+  }
+}
+
 Future<void> _selectSecondary(WidgetTester tester, AppRoute route) async {
-  _shell(tester).secondary!.onSelected(appSecondaryRoutes.indexOf(route));
+  _chooseSecondary(tester, route);
   await _frames(tester);
 }
+
+/// The sidebar's index of a secondary destination.
+int _sidebarIndex(AppRoute route) => appRouteDestinations.length + appSecondaryRoutes.indexOf(route);
 
 Future<void> _escape(WidgetTester tester) async {
   await tester.sendKeyEvent(LogicalKeyboardKey.escape);
@@ -130,29 +146,37 @@ void main() {
     expect(firstDone, isTrue, reason: 'whoever opened a page hears it has closed');
   });
 
-  testWidgets('three destinations and the FANBOX and settings group', (tester) async {
+  testWidgets('the sidebar lists every destination; the bottom bar keeps FANBOX and settings in the secondary group', (tester) async {
     await _mount(tester);
     final shell = _shell(tester);
-    expect(shell.destinations.map((destination) => destination.label), ['Home', 'Activity', 'Me']);
-    expect(shell.secondary!.destinations.map((destination) => destination.label), ['FANBOX', 'Settings']);
+    expect(shell.destinations.map((destination) => destination.label), ['Home', 'Activity', 'Me', 'FANBOX', 'Settings']);
+    expect(shell.secondary, isNull);
     expect(appSecondaryRoutes, [AppRoute.fanbox, AppRoute.settings]);
     expect(shell.atDestinationRoot, isTrue);
     expect(shell.canGoBack, isFalse);
     expect(shell.backToFirst, isNotNull);
     expect(shell.brand, isNotNull);
+
+    tester.view.physicalSize = _phone;
+    await _frames(tester);
+    expect(_shell(tester).destinations.map((destination) => destination.label), ['Home', 'Activity', 'Me']);
+    expect(_shell(tester).secondary!.destinations.map((destination) => destination.label), ['FANBOX', 'Settings']);
+  });
+
+  test('a sidebar index names its route, so a reselection past the primary destinations names FANBOX or settings', () {
+    expect([for (var index = 0; index < 5; index++) appShellRouteAt(index)], [AppRoute.home, AppRoute.newest, AppRoute.me, AppRoute.fanbox, AppRoute.settings]);
+    expect(_sidebarIndex(AppRoute.settings), 4);
   });
 
   testWidgets('a page any destination opens keeps the destination it was opened from highlighted', (tester) async {
-    await _mount(tester);
+    await _mount(tester, size: _phone);
     for (final (destination, index) in [(AppRoute.newest, 1), (AppRoute.me, 2), (AppRoute.home, 0)]) {
       await _go(tester, destination.path);
       expect(_shell(tester).selectedIndex, index, reason: destination.path);
       await _selectSecondary(tester, AppRoute.settings);
       expect(AppRouter.currentUri.path, AppRoute.settings.path);
       expect(_shell(tester).secondary!.selectedIndex, appSecondaryRoutes.indexOf(AppRoute.settings));
-      // The sidebar highlights settings alone because the secondary group has
-      // a selection; the bottom bar keeps the opener lit.
-      expect(_shell(tester).selectedIndex, index, reason: 'settings opened from ${destination.path} keeps its opener');
+      expect(_shell(tester).selectedIndex, index, reason: 'the bottom bar keeps the opener of settings from ${destination.path} lit');
       await _push(tester, AppRoute.about.path);
       expect(_shell(tester).selectedIndex, index, reason: 'two pages up from ${destination.path}');
     }
@@ -160,8 +184,22 @@ void main() {
     expect(_shell(tester).selectedIndex, 2, reason: 'a page of Me highlights Me');
   });
 
-  testWidgets('a FANBOX page selects FANBOX and keeps its opener, and the opener takes the highlight back', (tester) async {
+  testWidgets('in the sidebar a secondary page selects its own destination, and the opener takes the highlight back', (tester) async {
     await _mount(tester);
+    await _selectSecondary(tester, AppRoute.settings);
+    expect(_shell(tester).selectedIndex, _sidebarIndex(AppRoute.settings));
+    await _push(tester, AppLocations.fanboxPost('1001'));
+    expect(_shell(tester).selectedIndex, _sidebarIndex(AppRoute.fanbox), reason: 'a FANBOX page belongs to FANBOX');
+    await _escape(tester);
+    await _escape(tester);
+    expect(AppRouter.currentUri.path, AppRoute.settings.path);
+    _shell(tester).onDestinationSelected(0);
+    await _frames(tester);
+    expect(_shell(tester).selectedIndex, 0);
+  });
+
+  testWidgets('with the bottom bar a FANBOX page selects FANBOX and keeps its opener, and the opener takes the highlight back', (tester) async {
+    await _mount(tester, size: _phone);
     await _push(tester, AppLocations.fanboxPost('1001'));
     expect(_shell(tester).secondary!.selectedIndex, appSecondaryRoutes.indexOf(AppRoute.fanbox));
     expect(_shell(tester).selectedIndex, 0, reason: 'the bottom bar keeps Home, which opened it');
@@ -175,7 +213,7 @@ void main() {
     await _mount(tester);
     for (final route in appSecondaryRoutes) {
       await _go(tester, AppRoute.home.path);
-      _shell(tester).secondary!.onSelected(appSecondaryRoutes.indexOf(route));
+      _chooseSecondary(tester, route);
       await tester.pump();
       await tester.pump();
       expect(AppRouter.currentUri.path, route.path);
@@ -252,13 +290,13 @@ void main() {
     });
   }
 
-  testWidgets('Downloads is a pushed page with Back, outside the secondary group, reached by the one entry', (tester) async {
+  testWidgets('Downloads is a pushed page with Back, outside the destinations, reached by the one entry', (tester) async {
     await _mount(tester);
-    expect(_shell(tester).secondary!.destinations.map((destination) => destination.label), isNot(contains('Downloads')));
+    expect(_shell(tester).destinations.map((destination) => destination.label), isNot(contains('Downloads')));
     expect(_shell(tester).taskEntry!.visible, isTrue);
     await _push(tester, AppRoute.downloads.path);
     expect(AppRouter.currentUri.path, AppRoute.downloads.path);
-    expect(_shell(tester).secondary!.selectedIndex, isNull);
+    expect(_shell(tester).selectedIndex, 0, reason: 'Downloads keeps its opener');
     expect(_shell(tester).canGoBack, isTrue);
     await _escape(tester);
     expect(AppRouter.currentUri.path, AppRoute.home.path);

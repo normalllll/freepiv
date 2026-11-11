@@ -58,7 +58,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
   /// Selecting Home again scrolls the current section back to its top.
   void _reselected() {
     final signal = _reselection?.value;
-    if (signal == null || signal.sequence == 0 || appRouteDestinations[signal.index].route != AppRoute.home) return;
+    if (signal == null || signal.sequence == 0 || appShellRouteAt(signal.index) != AppRoute.home) return;
     final scroll = _scrolls[_tabs.index];
     if (!scroll.hasClients) return;
     final duration = FrostMotion.duration(context, FrostMotion.navigation);

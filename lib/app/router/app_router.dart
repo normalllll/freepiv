@@ -233,8 +233,8 @@ class AppRouter {
   /// The destination to highlight for [path]: its own, or for pages any
   /// destination can open (a work, a search), the one they were opened from.
   /// A secondary page (FANBOX, settings) keeps the destination
-  /// that opened it: the bottom bar highlights that one, and the sidebar,
-  /// given the secondary selection, highlights the secondary item alone.
+  /// that opened it for the bottom bar; the sidebar, which lists the secondary
+  /// destinations too, highlights the secondary one instead (see RouterShell).
   static int? destinationIndexFor(String path) {
     if (appSecondaryIndexForPath(path) != null) return _opener ?? 0;
     final byPath = appDestinationIndexForPath(path);

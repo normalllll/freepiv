@@ -60,7 +60,7 @@ class _NewestPageState extends ConsumerState<NewestPage> with SingleTickerProvid
   /// Selecting Newest again scrolls the current section back to its top.
   void _reselected() {
     final signal = _reselection?.value;
-    if (signal == null || signal.sequence == 0 || appRouteDestinations[signal.index].route != AppRoute.newest) return;
+    if (signal == null || signal.sequence == 0 || appShellRouteAt(signal.index) != AppRoute.newest) return;
     final scroll = _scrolls[_tabs.index];
     if (!scroll.hasClients) return;
     final duration = FrostMotion.duration(context, FrostMotion.navigation);

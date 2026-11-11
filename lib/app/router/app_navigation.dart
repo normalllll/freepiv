@@ -21,6 +21,24 @@ const appRouteDestinations = <AppRouteDestination>[
   AppRouteDestination(route: AppRoute.me, icon: PivIcons.user, owns: {AppRoute.meFollowing, AppRoute.meFollowers, AppRoute.meWatchlist, AppRoute.meProfileEdit, AppRoute.meWorkspaceEdit}),
 ];
 
+/// The destinations without a page stack of their own, in order. The sidebar
+/// lists them after the primary destinations; the bottom bar leaves them out.
+const appSecondaryRoutes = [AppRoute.fanbox, AppRoute.settings];
+
+/// The secondary destination a location belongs to.
+int? appSecondaryIndexForPath(String path) => switch (AppRoute.match(path)) {
+  AppRoute.fanbox || AppRoute.fanboxBrowse || AppRoute.fanboxTag || AppRoute.fanboxPost || AppRoute.fanboxCreator || AppRoute.fanboxWebLogin => 0,
+  AppRoute.settings => 1,
+  _ => null,
+};
+
+/// The route a shell navigation index stands for: a primary destination, or
+/// past them a secondary one, as the sidebar lists them.
+AppRoute appShellRouteAt(int index) {
+  final primary = appRouteDestinations.length;
+  return index < primary ? appRouteDestinations[index].route : appSecondaryRoutes[index - primary];
+}
+
 /// Whether [path] is a destination's root page.
 bool isMobileNavigationPath(String path) {
   final route = AppRoute.match(path);
