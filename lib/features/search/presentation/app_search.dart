@@ -106,7 +106,6 @@ class AppSearchPlacementProbe extends StatelessWidget {
   }
 }
 
-
 AppSearchKind appSearchKind(SearchType type) => switch (type) {
   SearchType.illust => AppSearchKind.illust,
   SearchType.novel => AppSearchKind.novel,
@@ -169,18 +168,23 @@ class AppSearchActions {
   }
 }
 
-/// How many recent searches and trending tags the compact discover shows.
+/// How many recent searches, trending tags and Pixivision articles the
+/// compact discover shows. The dropdown grows to the window's bottom margin
+/// and scrolls what is left.
 const appSearchRecentCount = 5;
-const appSearchTagCount = 8;
+const appSearchTagCount = 12;
+const appSearchArticleCount = 6;
 
-/// Trending tags stand in rows of this many in the compact discover.
-const appSearchTagColumns = 4;
+/// Trending tags stand in rows of this many in the compact discover, and
+/// Pixivision articles in rows of [discoverArticleCount].
+const appSearchTagColumns = 3;
 
 /// The dropdown's content ([FrostCaptionSearch.content],
 /// [FrostSearchInput.suggesting]). With no input, the compact discover:
-/// the last searches, two rows of trending tag cards and
-/// a row of Pixivision cards, each section only when it has something. With
-/// input: search the whole query by type, open a number
+/// the last searches, four rows of square trending tag
+/// cards with small names over their foot, and two rows of Pixivision cards,
+/// each section only when it has something. With input: search the whole
+/// query by type, open a number
 /// directly, complete the last word with a tag, and the completion's status,
 /// a failure with its details and a retry. Every row and card is an option
 /// the field's arrow keys and Enter reach.
@@ -206,17 +210,13 @@ class _CompactDiscover extends ConsumerWidget {
 
   final AppSearchActions actions;
 
-  /// Tag cards are a little wider than tall, so two rows and the rest fit
-  /// the dropdown without scrolling.
-  static const _tagAspect = 3 / 2;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.t;
     final history = ref.watch(searchHistoryProvider);
     final trending = ref.watch(searchTrendingTagsProvider).value ?? const [];
     final listing = ref.watch(discoverPixivision(t)).value;
-    final articles = listing == null ? const <ArticleSummary>[] : discoverArticles(listing);
+    final articles = listing == null ? const <ArticleSummary>[] : homeArticles(listing).take(appSearchArticleCount).toList();
     final tags = trending.take(appSearchTagCount).toList();
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -254,10 +254,10 @@ class _CompactDiscover extends ConsumerWidget {
                         FrostSearchOption(
                           key: ValueKey(('tag', tag.tag)),
                           keepsOpen: true,
-                          semanticLabel: '#${tag.tag}',
+                          semanticLabel: DiscoverTagCard.semanticLabelOf(tag),
                           onSelected: () => actions.insertTag(tag.tag),
                           // The option takes the tap; the card only shows.
-                          child: IgnorePointer(child: DiscoverTagCard(tag: tag, aspectRatio: _tagAspect)),
+                          child: IgnorePointer(child: DiscoverTagCard(tag: tag)),
                         ),
                     ],
                   ),
@@ -270,22 +270,26 @@ class _CompactDiscover extends ConsumerWidget {
             actionLabel: t.discover.viewAll,
             onAction: () => actions.open(AppRoute.pixivision.path),
             children: [
-              _OptionRow(
-                columns: discoverArticleCount,
-                children: [
-                  for (final article in articles)
-                    FrostSearchOption(
-                      key: ValueKey(('article', article.id)),
-                      semanticLabel: article.title,
-                      onSelected: () {
-                        actions.session.unfocus(appendTrailingSpace: false);
-                        actions.onCollapse?.call();
-                        unawaited(openPixivisionLink(context, article.url, summary: article));
-                      },
-                      child: IgnorePointer(child: DiscoverArticleCard(article: article, titleLines: 1)),
-                    ),
-                ],
-              ),
+              for (var start = 0; start < articles.length; start += discoverArticleCount)
+                Padding(
+                  padding: EdgeInsets.only(top: start == 0 ? 0 : FrostGap.related),
+                  child: _OptionRow(
+                    columns: discoverArticleCount,
+                    children: [
+                      for (final article in articles.skip(start).take(discoverArticleCount))
+                        FrostSearchOption(
+                          key: ValueKey(('article', article.id)),
+                          semanticLabel: article.title,
+                          onSelected: () {
+                            actions.session.unfocus(appendTrailingSpace: false);
+                            actions.onCollapse?.call();
+                            unawaited(openPixivisionLink(context, article.url, summary: article));
+                          },
+                          child: IgnorePointer(child: DiscoverArticleCard(article: article, titleLines: 1)),
+                        ),
+                    ],
+                  ),
+                ),
             ],
           ),
       ],

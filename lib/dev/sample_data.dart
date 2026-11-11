@@ -204,9 +204,26 @@ class SampleIllustSource extends HomeIllustListSource {
 class _SampleTrendingTags extends SearchTrendingTags {
   @override
   Future<List<TrendTag>> build() async {
-    final illusts = sampleIllusts(count: 8);
-    const names = ['初音ミク', 'オリジナル', '風景', '猫', '女の子', 'ブルーアーカイブ', '原神', '創作'];
-    const translated = ['Hatsune Miku', 'original', 'scenery', 'cat', 'girl', 'Blue Archive', 'Genshin Impact', 'original work'];
+    final illusts = sampleIllusts(count: 16);
+    const names = ['初音ミク', 'オリジナル', '風景', '猫', '女の子', 'ブルーアーカイブ', '原神', '創作', '空', '海', '花', '夜景', '制服', '水着', 'ケモミミ', '秋'];
+    const translated = [
+      'Hatsune Miku',
+      'original',
+      'scenery',
+      'cat',
+      'girl',
+      'Blue Archive',
+      'Genshin Impact',
+      'original work',
+      'sky',
+      'sea',
+      'flowers',
+      'night view',
+      'uniform',
+      'swimsuit',
+      'animal ears',
+      'autumn',
+    ];
     return [for (var index = 0; index < names.length; index++) TrendTag(tag: names[index], translatedName: translated[index], illust: illusts[index])];
   }
 }

@@ -12,6 +12,7 @@ import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_autocomplete_session.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import 'support/pilot_harness.dart';
@@ -58,7 +59,10 @@ Future<void> _open(WidgetTester tester) async {
 }
 
 Future<void> _type(WidgetTester tester, String text) async {
-  _session.controller.value = TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
+  _session.controller.value = TextEditingValue(
+    text: text,
+    selection: TextSelection.collapsed(offset: text.length),
+  );
   await tester.pump(const Duration(milliseconds: 300));
   await settlePilot(tester);
 }
@@ -77,7 +81,7 @@ Finder _options() => find.byType(FrostSearchOption);
 final _windows = TargetPlatformVariant.only(TargetPlatform.windows);
 
 void main() {
-  testWidgets('empty input shows the compact discover, all on one screen', (tester) async {
+  testWidgets('empty input shows the compact discover down to the window bottom, scrolling the rest', (tester) async {
     await _mount(tester, history: ['a', 'b', 'c', 'd', 'e', 'f']);
     await _open(tester);
     expect(find.text(t.discover.history), findsOneWidget);
@@ -87,13 +91,34 @@ void main() {
     expect(find.text('f'), findsNothing, reason: 'the last five searches');
     expect(find.text(t.appSearch.allHistory), findsOneWidget);
     expect(find.text(t.navigation.ranking), findsNothing, reason: 'Ranking, pixivision and FANBOX have their own ways in');
-    expect(find.byType(DiscoverTagCard), findsNWidgets(8));
+    expect(find.byType(DiscoverTagCard), findsNWidgets(12));
     final tags = tester.widgetList(find.byType(DiscoverTagCard)).map((card) => tester.getRect(find.byWidget(card))).toList();
-    expect(tags.map((rect) => rect.top).toSet(), hasLength(2), reason: 'two rows of four');
+    expect(tags.map((rect) => rect.top).toSet(), hasLength(4), reason: 'four rows of three');
+    final first = find.byType(DiscoverTagCard).first;
+    final picture = tester.getRect(find.descendant(of: first, matching: find.byType(AppPixivImage)));
+    final name = find.descendant(of: first, matching: find.text('#初音ミク'));
+    final translated = find.descendant(of: first, matching: find.text('Hatsune Miku'));
+    expect(translated, findsOneWidget, reason: 'the translated name stays');
+    expect(picture.width, moreOrLessEquals(picture.height, epsilon: 1), reason: 'square pictures');
+    expect(tester.getRect(name).top, greaterThan(picture.top + picture.height * .6), reason: 'the names cover only the foot of the picture');
+    expect(tester.getRect(translated).bottom, lessThanOrEqualTo(picture.bottom), reason: 'both lie over the picture');
+    for (final text in [name, translated]) {
+      expect(
+        tester.widget<RichText>(find.descendant(of: text, matching: find.byType(RichText))).text.style!.fontSize,
+        lessThanOrEqualTo(12),
+        reason: 'caption size',
+      );
+    }
     expect(find.text(t.appSearch.allTrendingTags), findsOneWidget);
-    expect(find.byType(DiscoverArticleCard), findsNWidgets(3));
-    final last = tester.getRect(find.byType(DiscoverArticleCard).last);
-    expect(last.bottom, lessThanOrEqualTo(desktopSize.height), reason: 'no scrolling in the dropdown at 1147×717');
+    final articles = find.byType(DiscoverArticleCard);
+    expect(articles, findsNWidgets(4), reason: 'up to six, as many as Pixivision recommends');
+    expect(tester.widgetList(articles).map((card) => tester.getRect(find.byWidget(card)).top).toSet(), hasLength(2), reason: 'rows of three');
+    final dropdown = find.ancestor(of: articles.last, matching: find.byType(Scrollable)).first;
+    expect(tester.getRect(dropdown).bottom, greaterThan(desktopSize.height * 0.9), reason: 'the dropdown reaches toward the window bottom');
+    expect(tester.getRect(articles.last).bottom, greaterThan(tester.getRect(dropdown).bottom), reason: 'the rest is below, to scroll to');
+    await tester.drag(dropdown, const Offset(0, -2000));
+    await settlePilot(tester);
+    expect(tester.getRect(articles.last).bottom, lessThanOrEqualTo(tester.getRect(dropdown).bottom + 0.5), reason: 'scrolled into view');
     expectNoLayoutErrors(tester);
   }, variant: _windows);
 
@@ -194,10 +219,10 @@ void main() {
   testWidgets('every row and card in the compact discover is an option the keys reach', (tester) async {
     await _mount(tester, history: ['a']);
     await _open(tester);
-    // History row, its section action, three entries, the tags action and eight tags, Pixivision's action and three articles.
-    expect(_options(), findsAtLeastNWidgets(1 + 3 + 8 + 3));
-    expect(find.descendant(of: _options(), matching: find.byType(DiscoverTagCard)), findsNWidgets(8));
-    expect(find.descendant(of: _options(), matching: find.byType(DiscoverArticleCard)), findsNWidgets(3));
+    // The history entry, twelve tags and four articles, besides the section actions.
+    expect(_options(), findsAtLeastNWidgets(1 + 12 + 4));
+    expect(find.descendant(of: _options(), matching: find.byType(DiscoverTagCard)), findsNWidgets(12));
+    expect(find.descendant(of: _options(), matching: find.byType(DiscoverArticleCard)), findsNWidgets(4));
   }, variant: _windows);
 
   test('stale trending tags and Pixivision refresh after ten minutes, not before', () {

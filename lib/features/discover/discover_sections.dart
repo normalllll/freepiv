@@ -26,7 +26,8 @@ const discoverFreshFor = Duration(minutes: 10);
 const discoverArticleCount = 3;
 
 /// Pixivision's front page in the interface language.
-PixivisionBrowseProvider discoverPixivision(Translations t) => pixivisionBrowseProvider('https://www.pixivision.net/${pixivisionLanguagePath(t.$meta.locale)}/');
+PixivisionBrowseProvider discoverPixivision(Translations t) =>
+    pixivisionBrowseProvider('https://www.pixivision.net/${pixivisionLanguagePath(t.$meta.locale)}/');
 
 /// The articles the discover sections show: the recommended ones, else the latest.
 List<ArticleSummary> discoverArticles(PixivisionListing listing) => homeArticles(listing).take(discoverArticleCount).toList();
@@ -66,9 +67,10 @@ class DiscoverFreshness {
 /// The app's one record of when the discover sections were fetched.
 final discoverFreshnessProvider = Provider<DiscoverFreshness>((ref) => DiscoverFreshness());
 
-/// A trending tag as a picture card: its work, the tag and its translation.
-/// Without [onPressed] (in the dropdown, where the option selects it) the
-/// card only shows.
+/// A trending tag as a picture card: its work, with the tag and its
+/// translation in caption size over the picture's foot, so most of the
+/// picture stays clear. Without [onPressed] (in the dropdown, where the
+/// option selects it) the card only shows.
 class DiscoverTagCard extends StatelessWidget {
   const DiscoverTagCard({required this.tag, this.onPressed, this.aspectRatio = 1, super.key});
 
@@ -76,18 +78,21 @@ class DiscoverTagCard extends StatelessWidget {
   final VoidCallback? onPressed;
   final double aspectRatio;
 
+  /// What a screen reader says for [tag]: the tag and its translated name.
+  static String semanticLabelOf(TrendTag tag) => ['#${tag.tag}', if (tag.translatedName case final name? when name.isNotEmpty) name].join(', ');
+
   @override
   Widget build(BuildContext context) => FrostMediaCard(
     media: AppPixivImage(url: tag.illust.imageUrls.squareMedium, aspectRatio: aspectRatio, radius: 0),
     aspectRatio: aspectRatio,
-    semanticLabel: '#${tag.tag}',
+    semanticLabel: semanticLabelOf(tag),
     overlay: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FrostText('#${tag.tag}', content: true, role: FrostTextRole.subheadline, maxLines: 1, overflow: TextOverflow.ellipsis),
+        FrostText('#${tag.tag}', content: true, role: FrostTextRole.caption, weight: FrostTextWeight.semibold, maxLines: 1, overflow: TextOverflow.ellipsis),
         if (tag.translatedName case final name? when name.isNotEmpty)
-          FrostText(name, content: true, role: FrostTextRole.footnote, maxLines: 1, overflow: TextOverflow.ellipsis),
+          FrostText(name, content: true, role: FrostTextRole.caption, tone: FrostTextTone.secondary, maxLines: 1, overflow: TextOverflow.ellipsis),
       ],
     ),
     onPressed: onPressed,
