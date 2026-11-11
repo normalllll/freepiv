@@ -142,13 +142,43 @@ class _RankingPageState extends ConsumerState<RankingPage> with SingleTickerProv
     }
   }
 
-  /// The ranking [kind]'s section shows.
-  FrostListSource<Object?> _source(RankingState state, AppRankingKind kind) => switch (_modes[kind]!) {
-    final IllustRankingMode mode => state.illustSourceFor(mode),
-    final MangaRankingMode mode => state.mangaSourceFor(mode),
-    final NovelRankingMode mode => state.novelSourceFor(mode),
-    _ => throw StateError('not a ranking mode'),
-  };
+  /// The ranking [kind]'s section shows, on the day the rankings are of.
+  FrostListSource<Object?> _source(AppRankingKind kind) {
+    final notifier = ref.read(rankingProvider.notifier);
+    return switch (_modes[kind]!) {
+      final IllustRankingMode mode => notifier.illustSourceFor(mode),
+      final MangaRankingMode mode => notifier.mangaSourceFor(mode),
+      final NovelRankingMode mode => notifier.novelSourceFor(mode),
+      _ => throw StateError('not a ranking mode'),
+    };
+  }
+
+  /// Shows the rankings of [date], or the latest for null; every kind follows.
+  void _selectDate(DateTime? date) {
+    ref.read(rankingProvider.notifier).setDate(date);
+    _load();
+  }
+
+  /// The day the rankings are of: clearing it goes back to the latest. Pixiv
+  /// keeps rankings from its first day to yesterday.
+  Widget _datePicker(BuildContext context, DateTime? date) {
+    final t = context.t.ranking.date;
+    final now = DateTime.now();
+    return FrostDatePicker(
+      label: t.label,
+      placeholder: t.latest,
+      help: t.help,
+      value: date,
+      onChanged: _selectDate,
+      firstDate: _firstRankingDay,
+      lastDate: DateTime(now.year, now.month, now.day - 1),
+      showsYear: true,
+      clearable: true,
+    );
+  }
+
+  /// The first day Pixiv has a ranking of.
+  static final _firstRankingDay = DateTime(2007, 9, 13);
 
   @override
   Widget build(BuildContext context) {
@@ -175,15 +205,36 @@ class _RankingPageState extends ConsumerState<RankingPage> with SingleTickerProv
         FrostTab(label: t.ranking.types.manga),
         FrostTab(label: t.ranking.types.novels),
       ],
-      onRefresh: (section) async => _source(state, AppRankingKind.values[section]).refresh(false),
-      // Another mode starts the section afresh at its top.
-      sectionKey: (section) => _modes[AppRankingKind.values[section]],
+      onRefresh: (section) async => _source(AppRankingKind.values[section]).refresh(false),
+      // Another mode or day starts the section afresh at its top.
+      sectionKey: (section) => (_modes[AppRankingKind.values[section]], state.date),
       slivers: (context, section) {
         final kind = AppRankingKind.values[section];
-        final source = _source(state, kind);
-        final empty = FrostEmptyState(icon: FrostIconSet.of(context).empty, title: t.ranking.emptyTitle, message: t.ranking.emptyMessage);
+        final source = _source(kind);
+        final date = state.date;
+        // A day with no ranking says so; the latest ranking can only be empty
+        // for want of a connection or works, which pulling down retries.
+        final empty = date == null
+            ? FrostEmptyState(icon: FrostIconSet.of(context).empty, title: t.ranking.emptyTitle, message: t.ranking.emptyMessage)
+            : FrostEmptyState(icon: FrostIconSet.of(context).empty, title: t.ranking.date.empty);
+        final picker = FrostSliverContentColumn(
+          maxWidth: kind == AppRankingKind.novel ? FrostMetrics.readingMaxWidth : double.infinity,
+          sliver: SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: FrostGap.related),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: FrostMetrics.filterMaxWidth),
+                  child: _datePicker(context, date),
+                ),
+              ),
+            ),
+          ),
+        );
         if (kind == AppRankingKind.novel) {
           return [
+            picker,
             FrostSliverContentColumn(
               maxWidth: FrostMetrics.readingMaxWidth,
               sliver: FrostSliverDataList<Novel>(
@@ -196,6 +247,7 @@ class _RankingPageState extends ConsumerState<RankingPage> with SingleTickerProv
           ];
         }
         return [
+          picker,
           FrostSliverDataWaterfallGrid<Illust>(
             source: source as FrostListSource<Illust>,
             firstLoadSkeleton: const AppArtworkWaterfallSkeleton(),

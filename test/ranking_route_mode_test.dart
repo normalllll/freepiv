@@ -48,7 +48,7 @@ void main() {
     expect(_titleOf(tester, 0), endsWith(rankingModeLabel(t, IllustRankingMode.week)), reason: 'the page below keeps its own mode');
     expect(_titleOf(tester, 1), endsWith(rankingModeLabel(t, IllustRankingMode.month)));
     expect(container.read(rankingProvider).illustMode, IllustRankingMode.day, reason: 'opening a page does not switch the shared mode');
-    expect(container.read(rankingProvider).illustSourceFor(IllustRankingMode.month).initialized, isTrue, reason: 'the route mode loaded');
+    expect(container.read(rankingProvider.notifier).illustSourceFor(IllustRankingMode.month).initialized, isTrue, reason: 'the route mode loaded');
 
     // The old per-kind paths open the one page on that kind and mode.
     AppRouter.router.push('${AppRoute.legacyRankingNovel.path}?${AppRouteQuery.mode}=${NovelRankingMode.weekRookie.name}');

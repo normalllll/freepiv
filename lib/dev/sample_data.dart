@@ -975,17 +975,17 @@ class SampleNewestSource extends NewestListSource {
 /// Rankings answering from the sample works, whatever the mode.
 class SampleRanking extends Ranking {
   @override
-  RankingIllustListSource createIllustSource(IllustRankingMode mode) => _SampleRankingIllusts(mode);
+  RankingIllustListSource createIllustSource(IllustRankingMode mode, DateTime? date) => _SampleRankingIllusts(mode, date);
 
   @override
-  RankingMangaListSource createMangaSource(MangaRankingMode mode) => _SampleRankingManga(mode);
+  RankingMangaListSource createMangaSource(MangaRankingMode mode, DateTime? date) => _SampleRankingManga(mode, date);
 
   @override
-  RankingNovelListSource createNovelSource(NovelRankingMode mode) => _SampleRankingNovels(mode);
+  RankingNovelListSource createNovelSource(NovelRankingMode mode, DateTime? date) => _SampleRankingNovels(mode, date);
 }
 
 class _SampleRankingIllusts extends RankingIllustListSource {
-  _SampleRankingIllusts(IllustRankingMode mode) : super(mode: mode);
+  _SampleRankingIllusts(IllustRankingMode mode, DateTime? date) : super(mode: mode, date: date);
 
   @override
   Future<IllustPageResult> loadFirstPage() async => IllustPageResult(illusts: sampleIllusts(), rankingIllusts: const []);
@@ -995,7 +995,7 @@ class _SampleRankingIllusts extends RankingIllustListSource {
 }
 
 class _SampleRankingManga extends RankingMangaListSource {
-  _SampleRankingManga(MangaRankingMode mode) : super(mode: mode);
+  _SampleRankingManga(MangaRankingMode mode, DateTime? date) : super(mode: mode, date: date);
 
   @override
   Future<IllustPageResult> loadFirstPage() async => IllustPageResult(
@@ -1008,7 +1008,7 @@ class _SampleRankingManga extends RankingMangaListSource {
 }
 
 class _SampleRankingNovels extends RankingNovelListSource {
-  _SampleRankingNovels(NovelRankingMode mode) : super(mode: mode);
+  _SampleRankingNovels(NovelRankingMode mode, DateTime? date) : super(mode: mode, date: date);
 
   @override
   Future<NovelPageResult> loadFirstPage() async => NovelPageResult(novels: sampleNovels(), rankingNovels: const []);

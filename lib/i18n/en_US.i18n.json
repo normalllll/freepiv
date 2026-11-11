@@ -426,6 +426,12 @@
   "ranking": {
     "emptyTitle": "No ranking works",
     "emptyMessage": "Pull down to fetch the ranking again.",
+    "date": {
+      "label": "Date",
+      "latest": "Latest",
+      "help": "Weekly and monthly rankings run up to that day.",
+      "empty": "No ranking for this day"
+    },
     "types": {
       "illustrations": "Illust",
       "manga": "Manga",

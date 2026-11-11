@@ -491,6 +491,7 @@ class _Translations$ranking$ja_JP extends Translations$ranking$en_US {
 	// Translations
 	@override String get emptyTitle => 'ランキング作品はまだありません';
 	@override String get emptyMessage => '下に引っ張るとランキングを再取得できます。';
+	@override late final _Translations$ranking$date$ja_JP date = _Translations$ranking$date$ja_JP._(_root);
 	@override late final _Translations$ranking$types$ja_JP types = _Translations$ranking$types$ja_JP._(_root);
 	@override late final _Translations$ranking$modes$ja_JP modes = _Translations$ranking$modes$ja_JP._(_root);
 	@override String get r18Section => 'R-18';
@@ -1215,6 +1216,19 @@ class _Translations$settings$account$ja_JP extends Translations$settings$account
 	@override String get showAi => 'AI 生成作品を表示';
 	@override String get showAiHelp => 'この設定は pixiv アカウントに保存されます';
 	@override String get showAiFailed => '設定を変更できませんでした';
+}
+
+// Path: ranking.date
+class _Translations$ranking$date$ja_JP extends Translations$ranking$date$en_US {
+	_Translations$ranking$date$ja_JP._(TranslationsJaJp root) : this._root = root, super.internal(root);
+
+	final TranslationsJaJp _root; // ignore: unused_field
+
+	// Translations
+	@override String get label => '日付';
+	@override String get latest => '最新';
+	@override String get help => '週間・月間ランキングはその日までの集計です。';
+	@override String get empty => 'この日のランキングはありません';
 }
 
 // Path: ranking.types
@@ -2220,6 +2234,10 @@ extension on TranslationsJaJp {
 			'home.users' => 'ユーザー',
 			'ranking.emptyTitle' => 'ランキング作品はまだありません',
 			'ranking.emptyMessage' => '下に引っ張るとランキングを再取得できます。',
+			'ranking.date.label' => '日付',
+			'ranking.date.latest' => '最新',
+			'ranking.date.help' => '週間・月間ランキングはその日までの集計です。',
+			'ranking.date.empty' => 'この日のランキングはありません',
 			'ranking.types.illustrations' => 'イラスト',
 			'ranking.types.manga' => 'マンガ',
 			'ranking.types.novels' => '小説',
@@ -2350,12 +2368,12 @@ extension on TranslationsJaJp {
 			'newest.followScope.all' => 'すべてのフォロー',
 			'newest.followScope.private' => '非公開フォロー',
 			'newest.followScope.public' => '公開フォロー',
+			_ => null,
+		} ?? switch (path) {
 			'newest.followScope.compactAll' => 'すべて',
 			'newest.followScope.compactPrivate' => '非公開',
 			'newest.followScope.compactPublic' => '公開',
 			'newest.emptyTitle' => '最新作品はありません',
-			_ => null,
-		} ?? switch (path) {
 			'newest.compactFilter' => ({required Object workType, required Object scope}) => '${workType} · ${scope}',
 			'newest.novelChars' => ({required Object count}) => '${count} 文字',
 			'newest.novelPages' => ({required Object count}) => '${count} ページ',

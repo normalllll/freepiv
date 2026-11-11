@@ -426,6 +426,12 @@
   "ranking": {
     "emptyTitle": "暫無排行榜作品",
     "emptyMessage": "下拉即可重新取得排行榜。",
+    "date": {
+      "label": "日期",
+      "latest": "最新",
+      "help": "週榜和月榜統計到所選日期為止。",
+      "empty": "這一天沒有這個排行"
+    },
     "types": {
       "illustrations": "插畫",
       "manga": "漫畫",

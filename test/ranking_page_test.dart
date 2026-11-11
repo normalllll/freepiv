@@ -4,10 +4,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/ranking/logic/ranking_logic.dart';
 import 'package:freepiv/features/ranking/presentation/ranking_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/api.dart' show PixivApi;
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/compositions/artwork_card.dart';
@@ -19,34 +21,80 @@ import 'support/pilot_harness.dart';
 /// Every first page asked for, by mode.
 final _requested = <Enum>[];
 
+/// The same requests with the day each was for; null for the latest.
+final _requestedOn = <(Enum, DateTime?)>[];
+
+/// Answers the rankings of a past day as the test says and the latest from the
+/// sample works; any other request fails.
+class _Api implements PixivApi {
+  _Api({required this.onDate});
+
+  final Future<IllustPageResult> Function(Enum mode) onDate;
+
+  /// The dated requests made, by kind, mode and day.
+  static final dates = <String>[];
+
+  @override
+  Future<IllustPageResult> getIllustRankingPage({required IllustRankingMode mode}) async =>
+      IllustPageResult(illusts: sampleIllusts(count: 4), rankingIllusts: const []);
+
+  @override
+  Future<IllustPageResult> getIllustRankingPageOnDate({required IllustRankingMode mode, required String date}) {
+    dates.add('illust ${mode.name} $date');
+    return onDate(mode);
+  }
+
+  @override
+  Future<IllustPageResult> getMangaRankingPageOnDate({required MangaRankingMode mode, required String date}) {
+    dates.add('manga ${mode.name} $date');
+    return onDate(mode);
+  }
+
+  @override
+  Future<NovelPageResult> getNovelRankingPageOnDate({required NovelRankingMode mode, required String date}) async {
+    dates.add('novel ${mode.name} $date');
+    await onDate(mode);
+    return const NovelPageResult(novels: [], rankingNovels: []);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError('${invocation.memberName}');
+}
+
 typedef _Answer = Future<IllustPageResult> Function(Enum mode);
 
 class _Illusts extends RankingIllustListSource {
-  _Illusts(IllustRankingMode mode, this.answer) : super(mode: mode);
+  _Illusts(IllustRankingMode mode, this.answer, DateTime? date) : super(mode: mode, date: date);
   final _Answer answer;
   @override
   Future<IllustPageResult> loadFirstPage() {
     _requested.add(mode);
+    _requestedOn.add((mode, date));
     return answer(mode);
   }
 }
 
 class _Manga extends RankingMangaListSource {
-  _Manga(MangaRankingMode mode, this.answer) : super(mode: mode);
+  _Manga(MangaRankingMode mode, this.answer, DateTime? date) : super(mode: mode, date: date);
   final _Answer answer;
   @override
   Future<IllustPageResult> loadFirstPage() {
     _requested.add(mode);
+    _requestedOn.add((mode, date));
     return answer(mode);
   }
 }
 
 class _Novels extends RankingNovelListSource {
-  _Novels(NovelRankingMode mode) : super(mode: mode);
+  _Novels(NovelRankingMode mode, DateTime? date) : super(mode: mode, date: date);
   @override
   Future<NovelPageResult> loadFirstPage() async {
     _requested.add(mode);
-    return NovelPageResult(novels: sampleNovels(count: 4, title: longText, author: longText), rankingNovels: const []);
+    _requestedOn.add((mode, date));
+    return NovelPageResult(
+      novels: sampleNovels(count: 4, title: longText, author: longText),
+      rankingNovels: const [],
+    );
   }
 }
 
@@ -54,11 +102,11 @@ class _Ranking extends Ranking {
   _Ranking(this.answer);
   final _Answer answer;
   @override
-  RankingIllustListSource createIllustSource(IllustRankingMode mode) => _Illusts(mode, answer);
+  RankingIllustListSource createIllustSource(IllustRankingMode mode, DateTime? date) => _Illusts(mode, answer, date);
   @override
-  RankingMangaListSource createMangaSource(MangaRankingMode mode) => _Manga(mode, answer);
+  RankingMangaListSource createMangaSource(MangaRankingMode mode, DateTime? date) => _Manga(mode, answer, date);
   @override
-  RankingNovelListSource createNovelSource(NovelRankingMode mode) => _Novels(mode);
+  RankingNovelListSource createNovelSource(NovelRankingMode mode, DateTime? date) => _Novels(mode, date);
 }
 
 /// A session that has shown illustrations by the week and manga by the month.
@@ -80,6 +128,8 @@ Future<void> _mount(
   double textScale = 1,
 }) {
   _requested.clear();
+  _requestedOn.clear();
+  _Api.dates.clear();
   return mountPilotPage(
     tester,
     RankingPage(kind: kind, mode: mode),
@@ -170,7 +220,10 @@ void main() {
   });
 
   testWidgets('empty, loading and failed rankings each show their state', (tester) async {
-    await _mount(tester, answer: (_) async => const IllustPageResult(illusts: [], rankingIllusts: []));
+    await _mount(
+      tester,
+      answer: (_) async => const IllustPageResult(illusts: [], rankingIllusts: []),
+    );
     expect(find.text(t.ranking.emptyTitle), findsOneWidget);
 
     final never = Completer<IllustPageResult>();
@@ -195,6 +248,127 @@ void main() {
     await _mount(tester, kind: AppRankingKind.novel, mode: NovelRankingMode.weekRookie.name, size: phoneSize, textScale: 2);
     expect(find.byType(AppNovelRow), findsWidgets);
     expectNoLayoutErrors(tester);
+  });
+
+  group('rankings by date', () {
+    final day = DateTime(2024, 3, 5);
+    final otherDay = DateTime(2023, 12, 31);
+    setUp(_Api.dates.clear);
+
+    FrostDatePicker picker(WidgetTester tester) => tester.widget<FrostDatePicker>(find.byType(FrostDatePicker).first);
+
+    Future<void> pickDate(WidgetTester tester, DateTime? date) async {
+      picker(tester).onChanged!(date);
+      await settlePilot(tester);
+    }
+
+    Ranking notifierOf(WidgetTester tester) => ProviderScope.containerOf(tester.element(find.byType(RankingPage))).read(rankingProvider.notifier);
+
+    testWidgets('the picker offers every day from Pixiv\'s first to yesterday, shows Latest and clears', (tester) async {
+      await _mount(tester);
+      final control = picker(tester);
+      final now = DateTime.now();
+      expect(control.label, t.ranking.date.label);
+      expect(control.placeholder, t.ranking.date.latest);
+      expect(control.help, t.ranking.date.help);
+      expect(control.value, isNull);
+      expect(control.clearable, isTrue);
+      expect(control.showsYear, isTrue);
+      expect(control.firstDate, DateTime(2007, 9, 13));
+      expect(control.lastDate, DateTime(now.year, now.month, now.day - 1));
+      expect(find.byType(FrostDatePicker), findsWidgets);
+    });
+
+    testWidgets('picking a day asks for that day\'s ranking, and the request spells it year-month-day', (tester) async {
+      await _mount(tester);
+      expect(_requestedOn, [(IllustRankingMode.day, null)]);
+      await pickDate(tester, day);
+      expect(_requestedOn.last, (IllustRankingMode.day, day));
+      expect(picker(tester).value, day);
+      expect(rankingApiDate(day), '2024-03-05');
+      expect(rankingApiDate(DateTime(2007, 9, 13)), '2007-09-13');
+      expect(find.byType(AppArtworkCard), findsWidgets);
+    });
+
+    testWidgets('clearing goes back to the latest ranking without asking for it again', (tester) async {
+      await _mount(tester);
+      final latest = notifierOf(tester).illustSourceFor(IllustRankingMode.day);
+      await pickDate(tester, day);
+      final asked = _requestedOn.length;
+      final dated = notifierOf(tester).illustSourceFor(IllustRankingMode.day);
+      expect(dated, isNot(same(latest)));
+      await pickDate(tester, null);
+      expect(picker(tester).value, isNull);
+      expect(notifierOf(tester).illustSourceFor(IllustRankingMode.day), same(latest), reason: 'the latest ranking is kept');
+      expect(_requestedOn, hasLength(asked), reason: 'nothing asked for again');
+
+      await pickDate(tester, day);
+      expect(notifierOf(tester).illustSourceFor(IllustRankingMode.day), same(dated), reason: 'a day looked at is kept too');
+      expect(_requestedOn, hasLength(asked));
+      await pickDate(tester, otherDay);
+      expect(_requestedOn.last, (IllustRankingMode.day, otherDay));
+    });
+
+    testWidgets('switching the kind or the mode keeps the day, and the next kind and mode are of that day', (tester) async {
+      await _mount(tester);
+      await pickDate(tester, day);
+      await _showKind(tester, t.ranking.types.manga);
+      expect(picker(tester).value, day);
+      expect(_requestedOn.last, (MangaRankingMode.day, day));
+      await _pickMode(tester, MangaRankingMode.week);
+      expect(picker(tester).value, day);
+      expect(_requestedOn.last, (MangaRankingMode.week, day));
+      await _showKind(tester, t.ranking.types.novels);
+      expect(picker(tester).value, day);
+      expect(_requestedOn.last, (NovelRankingMode.week, day));
+      await _pickMode(tester, NovelRankingMode.dayR18);
+      expect(_requestedOn.last, (NovelRankingMode.dayR18, day));
+      await _showKind(tester, t.ranking.types.illustrations);
+      expect(picker(tester).value, day);
+    });
+
+    group('a day with no ranking', () {
+      Future<void> mountReal(WidgetTester tester, _Api api) {
+        pixivApi = api;
+        return mountPilotPage(tester, const RankingPage(kind: AppRankingKind.illust), overrides: {rankingProvider: rankingProvider.overrideWith(Ranking.new)});
+      }
+
+      testWidgets('that fails says so as an empty state, with no retry', (tester) async {
+        await mountReal(tester, _Api(onDate: (_) async => throw StateError('no such ranking')));
+        expect(find.byType(AppArtworkCard), findsWidgets, reason: 'the latest ranking lists');
+        await pickDate(tester, day);
+        expect(find.text(t.ranking.date.empty), findsOneWidget);
+        expect(find.text(t.common.retry), findsNothing);
+        expect(find.byType(FrostErrorContent), findsNothing);
+        expect(find.text(t.ranking.emptyTitle), findsNothing);
+      });
+
+      testWidgets('that comes back empty says the same, and the latest ranking keeps its own empty state', (tester) async {
+        await mountReal(
+          tester,
+          _Api(
+            onDate: (_) async => const IllustPageResult(illusts: [], rankingIllusts: []),
+          ),
+        );
+        await pickDate(tester, day);
+        expect(find.text(t.ranking.date.empty), findsOneWidget);
+        expect(_Api.dates.last, 'illust day 2024-03-05');
+        await pickDate(tester, null);
+        expect(find.text(t.ranking.date.empty), findsNothing);
+        expect(find.byType(AppArtworkCard), findsWidgets);
+      });
+
+      testWidgets('asks the dated request of each kind', (tester) async {
+        final api = _Api(
+          onDate: (_) async => const IllustPageResult(illusts: [], rankingIllusts: []),
+        );
+        pixivApi = api;
+        await RankingIllustListSource(mode: IllustRankingMode.week, date: day).refresh(true);
+        await RankingMangaListSource(mode: MangaRankingMode.month, date: day).refresh(true);
+        await RankingNovelListSource(mode: NovelRankingMode.dayR18, date: day).refresh(true);
+        expect(_Api.dates, ['illust week 2024-03-05', 'manga month 2024-03-05', 'novel dayR18 2024-03-05']);
+      });
+    });
   });
 
   test('the ranking strings exist in all four languages', () => expectLocalesComplete(['ranking']));

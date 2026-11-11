@@ -16,39 +16,33 @@ class RankingState {
     required this.illustSources,
     required this.mangaSources,
     required this.novelSources,
+    this.date,
   });
 
   final IllustRankingMode illustMode;
   final MangaRankingMode mangaMode;
   final NovelRankingMode novelMode;
 
+  /// The day the rankings are of, shared by every kind and mode; null for the
+  /// latest ranking.
+  final DateTime? date;
+
+  /// The latest ranking of each mode. The rankings of a [date] are made and
+  /// kept by [Ranking], per mode and day.
   final Map<IllustRankingMode, RankingIllustListSource> illustSources;
   final Map<MangaRankingMode, RankingMangaListSource> mangaSources;
   final Map<NovelRankingMode, RankingNovelListSource> novelSources;
 
-  RankingIllustListSource get currentIllustSource {
-    return illustSources[illustMode]!;
-  }
-
-  RankingMangaListSource get currentMangaSource {
-    return mangaSources[mangaMode]!;
-  }
-
-  RankingNovelListSource get currentNovelSource {
-    return novelSources[novelMode]!;
-  }
-
-  RankingIllustListSource illustSourceFor(IllustRankingMode mode) {
-    return illustSources[mode]!;
-  }
-
-  RankingMangaListSource mangaSourceFor(MangaRankingMode mode) {
-    return mangaSources[mode]!;
-  }
-
-  RankingNovelListSource novelSourceFor(NovelRankingMode mode) {
-    return novelSources[mode]!;
-  }
+  /// This state with the rankings of [date], or the latest ones for null.
+  RankingState onDate(DateTime? date) => RankingState(
+    illustMode: illustMode,
+    mangaMode: mangaMode,
+    novelMode: novelMode,
+    illustSources: illustSources,
+    mangaSources: mangaSources,
+    novelSources: novelSources,
+    date: date,
+  );
 
   RankingState copyWith({
     IllustRankingMode? illustMode,
@@ -65,18 +59,42 @@ class RankingState {
       illustSources: illustSources ?? this.illustSources,
       mangaSources: mangaSources ?? this.mangaSources,
       novelSources: novelSources ?? this.novelSources,
+      date: date,
     );
   }
 }
 
+/// The date as the ranking requests spell it: year, month and day.
+String rankingApiDate(DateTime date) =>
+    '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+/// The first page of a ranking of a past day. Pixiv has no ranking of some
+/// modes for some days and answers with nothing or an error: either way there
+/// is nothing to list for that day, so a failure reads as an empty page.
+Future<T> _pastRanking<T>(Future<T> Function() load, T empty) async {
+  try {
+    return await load();
+  } catch (_) {
+    return empty;
+  }
+}
+
 class RankingIllustListSource extends FrostCursorListSource<Illust, IllustPageResult> {
-  RankingIllustListSource({required this.mode});
+  RankingIllustListSource({required this.mode, this.date});
 
   final IllustRankingMode mode;
 
+  /// The day of the ranking; null for the latest.
+  final DateTime? date;
+
   @override
   Future<IllustPageResult> loadFirstPage() {
-    return pixivApi.getIllustRankingPage(mode: mode);
+    final date = this.date;
+    if (date == null) return pixivApi.getIllustRankingPage(mode: mode);
+    return _pastRanking(
+      () => pixivApi.getIllustRankingPageOnDate(mode: mode, date: rankingApiDate(date)),
+      const IllustPageResult(illusts: [], rankingIllusts: []),
+    );
   }
 
   @override
@@ -96,13 +114,21 @@ class RankingIllustListSource extends FrostCursorListSource<Illust, IllustPageRe
 }
 
 class RankingMangaListSource extends FrostCursorListSource<Illust, IllustPageResult> {
-  RankingMangaListSource({required this.mode});
+  RankingMangaListSource({required this.mode, this.date});
 
   final MangaRankingMode mode;
 
+  /// The day of the ranking; null for the latest.
+  final DateTime? date;
+
   @override
   Future<IllustPageResult> loadFirstPage() {
-    return pixivApi.getMangaRankingPage(mode: mode);
+    final date = this.date;
+    if (date == null) return pixivApi.getMangaRankingPage(mode: mode);
+    return _pastRanking(
+      () => pixivApi.getMangaRankingPageOnDate(mode: mode, date: rankingApiDate(date)),
+      const IllustPageResult(illusts: [], rankingIllusts: []),
+    );
   }
 
   @override
@@ -122,13 +148,18 @@ class RankingMangaListSource extends FrostCursorListSource<Illust, IllustPageRes
 }
 
 class RankingNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> {
-  RankingNovelListSource({required this.mode});
+  RankingNovelListSource({required this.mode, this.date});
 
   final NovelRankingMode mode;
 
+  /// The day of the ranking; null for the latest.
+  final DateTime? date;
+
   @override
   Future<NovelPageResult> loadFirstPage() {
-    return pixivApi.getNovelRankingPage(mode: mode);
+    final date = this.date;
+    if (date == null) return pixivApi.getNovelRankingPage(mode: mode);
+    return _pastRanking(() => pixivApi.getNovelRankingPageOnDate(mode: mode, date: rankingApiDate(date)), const NovelPageResult(novels: [], rankingNovels: []));
   }
 
   @override
@@ -151,22 +182,26 @@ class RankingNovelListSource extends FrostCursorListSource<Novel, NovelPageResul
 class Ranking extends _$Ranking {
   @override
   RankingState build() {
-    final illustSources = {for (final mode in IllustRankingMode.values) mode: createIllustSource(mode)};
+    final illustSources = {for (final mode in IllustRankingMode.values) mode: createIllustSource(mode, null)};
 
-    final mangaSources = {for (final mode in MangaRankingMode.values) mode: createMangaSource(mode)};
+    final mangaSources = {for (final mode in MangaRankingMode.values) mode: createMangaSource(mode, null)};
 
-    final novelSources = {for (final mode in NovelRankingMode.values) mode: createNovelSource(mode)};
+    final novelSources = {for (final mode in NovelRankingMode.values) mode: createNovelSource(mode, null)};
+
+    final pastIllust = _pastIllust = {};
+    final pastManga = _pastManga = {};
+    final pastNovel = _pastNovel = {};
 
     ref.onDispose(() {
-      for (final source in illustSources.values) {
+      for (final source in [...illustSources.values, ...pastIllust.values]) {
         source.dispose();
       }
 
-      for (final source in mangaSources.values) {
+      for (final source in [...mangaSources.values, ...pastManga.values]) {
         source.dispose();
       }
 
-      for (final source in novelSources.values) {
+      for (final source in [...novelSources.values, ...pastNovel.values]) {
         source.dispose();
       }
     });
@@ -181,15 +216,46 @@ class Ranking extends _$Ranking {
     );
   }
 
-  /// The ranking of each mode; sample data answers its own.
+  /// The rankings of the days looked at so far, kept per mode and day so that
+  /// coming back to one needs no new request.
+  late Map<(IllustRankingMode, DateTime), RankingIllustListSource> _pastIllust;
+  late Map<(MangaRankingMode, DateTime), RankingMangaListSource> _pastManga;
+  late Map<(NovelRankingMode, DateTime), RankingNovelListSource> _pastNovel;
+
+  /// The ranking of [mode] on [date], the latest one for a null [date]; sample
+  /// data answers its own.
   @protected
-  RankingIllustListSource createIllustSource(IllustRankingMode mode) => RankingIllustListSource(mode: mode);
+  RankingIllustListSource createIllustSource(IllustRankingMode mode, DateTime? date) => RankingIllustListSource(mode: mode, date: date);
 
   @protected
-  RankingMangaListSource createMangaSource(MangaRankingMode mode) => RankingMangaListSource(mode: mode);
+  RankingMangaListSource createMangaSource(MangaRankingMode mode, DateTime? date) => RankingMangaListSource(mode: mode, date: date);
 
   @protected
-  RankingNovelListSource createNovelSource(NovelRankingMode mode) => RankingNovelListSource(mode: mode);
+  RankingNovelListSource createNovelSource(NovelRankingMode mode, DateTime? date) => RankingNovelListSource(mode: mode, date: date);
+
+  /// The ranking of [mode] on the day the rankings are of now.
+  RankingIllustListSource illustSourceFor(IllustRankingMode mode) {
+    final date = state.date;
+    return date == null ? state.illustSources[mode]! : _pastIllust.putIfAbsent((mode, date), () => createIllustSource(mode, date));
+  }
+
+  RankingMangaListSource mangaSourceFor(MangaRankingMode mode) {
+    final date = state.date;
+    return date == null ? state.mangaSources[mode]! : _pastManga.putIfAbsent((mode, date), () => createMangaSource(mode, date));
+  }
+
+  RankingNovelListSource novelSourceFor(NovelRankingMode mode) {
+    final date = state.date;
+    return date == null ? state.novelSources[mode]! : _pastNovel.putIfAbsent((mode, date), () => createNovelSource(mode, date));
+  }
+
+  /// Shows the rankings of the day [date] (its date, not its time), or the
+  /// latest ones for null. Every kind and mode follows.
+  void setDate(DateTime? date) {
+    final day = date == null ? null : DateTime(date.year, date.month, date.day);
+    if (state.date == day) return;
+    state = state.onDate(day);
+  }
 
   void setIllustMode(IllustRankingMode mode) {
     if (state.illustMode == mode) {
@@ -218,29 +284,19 @@ class Ranking extends _$Ranking {
     loadNovelCurrentIfNeeded();
   }
 
-  void loadCurrentIfNeeded() {
-    loadIllustCurrentIfNeeded();
-  }
+  void loadIllustCurrentIfNeeded() => loadIllustModeIfNeeded(state.illustMode);
 
-  void loadIllustCurrentIfNeeded() {
-    _loadIllustSourceIfNeeded(state.currentIllustSource);
-  }
+  void loadMangaCurrentIfNeeded() => loadMangaModeIfNeeded(state.mangaMode);
 
-  void loadMangaCurrentIfNeeded() {
-    _loadMangaSourceIfNeeded(state.currentMangaSource);
-  }
-
-  void loadNovelCurrentIfNeeded() {
-    _loadNovelSourceIfNeeded(state.currentNovelSource);
-  }
+  void loadNovelCurrentIfNeeded() => loadNovelModeIfNeeded(state.novelMode);
 
   /// Loads one mode's ranking for a page showing it, whatever mode the
   /// other ranking pages show.
-  void loadIllustModeIfNeeded(IllustRankingMode mode) => _loadIllustSourceIfNeeded(state.illustSourceFor(mode));
+  void loadIllustModeIfNeeded(IllustRankingMode mode) => _loadIllustSourceIfNeeded(illustSourceFor(mode));
 
-  void loadMangaModeIfNeeded(MangaRankingMode mode) => _loadMangaSourceIfNeeded(state.mangaSourceFor(mode));
+  void loadMangaModeIfNeeded(MangaRankingMode mode) => _loadMangaSourceIfNeeded(mangaSourceFor(mode));
 
-  void loadNovelModeIfNeeded(NovelRankingMode mode) => _loadNovelSourceIfNeeded(state.novelSourceFor(mode));
+  void loadNovelModeIfNeeded(NovelRankingMode mode) => _loadNovelSourceIfNeeded(novelSourceFor(mode));
 
   void _loadIllustSourceIfNeeded(RankingIllustListSource source) {
     if (!source.initialized && !source.refreshing) {

@@ -491,6 +491,7 @@ class Translations$ranking$zh_Hant_TW extends Translations$ranking$en_US {
 	// Translations
 	@override String get emptyTitle => '暫無排行榜作品';
 	@override String get emptyMessage => '下拉即可重新取得排行榜。';
+	@override late final Translations$ranking$date$zh_Hant_TW date = Translations$ranking$date$zh_Hant_TW.internal(_root);
 	@override late final Translations$ranking$types$zh_Hant_TW types = Translations$ranking$types$zh_Hant_TW.internal(_root);
 	@override late final Translations$ranking$modes$zh_Hant_TW modes = Translations$ranking$modes$zh_Hant_TW.internal(_root);
 	@override String get r18Section => 'R-18';
@@ -1215,6 +1216,19 @@ class Translations$settings$account$zh_Hant_TW extends Translations$settings$acc
 	@override String get showAi => '顯示 AI 作品';
 	@override String get showAiHelp => '這項設定會同步到你的 pixiv 帳號';
 	@override String get showAiFailed => '設定修改失敗';
+}
+
+// Path: ranking.date
+class Translations$ranking$date$zh_Hant_TW extends Translations$ranking$date$en_US {
+	Translations$ranking$date$zh_Hant_TW.internal(TranslationsZhHantTw root) : this._root = root, super.internal(root);
+
+	final TranslationsZhHantTw _root; // ignore: unused_field
+
+	// Translations
+	@override String get label => '日期';
+	@override String get latest => '最新';
+	@override String get help => '週榜和月榜統計到所選日期為止。';
+	@override String get empty => '這一天沒有這個排行';
 }
 
 // Path: ranking.types
@@ -2220,6 +2234,10 @@ extension on TranslationsZhHantTw {
 			'home.users' => '使用者',
 			'ranking.emptyTitle' => '暫無排行榜作品',
 			'ranking.emptyMessage' => '下拉即可重新取得排行榜。',
+			'ranking.date.label' => '日期',
+			'ranking.date.latest' => '最新',
+			'ranking.date.help' => '週榜和月榜統計到所選日期為止。',
+			'ranking.date.empty' => '這一天沒有這個排行',
 			'ranking.types.illustrations' => '插畫',
 			'ranking.types.manga' => '漫畫',
 			'ranking.types.novels' => '小說',
@@ -2350,12 +2368,12 @@ extension on TranslationsZhHantTw {
 			'newest.followScope.all' => '全部關注',
 			'newest.followScope.private' => '私人關注',
 			'newest.followScope.public' => '公開關注',
+			_ => null,
+		} ?? switch (path) {
 			'newest.followScope.compactAll' => '全部',
 			'newest.followScope.compactPrivate' => '私人',
 			'newest.followScope.compactPublic' => '公開',
 			'newest.emptyTitle' => '尚無最新作品',
-			_ => null,
-		} ?? switch (path) {
 			'newest.compactFilter' => ({required Object workType, required Object scope}) => '${workType} · ${scope}',
 			'newest.novelChars' => ({required Object count}) => '${count} 字',
 			'newest.novelPages' => ({required Object count}) => '${count} 頁',

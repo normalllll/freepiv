@@ -493,6 +493,7 @@ class Translations$ranking$en_US {
 	// Translations
 	String get emptyTitle => 'No ranking works';
 	String get emptyMessage => 'Pull down to fetch the ranking again.';
+	late final Translations$ranking$date$en_US date = Translations$ranking$date$en_US.internal(_root);
 	late final Translations$ranking$types$en_US types = Translations$ranking$types$en_US.internal(_root);
 	late final Translations$ranking$modes$en_US modes = Translations$ranking$modes$en_US.internal(_root);
 	String get r18Section => 'R-18';
@@ -1217,6 +1218,19 @@ class Translations$settings$account$en_US {
 	String get showAi => 'Show AI-generated works';
 	String get showAiHelp => 'This setting is saved to your pixiv account';
 	String get showAiFailed => 'Could not change the setting';
+}
+
+// Path: ranking.date
+class Translations$ranking$date$en_US {
+	Translations$ranking$date$en_US.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get label => 'Date';
+	String get latest => 'Latest';
+	String get help => 'Weekly and monthly rankings run up to that day.';
+	String get empty => 'No ranking for this day';
 }
 
 // Path: ranking.types
@@ -2222,6 +2236,10 @@ extension on Translations {
 			'home.users' => 'Users',
 			'ranking.emptyTitle' => 'No ranking works',
 			'ranking.emptyMessage' => 'Pull down to fetch the ranking again.',
+			'ranking.date.label' => 'Date',
+			'ranking.date.latest' => 'Latest',
+			'ranking.date.help' => 'Weekly and monthly rankings run up to that day.',
+			'ranking.date.empty' => 'No ranking for this day',
 			'ranking.types.illustrations' => 'Illust',
 			'ranking.types.manga' => 'Manga',
 			'ranking.types.novels' => 'Novels',
@@ -2352,12 +2370,12 @@ extension on Translations {
 			'newest.followScope.all' => 'All follows',
 			'newest.followScope.private' => 'Private follows',
 			'newest.followScope.public' => 'Public follows',
+			_ => null,
+		} ?? switch (path) {
 			'newest.followScope.compactAll' => 'All',
 			'newest.followScope.compactPrivate' => 'Private',
 			'newest.followScope.compactPublic' => 'Public',
 			'newest.emptyTitle' => 'No newest works',
-			_ => null,
-		} ?? switch (path) {
 			'newest.compactFilter' => ({required Object workType, required Object scope}) => '${workType} · ${scope}',
 			'newest.novelChars' => ({required Object count}) => '${count} chars',
 			'newest.novelPages' => ({required Object count}) => '${count} pages',
