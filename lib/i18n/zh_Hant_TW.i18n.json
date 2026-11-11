@@ -1067,7 +1067,16 @@
     "remove": "取消封鎖 $name",
     "tagExists": "這個標籤已經在封鎖清單中",
     "add": "新增",
-    "tagRequired": "請輸入標籤"
+    "tagRequired": "請輸入標籤",
+    "blockUser": "封鎖此使用者",
+    "unblockUser": "取消封鎖此使用者",
+    "blockTag": "封鎖此標籤",
+    "confirmTitle": "封鎖 $name？",
+    "confirmMessage": "$name 的作品不會再出現在這台裝置的推薦、動態、排行與搜尋結果中。可隨時在設定中取消。",
+    "confirm": "封鎖",
+    "blocked": "已封鎖 $name",
+    "unblocked": "已取消封鎖 $name",
+    "undo": "復原"
   },
   "watchlist": {
     "title": "我的追更",

@@ -6,6 +6,11 @@ import 'package:freepiv/core/block/block_list.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
+import 'package:freepiv/features/illust/logic/illust_detail_logic.dart';
+import 'package:freepiv/features/newest/logic/newest_logic.dart';
+import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
+import 'package:freepiv/features/ranking/logic/ranking_logic.dart';
+import 'package:freepiv/features/search/logic/search_logic.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/enums.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
@@ -217,6 +222,71 @@ void main() {
     expect(AppSettings.blockListListenable.hasListeners, isFalse);
   });
 
+  test('an entry that cannot be read is skipped and the others stay', () async {
+    await AppSettings.initialize(
+      store: SampleSettingsStore({
+        'blockList': {
+          'tags': ['good', '', 3, 'good', 'other'],
+          'users': [
+            {'id': 7, 'name': 'Seven'},
+            {'id': 'eight', 'name': 'Eight'},
+            {'name': 'No ID'},
+            {'id': 9},
+            'nine',
+            {'id': 10, 'name': 'Ten'},
+          ],
+        },
+      }),
+    );
+
+    expect(AppSettings.blockList.tags, ['good', 'other']);
+    expect(AppSettings.blockList.users, const [BlockedUser(id: 7, name: 'Seven'), BlockedUser(id: 10, name: 'Ten')]);
+  });
+
+  test('a tag is stored without spaces around it and without a leading #, and what is left of nothing is not a tag', () {
+    final blocks = const BlockList().withTag('  #猫 ').withTag('##landscape').withTag('a # b');
+
+    expect(blocks.tags, ['猫', 'landscape', 'a # b']);
+    expect(blocks.withTag('猫').withTag('# 猫').tags, blocks.tags, reason: 'already blocked, however it is typed');
+    expect(blocks.withTag('#').withTag('   ').withTag('').tags, blocks.tags);
+    expect(blocks.blocksTag('猫'), isTrue);
+    expect(BlockList.normalizeTag(' #猫 '), '猫');
+    expect(blocks.withoutTag('猫').blocksTag('猫'), isFalse);
+  });
+
+  test('the home ranking shelf stays when a blocked first page is followed by a page without one', () async {
+    AppSettings.blockList = const BlockList().withUser(const BlockedUser(id: 7, name: 'Seven'));
+    final source = _TwoHomePages(
+      IllustPageResult(illusts: [fakeIllust(1, by: 7)], rankingIllusts: [fakeIllust(10), fakeIllust(11, by: 7)], nextUrl: 'next'),
+      IllustPageResult(illusts: [fakeIllust(2)], rankingIllusts: const []),
+    );
+    addTearDown(source.dispose);
+
+    await source.refresh(true);
+
+    expect(_ids(source), [2], reason: 'the first page was blocked whole, so the second one was read in the same load');
+    expect([for (final illust in source.rankingIllusts) illust.id], [10], reason: 'the shelf of the first page, filtered, not replaced by the empty one');
+  });
+
+  test('the home ranking shelf of novels stays as well, and a refresh sets it again', () async {
+    AppSettings.blockList = const BlockList().withUser(const BlockedUser(id: 7, name: 'Seven'));
+    var shelf = [fakeNovel(10)];
+    final source = _TwoHomeNovelPages(
+      () => NovelPageResult(novels: [fakeNovel(1, by: 7)], rankingNovels: shelf, nextUrl: 'next'),
+      const NovelPageResult(novels: [], rankingNovels: []),
+    );
+    addTearDown(source.dispose);
+
+    await source.refresh(true);
+    expect([for (final novel in source.rankingNovels) novel.id], [10]);
+
+    shelf = [fakeNovel(20)];
+    await source.refresh(true);
+    expect([for (final novel in source.rankingNovels) novel.id], [20]);
+  });
+
+  _wiringTests();
+
   test('the home ranking shelf leaves out what the block list hides, and follows it', () async {
     final source = _HomeFeed(
       IllustPageResult(
@@ -242,6 +312,9 @@ void main() {
 
     expect(notified, greaterThan(0), reason: 'the shelf is told');
     expect([for (final illust in source.rankingIllusts) illust.id], [11]);
+
+    AppSettings.blockList = const BlockList();
+    expect([for (final illust in source.rankingIllusts) illust.id], [11], reason: 'unblocking does not bring entries back');
   });
 
   test('the home users and the novels are filtered as well', () async {
@@ -310,12 +383,191 @@ void main() {
     );
     expect(AppSettings.blockList.isEmpty, isTrue);
 
+    await AppSettings.initialize(store: SampleSettingsStore({'blockList': 'not a map'}));
+    expect(AppSettings.blockList.isEmpty, isTrue);
+
     await AppSettings.initialize(store: store);
     AppSettings.blockList = const BlockList().withTag('tag');
     AppSettings.blockList = const BlockList();
     await pumpEventQueue();
     expect(store.values.containsKey('blockList'), isFalse, reason: 'an empty list stores nothing');
   });
+}
+
+class _TwoHomePages extends HomeIllustListSource {
+  _TwoHomePages(this.first, this.next) : super(illustType: IllustType.illust);
+
+  final IllustPageResult first, next;
+
+  @override
+  Future<IllustPageResult> loadFirstPage() async => first;
+
+  @override
+  Future<IllustPageResult> loadNextPage(String nextUrl) async => next;
+}
+
+class _TwoHomeNovelPages extends HomeNovelListSource {
+  _TwoHomeNovelPages(this.first, this.next);
+
+  final NovelPageResult Function() first;
+  final NovelPageResult next;
+
+  @override
+  Future<NovelPageResult> loadFirstPage() async => first();
+
+  @override
+  Future<NovelPageResult> loadNextPage(String nextUrl) async => next;
+}
+
+// Each source the block list applies to, as its own class: a class that lost
+// its mixin, or tests the wrong thing in isBlocked, fails here.
+
+List<Illust> _illustPage() => [
+  fakeIllust(1),
+  fakeIllust(2, by: 7),
+  fakeIllust(3, tags: ['blocked tag']),
+];
+
+List<Novel> _novelPage() => [
+  fakeNovel(1),
+  fakeNovel(2, by: 7),
+  fakeNovel(3, tags: ['blocked tag']),
+];
+
+IllustPageResult _illusts() => IllustPageResult(illusts: _illustPage(), rankingIllusts: const []);
+
+NovelPageResult _novels() => NovelPageResult(novels: _novelPage(), rankingNovels: const []);
+
+List<UserPreview> _previews() => [fakePreview(1), fakePreview(7)];
+
+void _wiringTests() {
+  Future<void> expectKept<T>(FrostListSource<T> source, List<int> Function(List<T> items) ids) async {
+    addTearDown(source.dispose);
+    AppSettings.blockList = const BlockList().withUser(const BlockedUser(id: 7, name: 'Seven')).withTag('blocked tag');
+    await source.refresh(true);
+    expect(ids(source.items), [1], reason: '${source.runtimeType} drops the work by a blocked user and the one with a blocked tag');
+  }
+
+  List<int> illustIds(List<Illust> items) => [for (final illust in items) illust.id];
+  List<int> novelIds(List<Novel> items) => [for (final novel in items) novel.id];
+  List<int> userIds(List<UserPreview> items) => [for (final preview in items) preview.user.id];
+
+  test('home illustrations, novels and users', () async {
+    await expectKept(_HomeFeed(_illusts()), illustIds);
+    await expectKept(_HomeNovels(_novels()), novelIds);
+    await expectKept(_HomeUsers(_previews()), userIds);
+  });
+
+  test('the newest feed, of illustrations and of novels', () async {
+    List<int> ids(List<NewestItem> items) => [
+      for (final item in items)
+        switch (item) {
+          NewestIllust(:final illust) => illust.id,
+          NewestNovel(:final novel) => novel.id,
+        },
+    ];
+    await expectKept(_Newest(const NewestFeedKey(audience: NewestAudience.everyone, workType: NewestWorkType.illust), _illusts()), ids);
+    await expectKept(_Newest(const NewestFeedKey(audience: NewestAudience.everyone, workType: NewestWorkType.novel), _novels()), ids);
+  });
+
+  test('the rankings of illustrations, manga and novels', () async {
+    await expectKept(_RankingIllusts(_illusts()), illustIds);
+    await expectKept(_RankingManga(_illusts()), illustIds);
+    await expectKept(_RankingNovels(_novels()), novelIds);
+  });
+
+  test('the searches for illustrations, novels and users', () async {
+    const request = SearchResultRequest(keyword: 'word', filter: SearchFilterState());
+    await expectKept(_SearchIllusts(request, SearchIllustPageResult(illusts: _illustPage(), searchSpanLimit: 0)), illustIds);
+    await expectKept(_SearchNovels(request, SearchNovelPageResult(novels: _novelPage(), searchSpanLimit: 0)), novelIds);
+    await expectKept(_SearchUsers('word', _previews()), userIds);
+  });
+
+  test('the works related to an illustration and to a novel', () async {
+    await expectKept(_RelatedIllusts(_illusts()), illustIds);
+    await expectKept(_RelatedNovels(_novels()), novelIds);
+  });
+}
+
+class _Newest extends NewestListSource {
+  _Newest(NewestFeedKey key, this.page) : super(key: key);
+
+  final Object page;
+
+  @override
+  Future<Object> loadFirstPage() async => page;
+}
+
+class _RankingIllusts extends RankingIllustListSource {
+  _RankingIllusts(this.page) : super(mode: IllustRankingMode.day);
+
+  final IllustPageResult page;
+
+  @override
+  Future<IllustPageResult> loadFirstPage() async => page;
+}
+
+class _RankingManga extends RankingMangaListSource {
+  _RankingManga(this.page) : super(mode: MangaRankingMode.day);
+
+  final IllustPageResult page;
+
+  @override
+  Future<IllustPageResult> loadFirstPage() async => page;
+}
+
+class _RankingNovels extends RankingNovelListSource {
+  _RankingNovels(this.page) : super(mode: NovelRankingMode.day);
+
+  final NovelPageResult page;
+
+  @override
+  Future<NovelPageResult> loadFirstPage() async => page;
+}
+
+class _SearchIllusts extends SearchIllustListSource {
+  _SearchIllusts(SearchResultRequest request, this.page) : super(request: request);
+
+  final SearchIllustPageResult page;
+
+  @override
+  Future<SearchIllustPageResult> loadFirstPage() async => page;
+}
+
+class _SearchNovels extends SearchNovelListSource {
+  _SearchNovels(SearchResultRequest request, this.page) : super(request: request);
+
+  final SearchNovelPageResult page;
+
+  @override
+  Future<SearchNovelPageResult> loadFirstPage() async => page;
+}
+
+class _SearchUsers extends SearchUserListSource {
+  _SearchUsers(String keyword, this.users) : super(keyword: keyword);
+
+  final List<UserPreview> users;
+
+  @override
+  Future<UserPageResult> loadFirstPage() async => UserPageResult(userPreviews: users);
+}
+
+class _RelatedIllusts extends IllustRelatedListSource {
+  _RelatedIllusts(this.page) : super(illustId: 99);
+
+  final IllustPageResult page;
+
+  @override
+  Future<IllustPageResult> loadFirstPage() async => page;
+}
+
+class _RelatedNovels extends NovelRelatedListSource {
+  _RelatedNovels(this.page) : super(novelId: 99);
+
+  final NovelPageResult page;
+
+  @override
+  Future<NovelPageResult> loadFirstPage() async => page;
 }
 
 class _HomeFeed extends HomeIllustListSource {

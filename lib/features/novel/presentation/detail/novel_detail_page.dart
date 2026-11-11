@@ -27,6 +27,7 @@ import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/ui/compositions/pixiv_text.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:freepiv/ui/compositions/skeletons.dart';
+import 'package:freepiv/ui/compositions/tag_menu.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -298,6 +299,7 @@ class _NovelAbout extends StatelessWidget {
                     detail: tag.translatedName,
                     style: FrostTagStyle.topic,
                     onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.tagSearch(tag.name, kind: AppSearchKind.novel))),
+                    contextMenu: workTagMenu(context, tag.name),
                   ),
               ],
             ),

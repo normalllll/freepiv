@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/block/block_actions.dart';
 import 'package:freepiv/features/downloads/presentation/download_flight.dart';
 import 'package:freepiv/features/illust/presentation/artwork_actions.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -206,6 +207,7 @@ List<FrostMenuEntry> artworkMenu(BuildContext context, WidgetRef ref, Illust ill
           leading: const FrostGlyph.icon(PivIcons.externalLink),
           onSelected: () => unawaited(openArtworkOnPixiv(illust.id)),
         ),
+        ...blockUserMenuEntries(context, illust.user),
       ],
     ),
   ];

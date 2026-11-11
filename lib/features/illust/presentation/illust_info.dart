@@ -20,6 +20,7 @@ import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/loading_section.dart';
 import 'package:freepiv/ui/compositions/pixiv_text.dart';
 import 'package:freepiv/ui/compositions/skeletons.dart';
+import 'package:freepiv/ui/compositions/tag_menu.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -272,13 +273,7 @@ class _IllustAboutState extends State<IllustAbout> {
                   detail: tag.translatedName,
                   style: FrostTagStyle.topic,
                   onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.tagSearch(tag.name))),
-                  contextMenu: [
-                    FrostMenuAction(
-                      t.illustDetail.copyTag,
-                      leading: const FrostGlyph.icon(PivIcons.copy),
-                      onSelected: () => unawaited(_copy(t.illust.tags.tag, tag.name)),
-                    ),
-                  ],
+                  contextMenu: workTagMenu(context, tag.name),
                 ),
               if (hidden > 0)
                 FrostButton.quiet(
@@ -301,15 +296,6 @@ class _IllustAboutState extends State<IllustAbout> {
         ),
       ],
     );
-  }
-
-  Future<void> _copy(String label, String value) async {
-    try {
-      await copyTextToClipboard(value);
-      FrostToast.copied(t.illust.toast.copiedValue(label: label, value: value));
-    } catch (error) {
-      toastErrorWithCause(t.illust.toast.copyFailed(label: label), error);
-    }
   }
 }
 

@@ -1067,7 +1067,16 @@
     "remove": "取消屏蔽 $name",
     "tagExists": "这个标签已经在屏蔽列表里",
     "add": "添加",
-    "tagRequired": "请输入标签"
+    "tagRequired": "请输入标签",
+    "blockUser": "屏蔽此用户",
+    "unblockUser": "取消屏蔽此用户",
+    "blockTag": "屏蔽此标签",
+    "confirmTitle": "屏蔽 $name？",
+    "confirmMessage": "$name 的作品不会再出现在这台设备的推荐、动态、排行和搜索结果里。可以随时在设置里取消。",
+    "confirm": "屏蔽",
+    "blocked": "已屏蔽 $name",
+    "unblocked": "已取消屏蔽 $name",
+    "undo": "撤销"
   },
   "watchlist": {
     "title": "我的追更",

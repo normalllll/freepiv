@@ -1067,7 +1067,16 @@
     "remove": "Unblock $name",
     "tagExists": "This tag is already blocked",
     "add": "Add",
-    "tagRequired": "Enter a tag"
+    "tagRequired": "Enter a tag",
+    "blockUser": "Block this user",
+    "unblockUser": "Unblock this user",
+    "blockTag": "Block this tag",
+    "confirmTitle": "Block $name?",
+    "confirmMessage": "Works by $name will no longer show in recommendations, new works, rankings and search results on this device. You can undo this in Settings.",
+    "confirm": "Block",
+    "blocked": "Blocked $name",
+    "unblocked": "Unblocked $name",
+    "undo": "Undo"
   },
   "watchlist": {
     "title": "Follow-ups",

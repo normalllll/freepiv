@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/refresh/app_refresh.dart';
 import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/core/block/block_list.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/block/block_actions.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
 import 'package:freepiv/features/user_detail/presentation/bookmark_tag_picker.dart';
 import 'package:freepiv/shared/logic/bookmark_tags.dart';
@@ -371,41 +373,47 @@ class _UserIdentity extends ConsumerWidget {
     final profile = detail.profile;
     final bio = plainTextFromHtml(detail.user.comment ?? '').trim();
     final web = Uri.parse('https://www.pixiv.net/users/${user.id}');
+    final ownPage = int.tryParse(pixivAccountNotifier.value?.user.id ?? '') == user.id;
     return Padding(
       padding: const EdgeInsets.only(bottom: FrostGap.section),
-      child: UserIdentityHeader(
-        bannerBottom: bannerBottom,
-        avatar: const AppFlightAvatar(),
-        name: user.name,
-        subtitle: '@${user.account}',
-        stats: [
-          AppIdentityStat(value: formatCount(profile.totalFollowUsers), caption: t.user.stats.following),
-          AppIdentityStat(value: formatCount(profile.totalIllusts), caption: t.user.stats.illustrations),
-          AppIdentityStat(value: formatCount(profile.totalManga), caption: t.user.stats.manga),
-          AppIdentityStat(value: formatCount(profile.totalNovels), caption: t.user.stats.novels),
-        ],
-        primary: AppFollowButton(user: user),
-        more: [
-          ...followRestrictMenuEntries(context, ref, user),
-          FrostMenuAction(
-            t.userPage.copyLink,
-            leading: const FrostGlyph.icon(PivIcons.link),
-            onSelected: () => unawaited(_copy(web.toString(), t.userPage.linkCopied)),
-          ),
-          FrostMenuAction(t.userPage.openInBrowser, leading: const FrostGlyph.icon(PivIcons.externalLink), onSelected: () => unawaited(_open(web))),
-        ],
-        bio: bio.isEmpty
-            ? null
-            : FrostContextMenuRegion(
-                entries: [
-                  FrostMenuAction(
-                    t.userPage.copyBio,
-                    leading: const FrostGlyph.icon(PivIcons.copy),
-                    onSelected: () => unawaited(_copy(bio, t.userPage.bioCopied)),
-                  ),
-                ],
-                child: AppPixivText(detail.user.comment ?? '', maxLines: 2),
-              ),
+      // The menu offers to block or to unblock, as the list stands.
+      child: ValueListenableBuilder<BlockList>(
+        valueListenable: AppSettings.blockListListenable,
+        builder: (context, _, _) => UserIdentityHeader(
+          bannerBottom: bannerBottom,
+          avatar: const AppFlightAvatar(),
+          name: user.name,
+          subtitle: '@${user.account}',
+          stats: [
+            AppIdentityStat(value: formatCount(profile.totalFollowUsers), caption: t.user.stats.following),
+            AppIdentityStat(value: formatCount(profile.totalIllusts), caption: t.user.stats.illustrations),
+            AppIdentityStat(value: formatCount(profile.totalManga), caption: t.user.stats.manga),
+            AppIdentityStat(value: formatCount(profile.totalNovels), caption: t.user.stats.novels),
+          ],
+          primary: AppFollowButton(user: user),
+          more: [
+            ...followRestrictMenuEntries(context, ref, user),
+            FrostMenuAction(
+              t.userPage.copyLink,
+              leading: const FrostGlyph.icon(PivIcons.link),
+              onSelected: () => unawaited(_copy(web.toString(), t.userPage.linkCopied)),
+            ),
+            FrostMenuAction(t.userPage.openInBrowser, leading: const FrostGlyph.icon(PivIcons.externalLink), onSelected: () => unawaited(_open(web))),
+            if (!ownPage) ...blockUserToggleMenuEntries(context, user),
+          ],
+          bio: bio.isEmpty
+              ? null
+              : FrostContextMenuRegion(
+                  entries: [
+                    FrostMenuAction(
+                      t.userPage.copyBio,
+                      leading: const FrostGlyph.icon(PivIcons.copy),
+                      onSelected: () => unawaited(_copy(bio, t.userPage.bioCopied)),
+                    ),
+                  ],
+                  child: AppPixivText(detail.user.comment ?? '', maxLines: 2),
+                ),
+        ),
       ),
     );
   }

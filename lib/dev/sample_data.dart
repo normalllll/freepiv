@@ -138,8 +138,20 @@ const _artist = User(
   profileImageUrls: ProfileImageUrls(medium: ''),
 );
 
+/// A second author, whose works [sampleIllusts] and [sampleNovels] mix in
+/// when asked to vary.
+const _otherArtist = User(
+  id: 2001,
+  name: 'Second sample artist',
+  account: 'second_sample_artist',
+  profileImageUrls: ProfileImageUrls(medium: ''),
+);
+
 /// Works with no image addresses: their cards show the image placeholder.
-List<Illust> sampleIllusts({int count = 24, String kind = 'illust'}) => [
+/// [varied] gives every third work to a second author and every third, on the
+/// other offset, the tag 猫 in place of landscape, so that blocking an author
+/// or a tag takes some of them away and not all.
+List<Illust> sampleIllusts({int count = 24, String kind = 'illust', bool varied = false}) => [
   for (var index = 0; index < count; index++)
     Illust(
       id: 90000 + index,
@@ -152,10 +164,10 @@ List<Illust> sampleIllusts({int count = 24, String kind = 'illust'}) => [
       ),
       caption: '',
       restrict: 0,
-      user: _artist,
-      tags: const [
-        Tag(name: 'オリジナル', translatedName: 'original'),
-        Tag(name: 'landscape'),
+      user: varied && index % 3 == 2 ? _otherArtist : _artist,
+      tags: [
+        const Tag(name: 'オリジナル', translatedName: 'original'),
+        varied && index % 3 == 1 ? const Tag(name: '猫', translatedName: 'cat') : const Tag(name: 'landscape'),
       ],
       tools: const [],
       createDate: '2026-11-01T12:00:00+09:00',
@@ -181,7 +193,7 @@ class SampleIllustSource extends HomeIllustListSource {
 
   @override
   Future<IllustPageResult> loadFirstPage() async {
-    final illusts = sampleIllusts(kind: illustType == IllustType.manga ? 'manga' : 'illust');
+    final illusts = sampleIllusts(kind: illustType == IllustType.manga ? 'manga' : 'illust', varied: true);
     return IllustPageResult(illusts: illusts, rankingIllusts: illusts.take(8).toList());
   }
 
@@ -399,8 +411,9 @@ Future<HistoryRepository> sampleHistoryRepository() async {
   return repository;
 }
 
-/// Novels by sample authors, some long-titled and in a series.
-List<Novel> sampleNovels({int count = 12, String? title, String? author}) => [
+/// Novels by sample authors, some long-titled and in a series. [varied]
+/// mixes in a second author and the tag 猫 as [sampleIllusts] does.
+List<Novel> sampleNovels({int count = 12, String? title, String? author, bool varied = false}) => [
   for (var index = 0; index < count; index++)
     Novel(
       id: 70000 + index,
@@ -415,14 +428,18 @@ List<Novel> sampleNovels({int count = 12, String? title, String? author}) => [
         large: '',
       ),
       createDate: '2026-11-01T12:00:00+09:00',
-      tags: const [
-        Tag(name: 'オリジナル', translatedName: 'original'),
-        Tag(name: '恋愛'),
-        Tag(name: 'ファンタジー'),
+      tags: [
+        const Tag(name: 'オリジナル', translatedName: 'original'),
+        const Tag(name: '恋愛'),
+        varied && index % 3 == 1 ? const Tag(name: '猫', translatedName: 'cat') : const Tag(name: 'ファンタジー'),
       ],
       pageCount: 3,
       textLength: 12000 + index * 830,
-      user: author == null ? _artist : User(id: _artist.id, name: author, account: author, profileImageUrls: _artist.profileImageUrls),
+      user: varied && index % 3 == 2
+          ? _otherArtist
+          : author == null
+          ? _artist
+          : User(id: _artist.id, name: author, account: author, profileImageUrls: _artist.profileImageUrls),
       series: Series(id: index % 3 == 0 ? 500 : null, title: index % 3 == 0 ? 'The shore stories' : null),
       totalBookmarks: 120 + index,
       isBookmarked: index % 4 == 0,
@@ -458,7 +475,7 @@ List<UserPreview> sampleUserPreviews({int count = 10}) {
 class SampleNovelSource extends HomeNovelListSource {
   @override
   Future<NovelPageResult> loadFirstPage() async {
-    final novels = sampleNovels();
+    final novels = sampleNovels(varied: true);
     return NovelPageResult(novels: novels, rankingNovels: novels.take(6).toList());
   }
 

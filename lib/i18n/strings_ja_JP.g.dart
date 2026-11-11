@@ -1017,6 +1017,15 @@ class _Translations$block$ja_JP extends Translations$block$en_US {
 	@override String get tagExists => 'このタグはすでにブロックしています';
 	@override String get add => '追加';
 	@override String get tagRequired => 'タグを入力してください';
+	@override String get blockUser => 'このユーザーをブロック';
+	@override String get unblockUser => 'このユーザーのブロックを解除';
+	@override String get blockTag => 'このタグをブロック';
+	@override String confirmTitle({required Object name}) => '${name} をブロックしますか？';
+	@override String confirmMessage({required Object name}) => '${name} の作品は、この端末のおすすめ・新着・ランキング・検索結果に表示されなくなります。設定からいつでも解除できます。';
+	@override String get confirm => 'ブロック';
+	@override String blocked({required Object name}) => '${name} をブロックしました';
+	@override String unblocked({required Object name}) => '${name} のブロックを解除しました';
+	@override String get undo => '元に戻す';
 }
 
 // Path: watchlist
@@ -2828,6 +2837,15 @@ extension on TranslationsJaJp {
 			'block.tagExists' => 'このタグはすでにブロックしています',
 			'block.add' => '追加',
 			'block.tagRequired' => 'タグを入力してください',
+			'block.blockUser' => 'このユーザーをブロック',
+			'block.unblockUser' => 'このユーザーのブロックを解除',
+			'block.blockTag' => 'このタグをブロック',
+			'block.confirmTitle' => ({required Object name}) => '${name} をブロックしますか？',
+			'block.confirmMessage' => ({required Object name}) => '${name} の作品は、この端末のおすすめ・新着・ランキング・検索結果に表示されなくなります。設定からいつでも解除できます。',
+			'block.confirm' => 'ブロック',
+			'block.blocked' => ({required Object name}) => '${name} をブロックしました',
+			'block.unblocked' => ({required Object name}) => '${name} のブロックを解除しました',
+			'block.undo' => '元に戻す',
 			'watchlist.title' => '追いかけ中のシリーズ',
 			'watchlist.manga' => 'マンガ',
 			'watchlist.novels' => '小説',

@@ -1067,7 +1067,16 @@
     "remove": "$name のブロックを解除",
     "tagExists": "このタグはすでにブロックしています",
     "add": "追加",
-    "tagRequired": "タグを入力してください"
+    "tagRequired": "タグを入力してください",
+    "blockUser": "このユーザーをブロック",
+    "unblockUser": "このユーザーのブロックを解除",
+    "blockTag": "このタグをブロック",
+    "confirmTitle": "$name をブロックしますか？",
+    "confirmMessage": "$name の作品は、この端末のおすすめ・新着・ランキング・検索結果に表示されなくなります。設定からいつでも解除できます。",
+    "confirm": "ブロック",
+    "blocked": "$name をブロックしました",
+    "unblocked": "$name のブロックを解除しました",
+    "undo": "元に戻す"
   },
   "watchlist": {
     "title": "追いかけ中のシリーズ",

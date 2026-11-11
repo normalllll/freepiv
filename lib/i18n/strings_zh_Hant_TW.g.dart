@@ -1017,6 +1017,15 @@ class Translations$block$zh_Hant_TW extends Translations$block$en_US {
 	@override String get tagExists => '這個標籤已經在封鎖清單中';
 	@override String get add => '新增';
 	@override String get tagRequired => '請輸入標籤';
+	@override String get blockUser => '封鎖此使用者';
+	@override String get unblockUser => '取消封鎖此使用者';
+	@override String get blockTag => '封鎖此標籤';
+	@override String confirmTitle({required Object name}) => '封鎖 ${name}？';
+	@override String confirmMessage({required Object name}) => '${name} 的作品不會再出現在這台裝置的推薦、動態、排行與搜尋結果中。可隨時在設定中取消。';
+	@override String get confirm => '封鎖';
+	@override String blocked({required Object name}) => '已封鎖 ${name}';
+	@override String unblocked({required Object name}) => '已取消封鎖 ${name}';
+	@override String get undo => '復原';
 }
 
 // Path: watchlist
@@ -2828,6 +2837,15 @@ extension on TranslationsZhHantTw {
 			'block.tagExists' => '這個標籤已經在封鎖清單中',
 			'block.add' => '新增',
 			'block.tagRequired' => '請輸入標籤',
+			'block.blockUser' => '封鎖此使用者',
+			'block.unblockUser' => '取消封鎖此使用者',
+			'block.blockTag' => '封鎖此標籤',
+			'block.confirmTitle' => ({required Object name}) => '封鎖 ${name}？',
+			'block.confirmMessage' => ({required Object name}) => '${name} 的作品不會再出現在這台裝置的推薦、動態、排行與搜尋結果中。可隨時在設定中取消。',
+			'block.confirm' => '封鎖',
+			'block.blocked' => ({required Object name}) => '已封鎖 ${name}',
+			'block.unblocked' => ({required Object name}) => '已取消封鎖 ${name}',
+			'block.undo' => '復原',
 			'watchlist.title' => '我的追更',
 			'watchlist.manga' => '漫畫',
 			'watchlist.novels' => '小說',

@@ -19,17 +19,23 @@ class HomeIllustListSource extends FrostCursorListSource<Illust, IllustPageResul
 
   List<Illust> _rankingIllusts = const [];
 
-  /// The ranking shelf, without what the block list hides.
-  List<Illust> get rankingIllusts => [
-    for (final illust in _rankingIllusts)
-      if (!AppSettings.blockList.hidesIllust(illust)) illust,
-  ];
+  /// The ranking shelf, without what the block list hid when it was read or
+  /// changed.
+  List<Illust> get rankingIllusts => _rankingIllusts;
 
   @override
   bool isBlocked(BlockList blocks, Illust item) => blocks.hidesIllust(item);
 
   @override
-  void didChangeBlockList(BlockList blocks) => notifyDataChanged();
+  void didChangeBlockList(BlockList blocks) {
+    _rankingIllusts = _unblocked(_rankingIllusts, blocks);
+    notifyDataChanged();
+  }
+
+  static List<Illust> _unblocked(List<Illust> illusts, BlockList blocks) => [
+    for (final illust in illusts)
+      if (!blocks.hidesIllust(illust)) illust,
+  ];
 
   @override
   Future<IllustPageResult> loadFirstPage() {
@@ -51,9 +57,21 @@ class HomeIllustListSource extends FrostCursorListSource<Illust, IllustPageResul
     return page.illusts;
   }
 
+  /// Whether the next page applied is the first of a load: Pixiv gives the
+  /// ranking shelf with the first page only, so only that page sets it.
+  var _firstPage = false;
+
+  @override
+  Future<List<Illust>> initList() {
+    _firstPage = true;
+    return super.initList();
+  }
+
   @override
   void didApplyPage(IllustPageResult page) {
-    _rankingIllusts = page.rankingIllusts;
+    if (!_firstPage) return;
+    _firstPage = false;
+    _rankingIllusts = _unblocked(page.rankingIllusts, AppSettings.blockList);
   }
 
   @override
@@ -66,17 +84,23 @@ class HomeIllustListSource extends FrostCursorListSource<Illust, IllustPageResul
 class HomeNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> with BlockFilteredCursorList<Novel, NovelPageResult> {
   List<Novel> _rankingNovels = const [];
 
-  /// The ranking shelf, without what the block list hides.
-  List<Novel> get rankingNovels => [
-    for (final novel in _rankingNovels)
-      if (!AppSettings.blockList.hidesNovel(novel)) novel,
-  ];
+  /// The ranking shelf, without what the block list hid when it was read or
+  /// changed.
+  List<Novel> get rankingNovels => _rankingNovels;
 
   @override
   bool isBlocked(BlockList blocks, Novel item) => blocks.hidesNovel(item);
 
   @override
-  void didChangeBlockList(BlockList blocks) => notifyDataChanged();
+  void didChangeBlockList(BlockList blocks) {
+    _rankingNovels = _unblocked(_rankingNovels, blocks);
+    notifyDataChanged();
+  }
+
+  static List<Novel> _unblocked(List<Novel> novels, BlockList blocks) => [
+    for (final novel in novels)
+      if (!blocks.hidesNovel(novel)) novel,
+  ];
 
   @override
   Future<NovelPageResult> loadFirstPage() {
@@ -98,9 +122,21 @@ class HomeNovelListSource extends FrostCursorListSource<Novel, NovelPageResult> 
     return page.novels;
   }
 
+  /// Whether the next page applied is the first of a load: Pixiv gives the
+  /// ranking shelf with the first page only, so only that page sets it.
+  var _firstPage = false;
+
+  @override
+  Future<List<Novel>> initList() {
+    _firstPage = true;
+    return super.initList();
+  }
+
   @override
   void didApplyPage(NovelPageResult page) {
-    _rankingNovels = page.rankingNovels;
+    if (!_firstPage) return;
+    _firstPage = false;
+    _rankingNovels = _unblocked(page.rankingNovels, AppSettings.blockList);
   }
 
   @override

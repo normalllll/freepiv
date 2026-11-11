@@ -1017,6 +1017,15 @@ class Translations$block$zh_CN extends Translations$block$en_US {
 	@override String get tagExists => '这个标签已经在屏蔽列表里';
 	@override String get add => '添加';
 	@override String get tagRequired => '请输入标签';
+	@override String get blockUser => '屏蔽此用户';
+	@override String get unblockUser => '取消屏蔽此用户';
+	@override String get blockTag => '屏蔽此标签';
+	@override String confirmTitle({required Object name}) => '屏蔽 ${name}？';
+	@override String confirmMessage({required Object name}) => '${name} 的作品不会再出现在这台设备的推荐、动态、排行和搜索结果里。可以随时在设置里取消。';
+	@override String get confirm => '屏蔽';
+	@override String blocked({required Object name}) => '已屏蔽 ${name}';
+	@override String unblocked({required Object name}) => '已取消屏蔽 ${name}';
+	@override String get undo => '撤销';
 }
 
 // Path: watchlist
@@ -2828,6 +2837,15 @@ extension on TranslationsZhCn {
 			'block.tagExists' => '这个标签已经在屏蔽列表里',
 			'block.add' => '添加',
 			'block.tagRequired' => '请输入标签',
+			'block.blockUser' => '屏蔽此用户',
+			'block.unblockUser' => '取消屏蔽此用户',
+			'block.blockTag' => '屏蔽此标签',
+			'block.confirmTitle' => ({required Object name}) => '屏蔽 ${name}？',
+			'block.confirmMessage' => ({required Object name}) => '${name} 的作品不会再出现在这台设备的推荐、动态、排行和搜索结果里。可以随时在设置里取消。',
+			'block.confirm' => '屏蔽',
+			'block.blocked' => ({required Object name}) => '已屏蔽 ${name}',
+			'block.unblocked' => ({required Object name}) => '已取消屏蔽 ${name}',
+			'block.undo' => '撤销',
 			'watchlist.title' => '我的追更',
 			'watchlist.manga' => '漫画',
 			'watchlist.novels' => '小说',

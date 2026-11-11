@@ -4,7 +4,7 @@
 /// To regenerate, run: `dart run slang`
 ///
 /// Locales: 4
-/// Strings: 3764 (941 per locale)
+/// Strings: 3800 (950 per locale)
 ///
 /// Built on 2026-11-11 at 16:05 UTC
 

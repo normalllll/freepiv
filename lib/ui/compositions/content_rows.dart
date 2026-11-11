@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/features/block/block_actions.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/bookmark_options.dart';
@@ -29,6 +30,13 @@ class AppUserAvatar extends ConsumerWidget {
   }
 }
 
+/// The right-click / long-press menu of a novel's row or card: its bookmark
+/// options, and blocking its author.
+List<FrostMenuEntry> novelMenu(BuildContext context, Novel novel) => [
+  ...bookmarkOptionsMenuEntries(context, workId: novel.id, initiallyBookmarked: novel.isBookmarked, novel: true),
+  ...blockUserMenuEntries(context, novel.user),
+];
+
 /// A novel in a reading-column list: cover, title,
 /// author, two lines of its caption, its length, a few tags and bookmark.
 class AppNovelRow extends StatelessWidget {
@@ -48,7 +56,7 @@ class AppNovelRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FrostContextMenuRegion(
-    entries: bookmarkOptionsMenuEntries(context, workId: novel.id, initiallyBookmarked: novel.isBookmarked, novel: true),
+    entries: novelMenu(context, novel),
     child: FrostClickSurface(
       onTap: () => unawaited(GoRouter.of(context).push(AppLocations.novel(novel.id), extra: novel)),
       child: Padding(
@@ -142,7 +150,7 @@ class AppNovelCard extends StatelessWidget {
       elevated: false,
       borderRadius: radius,
       child: FrostContextMenuRegion(
-        entries: bookmarkOptionsMenuEntries(context, workId: novel.id, initiallyBookmarked: novel.isBookmarked, novel: true),
+        entries: novelMenu(context, novel),
         child: FrostClickSurface(
           shape: FrostClickShape.rounded(radius),
           onTap: () => unawaited(GoRouter.of(context).push(AppLocations.novel(novel.id), extra: novel)),

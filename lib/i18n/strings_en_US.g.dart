@@ -1019,6 +1019,15 @@ class Translations$block$en_US {
 	String get tagExists => 'This tag is already blocked';
 	String get add => 'Add';
 	String get tagRequired => 'Enter a tag';
+	String get blockUser => 'Block this user';
+	String get unblockUser => 'Unblock this user';
+	String get blockTag => 'Block this tag';
+	String confirmTitle({required Object name}) => 'Block ${name}?';
+	String confirmMessage({required Object name}) => 'Works by ${name} will no longer show in recommendations, new works, rankings and search results on this device. You can undo this in Settings.';
+	String get confirm => 'Block';
+	String blocked({required Object name}) => 'Blocked ${name}';
+	String unblocked({required Object name}) => 'Unblocked ${name}';
+	String get undo => 'Undo';
 }
 
 // Path: watchlist
@@ -2830,6 +2839,15 @@ extension on Translations {
 			'block.tagExists' => 'This tag is already blocked',
 			'block.add' => 'Add',
 			'block.tagRequired' => 'Enter a tag',
+			'block.blockUser' => 'Block this user',
+			'block.unblockUser' => 'Unblock this user',
+			'block.blockTag' => 'Block this tag',
+			'block.confirmTitle' => ({required Object name}) => 'Block ${name}?',
+			'block.confirmMessage' => ({required Object name}) => 'Works by ${name} will no longer show in recommendations, new works, rankings and search results on this device. You can undo this in Settings.',
+			'block.confirm' => 'Block',
+			'block.blocked' => ({required Object name}) => 'Blocked ${name}',
+			'block.unblocked' => ({required Object name}) => 'Unblocked ${name}',
+			'block.undo' => 'Undo',
 			'watchlist.title' => 'Follow-ups',
 			'watchlist.manga' => 'Manga',
 			'watchlist.novels' => 'Novels',
