@@ -546,13 +546,8 @@ final class FreepivDownloadBridge: NSObject, FlutterStreamHandler, URLSessionDow
   }
 
   private func resolvePhotoAuthorizationStatus(_ status: PHAuthorizationStatus, openSettingsWhenDenied: Bool, completion: @escaping (PhotoPermissionOutcome) -> Void) {
-    if #available(iOS 14, *), status == .limited {
-      completion(.granted)
-      return
-    }
-
     switch status {
-    case .authorized:
+    case .authorized, .limited:
       completion(.granted)
     case .denied, .restricted:
       let message = "Photos add permission was denied."
