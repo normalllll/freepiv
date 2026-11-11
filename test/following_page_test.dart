@@ -115,6 +115,21 @@ void main() {
     expectNoLayoutErrors(tester);
   });
 
+  for (final (label, size) in [('wide', desktopSize), ('narrow', phoneSize)]) {
+    testWidgets('$label: public and private are tabs in the bar, reachable after scrolling, and a swipe switches them', (tester) async {
+      await _mount(tester, () async => UserPageResult(userPreviews: sampleUserPreviews(count: 30)), size: size);
+      TabController tabs() => tester.widget<FrostTabBar>(find.byType(FrostTabBar)).controller!;
+      await tester.drag(find.byType(AppUserCard).first, const Offset(0, -1500));
+      await settlePilot(tester);
+      await tester.tap(find.text(t.privacy.private).hitTestable());
+      await settlePilot(tester);
+      expect(tabs().index, 1);
+      await tester.fling(find.byType(TabBarView), const Offset(600, 0), 2000);
+      await settlePilot(tester);
+      expect(tabs().index, 0, reason: 'swiped back to public');
+    });
+  }
+
   testWidgets('signed out it offers to sign in', (tester) async {
     await _mount(tester, () async => const UserPageResult(userPreviews: []), signedIn: false);
     expect(find.text(t.login.signInToPixiv), findsOneWidget);

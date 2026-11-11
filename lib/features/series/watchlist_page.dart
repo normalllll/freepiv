@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
-import 'package:freepiv/app/refresh/app_refresh.dart';
+import 'package:freepiv/ui/compositions/sectioned_page.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/core/core.dart';
 import 'package:freepiv/features/series/logic.dart';
@@ -24,57 +24,51 @@ class WatchlistPage extends ConsumerStatefulWidget {
   ConsumerState<WatchlistPage> createState() => _WatchlistPageState();
 }
 
-class _WatchlistPageState extends ConsumerState<WatchlistPage> {
-  var _kind = AppSeriesKind.manga;
+class _WatchlistPageState extends ConsumerState<WatchlistPage> with SingleTickerProviderStateMixin {
+  late final _tabs = TabController(length: AppSeriesKind.values.length, animationDuration: FrostMotion.navigation, vsync: this);
+
+  @override
+  void dispose() {
+    _tabs.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    final source = ref.watch(watchlistEntriesProvider(_kind));
-    return AppRefreshScope(
-      onRefresh: () => source.refresh(false),
-      child: FrostPinnedChrome(
-        chrome: FrostPageHeader(title: FrostText(t.watchlist.title)),
-        body: FrostRefreshView(
-          onRefresh: () => source.refresh(false),
-          builder: (context, physics, locators) => FrostLoadingScrollView(
-            physics: physics,
-            slivers: [
-              const FrostChromeSpacer(),
-              ?locators.sliverHeader,
-              FrostSliverContentColumn(
-                maxWidth: double.infinity,
-                sliver: SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: FrostGap.related),
-                    child: Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: FrostPicker<AppSeriesKind>.segmented(
-                        label: t.watchlist.title,
-                        value: _kind,
-                        onChanged: (kind) => setState(() => _kind = kind),
-                        options: [
-                          FrostPickerOption(value: AppSeriesKind.manga, label: t.watchlist.manga),
-                          FrostPickerOption(value: AppSeriesKind.novel, label: t.watchlist.novels),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              FrostSliverContentColumn(
-                maxWidth: double.infinity,
-                sliver: FrostSliverDataList<WatchlistSeries>(
-                  source: source,
-                  firstLoadSkeleton: const AppNovelRowsSkeleton(),
-                  empty: FrostEmptyState(icon: PivIcons.clock, title: _kind == AppSeriesKind.manga ? t.watchlist.emptyManga : t.watchlist.emptyNovels),
-                  itemBuilder: (context, series, index) => _WatchlistRow(kind: _kind, series: series),
-                ),
-              ),
-            ],
+    return AppSectionedPage(
+      controller: _tabs,
+      header: FrostPageHeader(title: FrostText(t.watchlist.title)),
+      tabs: [
+        for (final kind in AppSeriesKind.values)
+          FrostTab(
+            label: switch (kind) {
+              AppSeriesKind.manga => t.watchlist.manga,
+              AppSeriesKind.novel => t.watchlist.novels,
+            },
           ),
-        ),
-      ),
+      ],
+      onRefresh: (section) => ref.read(watchlistEntriesProvider(AppSeriesKind.values[section])).refresh(false),
+      slivers: (context, section) {
+        final kind = AppSeriesKind.values[section];
+        return [
+          FrostSliverContentColumn(
+            maxWidth: double.infinity,
+            sliver: FrostSliverDataList<WatchlistSeries>(
+              source: ref.watch(watchlistEntriesProvider(kind)),
+              firstLoadSkeleton: const AppNovelRowsSkeleton(),
+              empty: FrostEmptyState(
+                icon: PivIcons.clock,
+                title: switch (kind) {
+                  AppSeriesKind.manga => t.watchlist.emptyManga,
+                  AppSeriesKind.novel => t.watchlist.emptyNovels,
+                },
+              ),
+              itemBuilder: (context, series, index) => _WatchlistRow(kind: kind, series: series),
+            ),
+          ),
+        ];
+      },
     );
   }
 }
