@@ -769,6 +769,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ProfileCountryPreset dco_decode_profile_country_preset(dynamic raw);
 
   @protected
+  ProfileImageError dco_decode_profile_image_error(dynamic raw);
+
+  @protected
   ProfileImageUpload dco_decode_profile_image_upload(dynamic raw);
 
   @protected
@@ -1769,6 +1772,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ProfileCountryPreset sse_decode_profile_country_preset(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ProfileImageError sse_decode_profile_image_error(
     SseDeserializer deserializer,
   );
 
@@ -3016,6 +3024,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_profile_country_preset(
     ProfileCountryPreset self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_profile_image_error(
+    ProfileImageError self,
     SseSerializer serializer,
   );
 

@@ -47,7 +47,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.14.0-beta.2";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1487804706;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1312131418;
 
 // Section: executor
 
@@ -8306,6 +8306,45 @@ fn wire__crate__api__image_utils__image_utils_images_to_gif_impl(
         },
     )
 }
+fn wire__crate__api__image_utils__image_utils_prepare_profile_image_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "image_utils_prepare_profile_image",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_source = <Vec<u8>>::sse_decode(&mut deserializer);
+            let api_x = <u32>::sse_decode(&mut deserializer);
+            let api_y = <u32>::sse_decode(&mut deserializer);
+            let api_side = <u32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, crate::api::image_utils::ProfileImageError>((move || {
+                    let output_ok = crate::api::image_utils::ImageUtils::prepare_profile_image(
+                        api_source, api_x, api_y, api_side,
+                    )?;
+                    std::result::Result::Ok(output_ok)
+                })(
+                ))
+            }
+        },
+    )
+}
 fn wire__pixiv_rs__pixivision__language_path_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -12658,6 +12697,49 @@ impl SseDecode for pixiv_rs::pixiv::responses::ProfileCountryPreset {
     }
 }
 
+impl SseDecode for crate::api::image_utils::ProfileImageError {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                let mut var_message = <String>::sse_decode(deserializer);
+                return crate::api::image_utils::ProfileImageError::Decode {
+                    message: var_message,
+                };
+            }
+            1 => {
+                let mut var_width = <u32>::sse_decode(deserializer);
+                let mut var_height = <u32>::sse_decode(deserializer);
+                return crate::api::image_utils::ProfileImageError::SourceTooLarge {
+                    width: var_width,
+                    height: var_height,
+                };
+            }
+            2 => {
+                return crate::api::image_utils::ProfileImageError::EmptyCrop;
+            }
+            3 => {
+                let mut var_message = <String>::sse_decode(deserializer);
+                return crate::api::image_utils::ProfileImageError::Encode {
+                    message: var_message,
+                };
+            }
+            4 => {
+                let mut var_size = <u64>::sse_decode(deserializer);
+                let mut var_limit = <u64>::sse_decode(deserializer);
+                return crate::api::image_utils::ProfileImageError::OutputTooLarge {
+                    size: var_size,
+                    limit: var_limit,
+                };
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
 impl SseDecode for pixiv_rs::pixiv::api::ProfileImageUpload {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -14281,128 +14363,134 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        156 => wire__pixiv_rs__pixivision__language_path_impl(port, ptr, rust_vec_len, data_len),
-        157 => wire__pixiv_rs__pixiv__enums__manga_ranking_mode_as_pixiv_param_impl(
+        156 => wire__crate__api__image_utils__image_utils_prepare_profile_image_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        158 => wire__pixiv_rs__pixiv__responses__novel_navigation_info_default_impl(
+        157 => wire__pixiv_rs__pixivision__language_path_impl(port, ptr, rust_vec_len, data_len),
+        158 => wire__pixiv_rs__pixiv__enums__manga_ranking_mode_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        159 => wire__pixiv_rs__pixiv__responses__novel_navigation_item_default_impl(
+        159 => wire__pixiv_rs__pixiv__responses__novel_navigation_info_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        160 => wire__pixiv_rs__pixiv__enums__novel_ranking_mode_as_pixiv_param_impl(
+        160 => wire__pixiv_rs__pixiv__responses__novel_navigation_item_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        161 => wire__pixiv_rs__pixiv__responses__novel_rating_default_impl(
+        161 => wire__pixiv_rs__pixiv__enums__novel_ranking_mode_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        162 => wire__pixiv_rs__pixivision__parse_article_impl(port, ptr, rust_vec_len, data_len),
-        163 => {
+        162 => wire__pixiv_rs__pixiv__responses__novel_rating_default_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        163 => wire__pixiv_rs__pixivision__parse_article_impl(port, ptr, rust_vec_len, data_len),
+        164 => {
             wire__pixiv_rs__pixivision__parse_article_page_impl(port, ptr, rust_vec_len, data_len)
         }
-        164 => {
+        165 => {
             wire__pixiv_rs__pixivision__parse_tag_directory_impl(port, ptr, rust_vec_len, data_len)
         }
-        165 => {
+        166 => {
             wire__pixiv_rs__pixiv__api__pixiv_api_config_new_impl(port, ptr, rust_vec_len, data_len)
         }
-        166 => wire__pixiv_rs__pixiv__auth__pixiv_auth_config_new_impl(
+        167 => wire__pixiv_rs__pixiv__auth__pixiv_auth_config_new_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        167 => {
+        168 => {
             wire__pixiv_rs__error__pixiv_error_field_message_impl(port, ptr, rust_vec_len, data_len)
         }
-        168 => {
+        169 => {
             wire__pixiv_rs__error__pixiv_error_http_status_impl(port, ptr, rust_vec_len, data_len)
         }
-        169 => wire__pixiv_rs__error__pixiv_error_missing_account_impl(
+        170 => wire__pixiv_rs__error__pixiv_error_missing_account_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        170 => wire__pixiv_rs__error__pixiv_error_new_impl(port, ptr, rust_vec_len, data_len),
-        171 => wire__pixiv_rs__pixivision__pixivision_config_default_impl(
+        171 => wire__pixiv_rs__error__pixiv_error_new_impl(port, ptr, rust_vec_len, data_len),
+        172 => wire__pixiv_rs__pixivision__pixivision_config_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        172 => wire__pixiv_rs__pixiv__enums__restrict_as_pixiv_param_impl(
+        173 => wire__pixiv_rs__pixiv__enums__restrict_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        173 => wire__pixiv_rs__pixiv__enums__search_content_type_as_pixiv_param_impl(
+        174 => wire__pixiv_rs__pixiv__enums__search_content_type_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        174 => wire__pixiv_rs__pixiv__enums__search_novel_target_as_pixiv_param_impl(
+        175 => wire__pixiv_rs__pixiv__enums__search_novel_target_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        175 => wire__pixiv_rs__pixiv__api__search_options_default_impl(
+        176 => wire__pixiv_rs__pixiv__api__search_options_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        176 => wire__pixiv_rs__pixiv__enums__search_ratio_as_pixiv_param_impl(
+        177 => wire__pixiv_rs__pixiv__enums__search_ratio_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        177 => wire__pixiv_rs__pixiv__enums__search_sort_as_pixiv_param_impl(
+        178 => wire__pixiv_rs__pixiv__enums__search_sort_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        178 => wire__pixiv_rs__pixiv__enums__search_target_as_pixiv_param_impl(
+        179 => wire__pixiv_rs__pixiv__enums__search_target_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        179 => wire__crate__api__media__stream_media_impl(port, ptr, rust_vec_len, data_len),
-        180 => wire__pixiv_rs__pixiv__responses__webview_novel_image_urls_default_impl(
+        180 => wire__crate__api__media__stream_media_impl(port, ptr, rust_vec_len, data_len),
+        181 => wire__pixiv_rs__pixiv__responses__webview_novel_image_urls_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        181 => wire__pixiv_rs__pixiv__enums__work_type_as_pixiv_param_impl(
+        182 => wire__pixiv_rs__pixiv__enums__work_type_as_pixiv_param_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        182 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
+        183 => wire__crate__api__zip_utils__zip_utils_unzip_files_impl(
             port,
             ptr,
             rust_vec_len,
@@ -16531,6 +16619,46 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<pixiv_rs::pixiv::responses::Pr
 {
     fn into_into_dart(self) -> FrbWrapper<pixiv_rs::pixiv::responses::ProfileCountryPreset> {
         self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::image_utils::ProfileImageError {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::image_utils::ProfileImageError::Decode { message } => {
+                [0.into_dart(), message.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::image_utils::ProfileImageError::SourceTooLarge { width, height } => [
+                1.into_dart(),
+                width.into_into_dart().into_dart(),
+                height.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::image_utils::ProfileImageError::EmptyCrop => [2.into_dart()].into_dart(),
+            crate::api::image_utils::ProfileImageError::Encode { message } => {
+                [3.into_dart(), message.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::image_utils::ProfileImageError::OutputTooLarge { size, limit } => [
+                4.into_dart(),
+                size.into_into_dart().into_dart(),
+                limit.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::image_utils::ProfileImageError
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::image_utils::ProfileImageError>
+    for crate::api::image_utils::ProfileImageError
+{
+    fn into_into_dart(self) -> crate::api::image_utils::ProfileImageError {
+        self
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
@@ -19627,6 +19755,38 @@ impl SseEncode for pixiv_rs::pixiv::responses::ProfileCountryPreset {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.code, serializer);
         <String>::sse_encode(self.name, serializer);
+    }
+}
+
+impl SseEncode for crate::api::image_utils::ProfileImageError {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::image_utils::ProfileImageError::Decode { message } => {
+                <i32>::sse_encode(0, serializer);
+                <String>::sse_encode(message, serializer);
+            }
+            crate::api::image_utils::ProfileImageError::SourceTooLarge { width, height } => {
+                <i32>::sse_encode(1, serializer);
+                <u32>::sse_encode(width, serializer);
+                <u32>::sse_encode(height, serializer);
+            }
+            crate::api::image_utils::ProfileImageError::EmptyCrop => {
+                <i32>::sse_encode(2, serializer);
+            }
+            crate::api::image_utils::ProfileImageError::Encode { message } => {
+                <i32>::sse_encode(3, serializer);
+                <String>::sse_encode(message, serializer);
+            }
+            crate::api::image_utils::ProfileImageError::OutputTooLarge { size, limit } => {
+                <i32>::sse_encode(4, serializer);
+                <u64>::sse_encode(size, serializer);
+                <u64>::sse_encode(limit, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
     }
 }
 

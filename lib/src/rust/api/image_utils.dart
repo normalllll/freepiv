@@ -5,8 +5,11 @@
 
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
+part 'image_utils.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `fmt`, `fmt`, `from`, `source`
+// These functions are ignored because they are not marked as `pub`: `clamp_crop`, `decode_error`, `decode_oriented`, `encode_jpeg_within`, `encode_jpeg`, `flatten_on_white`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `fmt`, `fmt`, `fmt`, `fmt`, `from`, `source`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<GifError>>
 abstract class GifError implements RustOpaqueInterface {}
@@ -26,6 +29,29 @@ class ImageUtils {
     delays: delays,
   );
 
+  /// Crops, shrinks and compresses a picked image into the JPEG uploaded as a
+  /// profile image.
+  ///
+  /// source: The raw bytes of a jpg/png/webp/gif image; a gif contributes its
+  /// first frame.
+  ///
+  /// x, y, side: The square to keep, in pixels of the image as it is shown,
+  /// that is after its EXIF orientation is applied. A square that leaves the
+  /// image is moved and shrunk to fit.
+  ///
+  /// Returns: JPEG file bytes, at most 1024 pixels square.
+  static Future<Uint8List> prepareProfileImage({
+    required List<int> source,
+    required int x,
+    required int y,
+    required int side,
+  }) => RustLib.instance.api.crateApiImageUtilsImageUtilsPrepareProfileImage(
+    source: source,
+    x: x,
+    y: y,
+    side: side,
+  );
+
   @override
   int get hashCode => 0;
 
@@ -33,4 +59,25 @@ class ImageUtils {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is ImageUtils && runtimeType == other.runtimeType;
+}
+
+@freezed
+sealed class ProfileImageError
+    with _$ProfileImageError
+    implements FrbException {
+  const ProfileImageError._();
+
+  const factory ProfileImageError.decode({required String message}) =
+      ProfileImageError_Decode;
+  const factory ProfileImageError.sourceTooLarge({
+    required int width,
+    required int height,
+  }) = ProfileImageError_SourceTooLarge;
+  const factory ProfileImageError.emptyCrop() = ProfileImageError_EmptyCrop;
+  const factory ProfileImageError.encode({required String message}) =
+      ProfileImageError_Encode;
+  const factory ProfileImageError.outputTooLarge({
+    required int size,
+    required int limit,
+  }) = ProfileImageError_OutputTooLarge;
 }

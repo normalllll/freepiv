@@ -18,6 +18,7 @@ md-5 = "0.11.0"
 sha2 = "0.11.0"
 gif = { version = "0.14.2" }
 image = { version = "0.25.10", default-features = false, features = ["gif", "jpeg", "png", "webp"] }
+fast_image_resize = { version = "6.1.0", features = ["image"] }
 zip = { version = "9.0.0-pre3" }
 thiserror = "2.0.21"
 [lints.rust]
