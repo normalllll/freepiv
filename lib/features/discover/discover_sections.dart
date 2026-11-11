@@ -2,20 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freepiv/app/frost_config.dart';
-import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/features/pixivision/logic.dart';
 import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
-import 'package:freepiv/ui/compositions/entry_row.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 /// The sections the discover page and the search dropdown's compact discover
-/// share: the entries, trending tag cards and Pixivision
-/// article cards. The compact discover shows fewer of each.
+/// share: trending tag cards and Pixivision article
+/// cards, which Home's Pixivision shelf shows too. The compact discover shows
+/// fewer of each.
 
 /// Where the discover page is opened at.
 enum DiscoverSection { history, trending }
@@ -35,13 +33,6 @@ List<ArticleSummary> discoverArticles(PixivisionListing listing) => homeArticles
 
 /// Every article Home's Pixivision shelf shows: the recommended ones, else the latest.
 List<ArticleSummary> homeArticles(PixivisionListing listing) => listing.page.recommended.isNotEmpty ? listing.page.recommended : listing.page.articles;
-
-/// Ranking, Pixivision and FANBOX; [open] goes to a location.
-List<AppEntry> discoverEntries(Translations t, void Function(String location) open) => [
-  AppEntry(icon: PivIcons.activity, label: t.navigation.ranking, onPressed: () => open(AppLocations.ranking())),
-  AppEntry(icon: PivIcons.newspaper, label: t.pixivision.title, onPressed: () => open(AppRoute.pixivision.path)),
-  AppEntry(icon: PivIcons.heart, label: t.fanbox.title, onPressed: () => open(AppRoute.fanbox.path)),
-];
 
 /// Fetches trending tags and Pixivision again when they are older than
 /// [discoverFreshFor], keeping them on screen meanwhile.

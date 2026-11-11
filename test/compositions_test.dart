@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/ui/compositions/composer_bar.dart';
-import 'package:freepiv/ui/compositions/entry_row.dart';
 import 'package:freepiv/ui/compositions/identity_header.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -28,40 +27,6 @@ Widget _host(Widget child, {double width = 800, double textScale = 1}) => FrostA
 );
 
 void main() {
-  group('entry row', () {
-    testWidgets('each entry opens, and a count shows only where there is one', (tester) async {
-      final opened = <String>[];
-      await tester.pumpWidget(
-        _host(
-          AppEntryRow(
-            entries: [
-              AppEntry(icon: PivIcons.heart, label: 'Bookmarks', onPressed: () => opened.add('bookmarks')),
-              AppEntry(icon: PivIcons.download, label: 'Downloads', count: 3, onPressed: () => opened.add('downloads')),
-            ],
-          ),
-        ),
-      );
-      expect(find.byType(FrostCountBadge), findsOneWidget);
-      await tester.tap(find.text('Downloads'));
-      await tester.tap(find.text('Bookmarks'));
-      expect(opened, ['downloads', 'bookmarks']);
-      expect(tester.getSize(find.ancestor(of: find.text('Bookmarks'), matching: find.byType(SizedBox)).first).width, AppEntryRow.pointerTileWidth);
-    });
-
-    testWidgets('long labels in twice the text size stay on one line without overflow', (tester) async {
-      await tester.pumpWidget(
-        _host(
-          AppEntryRow(
-            entries: [for (var index = 0; index < 6; index++) AppEntry(icon: PivIcons.settings, label: 'A very long entry name $index', onPressed: () {})],
-          ),
-          width: 360,
-          textScale: 2,
-        ),
-      );
-      expect(tester.takeException(), isNull);
-    });
-  });
-
   group('composer bar', () {
     testWidgets('grows to five lines, Enter adds a line, and a reply can be closed', (tester) async {
       final controller = TextEditingController();

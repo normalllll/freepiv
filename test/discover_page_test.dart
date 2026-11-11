@@ -7,7 +7,6 @@ import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
-import 'package:freepiv/ui/compositions/entry_row.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import 'support/pilot_harness.dart';
@@ -18,10 +17,10 @@ class _FailingTags extends SearchTrendingTags {
 }
 
 void main() {
-  testWidgets('history, the entry row, trending tags and Pixivision', (tester) async {
+  testWidgets('history, trending tags and Pixivision, with no entry row', (tester) async {
     await mountPilotPage(tester, const DiscoverPage());
     expect(find.byType(FrostFilterChip), findsNWidgets(6), reason: 'every recent search');
-    expect(find.byType(AppEntryRow), findsOneWidget);
+    expect(find.text(t.navigation.ranking), findsNothing, reason: 'Ranking, Pixivision and FANBOX open from Home, Home and Me');
     expect(find.text('#初音ミク'), findsOneWidget);
   });
 

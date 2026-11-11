@@ -13,16 +13,15 @@ import 'package:freepiv/features/search/logic/search_trending_tags_logic.dart';
 import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'package:freepiv/features/search/presentation/widgets/search_box/search_box.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/ui/compositions/entry_row.dart';
 import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:freepiv/features/pixivision/article_card.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
 /// The discover page `/discover`, pushed from the search:
-/// every recent search (each removable, and Clear), the entry row (ranking,
-/// Pixivision, FANBOX), every trending tag as a picture card that adds the
-/// tag to the search, and three Pixivision articles. Without the title-bar
+/// every recent search (each removable, and Clear), every trending tag as a
+/// picture card that adds the tag to the search, and three Pixivision
+/// articles. Without the title-bar
 /// search the header holds the page search box, focused when asked to. It
 /// opens scrolled to [section] when given one.
 class DiscoverPage extends ConsumerStatefulWidget {
@@ -146,11 +145,10 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
               column(
                 Padding(
                   // The gap above only divides them from the history.
-                  padding: EdgeInsets.only(top: history.isEmpty ? 0 : FrostGap.section, bottom: FrostGap.section),
-                  child: AppEntryRow(entries: discoverEntries(t, (location) => unawaited(GoRouter.of(context).push(location)))),
+                  padding: EdgeInsets.only(top: history.isEmpty ? 0 : FrostGap.section),
+                  child: FrostSectionHeader(key: _sections[DiscoverSection.trending], title: t.search.trendingTags),
                 ),
               ),
-              column(FrostSectionHeader(key: _sections[DiscoverSection.trending], title: t.search.trendingTags)),
               column(switch (trending) {
                 AsyncValue(:final value?) when value.isEmpty => FrostText(t.search.emptyTrendingTitle, tone: FrostTextTone.secondary),
                 AsyncValue(:final value?) => FrostGrid(
