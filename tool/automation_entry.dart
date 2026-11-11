@@ -14,10 +14,13 @@ import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
+import 'package:freepiv/app/theme/appearance_logic.dart';
+import 'package:freepiv/features/ranking/logic/ranking_logic.dart';
 import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'sample_main.dart' as app;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_driver/driver_extension.dart';
@@ -166,8 +169,22 @@ void main() {
           // The title-bar search, focused with [text] typed (empty for the compact discover).
           final session = ProviderScope.containerOf(_appContext()).read(appSearchSessionProvider);
           final text = request['text'] as String? ?? '';
-          session.controller.value = TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
+          session.controller.value = TextEditingValue(
+            text: text,
+            selection: TextSelection.collapsed(offset: text.length),
+          );
           session.focusNode.requestFocus();
+          await _frame();
+          return jsonEncode(_state());
+        case 'theme':
+          // Light or dark, as the appearance setting would set it.
+          ProviderScope.containerOf(_appContext()).read(appearanceProvider.notifier).setMode(request['value'] == 'dark' ? ThemeMode.dark : ThemeMode.light);
+          await _frame();
+          return jsonEncode(_state());
+        case 'rankingDate':
+          // The day the rankings are of, as YYYY-MM-DD; empty for the latest.
+          final day = request['value'] as String? ?? '';
+          ProviderScope.containerOf(_appContext()).read(rankingProvider.notifier).setDate(day.isEmpty ? null : DateTime.parse(day));
           await _frame();
           return jsonEncode(_state());
         case 'home':
