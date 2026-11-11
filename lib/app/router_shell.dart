@@ -199,6 +199,7 @@ String? fallbackPathFor(String path) {
     AppRoute.meFollowers ||
     AppRoute.meMypixiv ||
     AppRoute.meWatchlist ||
+    AppRoute.meHistory ||
     AppRoute.meProfileEdit ||
     AppRoute.meWorkspaceEdit => AppRoute.me.path,
     AppRoute.searchIllustResult || AppRoute.searchNovelResult || AppRoute.searchUserResult || AppRoute.tagSearch => AppRoute.discover.path,

@@ -21,7 +21,15 @@ const appRouteDestinations = <AppRouteDestination>[
   AppRouteDestination(
     route: AppRoute.me,
     icon: PivIcons.user,
-    owns: {AppRoute.meFollowing, AppRoute.meFollowers, AppRoute.meMypixiv, AppRoute.meWatchlist, AppRoute.meProfileEdit, AppRoute.meWorkspaceEdit},
+    owns: {
+      AppRoute.meFollowing,
+      AppRoute.meFollowers,
+      AppRoute.meMypixiv,
+      AppRoute.meWatchlist,
+      AppRoute.meHistory,
+      AppRoute.meProfileEdit,
+      AppRoute.meWorkspaceEdit,
+    },
   ),
 ];
 
@@ -95,6 +103,7 @@ String appRouteLabel(Translations translations, AppRoute route) {
     AppRoute.meFollowers => translations.me.followers,
     AppRoute.meMypixiv => translations.me.mypixiv,
     AppRoute.meWatchlist => translations.me.watchlist,
+    AppRoute.meHistory => translations.me.history,
     AppRoute.meProfileEdit => translations.me.editProfile,
     AppRoute.meWorkspaceEdit => translations.me.workspace,
     AppRoute.userRelated => translations.user.related.title,

@@ -3,7 +3,11 @@
 // this file, so release builds leave it out.
 import 'dart:async';
 
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:freepiv/core/history/history_database.dart';
+import 'package:freepiv/core/history/history_models.dart';
+import 'package:freepiv/core/history/history_repository.dart';
 import 'package:freepiv/dev/sample_images.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/core/services/app_settings.dart';
@@ -351,6 +355,49 @@ final sampleOverrideMap = <Object, Override>{
 };
 
 final sampleOverrides = [...sampleOverrideMap.values];
+
+/// A browsing history in memory: the sample account has viewed illustrations,
+/// manga, an animation and novels (the newest first), the second account one
+/// work of its own.
+Future<HistoryRepository> sampleHistoryRepository() async {
+  final repository = HistoryRepository(HistoryDatabase.withExecutor(NativeDatabase.memory()));
+  final now = DateTime(2026, 11, 8, 20);
+  final account = sampleAccount.user.id;
+  final illusts = sampleIllusts(count: 10);
+  for (var index = 0; index < illusts.length; index++) {
+    final illust = illusts[index];
+    final kind = switch (index) {
+      3 || 7 => 'manga',
+      5 => 'ugoira',
+      _ => 'illust',
+    };
+    final entry = HistoryEntry.ofIllust(illust, now.subtract(Duration(hours: index * 5)));
+    await repository.record(
+      account,
+      HistoryEntry(
+        kind: HistoryWorkKind.ofIllust(kind),
+        workId: entry.workId,
+        title: entry.title,
+        authorId: entry.authorId,
+        authorName: entry.authorName,
+        thumbnailUrl: entry.thumbnailUrl,
+        xRestrict: index == 2 ? 1 : 0,
+        aiGenerated: index == 4,
+        viewedAt: entry.viewedAt,
+        width: entry.width,
+        height: entry.height,
+        pageCount: entry.pageCount,
+      ),
+      limit: HistoryLimit.standard,
+    );
+  }
+  final novels = sampleNovels(count: 5);
+  for (var index = 0; index < novels.length; index++) {
+    await repository.record(account, HistoryEntry.ofNovel(novels[index], now.subtract(Duration(hours: index * 9 + 2))), limit: HistoryLimit.standard);
+  }
+  await repository.record(sampleSecondAccount.user.id, HistoryEntry.ofIllust(illusts.first, now), limit: HistoryLimit.standard);
+  return repository;
+}
 
 /// Novels by sample authors, some long-titled and in a series.
 List<Novel> sampleNovels({int count = 12, String? title, String? author}) => [

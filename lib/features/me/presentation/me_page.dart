@@ -134,6 +134,7 @@ class _MePageState extends ConsumerState<MePage> {
             row(PivIcons.users, t.me.followers, AppRoute.meFollowers.path),
             row(PivIcons.users, t.me.mypixiv, AppRoute.meMypixiv.path),
             row(PivIcons.clock, t.me.watchlist, AppRoute.meWatchlist.path),
+            row(PivIcons.eye, t.me.history, AppRoute.meHistory.path),
           ],
         ),
       if (userId != null)

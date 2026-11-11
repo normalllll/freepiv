@@ -5,6 +5,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:freepiv/app/app.dart';
 import 'package:freepiv/app/window/app_window.dart';
+import 'package:freepiv/core/history/history_service.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
@@ -16,6 +17,7 @@ Future<void> main() async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
   await AppSettings.initialize(store: SampleSettingsStore(sampleSettings));
   pixivImageOverride = sampleImageProvider;
+  historyRepository = await sampleHistoryRepository();
   await RustLib.init();
   // Signed in, so the router opens the home page instead of the login page.
   pixivApiFactory = samplePixivApiFor;

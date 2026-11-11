@@ -73,6 +73,7 @@ void main() {
       t.me.followers,
       t.me.mypixiv,
       t.me.watchlist,
+      t.me.history,
       t.me.editProfile,
       t.me.workspace,
       t.fanbox.title,
@@ -95,6 +96,7 @@ void main() {
       AppRoute.meFollowers.path,
       AppRoute.meMypixiv.path,
       AppRoute.meWatchlist.path,
+      AppRoute.meHistory.path,
       AppRoute.meProfileEdit.path,
       AppRoute.meWorkspaceEdit.path,
       AppRoute.fanbox.path,
@@ -119,7 +121,7 @@ void main() {
     await _mount(tester, details: () async => throw StateError('offline'));
     expect(find.byType(FrostStat), findsNothing);
     expect(find.text(sampleAccount.user.name), findsOneWidget);
-    expect(_rows(tester), hasLength(10));
+    expect(_rows(tester), hasLength(11));
   });
 
   testWidgets('signed out: the way to sign in, and the entries that need no account', (tester) async {

@@ -13,6 +13,7 @@ import 'package:freepiv/features/home/presentation/home_page.dart';
 import 'package:freepiv/features/illust/presentation/illust_detail_page.dart';
 import 'package:freepiv/features/illust/presentation/illust_related_page.dart';
 import 'package:freepiv/features/login/presentation/login_page.dart';
+import 'package:freepiv/features/history/history_page.dart';
 import 'package:freepiv/features/me/presentation/following_page.dart';
 import 'package:freepiv/features/me/presentation/me_page.dart';
 import 'package:freepiv/features/me/presentation/account_edit_pages.dart';
@@ -164,6 +165,10 @@ Page<void> meMypixivPage(BuildContext context, GoRouterState state) {
 
 Page<void> meWatchlistPage(BuildContext context, GoRouterState state) {
   return FrostDetailPage(key: state.pageKey, child: const WatchlistPage());
+}
+
+Page<void> meHistoryPage(BuildContext context, GoRouterState state) {
+  return FrostDetailPage(key: state.pageKey, child: const HistoryPage());
 }
 
 Page<void> meProfileEditPage(BuildContext context, GoRouterState state) {

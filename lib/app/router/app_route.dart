@@ -30,6 +30,7 @@ enum AppRoute {
   meFollowers('/me/followers'),
   meMypixiv('/me/mypixiv'),
   meWatchlist('/me/watchlist'),
+  meHistory('/me/history'),
   meProfileEdit('/me/profile'),
   meWorkspaceEdit('/me/workspace'),
   about('/about'),

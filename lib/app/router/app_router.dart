@@ -143,6 +143,7 @@ class AppRouter {
             GoRoute(path: AppRoute.meFollowers.path, name: AppRoute.meFollowers.name, pageBuilder: route_pages.meFollowersPage),
             GoRoute(path: AppRoute.meMypixiv.path, name: AppRoute.meMypixiv.name, pageBuilder: route_pages.meMypixivPage),
             GoRoute(path: AppRoute.meWatchlist.path, name: AppRoute.meWatchlist.name, pageBuilder: route_pages.meWatchlistPage),
+            GoRoute(path: AppRoute.meHistory.path, name: AppRoute.meHistory.name, pageBuilder: route_pages.meHistoryPage),
             GoRoute(path: AppRoute.meProfileEdit.path, name: AppRoute.meProfileEdit.name, pageBuilder: route_pages.meProfileEditPage),
             GoRoute(path: AppRoute.meWorkspaceEdit.path, name: AppRoute.meWorkspaceEdit.name, pageBuilder: route_pages.meWorkspaceEditPage),
             GoRoute(path: AppRoute.mangaSeries.path, name: AppRoute.mangaSeries.name, pageBuilder: route_pages.mangaSeriesPage),

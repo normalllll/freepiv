@@ -31,12 +31,16 @@ void openArtwork(BuildContext context, Illust illust, [FrostMediaHeroTag? heroTa
 double artworkAspectRatio(Illust illust) => illust.width > 0 && illust.height > 0 ? illust.width / illust.height : 1;
 
 /// The corner marks of a work: R-18, R-18G and AI.
-List<Widget> artworkRestrictionBadges(BuildContext context, Illust illust) {
+List<Widget> artworkRestrictionBadges(BuildContext context, Illust illust) =>
+    workRestrictionBadges(context, xRestrict: illust.xRestrict, aiGenerated: illust.illustAiType == 2);
+
+/// The corner marks of a work given by what they show.
+List<Widget> workRestrictionBadges(BuildContext context, {required int xRestrict, required bool aiGenerated}) {
   final t = context.t;
   return [
-    if (illust.xRestrict == 1) const FrostBadge(label: 'R-18', tone: FrostBadgeTone.negative, style: FrostBadgeStyle.solid),
-    if (illust.xRestrict >= 2) const FrostBadge(label: 'R-18G', tone: FrostBadgeTone.negative, style: FrostBadgeStyle.solid),
-    if (illust.illustAiType == 2) FrostBadge(label: t.artworkCard.ai, tone: FrostBadgeTone.onMedia),
+    if (xRestrict == 1) const FrostBadge(label: 'R-18', tone: FrostBadgeTone.negative, style: FrostBadgeStyle.solid),
+    if (xRestrict >= 2) const FrostBadge(label: 'R-18G', tone: FrostBadgeTone.negative, style: FrostBadgeStyle.solid),
+    if (aiGenerated) FrostBadge(label: t.artworkCard.ai, tone: FrostBadgeTone.onMedia),
   ];
 }
 
@@ -105,13 +109,15 @@ class AppArtworkCard extends ConsumerWidget {
 }
 
 /// The text under a work's card: its title on one line and its author below
-/// it, with [bookmark] at the end.
+/// it, with [bookmark] at the end when there is one.
 class AppArtworkCardFooter extends StatelessWidget {
-  const AppArtworkCardFooter({required this.title, required this.author, required this.bookmark, super.key});
+  const AppArtworkCardFooter({required this.title, required this.author, this.bookmark, super.key});
 
   final String title;
   final String author;
-  final Widget bookmark;
+
+  /// The button at the end of the text; none for a card that cannot bookmark.
+  final Widget? bookmark;
 
   /// How much a card's footer adds below its image, for rows of cards that
   /// need a fixed height (shelves).
@@ -161,7 +167,7 @@ class AppArtworkCardFooter extends StatelessWidget {
             ],
           ),
         ),
-        bookmark,
+        ?bookmark,
       ],
     ),
   );
