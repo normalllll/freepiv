@@ -5,15 +5,20 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/router/app_navigation.dart';
 import 'package:freepiv/app/router/app_route.dart';
+import 'package:freepiv/features/discover/discover_sections.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
+import 'package:freepiv/features/pixivision/article_card.dart';
+import 'package:freepiv/features/pixivision/navigation.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart' show ArticleSummary;
 import 'package:freepiv/ui/compositions/artwork_card.dart';
 import 'package:freepiv/ui/compositions/work_actions.dart' show AppCardBookmarkButton;
 import 'package:freepiv/ui/compositions/content_rows.dart';
 import 'package:freepiv/ui/compositions/destination_header.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/ui/compositions/sectioned_page.dart';
+import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:freepiv/ui/compositions/user_card.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -103,7 +108,18 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
         FrostTab(label: t.home.novels),
         FrostTab(label: t.home.users),
       ],
-      onRefresh: (section) async => _source(HomePage.types[section]).refresh(false),
+      onRefresh: (section) async {
+        final type = HomePage.types[section];
+        if (type != HomeType.illustrations) {
+          await _source(type).refresh(false);
+          return;
+        }
+        // Illustrations carry the Pixivision shelf: refresh it alongside. Its
+        // failure only hides the shelf.
+        final pixivision = discoverPixivision(t);
+        ref.invalidate(pixivision);
+        await Future.wait([_source(type).refresh(false), ref.read(pixivision.future).then<void>((_) {}, onError: (Object _) {})]);
+      },
       slivers: (context, section) => switch (HomePage.types[section]) {
         HomeType.illustrations => _artworkSlivers(context, ref.watch(homeIllustSourceProvider), AppRankingKind.illust),
         HomeType.manga => _artworkSlivers(context, ref.watch(homeMangaSourceProvider), AppRankingKind.manga),
@@ -125,8 +141,9 @@ const _novelTileScale = 1.5;
 Widget _emptyFeed(BuildContext context) =>
     FrostEmptyState(icon: FrostIconSet.of(context).empty, title: context.t.home.emptyTitle, message: context.t.home.emptyMessage);
 
-/// The ranking shelf of [kind] and the Recommended title above an artwork
-/// feed, with bones for tiles while [ranking] is null.
+/// The ranking shelf of [kind], the Pixivision shelf with illustrations, and
+/// the Recommended title above an artwork feed, with bones for tiles while
+/// [ranking] is null.
 Widget _artworkHead(BuildContext context, AppRankingKind kind, {List<Illust>? ranking}) {
   final t = context.t;
   return SliverMainAxisGroup(
@@ -150,6 +167,7 @@ Widget _artworkHead(BuildContext context, AppRankingKind kind, {List<Illust>? ra
           },
         ),
       ),
+      if (kind == AppRankingKind.illust) const SliverToBoxAdapter(child: _PixivisionShelf()),
       SliverToBoxAdapter(child: AppBrowseSectionHeader(title: t.home.recommended)),
     ],
   );
@@ -214,6 +232,50 @@ List<Widget> _novelSlivers(BuildContext context, HomeNovelListSource source) {
     ),
     AppSliverNovelGrid(source: source, empty: _emptyFeed(context)),
   ];
+}
+
+// The Pixivision shelf shows about four article covers across a default window.
+const _articleTiles = 4;
+const _articleTileMin = 220.0;
+const _articleTileMax = 300.0;
+
+/// Pixivision's picks as a shelf, the main way into Pixivision: bones while
+/// they load, nothing when there are none or they fail (the Discover page
+/// says why and retries).
+class _PixivisionShelf extends ConsumerWidget {
+  const _PixivisionShelf();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.t;
+    final articles = switch (ref.watch(discoverPixivision(t))) {
+      AsyncValue(:final value?) => homeArticles(value),
+      AsyncValue(hasError: true) => const <ArticleSummary>[],
+      _ => null,
+    };
+    if (articles != null && articles.isEmpty) return const SizedBox.shrink();
+    final title = FrostTypography.of(context).style(FrostTextRole.subheadline);
+    final titleExtent = MediaQuery.textScalerOf(context).scale(title.fontSize!) * title.height! * 2;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final extent = FrostShelf.fillingExtent(width: constraints.maxWidth, count: _articleTiles, min: _articleTileMin, max: _articleTileMax);
+        return FrostShelf(
+          title: t.pixivision.title,
+          action: FrostButton.quiet(label: t.home.seeMore, onPressed: () => unawaited(GoRouter.of(context).push(AppRoute.pixivision.path))),
+          itemCount: articles?.length ?? (constraints.maxWidth / extent).ceil(),
+          itemExtent: extent,
+          // Frost puts eight pixels between the cover and its title.
+          height: extent * 9 / 16 + 8 + titleExtent,
+          itemBuilder: (context, index) => articles == null
+              ? appBones(const DiscoverArticleCard(article: articleSummaryPlaceholder))
+              : DiscoverArticleCard(
+                  article: articles[index],
+                  onPressed: () => unawaited(openPixivisionLink(context, articles[index].url, summary: articles[index])),
+                ),
+        );
+      },
+    );
+  }
 }
 
 List<Widget> _userSlivers(BuildContext context, HomeUserListSource source) => [AppSliverUserGrid(source: source, empty: _emptyFeed(context))];

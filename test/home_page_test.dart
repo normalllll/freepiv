@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/dev/sample_data.dart';
+import 'package:freepiv/features/discover/discover_sections.dart';
 import 'package:freepiv/features/home/logic/home_logic.dart';
 import 'package:freepiv/features/home/presentation/home_page.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -66,9 +67,11 @@ Widget _column(Widget row) => SingleChildScrollView(
 );
 
 void main() {
-  testWidgets('recommended works fill the feed with the ranking shelf above, each with its bookmark button', (tester) async {
+  testWidgets('recommended works fill the feed with the ranking and Pixivision shelves above, each with its bookmark button', (tester) async {
     await mountPilotPage(tester, const HomePage());
-    expect(find.byType(FrostShelf), findsOneWidget);
+    expect(find.byType(FrostShelf), findsNWidgets(2));
+    expect(find.text(t.pixivision.title), findsOneWidget);
+    expect(find.byType(DiscoverArticleCard), findsWidgets);
     expect(find.byType(AppArtworkCard), findsWidgets);
     // Shown on every card, whatever the input, filled where bookmarked.
     final cards = tester.widgetList(find.byType(AppArtworkCard)).length;
@@ -98,14 +101,15 @@ void main() {
       final answer = Completer<IllustPageResult>();
       await _mountFeed(tester, _Feed(() => answer.future), size: size);
       expect(find.text(t.home.rankings), findsOneWidget);
-      expect(find.text(t.home.seeMore), findsOneWidget);
+      expect(find.text(t.home.seeMore), findsNWidgets(2), reason: 'rankings and Pixivision');
+      expect(find.text(t.pixivision.title), findsOneWidget);
       expect(find.text(t.home.recommended), findsOneWidget);
       final shelf = find.descendant(of: find.byType(FrostShelf), matching: find.byType(AppArtworkCardSkeleton));
       expect(shelf, findsWidgets);
       final grid = find.descendant(of: find.byType(AppArtworkWaterfallSkeleton), matching: find.byType(AppArtworkCardSkeleton));
 
-      Offset at(String label) => tester.getTopLeft(find.text(label));
-      final (rankings, seeMore, recommended) = (at(t.home.rankings), at(t.home.seeMore), at(t.home.recommended));
+      Offset at(String label) => tester.getTopLeft(find.text(label).first);
+      final (rankings, seeMore, pixivision, recommended) = (at(t.home.rankings), at(t.home.seeMore), at(t.pixivision.title), at(t.home.recommended));
       final tile = tester.getRect(shelf.first);
       final card = tester.getRect(grid.first);
 
@@ -114,6 +118,7 @@ void main() {
       expect(find.byType(AppArtworkCardSkeleton), findsNothing);
       expect(at(t.home.rankings), rankings);
       expect(at(t.home.seeMore), seeMore);
+      expect(at(t.pixivision.title), pixivision);
       expect(at(t.home.recommended), recommended);
       final tiles = find.descendant(of: find.byType(FrostShelf), matching: find.byType(AppArtworkCard));
       expect(tester.getRect(tiles.first), tile);

@@ -31,8 +31,10 @@ const discoverArticleCount = 3;
 PixivisionBrowseProvider discoverPixivision(Translations t) => pixivisionBrowseProvider('https://www.pixivision.net/${pixivisionLanguagePath(t.$meta.locale)}/');
 
 /// The articles the discover sections show: the recommended ones, else the latest.
-List<ArticleSummary> discoverArticles(PixivisionListing listing) =>
-    (listing.page.recommended.isNotEmpty ? listing.page.recommended : listing.page.articles).take(discoverArticleCount).toList();
+List<ArticleSummary> discoverArticles(PixivisionListing listing) => homeArticles(listing).take(discoverArticleCount).toList();
+
+/// Every article Home's Pixivision shelf shows: the recommended ones, else the latest.
+List<ArticleSummary> homeArticles(PixivisionListing listing) => listing.page.recommended.isNotEmpty ? listing.page.recommended : listing.page.articles;
 
 /// Ranking, Pixivision and FANBOX; [open] goes to a location.
 List<AppEntry> discoverEntries(Translations t, void Function(String location) open) => [
