@@ -7,7 +7,7 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:frost_ui/frost_ui.dart' show FrostToast;
+import 'package:frost_ui/frost_ui.dart' show FrostThemeMode, FrostToast;
 
 import 'package:freepiv/app/router/app_router.dart';
 import 'package:freepiv/core/services/app_settings.dart';
@@ -23,7 +23,6 @@ import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'sample_main.dart' as app;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_driver/driver_extension.dart';
@@ -374,7 +373,7 @@ void main() {
           return jsonEncode(_state());
         case 'theme':
           // Light or dark, as the appearance setting would set it.
-          ProviderScope.containerOf(_appContext()).read(appearanceProvider.notifier).setMode(request['value'] == 'dark' ? ThemeMode.dark : ThemeMode.light);
+          ProviderScope.containerOf(_appContext()).read(appearanceProvider.notifier).setMode(request['value'] == 'dark' ? FrostThemeMode.dark : FrostThemeMode.light);
           await _frame();
           return jsonEncode(_state());
         case 'rankingDate':

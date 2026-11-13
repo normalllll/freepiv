@@ -190,7 +190,10 @@ void main() {
 
   testWidgets('a long title does not push the reading button away, at double text size on a phone', (tester) async {
     await _mount(tester, novel: _named(longText), size: phoneSize, textScale: 2);
-    await tester.scrollUntilVisible(find.text(t.novel.detail.startReading), 200, scrollable: find.byType(Scrollable).first);
+    // Once the head scrolls away the header offers the same action, so look
+    // for the button in the page body only.
+    final body = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(find.descendant(of: body, matching: find.text(t.novel.detail.startReading)), 200, scrollable: body);
     expectNoLayoutErrors(tester);
   });
 

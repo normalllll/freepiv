@@ -25,7 +25,7 @@ class WatchlistPage extends ConsumerStatefulWidget {
 }
 
 class _WatchlistPageState extends ConsumerState<WatchlistPage> with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(length: AppSeriesKind.values.length, animationDuration: FrostMotion.navigation, vsync: this);
+  late final _tabs = FrostTabController(length: AppSeriesKind.values.length, animationDuration: FrostMotion.navigation, vsync: this);
 
   @override
   void dispose() {

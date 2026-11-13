@@ -17,7 +17,7 @@ void main() {
     });
 
     await AppSettings.initialize(store: HiveAppSettingsStore(box));
-    await AppSettings.saveAppearance(FrostAppearance.initial(FrostPalettes.pink).copyWith(mode: ThemeMode.light, lightAccent: Color(0xFF4C8DFF)));
+    await AppSettings.saveAppearance(FrostAppearance.initial(FrostPalettes.pink).copyWith(mode: FrostThemeMode.light, lightAccent: Color(0xFF4C8DFF)));
     await box.close();
 
     final reopened = await Hive.openBox<dynamic>('appearance_test');
@@ -25,7 +25,7 @@ void main() {
       if (reopened.isOpen) await reopened.close();
     });
     await AppSettings.initialize(store: HiveAppSettingsStore(reopened));
-    expect(AppSettings.appearance.mode, ThemeMode.light);
+    expect(AppSettings.appearance.mode, FrostThemeMode.light);
     expect(AppSettings.appearance.lightAccent, const Color(0xFF4C8DFF));
   });
 }

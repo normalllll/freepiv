@@ -34,7 +34,7 @@ class DownloadsPage extends ConsumerStatefulWidget {
 }
 
 class _DownloadsPageState extends ConsumerState<DownloadsPage> with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(length: 3, vsync: this);
+  late final _tabs = FrostTabController(length: 3, vsync: this);
   late final Set<String> _open = {?widget.focusItem};
   final _focusKey = GlobalKey(debugLabel: 'focused download');
   bool _focusPlaced = false;

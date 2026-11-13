@@ -26,7 +26,7 @@ class NewestPage extends ConsumerStatefulWidget {
 }
 
 class _NewestPageState extends ConsumerState<NewestPage> with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(
+  late final _tabs = FrostTabController(
     length: NewestAudience.values.length,
     initialIndex: ref.read(newestProvider).audience.index,
     animationDuration: FrostMotion.navigation,

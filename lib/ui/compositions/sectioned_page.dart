@@ -22,7 +22,7 @@ class AppSectionedPage extends StatefulWidget {
 
   final Widget header;
   final List<FrostTab> tabs;
-  final TabController controller;
+  final FrostTabController controller;
 
   /// The section's slivers under the chrome spacer and the refresh header.
   final List<Widget> Function(BuildContext context, int section) slivers;
@@ -60,7 +60,7 @@ class _AppSectionedPageState extends State<AppSectionedPage> {
         ),
         body: ListenableBuilder(
           listenable: widget.controller,
-          builder: (context, _) => TabBarView(
+          builder: (context, _) => FrostTabView(
             controller: widget.controller,
             children: [
               for (var section = 0; section < widget.tabs.length; section++)

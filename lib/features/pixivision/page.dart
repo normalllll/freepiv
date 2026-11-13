@@ -33,7 +33,7 @@ class _PixivisionPageState extends ConsumerState<PixivisionPage> with SingleTick
   late final _search = TextEditingController(text: _queryOf(_url));
   final _searchFocus = FocusNode();
   final _header = FrostPageHeaderSearchController();
-  late final _tabs = TabController(
+  late final _tabs = FrostTabController(
     length: PixivisionSection.values.length,
     initialIndex: _initialSection().index,
     animationDuration: FrostMotion.navigation,

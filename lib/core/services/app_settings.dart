@@ -208,7 +208,7 @@ class AppSettings {
 
   static FrostAppearance get appearance {
     final legacy = themeMode;
-    final fallbackMode = legacy != null && legacy >= 0 && legacy < ThemeMode.values.length ? ThemeMode.values[legacy] : ThemeMode.system;
+    final fallbackMode = legacy != null && legacy >= 0 && legacy < FrostThemeMode.values.length ? FrostThemeMode.values[legacy] : FrostThemeMode.system;
     return FrostAppearance.fromRecord(_values[_appearanceKey], freepivFrostConfig.palettes, fallbackMode: fallbackMode);
   }
 

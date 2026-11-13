@@ -45,7 +45,7 @@ class Appearance extends _$Appearance {
   @override
   AppearanceState build() => AppearanceState(settings: AppSettings.appearance);
 
-  void setMode(ThemeMode mode) {
+  void setMode(FrostThemeMode mode) {
     if (state.settings.mode == mode) return;
     _applyImmediate(state.settings.copyWith(mode: mode));
   }

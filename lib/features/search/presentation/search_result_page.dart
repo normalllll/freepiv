@@ -64,7 +64,7 @@ class _ScopedSearchResultPage extends ConsumerStatefulWidget {
 
 class _SearchResultPageState extends ConsumerState<_ScopedSearchResultPage> with SingleTickerProviderStateMixin {
   late String _keyword = widget.initialKeyword.trim();
-  late final _tabs = TabController(length: _types.length, initialIndex: _types.indexOf(widget.type), vsync: this)..addListener(_syncDraftType);
+  late final _tabs = FrostTabController(length: _types.length, initialIndex: _types.indexOf(widget.type), vsync: this)..addListener(_syncDraftType);
 
   SearchType get _type => _types[_tabs.index];
 

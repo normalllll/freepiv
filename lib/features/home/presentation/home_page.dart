@@ -36,7 +36,7 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(
+  late final _tabs = FrostTabController(
     length: HomePage.types.length,
     initialIndex: HomePage.types.indexOf(ref.read(homeProvider)),
     animationDuration: FrostMotion.navigation,

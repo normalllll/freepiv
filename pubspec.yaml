@@ -6,18 +6,16 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.3.0+7
 
 environment:
-  sdk: ^3.12.1
+  sdk: ^3.13.0
 
 dependencies:
   flutter:
-    sdk: flutter
-  flutter_localizations:
     sdk: flutter
   frost_ui:
     git:
       url: &frost https://github.com/normalllll/frost_ui.git
       path: packages/frost_ui
-      ref: &frost_ref 957a16de4670e87a57f02dc6bc12e820f03876fb
+      ref: &frost_ref 04b065210cca9497f740e3c805aa3e1b9af47587
   frost_data:
     git: {url: *frost, path: packages/frost_data, ref: *frost_ref}
 
@@ -37,7 +35,6 @@ dependencies:
   hive_ce: ^2.20.2
   hive_ce_flutter: ^2.4.0
   loading_more_list: ^7.1.0
-  pull_to_refresh_notification: ^3.1.1
   waterfall_flow: ^3.1.1
   extended_image: ^10.1.0
   html: ^0.15.7
@@ -61,6 +58,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  material_ui: ^1.11.0
   build_runner: ^2.16.2
   go_router_builder: ^4.5.0
 

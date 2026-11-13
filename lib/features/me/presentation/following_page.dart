@@ -30,7 +30,7 @@ class FollowingPage extends ConsumerStatefulWidget {
 class _FollowingPageState extends ConsumerState<FollowingPage> with SingleTickerProviderStateMixin {
   static const _restricts = [Restrict.public, Restrict.private];
 
-  late final _tabs = TabController(length: _restricts.length, animationDuration: FrostMotion.navigation, vsync: this);
+  late final _tabs = FrostTabController(length: _restricts.length, animationDuration: FrostMotion.navigation, vsync: this);
 
   @override
   void dispose() {

@@ -27,7 +27,7 @@ Widget frostTestApp({
 Widget frostTestRouterApp(RouterConfig<Object> router, {Brightness brightness = Brightness.light, TransitionBuilder? builder}) => FrostApp.router(
   config: freepivFrostConfig,
   title: 'test',
-  appearance: FrostAppearance.initial(freepivFrostConfig.palettes).copyWith(mode: brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light),
+  appearance: FrostAppearance.initial(freepivFrostConfig.palettes).copyWith(mode: brightness == Brightness.dark ? FrostThemeMode.dark : FrostThemeMode.light),
   routerConfig: router,
   builder: builder,
 );

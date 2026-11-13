@@ -432,7 +432,7 @@ void main() {
       await mountPilotPage(tester, const WatchlistPage(), size: phoneSize);
       final tabs = tester.widget<FrostTabBar>(find.byType(FrostTabBar)).controller!;
       expect(find.text(t.watchlist.novels).hitTestable(), findsOneWidget);
-      await tester.fling(find.byType(TabBarView), const Offset(-300, 0), 2000);
+      await tester.fling(find.byType(FrostTabView), const Offset(-300, 0), 2000);
       await settlePilot(tester);
       expect(tabs.index, 1);
     });

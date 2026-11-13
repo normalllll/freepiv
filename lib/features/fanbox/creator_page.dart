@@ -43,7 +43,7 @@ class FanboxCreatorDetailPage extends ConsumerStatefulWidget {
 enum _CreatorTab { posts, plans, profile }
 
 class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPage> with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(
+  late final _tabs = FrostTabController(
     length: _CreatorTab.values.length,
     initialIndex: widget.showPlans ? _CreatorTab.plans.index : 0,
     animationDuration: FrostMotion.navigation,
@@ -109,7 +109,7 @@ class _FanboxCreatorDetailPageState extends ConsumerState<FanboxCreatorDetailPag
             ],
             body: ListenableBuilder(
               listenable: _tabs,
-              builder: (context, _) => TabBarView(
+              builder: (context, _) => FrostTabView(
                 controller: _tabs,
                 children: [
                   for (final tab in _CreatorTab.values)

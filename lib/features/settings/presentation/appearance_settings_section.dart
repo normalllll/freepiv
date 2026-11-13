@@ -21,11 +21,11 @@ class AppearanceSettingsSection extends ConsumerWidget {
     final settings = state.settings;
     final notifier = ref.read(appearanceProvider.notifier);
     final brightness = switch (settings.mode) {
-      ThemeMode.system => MediaQuery.platformBrightnessOf(context),
-      ThemeMode.dark => Brightness.dark,
-      ThemeMode.light => Brightness.light,
+      FrostThemeMode.system => MediaQuery.platformBrightnessOf(context),
+      FrostThemeMode.dark => Brightness.dark,
+      FrostThemeMode.light => Brightness.light,
     };
-    final followsSystem = settings.mode == ThemeMode.system;
+    final followsSystem = settings.mode == FrostThemeMode.system;
     final tone = settings.effectiveToneFor(brightness);
     final accent = settings.accentFor(brightness);
     final custom = settings.customAccentFor(brightness);
@@ -40,13 +40,13 @@ class AppearanceSettingsSection extends ConsumerWidget {
       children: [
         FrostListRow(
           title: labels.displayMode,
-          trailing: FrostPicker<ThemeMode>.segmented(
+          trailing: FrostPicker<FrostThemeMode>.segmented(
             label: labels.displayMode,
             value: settings.mode,
             options: [
-              FrostPickerOption(value: ThemeMode.system, label: labels.system),
-              FrostPickerOption(value: ThemeMode.light, label: labels.light),
-              FrostPickerOption(value: ThemeMode.dark, label: labels.dark),
+              FrostPickerOption(value: FrostThemeMode.system, label: labels.system),
+              FrostPickerOption(value: FrostThemeMode.light, label: labels.light),
+              FrostPickerOption(value: FrostThemeMode.dark, label: labels.dark),
             ],
             onChanged: notifier.setMode,
           ),

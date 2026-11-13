@@ -56,7 +56,7 @@ class RankingPage extends ConsumerStatefulWidget {
 }
 
 class _RankingPageState extends ConsumerState<RankingPage> with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(
+  late final _tabs = FrostTabController(
     length: AppRankingKind.values.length,
     initialIndex: widget.kind.index,
     animationDuration: FrostMotion.navigation,

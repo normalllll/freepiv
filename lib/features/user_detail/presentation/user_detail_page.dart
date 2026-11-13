@@ -78,7 +78,7 @@ class UserDetailContent extends ConsumerStatefulWidget {
 }
 
 class _UserDetailContentState extends ConsumerState<UserDetailContent> with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(length: UserDetailContent.tabs.length, initialIndex: UserDetailContent.tabs.indexOf(widget.initialTab), vsync: this);
+  late final _tabs = FrostTabController(length: UserDetailContent.tabs.length, initialIndex: UserDetailContent.tabs.indexOf(widget.initialTab), vsync: this);
   final _outer = ScrollController();
   var _bookmarks = UserBookmarkKind.illustManga;
   var _bookmarkRestrict = Restrict.public;
@@ -183,7 +183,7 @@ class _UserDetailContentState extends ConsumerState<UserDetailContent> with Sing
               ],
               body: ListenableBuilder(
                 listenable: _tabs,
-                builder: (context, _) => TabBarView(
+                builder: (context, _) => FrostTabView(
                   controller: _tabs,
                   children: [
                     for (final (index, kind) in UserDetailContent.tabs.indexed)
@@ -491,7 +491,7 @@ class _UserDetailSkeleton extends StatefulWidget {
 }
 
 class _UserDetailSkeletonState extends State<_UserDetailSkeleton> with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(length: UserDetailContent.tabs.length, vsync: this);
+  late final _tabs = FrostTabController(length: UserDetailContent.tabs.length, vsync: this);
 
   @override
   void dispose() {

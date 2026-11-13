@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart' show pixivImageProviderFor;
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:freepiv/app/account_scope.dart';
@@ -99,7 +98,6 @@ class _FreepivMaterialAppState extends ConsumerState<_FreepivMaterialApp> {
         appearance: appearance,
         locale: selectedLocale?.flutterLocale,
         supportedLocales: AppLocaleUtils.supportedLocales,
-        localizationsDelegates: const [GlobalMaterialLocalizations.delegate, GlobalWidgetsLocalizations.delegate, GlobalCupertinoLocalizations.delegate],
         routerConfig: _router,
         builder: (context, child) {
           return FrostWindowTitleScope(

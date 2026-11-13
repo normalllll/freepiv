@@ -34,9 +34,9 @@ void main() {
     expect(saved.effectiveToneFor(Brightness.dark), FrostTone.neutral);
     expect(saved.accentFor(Brightness.light), const Color(0xFF4C8DFF));
     expect(saved.accentFor(Brightness.dark), const Color(0xFF00A68C));
-    final manual = saved.copyWith(mode: ThemeMode.dark);
+    final manual = saved.copyWith(mode: FrostThemeMode.dark);
     expect(manual.effectiveToneFor(Brightness.dark), FrostTone.warm);
-    expect(manual.copyWith(mode: ThemeMode.system).lightTone, FrostTone.cool);
+    expect(manual.copyWith(mode: FrostThemeMode.system).lightTone, FrostTone.cool);
   });
 
   test('six presets pass all matching-brightness surfaces', () {
@@ -87,7 +87,7 @@ void main() {
   test('appearance migrates old mode and repairs each corrupt field independently', () async {
     final store = MemorySettingsStore({'themeMode': 2, 'localeCode': 'ja-JP'});
     await AppSettings.initialize(store: store);
-    expect(AppSettings.appearance.mode, ThemeMode.dark);
+    expect(AppSettings.appearance.mode, FrostThemeMode.dark);
     expect(AppSettings.localeCode, 'ja-JP');
 
     store.values['appearance'] = {
@@ -102,7 +102,7 @@ void main() {
     };
     await AppSettings.initialize(store: store);
     final loaded = AppSettings.appearance;
-    expect(loaded.mode, ThemeMode.light);
+    expect(loaded.mode, FrostThemeMode.light);
     expect(loaded.lightTone, FrostTone.cool);
     expect(loaded.darkTone, FrostTone.warm);
     expect(loaded.lightAccent, FrostPalettes.pink.lightDefaultAccent);
@@ -132,13 +132,13 @@ void main() {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     final notifier = container.read(appearanceProvider.notifier);
-    notifier.setMode(ThemeMode.light);
+    notifier.setMode(FrostThemeMode.light);
     notifier.setTone(Brightness.light, FrostTone.cool);
     notifier.setPreset(Brightness.light, const Color(0xFF4C8DFF));
     firstWrite.complete();
     await notifier.retrySave();
     final saved = AppSettings.appearance;
-    expect(saved.mode, ThemeMode.light);
+    expect(saved.mode, FrostThemeMode.light);
     expect(saved.lightTone, FrostTone.cool);
     expect(saved.lightAccent, const Color(0xFF4C8DFF));
     expect(container.read(appearanceProvider).unsaved, isFalse);

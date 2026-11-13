@@ -197,7 +197,7 @@ class _SearchFilterPanelState extends State<SearchFilterPanel> {
             showsYear: true,
             firstDate: DateTime(now.year - 20),
             lastDate: now,
-            value: _draft.customStart == null || _draft.customEnd == null ? null : DateTimeRange(start: _draft.customStart!, end: _draft.customEnd!),
+            value: _draft.customStart == null || _draft.customEnd == null ? null : (start: _draft.customStart!, end: _draft.customEnd!),
             onChanged: (range) => _set((draft) {
               if (range == null) return draft.copyWith(customStart: null, customEnd: null);
               final (start, end) = clampSearchRange(range.start, range.end);
