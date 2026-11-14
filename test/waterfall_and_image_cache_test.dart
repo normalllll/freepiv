@@ -1,6 +1,7 @@
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/core/media/logic.dart';
-import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
+import 'package:freepiv/core/media/rust_media_source.dart';
 
 void main() {
   test('recreated media transport retains the same image cache key', () {
@@ -9,8 +10,7 @@ void main() {
     final differentProxy = RustMediaTransport('http://proxy.example.test:8080');
     final request = MediaRequest(url: 'https://example.test/art.png');
 
-    RustExtendedNetworkImageProvider image(RustMediaTransport transport) =>
-        RustExtendedNetworkImageProvider(request: request, mediaStream: transport.stream, mediaStreamCacheIdentity: transport.imageCacheIdentity);
+    CachedMediaImage image(RustMediaTransport transport) => CachedMediaImage(RustMediaSource.through(transport, request));
 
     expect(image(firstTransport), image(nextTransport));
     expect(image(firstTransport).hashCode, image(nextTransport).hashCode);

@@ -18,6 +18,10 @@ dependencies:
       ref: &frost_ref 04b065210cca9497f740e3c805aa3e1b9af47587
   frost_data:
     git: {url: *frost, path: packages/frost_data, ref: *frost_ref}
+  flutter_media_cache:
+    git:
+      url: https://github.com/normalllll/flutter_media_cache.git
+      ref: c55f7afaf96684b5c5d35fb12225c6443e83c0e4
 
   cupertino_icons: ^2.0.0
   flutter_rust_bridge: 2.14.0-beta.2
@@ -36,7 +40,6 @@ dependencies:
   hive_ce_flutter: ^2.4.0
   loading_more_list: ^7.1.0
   waterfall_flow: ^3.1.1
-  extended_image: ^10.1.0
   html: ^0.15.7
   skeletonizer: ^3.0.0
   flutter_animate: ^4.5.2

@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:freepiv/app/app.dart';
 import 'package:freepiv/app/window/app_window.dart';
 import 'package:freepiv/app_links/app_links.dart';
 import 'package:freepiv/core/downloads/download_manager.dart';
 import 'package:freepiv/core/downloads/platform/macos_folder_access.dart';
+import 'package:freepiv/core/media/rust_media_source.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/core/services/updater_service.dart';
@@ -22,8 +24,10 @@ Future<void> main() async {
   await initializeLocaleSettings();
   refreshPixivApiLanguage();
   unawaited(UpdaterService.checkOnAppStart());
-  PaintingBinding.instance.imageCache.maximumSize = 300;
-  PaintingBinding.instance.imageCache.maximumSizeBytes = 512 << 20;
+  // Decoded pictures stay in graphics memory, over a third more than this
+  // budget once their mip levels are counted.
+  limitDecodedPictureCache(bytes: 150 << 20);
+  appPictureStore.trimAutomatically();
   // The bundled Noto Sans CJK subsets are distributed under the SIL OFL.
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks(const ['Noto Sans SC', 'Noto Sans JP'], await rootBundle.loadString('assets/fonts/OFL-NotoSansCJK.txt'));

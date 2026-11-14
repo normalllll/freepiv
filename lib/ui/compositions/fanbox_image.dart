@@ -1,11 +1,12 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/media/logic.dart';
+import 'package:freepiv/core/media/rust_media_source.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/fanbox/fanbox_actions.dart' show fanboxImageHeaders;
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_ui/frost_ui.dart';
@@ -41,9 +42,11 @@ class _AppFanboxImageState extends ConsumerState<AppFanboxImage> {
       if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) return placeholder;
       final session = ref.watch(fanboxSessionProvider);
       if (!session.hasValue) return placeholder;
-      image = RustExtendedNetworkImageProvider(
-        request: MediaRequest(url: url, allowDiskCache: false, accountKey: session.value ?? '', headers: fanboxImageHeaders(uri, session.value)),
-        mediaStream: ref.watch(rustMediaTransportProvider).stream,
+      image = CachedMediaImage(
+        RustMediaSource.through(
+          ref.watch(rustMediaTransportProvider),
+          MediaRequest(url: url, allowDiskCache: false, accountKey: session.value ?? '', headers: fanboxImageHeaders(uri, session.value)),
+        ),
         reloadRevision: _revision,
       );
     }

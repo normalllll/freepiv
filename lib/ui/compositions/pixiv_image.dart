@@ -1,10 +1,11 @@
 import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:flutter/widgets.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/media/logic.dart';
+import 'package:freepiv/core/media/rust_media_source.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 import 'package:freepiv/ui/compositions/skeletons.dart';
 import 'package:frost_ui/frost_ui.dart';
 
@@ -34,17 +35,19 @@ ImageProvider pixivImageProviderFor(
   bool keepBytes = false,
 }) {
   if (pixivImageOverride?.call(url) case final image?) return image;
-  return RustExtendedNetworkImageProvider(
-    request: MediaRequest(url: url, headers: headers ?? pixivRefererHeaders, allowDiskCache: accountKey == null, accountKey: accountKey ?? ''),
-    mediaStream: transport.stream,
-    mediaStreamCacheIdentity: transport.imageCacheIdentity,
+  return CachedMediaImage(
+    RustMediaSource.through(
+      transport,
+      MediaRequest(url: url, headers: headers ?? pixivRefererHeaders, allowDiskCache: accountKey == null, accountKey: accountKey ?? ''),
+    ),
+    store: appPictureStore,
     reloadRevision: revision,
-    cacheRawData: keepBytes,
+    keepBytes: keepBytes,
   );
 }
 
 /// The encoded file of a loaded image asked for with `keepBytes`.
-Uint8List? pixivImageBytes(ImageProvider image) => image is RustExtendedNetworkImageProvider ? image.rawImageData : null;
+Uint8List? pixivImageBytes(ImageProvider image) => image is CachedMediaImage ? image.keptBytes : null;
 
 /// A Pixiv image in a Frost media frame: Frost's placeholder while it loads
 /// and fades it in; a failed image offers a retry in its place. Works without

@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/painting.dart';
 import 'package:freepiv/core/media/logic.dart';
-import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
+import 'package:freepiv/ui/compositions/pixiv_image.dart';
 
 /// Pixivision's images are served only to requests from its own pages.
 const pixivisionImageHeaders = {'Referer': 'https://www.pixivision.net/'};
@@ -19,11 +19,7 @@ Map<String, double> pixivisionKnownImageRatios(Article article) => Map.unmodifia
 /// sources do not trigger a second download. The listener has a finite life;
 /// the reserved slot remains stable if a ratio cannot be obtained in time.
 Future<double?> probePixivisionImageRatio(RustMediaTransport transport, String url, {Duration timeout = const Duration(seconds: 20)}) async {
-  final provider = RustExtendedNetworkImageProvider(
-    request: MediaRequest(url: url, headers: pixivisionImageHeaders),
-    mediaStream: transport.stream,
-    mediaStreamCacheIdentity: transport.imageCacheIdentity,
-  );
+  final provider = pixivImageProviderFor(transport, url, headers: pixivisionImageHeaders);
   final stream = provider.resolve(ImageConfiguration.empty);
   final result = Completer<double?>();
   late final ImageStreamListener listener;

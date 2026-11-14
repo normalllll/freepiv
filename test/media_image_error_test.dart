@@ -2,21 +2,25 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freepiv/shared/widgets/rust_extended_network_image_provider.dart';
-import 'package:freepiv/src/rust/api/media.dart';
+import 'package:freepiv/core/media/rust_media_source.dart';
+import 'package:freepiv/src/rust/api/media.dart' as rust;
 
 void main() {
   testWidgets('media stream failure reaches the image error UI after bounded retries', (tester) async {
     var attempts = 0;
     Object? displayedError;
-    final provider = RustExtendedNetworkImageProvider(
-      request: MediaRequest(url: 'https://fixtures.example.test/failed.png', allowDiskCache: false),
-      mediaStream: (_, _) {
-        attempts++;
-        return Stream<MediaChunk>.error(AnyhowException('Media request failed'));
-      },
+    final provider = CachedMediaImage(
+      RustMediaSource(
+        MediaRequest(url: 'https://fixtures.example.test/failed.png', allowDiskCache: false),
+        stream: (_, _) {
+          attempts++;
+          return Stream<rust.MediaChunk>.error(AnyhowException('Media request failed'));
+        },
+        streamIdentity: 'failed',
+      ),
     );
     await tester.runAsync(() async {
       await tester.pumpWidget(
@@ -55,11 +59,14 @@ void main() {
       }
     });
     var attempts = 0;
-    final provider = RustExtendedNetworkImageProvider(
-      request: MediaRequest(url: 'https://fixtures.example.test/recovered.png', allowDiskCache: false),
-      mediaStream: (_, _) => ++attempts == 1
-          ? Stream<MediaChunk>.error(AnyhowException('Media request failed'))
-          : Stream.value(MediaChunk(bytes: bytes!, received: bytes.length, total: bytes.length)),
+    final provider = CachedMediaImage(
+      RustMediaSource(
+        MediaRequest(url: 'https://fixtures.example.test/recovered.png', allowDiskCache: false),
+        stream: (_, _) => ++attempts == 1
+            ? Stream<rust.MediaChunk>.error(AnyhowException('Media request failed'))
+            : Stream.value(rust.MediaChunk(bytes: bytes!, received: bytes.length, total: bytes.length)),
+        streamIdentity: 'recovered',
+      ),
     );
     await tester.runAsync(() async {
       await tester.pumpWidget(
