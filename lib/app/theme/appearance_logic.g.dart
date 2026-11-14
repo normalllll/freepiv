@@ -41,7 +41,7 @@ final class AppearanceProvider
   }
 }
 
-String _$appearanceHash() => r'b8251c50e401b36ddcd002c3167a7767e4dac7ec';
+String _$appearanceHash() => r'ebd702fc9192bf044d03d36a619e078a1e034b4d';
 
 abstract class _$Appearance extends $Notifier<AppearanceState> {
   AppearanceState build();

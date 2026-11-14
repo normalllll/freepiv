@@ -621,42 +621,40 @@ abstract class _$HistoryDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [historyRecords];
 }
 
-typedef $$HistoryRecordsTableCreateCompanionBuilder =
-    HistoryRecordsCompanion Function({
-      required String account,
-      required HistoryWorkKind kind,
-      required int workId,
-      required String title,
-      required int authorId,
-      required String authorName,
-      required String thumbnailUrl,
-      required int xRestrict,
-      required bool aiGenerated,
-      required int viewedAt,
-      Value<int?> width,
-      Value<int?> height,
-      Value<int?> pageCount,
-      Value<int?> textLength,
-      Value<int> rowid,
-    });
-typedef $$HistoryRecordsTableUpdateCompanionBuilder =
-    HistoryRecordsCompanion Function({
-      Value<String> account,
-      Value<HistoryWorkKind> kind,
-      Value<int> workId,
-      Value<String> title,
-      Value<int> authorId,
-      Value<String> authorName,
-      Value<String> thumbnailUrl,
-      Value<int> xRestrict,
-      Value<bool> aiGenerated,
-      Value<int> viewedAt,
-      Value<int?> width,
-      Value<int?> height,
-      Value<int?> pageCount,
-      Value<int?> textLength,
-      Value<int> rowid,
-    });
+typedef $$HistoryRecordsTableCreateCompanionBuilder = HistoryRecordsCompanion Function({
+  required String account,
+  required HistoryWorkKind kind,
+  required int workId,
+  required String title,
+  required int authorId,
+  required String authorName,
+  required String thumbnailUrl,
+  required int xRestrict,
+  required bool aiGenerated,
+  required int viewedAt,
+  Value<int?> width,
+  Value<int?> height,
+  Value<int?> pageCount,
+  Value<int?> textLength,
+  Value<int> rowid,
+});
+typedef $$HistoryRecordsTableUpdateCompanionBuilder = HistoryRecordsCompanion Function({
+  Value<String> account,
+  Value<HistoryWorkKind> kind,
+  Value<int> workId,
+  Value<String> title,
+  Value<int> authorId,
+  Value<String> authorName,
+  Value<String> thumbnailUrl,
+  Value<int> xRestrict,
+  Value<bool> aiGenerated,
+  Value<int> viewedAt,
+  Value<int?> width,
+  Value<int?> height,
+  Value<int?> pageCount,
+  Value<int?> textLength,
+  Value<int> rowid,
+});
 
 class $$HistoryRecordsTableFilterComposer extends Composer<_$HistoryDatabase, $HistoryRecordsTable> {
   $$HistoryRecordsTableFilterComposer({

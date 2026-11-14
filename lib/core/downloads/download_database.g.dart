@@ -2480,10 +2480,11 @@ class $$DownloadJobsTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (downloadStatesRefs)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       DownloadJob,
                       $DownloadJobsTable,
-                      DownloadState
+                      DownloadState,
+                      $DownloadStatesTable
                     >(
                       currentTable: table,
                       referencedTable: $$DownloadJobsTableReferences
@@ -2494,8 +2495,8 @@ class $$DownloadJobsTableTableManager
                             table,
                             p0,
                           ).downloadStatesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.jobId == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'job_id',
                       typedResults: items,
                     ),
                 ];
@@ -2930,18 +2931,15 @@ class $$DownloadStatesTableTableManager
                     >
                   >(state) {
                     if (jobId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.jobId,
-                                referencedTable: $$DownloadStatesTableReferences
-                                    ._jobIdTable(db),
-                                referencedColumn:
-                                    $$DownloadStatesTableReferences
-                                        ._jobIdTable(db)
-                                        .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.jobId,
+                        referencedTable: $$DownloadStatesTableReferences
+                            ._jobIdTable(db),
+                        referencedColumn: $$DownloadStatesTableReferences
+                            ._jobIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;

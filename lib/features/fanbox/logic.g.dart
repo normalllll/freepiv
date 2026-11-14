@@ -313,7 +313,7 @@ final class FanboxBrowseProvider
   }
 }
 
-String _$fanboxBrowseHash() => r'3cbc4d519b01f01b1300a49ba70f7cf194908deb';
+String _$fanboxBrowseHash() => r'87d8558a8bc0a38e6a3387c54c6f38ede0efacb1';
 
 final class FanboxBrowseFamily extends $Family
     with
@@ -362,8 +362,16 @@ abstract class _$FanboxBrowse extends $AsyncNotifier<FanboxCollection> {
   }
 }
 
+/// A loaded post stays for ten minutes after nothing shows it, like the
+/// collections, so a bookmark row scrolled back into view is not fetched again.
+/// A failed load is dropped as soon as nothing shows it.
+
 @ProviderFor(fanboxPost)
 final fanboxPostProvider = FanboxPostFamily._();
+
+/// A loaded post stays for ten minutes after nothing shows it, like the
+/// collections, so a bookmark row scrolled back into view is not fetched again.
+/// A failed load is dropped as soon as nothing shows it.
 
 final class FanboxPostProvider
     extends
@@ -373,6 +381,9 @@ final class FanboxPostProvider
           FutureOr<FanboxPost>
         >
     with $FutureModifier<FanboxPost>, $FutureProvider<FanboxPost> {
+  /// A loaded post stays for ten minutes after nothing shows it, like the
+  /// collections, so a bookmark row scrolled back into view is not fetched again.
+  /// A failed load is dropped as soon as nothing shows it.
   FanboxPostProvider._({
     required FanboxPostFamily super.from,
     required String super.argument,
@@ -416,7 +427,11 @@ final class FanboxPostProvider
   }
 }
 
-String _$fanboxPostHash() => r'c9470c7f1893efa7ef0ccbfcca41090a02f791bf';
+String _$fanboxPostHash() => r'479df603b866f6ca665e23fb2f8049016be47a82';
+
+/// A loaded post stays for ten minutes after nothing shows it, like the
+/// collections, so a bookmark row scrolled back into view is not fetched again.
+/// A failed load is dropped as soon as nothing shows it.
 
 final class FanboxPostFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<FanboxPost>, String> {
@@ -428,6 +443,10 @@ final class FanboxPostFamily extends $Family
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
+
+  /// A loaded post stays for ten minutes after nothing shows it, like the
+  /// collections, so a bookmark row scrolled back into view is not fetched again.
+  /// A failed load is dropped as soon as nothing shows it.
 
   FanboxPostProvider call(String id) =>
       FanboxPostProvider._(argument: id, from: this);

@@ -12,7 +12,8 @@ void main(List<String> args) async {
     if (code.targetOS == OS.iOS) {
       // Hook processes do not necessarily inherit Xcode's deployment settings.
       // Flutter 3.47 requires iOS 15; honor higher targets supplied by Flutter.
-      final minimumVersion = code.iOS.targetVersion < 15 ? 15 : code.iOS.targetVersion;
+      final targetMajor = code.iOS.deploymentVersion.major;
+      final minimumVersion = targetMajor < 15 ? 15 : targetMajor;
       final sdk = await Process.run('xcrun', ['--sdk', code.iOS.targetSdk.toString(), '--show-sdk-path']);
       final sdkPath = (sdk.stdout as String).trim();
       if (sdk.exitCode != 0 || sdkPath.isEmpty) {

@@ -182,7 +182,7 @@ final class AiShowSettingProvider
   }
 }
 
-String _$aiShowSettingHash() => r'1f0513a428cbe0946c214e85f0760aa38a8a929c';
+String _$aiShowSettingHash() => r'6a59d974fc03f56071f4c653c98e5fe1089c8a9b';
 
 /// Whether Pixiv shows the account AI-generated works.
 

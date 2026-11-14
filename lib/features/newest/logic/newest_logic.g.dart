@@ -40,7 +40,7 @@ final class NewestProvider extends $NotifierProvider<Newest, NewestState> {
   }
 }
 
-String _$newestHash() => r'3e2ad1d4f89152375df3411db6b10f4b3c1b2319';
+String _$newestHash() => r'345dacdd0a33608558c6492ee5aee4436f02b48f';
 
 abstract class _$Newest extends $Notifier<NewestState> {
   NewestState build();
