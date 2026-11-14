@@ -172,16 +172,13 @@ class AppSliverNovelGrid extends StatelessWidget {
   final Widget? empty;
 
   @override
-  Widget build(BuildContext context) => SliverLayoutBuilder(
-    builder: (context, constraints) => FrostSliverDataWaterfallGrid<Novel>(
-      source: source,
-      firstLoadSkeleton: const AppNovelCardsSkeleton(),
-      empty: empty,
-      preferredTileWidth: _novelCardMinWidth,
-      columns: _novelCardColumns(context, constraints.crossAxisExtent),
-      maxColumns: _novelCardMaxColumns,
-      itemBuilder: (context, novel, index) => AppNovelCard(novel: novel),
-    ),
+  Widget build(BuildContext context) => FrostSliverDataWaterfallGrid<Novel>(
+    source: source,
+    firstLoadSkeleton: const AppNovelCardsSkeleton(),
+    empty: empty,
+    minTileWidth: _novelCardMinWidth,
+    maxColumns: _novelCardMaxColumns,
+    itemBuilder: (context, novel, index) => AppNovelCard(novel: novel),
   );
 }
 

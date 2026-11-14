@@ -156,16 +156,13 @@ class AppSliverUserGrid extends StatelessWidget {
   final Widget? empty;
 
   @override
-  Widget build(BuildContext context) => SliverLayoutBuilder(
-    builder: (context, constraints) => FrostSliverDataWaterfallGrid<UserPreview>(
-      source: source,
-      firstLoadSkeleton: const AppUserCardsSkeleton(),
-      empty: empty,
-      preferredTileWidth: _minTileWidth,
-      columns: _columns(context, constraints.crossAxisExtent),
-      maxColumns: _maxColumns,
-      itemBuilder: (context, preview, index) => AppUserCard(preview: preview),
-    ),
+  Widget build(BuildContext context) => FrostSliverDataWaterfallGrid<UserPreview>(
+    source: source,
+    firstLoadSkeleton: const AppUserCardsSkeleton(),
+    empty: empty,
+    minTileWidth: _minTileWidth,
+    maxColumns: _maxColumns,
+    itemBuilder: (context, preview, index) => AppUserCard(preview: preview),
   );
 }
 
