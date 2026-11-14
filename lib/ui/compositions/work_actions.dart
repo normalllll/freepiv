@@ -184,30 +184,35 @@ class AppFollowButton extends StatelessWidget {
     userId: user.id,
     initiallyFollowed: user.isFollowed ?? false,
     builder: (context, followed, toggle) {
-      final label = followed ? context.t.follow.followed : context.t.follow.follow;
+      final labels = [context.t.follow.follow, context.t.follow.followed];
+      final label = labels[followed ? 1 : 0];
       final tooltip = followed ? context.t.follow.tooltipUnfollow : context.t.follow.tooltipFollow;
-      final button = followed
-          ? FrostButton.tinted(label: label, tooltip: tooltip, onPressed: toggle)
+      // The plate is as wide as the longer label in both states, so the
+      // button does not resize, and nothing beside it moves, when it toggles.
+      final labelWidget = _FollowLabel(labels: labels, shown: label);
+      return followed
+          ? FrostButton.tinted(label: label, labelWidget: labelWidget, tooltip: tooltip, onPressed: toggle)
           : prominent
-          ? FrostButton.prominent(label: label, tooltip: tooltip, onPressed: toggle)
-          : FrostButton.outlined(label: label, tooltip: tooltip, onPressed: toggle);
-      if (prominent) return button;
-      // In a row the button keeps the width of both labels, so what stands
-      // before it does not move when it changes.
-      return Stack(
-        alignment: AlignmentDirectional.centerEnd,
-        children: [
-          for (final other in [context.t.follow.followed, context.t.follow.follow])
-            Visibility(
-              visible: false,
-              maintainSize: true,
-              maintainAnimation: true,
-              maintainState: true,
-              child: ExcludeSemantics(child: FrostButton.outlined(label: other, onPressed: null)),
-            ),
-          button,
-        ],
-      );
+          ? FrostButton.prominent(label: label, labelWidget: labelWidget, tooltip: tooltip, onPressed: toggle)
+          : FrostButton.outlined(label: label, labelWidget: labelWidget, tooltip: tooltip, onPressed: toggle);
     },
+  );
+}
+
+/// [shown] centred in the width of the longest of [labels], in the button's
+/// own text style.
+class _FollowLabel extends StatelessWidget {
+  const _FollowLabel({required this.labels, required this.shown});
+
+  final List<String> labels;
+  final String shown;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    alignment: Alignment.center,
+    children: [
+      for (final label in labels) Visibility(visible: false, maintainSize: true, maintainAnimation: true, maintainState: true, child: Text(label, maxLines: 1)),
+      Text(shown, maxLines: 1),
+    ],
   );
 }
