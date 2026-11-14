@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/dev/sample_data.dart';
+import 'package:freepiv/dev/sample_images.dart';
 import 'package:freepiv/features/fanbox/logic.dart';
 import 'package:freepiv/features/fanbox/fanbox_plans.dart';
 import 'package:freepiv/features/fanbox/post_page.dart';
@@ -159,6 +160,54 @@ void main() {
     expect(find.descendant(of: find.byType(FrostDialog), matching: find.text(plan.description)), findsOneWidget, reason: 'the whole description');
     expect(dialog.actions.single.label, t.fanbox.supportOnWebsite);
     expect(fanboxPlanUrl(plan), Uri.parse('https://www.fanbox.cc/@${plan.creatorId}/plans/${plan.id}'));
+  });
+
+  testWidgets('a body image shows its thumbnail, and the viewer opens the original', (tester) async {
+    final sample = sampleFanboxPost('5000');
+    final thumbnail = sampleImageUrl(131, width: 600, height: 400);
+    final post = FanboxPost(
+      id: sample.id,
+      creatorId: sample.creatorId,
+      user: sample.user,
+      title: sample.title,
+      excerpt: sample.excerpt,
+      coverUrl: sample.coverUrl,
+      publishedDatetime: sample.publishedDatetime,
+      updatedDatetime: sample.updatedDatetime,
+      feeRequired: sample.feeRequired,
+      isRestricted: sample.isRestricted,
+      isLiked: sample.isLiked,
+      likeCount: sample.likeCount,
+      commentCount: sample.commentCount,
+      tags: sample.tags,
+      blocks: [
+        for (final block in sample.blocks)
+          if (block case FanboxBlock_Image(:final image))
+            FanboxBlock.image(
+              image: FanboxImage(
+                id: image.id,
+                originalUrl: image.originalUrl,
+                thumbnailUrl: thumbnail,
+                width: image.width,
+                height: image.height,
+                extension_: image.extension_,
+              ),
+            )
+          else
+            block,
+      ],
+    );
+    await _mount(tester, load: (_) async => post);
+    final original = fanboxPostImageUrls(post).single;
+    expect(find.byWidgetPredicate((widget) => widget is AppFanboxImage && widget.url == original), findsNothing);
+    final image = find.byWidgetPredicate((widget) => widget is AppFanboxImage && widget.url == thumbnail);
+    await _scrollTo(tester, image);
+    await tester.ensureVisible(image);
+    await settlePilot(tester);
+    await tester.tapAt(tester.getTopLeft(image) + const Offset(100, 100));
+    await settlePilot(tester);
+    final args = openedExtras.last! as OriginalImageViewerArgs;
+    expect(args.pages.map((page) => page.url), [original]);
   });
 
   testWidgets('a post link opens that post', (tester) async {

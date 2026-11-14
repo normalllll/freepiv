@@ -438,8 +438,9 @@ class FanboxBlockView extends ConsumerWidget {
             final urls = gallery.contains(image.originalUrl) ? gallery : [image.originalUrl];
             openFanboxImages(context, ref, urls: urls, index: urls.indexOf(image.originalUrl), title: title);
           },
+          // The post shows the thumbnail; the viewer and saving use the original.
           child: AppFanboxImage(
-            url: image.originalUrl,
+            url: image.thumbnailUrl.isEmpty ? image.originalUrl : image.thumbnailUrl,
             aspectRatio: image.width > 0 && image.height > 0 ? image.width / image.height : 16 / 9,
             fit: BoxFit.contain,
           ),
