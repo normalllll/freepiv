@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/i18n/strings.g.dart';
@@ -50,6 +52,15 @@ AppRoute appShellRouteAt(int index) {
   final primary = appRouteDestinations.length;
   return index < primary ? appRouteDestinations[index].route : appSecondaryRoutes[index - primary];
 }
+
+/// The shell's signal that a navigation item was selected again, which a
+/// destination's root page answers by scrolling back to its top.
+///
+/// The signal lives as long as the shell, so a page reads it without depending
+/// on the navigation scope. A dependency would rebuild the whole page whenever a
+/// page is pushed or popped above it, since that changes the scope's back state.
+ValueListenable<({int index, int sequence})>? appShellReselection(BuildContext context) =>
+    context.getInheritedWidgetOfExactType<FrostShellNavigationScope>()?.primaryReselection;
 
 /// Whether [path] is a destination's root page.
 bool isMobileNavigationPath(String path) {

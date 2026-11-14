@@ -62,6 +62,8 @@ Future<void> _mountFeed(WidgetTester tester, HomeIllustListSource source, {Size 
   },
 );
 
+void _goBack() {}
+
 Widget _column(Widget row) => SingleChildScrollView(
   child: FrostContentColumn(maxWidth: FrostMetrics.readingMaxWidth, child: row),
 );
@@ -256,6 +258,48 @@ void main() {
         expectNoLayoutErrors(tester);
       }
     }
+  });
+
+  testWidgets('a page pushed or popped above keeps the feed as built, and selecting Home again still scrolls it to the top', (tester) async {
+    final canGoBack = ValueNotifier(false);
+    final reselection = ValueNotifier((index: 0, sequence: 0));
+    addTearDown(canGoBack.dispose);
+    addTearDown(reselection.dispose);
+    await mountPilotPage(
+      tester,
+      ValueListenableBuilder<bool>(
+        valueListenable: canGoBack,
+        // The shell's scope changes its back state as pages come and go.
+        builder: (context, back, child) => FrostShellNavigationScope(
+          ownsBackControl: false,
+          canGoBack: back,
+          goBack: _goBack,
+          routeDepth: back ? 1 : 0,
+          primaryReselection: reselection,
+          child: child!,
+        ),
+        child: const HomePage(),
+      ),
+    );
+    final card = tester.widget(find.byType(AppArtworkCard).first);
+
+    canGoBack.value = true;
+    await tester.pump();
+    expect(tester.widget(find.byType(AppArtworkCard).first), same(card));
+    canGoBack.value = false;
+    await tester.pump();
+    expect(tester.widget(find.byType(AppArtworkCard).first), same(card));
+
+    final feed = find
+        .descendant(of: find.byType(HomePage), matching: find.byWidgetPredicate((widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down))
+        .first;
+    await tester.drag(feed, const Offset(0, -600));
+    await settlePilot(tester);
+    final position = tester.state<ScrollableState>(feed).position;
+    expect(position.pixels, greaterThan(0));
+    reselection.value = (index: 0, sequence: 1);
+    await settlePilot(tester);
+    expect(position.pixels, 0);
   });
 
   test('the home strings exist in all four languages', () {

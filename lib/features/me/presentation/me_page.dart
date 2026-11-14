@@ -35,7 +35,7 @@ class _MePageState extends ConsumerState<MePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final next = FrostShellNavigationScope.maybeOf(context)?.primaryReselection;
+    final next = appShellReselection(context);
     if (identical(next, _reselection)) return;
     _reselection?.removeListener(_reselected);
     _reselection = next?..addListener(_reselected);
