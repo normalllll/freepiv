@@ -304,7 +304,7 @@ class _Profile extends ConsumerWidget {
                   child: FrostClickSurface(
                     shape: FrostClickShape.rounded(BorderRadius.circular(FrostRadius.lg)),
                     onTap: () => openFanboxImages(context, ref, urls: creator.profileImages, index: index, title: creator.user.name),
-                    child: AppFanboxImage(url: url, aspectRatio: 1),
+                    child: AppFanboxImage(url: url, aspectRatio: 1, decodeAtLayoutSize: true),
                   ),
                 ),
             ],
@@ -369,7 +369,7 @@ class _FanCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: FrostGap.related,
           children: [
-            AppFanboxImage(url: url, aspectRatio: _cardRatio, fit: BoxFit.contain),
+            AppFanboxImage(url: url, aspectRatio: _cardRatio, fit: BoxFit.contain, decodeAtLayoutSize: true),
             Align(
               alignment: AlignmentDirectional.centerEnd,
               child: FrostButton.outlined(

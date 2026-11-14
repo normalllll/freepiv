@@ -263,7 +263,7 @@ class _Head extends ConsumerWidget {
         ),
         if (banner != null)
           loaded == null
-              ? AppPixivImage(url: banner, aspectRatio: pixivisionBannerRatio, fit: BoxFit.contain, headers: pixivisionImageHeaders)
+              ? AppPixivImage(url: banner, aspectRatio: pixivisionBannerRatio, fit: BoxFit.contain, headers: pixivisionImageHeaders, decodeAtLayoutSize: true)
               : _ArticleImage(url: banner, title: title, ratio: pixivisionBannerRatio),
         if (opening != null) FrostText(opening, content: true),
       ],

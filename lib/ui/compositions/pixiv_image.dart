@@ -20,8 +20,27 @@ ImageProvider? Function(String url)? pixivImageOverride;
 /// unless it is fetched for an [accountKey] (an image behind a sign-in).
 /// A higher [revision] asks for it again after a failure; [keepBytes] keeps
 /// the encoded file for copying and saving ([pixivImageBytes]).
-ImageProvider pixivImageProvider(WidgetRef ref, String url, {Map<String, String>? headers, String? accountKey, int revision = 0, bool keepBytes = false}) =>
-    pixivImageProviderFor(ref.watch(rustMediaTransportProvider), url, headers: headers, accountKey: accountKey, revision: revision, keepBytes: keepBytes);
+/// [decodeBox] and [decodeFit] decode it no larger than it is drawn
+/// ([CachedMediaImage.decodeBox]).
+ImageProvider pixivImageProvider(
+  WidgetRef ref,
+  String url, {
+  Map<String, String>? headers,
+  String? accountKey,
+  int revision = 0,
+  bool keepBytes = false,
+  Size? decodeBox,
+  BoxFit decodeFit = BoxFit.contain,
+}) => pixivImageProviderFor(
+  ref.watch(rustMediaTransportProvider),
+  url,
+  headers: headers,
+  accountKey: accountKey,
+  revision: revision,
+  keepBytes: keepBytes,
+  decodeBox: decodeBox,
+  decodeFit: decodeFit,
+);
 
 /// [pixivImageProvider] through [transport], for code outside a widget's
 /// build (the window's ambient backdrop). Equal arguments give an equal
@@ -33,6 +52,8 @@ ImageProvider pixivImageProviderFor(
   String? accountKey,
   int revision = 0,
   bool keepBytes = false,
+  Size? decodeBox,
+  BoxFit decodeFit = BoxFit.contain,
 }) {
   if (pixivImageOverride?.call(url) case final image?) return image;
   return CachedMediaImage(
@@ -43,6 +64,8 @@ ImageProvider pixivImageProviderFor(
     store: appPictureStore,
     reloadRevision: revision,
     keepBytes: keepBytes,
+    decodeBox: decodeBox,
+    decodeFit: decodeFit,
   );
 }
 
@@ -62,6 +85,7 @@ class AppPixivImage extends ConsumerStatefulWidget {
     this.accountKey,
     this.semanticLabel,
     this.placeholderUrl,
+    this.decodeAtLayoutSize = false,
     super.key,
   });
 
@@ -82,6 +106,12 @@ class AppPixivImage extends ConsumerStatefulWidget {
   /// [url] arrives.
   final String? placeholderUrl;
 
+  /// Decodes the picture no larger than it is laid out, for a picture that
+  /// comes in one size only, often far larger than the frame. Off where the
+  /// same picture is shown elsewhere at another size: each size is decoded and
+  /// cached apart.
+  final bool decodeAtLayoutSize;
+
   @override
   ConsumerState<AppPixivImage> createState() => _AppPixivImageState();
 }
@@ -95,15 +125,29 @@ class _AppPixivImageState extends ConsumerState<AppPixivImage> {
     if (widget.url.isEmpty) {
       return FrostMediaFrame(aspectRatio: widget.aspectRatio, radius: widget.radius, semanticLabel: widget.semanticLabel, child: const SizedBox.expand());
     }
+    final transport = ref.watch(rustMediaTransportProvider);
+    if (!widget.decodeAtLayoutSize) return _frame(transport, null);
+    return LayoutBuilder(builder: (context, constraints) => _frame(transport, mediaDecodeBox(context, constraints, aspectRatio: widget.aspectRatio)));
+  }
+
+  Widget _frame(RustMediaTransport transport, Size? decodeBox) {
     return FrostMediaFrame(
-      image: pixivImageProvider(ref, widget.url, headers: widget.headers, accountKey: widget.accountKey, revision: _revision),
+      image: pixivImageProviderFor(
+        transport,
+        widget.url,
+        headers: widget.headers,
+        accountKey: widget.accountKey,
+        revision: _revision,
+        decodeBox: decodeBox,
+        decodeFit: widget.fit,
+      ),
       aspectRatio: widget.aspectRatio,
       radius: widget.radius,
       fit: widget.fit,
       semanticLabel: widget.semanticLabel,
       placeholderBuilder: switch (widget.placeholderUrl) {
         final placeholder? when placeholder.isNotEmpty && placeholder != widget.url => (context, _) => Image(
-          image: pixivImageProvider(ref, placeholder, headers: widget.headers, accountKey: widget.accountKey),
+          image: pixivImageProviderFor(transport, placeholder, headers: widget.headers, accountKey: widget.accountKey),
           fit: widget.fit,
           excludeFromSemantics: true,
         ),

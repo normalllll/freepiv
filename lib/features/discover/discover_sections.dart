@@ -112,7 +112,7 @@ class DiscoverArticleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FrostMediaCard(
-    media: AppPixivImage(url: article.thumbnail ?? '', aspectRatio: 16 / 9, radius: 0, headers: referer),
+    media: AppPixivImage(url: article.thumbnail ?? '', aspectRatio: 16 / 9, radius: 0, headers: referer, decodeAtLayoutSize: true),
     aspectRatio: 16 / 9,
     title: article.title,
     titleLines: titleLines,

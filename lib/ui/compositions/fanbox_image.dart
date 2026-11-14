@@ -14,12 +14,24 @@ import 'package:frost_ui/frost_ui.dart';
 /// A FANBOX image in a Frost media frame, fetched with the FANBOX session
 /// (images of supported plans need it); a failed one offers a retry.
 class AppFanboxImage extends ConsumerStatefulWidget {
-  const AppFanboxImage({required this.url, this.aspectRatio, this.radius = FrostRadius.lg, this.fit = BoxFit.cover, super.key});
+  const AppFanboxImage({
+    required this.url,
+    this.aspectRatio,
+    this.radius = FrostRadius.lg,
+    this.fit = BoxFit.cover,
+    this.decodeAtLayoutSize = false,
+    super.key,
+  });
 
   final String? url;
   final double? aspectRatio;
   final double radius;
   final BoxFit fit;
+
+  /// Decodes the picture no larger than it is laid out ([AppPixivImage.decodeAtLayoutSize]).
+  /// FANBOX pictures are never cached on disk, so a picture shown elsewhere at
+  /// another size would be fetched again: off for those.
+  final bool decodeAtLayoutSize;
 
   @override
   ConsumerState<AppFanboxImage> createState() => _AppFanboxImageState();
@@ -35,21 +47,25 @@ class _AppFanboxImageState extends ConsumerState<AppFanboxImage> {
     final uri = Uri.tryParse(url);
     final placeholder = FrostMediaFrame(aspectRatio: widget.aspectRatio, radius: widget.radius, child: const SizedBox.expand());
     final override = pixivImageOverride?.call(url);
-    final ImageProvider image;
-    if (override != null) {
-      image = override;
-    } else {
-      if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) return placeholder;
-      final session = ref.watch(fanboxSessionProvider);
-      if (!session.hasValue) return placeholder;
-      image = CachedMediaImage(
-        RustMediaSource.through(
-          ref.watch(rustMediaTransportProvider),
-          MediaRequest(url: url, allowDiskCache: false, accountKey: session.value ?? '', headers: fanboxImageHeaders(uri, session.value)),
-        ),
-        reloadRevision: _revision,
-      );
-    }
+    if (override != null) return _frame(override);
+    if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) return placeholder;
+    final session = ref.watch(fanboxSessionProvider);
+    if (!session.hasValue) return placeholder;
+    final transport = ref.watch(rustMediaTransportProvider);
+    ImageProvider image(Size? decodeBox) => CachedMediaImage(
+      RustMediaSource.through(
+        transport,
+        MediaRequest(url: url, allowDiskCache: false, accountKey: session.value ?? '', headers: fanboxImageHeaders(uri, session.value)),
+      ),
+      reloadRevision: _revision,
+      decodeBox: decodeBox,
+      decodeFit: widget.fit,
+    );
+    if (!widget.decodeAtLayoutSize) return _frame(image(null));
+    return LayoutBuilder(builder: (context, constraints) => _frame(image(mediaDecodeBox(context, constraints, aspectRatio: widget.aspectRatio))));
+  }
+
+  Widget _frame(ImageProvider image) {
     return FrostMediaFrame(
       image: image,
       aspectRatio: widget.aspectRatio,

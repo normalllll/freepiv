@@ -298,8 +298,8 @@ class DownloadThumbnail extends StatelessWidget {
     size: size,
     semanticLabel: source.title ?? '',
     image: switch (source) {
-      FanboxSource() => AppFanboxImage(url: url, aspectRatio: 1, radius: 0),
-      PixivisionSource() => AppPixivImage(url: url ?? '', aspectRatio: 1, radius: 0, headers: _pixivisionReferer),
+      FanboxSource() => AppFanboxImage(url: url, aspectRatio: 1, radius: 0, decodeAtLayoutSize: true),
+      PixivisionSource() => AppPixivImage(url: url ?? '', aspectRatio: 1, radius: 0, headers: _pixivisionReferer, decodeAtLayoutSize: true),
       _ => AppPixivImage(url: url ?? '', aspectRatio: 1, radius: 0),
     },
   );

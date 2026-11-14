@@ -32,7 +32,7 @@ class AppPixivisionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final meta = [?article.category?.title, if (article.publishDate case final date? when date.isNotEmpty) pixivisionDate(date)].join(' · ');
     return FrostMediaCard(
-      media: AppPixivImage(url: article.thumbnail ?? '', aspectRatio: 16 / 9, radius: 0, headers: pixivisionReferer),
+      media: AppPixivImage(url: article.thumbnail ?? '', aspectRatio: 16 / 9, radius: 0, headers: pixivisionReferer, decodeAtLayoutSize: true),
       aspectRatio: 16 / 9,
       title: pixivisionArticleTitle(article.title),
       metadata: meta.isEmpty
