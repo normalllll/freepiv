@@ -47,6 +47,28 @@ enum ReaderPageMode { scroll, paged }
 
 enum ReaderPageAnimation { slide, cover, none }
 
+/// How fast auto scroll moves.
+enum ReaderAutoScrollSpeed {
+  verySlow(12),
+  slow(24),
+  normal(36),
+  fast(60),
+  veryFast(96);
+
+  const ReaderAutoScrollSpeed(this.pixelsPerSecond);
+
+  final double pixelsPerSecond;
+
+  /// The step closest to a stored free-form speed in pixels per second.
+  static ReaderAutoScrollSpeed nearest(double pixelsPerSecond) {
+    var best = normal;
+    for (final step in values) {
+      if ((step.pixelsPerSecond - pixelsPerSecond).abs() < (best.pixelsPerSecond - pixelsPerSecond).abs()) best = step;
+    }
+    return best;
+  }
+}
+
 /// [sides]: the left third goes back and the right third forward; [forward]:
 /// every tap goes forward.
 enum ReaderTapZones { sides, forward }
@@ -167,7 +189,8 @@ class AppSettings {
   static const _readerPageAnimationKey = 'readerPageAnimation';
   static const _readerTapZonesKey = 'readerTapZones';
   static const _legacyReaderLineHeightKey = 'readerLineHeight';
-  static const _readerAutoScrollSpeedKey = 'readerAutoScrollSpeed';
+  static const _legacyReaderAutoScrollSpeedKey = 'readerAutoScrollSpeed';
+  static const _readerAutoScrollSpeedKey = 'readerAutoScrollStep';
   static const _readerVolumeKeysKey = 'readerVolumeKeys';
   static const _downloadEntryPositionKey = 'downloadEntryPosition';
   static const _recordHistoryKey = 'recordHistory';
@@ -179,7 +202,7 @@ class AppSettings {
   static const backgroundIntensityStep = 5;
 
   /// Keys of settings that no longer exist; a stored value is dropped.
-  static const _retiredKeys = {_legacyReduceTransparencyKey, 'navigationPlacement', _legacyReaderLineHeightKey};
+  static const _retiredKeys = {_legacyReduceTransparencyKey, 'navigationPlacement', _legacyReaderLineHeightKey, _legacyReaderAutoScrollSpeedKey};
   static const _legacyReduceTransparencyKey = 'reduceTransparency';
 
   static const defaultLocaleCode = 'en-US';
@@ -188,7 +211,6 @@ class AppSettings {
   static const minConcurrentDownloads = 1;
   static const maxConcurrentDownloadsLimit = 6;
   static const readerFontSizeRange = (min: 15.0, max: 26.0, fallback: 18.0);
-  static const readerAutoScrollSpeedRange = (min: 12.0, max: 96.0, fallback: 36.0);
 
   static const _settingKeys = {
     accountsKey,
@@ -426,9 +448,9 @@ class AppSettings {
 
   static set readerTapZones(ReaderTapZones value) => _write(_readerTapZonesKey, value.name);
 
-  static double get readerAutoScrollSpeed => _rangeSetting(_readerAutoScrollSpeedKey, readerAutoScrollSpeedRange);
+  static ReaderAutoScrollSpeed get readerAutoScrollSpeed => _enumSetting(_readerAutoScrollSpeedKey, ReaderAutoScrollSpeed.values, ReaderAutoScrollSpeed.normal);
 
-  static set readerAutoScrollSpeed(double value) => _write(_readerAutoScrollSpeedKey, _clampRange(value, readerAutoScrollSpeedRange));
+  static set readerAutoScrollSpeed(ReaderAutoScrollSpeed value) => _write(_readerAutoScrollSpeedKey, value.name);
 
   static bool get readerVolumeKeys => _values[_readerVolumeKeysKey] == true;
 
@@ -517,6 +539,12 @@ class AppSettings {
       _values[_readerLineSpacingKey] = spacing;
       await _activeStore.write(_readerLineSpacingKey, spacing);
     }
+    final legacySpeed = stored[_legacyReaderAutoScrollSpeedKey];
+    if (legacySpeed is num && !_values.containsKey(_readerAutoScrollSpeedKey)) {
+      final step = ReaderAutoScrollSpeed.nearest(legacySpeed.toDouble()).name;
+      _values[_readerAutoScrollSpeedKey] = step;
+      await _activeStore.write(_readerAutoScrollSpeedKey, step);
+    }
     for (final key in _retiredKeys) {
       if (stored.containsKey(key)) await _activeStore.write(key, null);
     }
@@ -574,7 +602,7 @@ class AppSettings {
       _readerPageModeKey => _isEnumSettingValue(value, ReaderPageMode.values),
       _readerPageAnimationKey => _isEnumSettingValue(value, ReaderPageAnimation.values),
       _readerTapZonesKey => _isEnumSettingValue(value, ReaderTapZones.values),
-      _readerAutoScrollSpeedKey => _inRange(value, readerAutoScrollSpeedRange),
+      _readerAutoScrollSpeedKey => _isEnumSettingValue(value, ReaderAutoScrollSpeed.values),
       _downloadEntryPositionKey => _downloadEntryPositionFrom(value) != null,
       _ => false,
     };

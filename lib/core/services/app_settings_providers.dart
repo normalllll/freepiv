@@ -248,7 +248,7 @@ class ReaderSettings {
   final ReaderPageMode pageMode;
   final ReaderPageAnimation pageAnimation;
   final ReaderTapZones tapZones;
-  final double autoScrollSpeed;
+  final ReaderAutoScrollSpeed autoScrollSpeed;
   final bool volumeKeys;
 
   @override
@@ -331,7 +331,7 @@ class ReaderSettingsNotifier extends Notifier<ReaderSettings> {
     state = build();
   }
 
-  void setAutoScrollSpeed(double value) {
+  void setAutoScrollSpeed(ReaderAutoScrollSpeed value) {
     AppSettings.readerAutoScrollSpeed = value;
     state = build();
   }

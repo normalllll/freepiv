@@ -1895,25 +1895,33 @@ class Translations$novel$reader$en_US {
 	String get lineSpacingCompact => 'Compact';
 	String get lineSpacingRegular => 'Regular';
 	String get lineSpacingRelaxed => 'Relaxed';
-	String get shortcutsHelp => 'Left/Right or A/D: previous/next chapter. Up/Down or W/S: scroll. Esc: clear the selection, then close.';
+	String get pageMode => 'Page turning';
+	String get pageModeScroll => 'Scroll';
+	String get pageModePaged => 'Pages';
+	String get shortcutsHelp => 'Space, Page Down or Right: next screen; Shift+Space, Page Up or Left: back. Up/Down: scroll (turn pages when paged). [ and ]: previous/next chapter. Home/End: start/end. Esc: clear the selection, hide the bars, then close.';
 	String get volumeKeys => 'Use volume keys';
 	String get volumeKeysHelp => 'Volume down reads forward; volume up reads back.';
 	String get startAutoScroll => 'Start auto scroll';
 	String get pauseAutoScroll => 'Pause auto scroll';
 	String get autoScrollSpeed => 'Scroll speed';
-	String scrollSpeedValue({required Object speed}) => '${speed} px/s';
 	String chapterPosition({required Object current, required Object total}) => 'Chapter ${current} of ${total}';
 	String chapterNumber({required Object number}) => 'Chapter ${number}';
 	String pageJump({required Object page}) => 'Go to section ${page}';
 	String get previousChapter => 'Previous chapter';
 	String get nextChapter => 'Next chapter';
 	String progressValue({required Object percent}) => '${percent}%';
+	String pageStatus({required Object page, required Object pages, required Object percent}) => '${page} / ${pages} · ${percent}%';
 	String get markerSet => 'Bookmark this place';
 	String get markerMenu => 'Reading bookmark';
 	String markerJump({required Object page}) => 'Go to bookmark (section ${page})';
 	String get markerUpdate => 'Move here';
 	String get markerRemove => 'Remove bookmark';
 	String get markerFailed => 'Could not change the bookmark';
+	String get speedVerySlow => 'Very slow';
+	String get speedSlow => 'Slow';
+	String get speedNormal => 'Normal';
+	String get speedFast => 'Fast';
+	String get speedVeryFast => 'Very fast';
 }
 
 // Path: illustDetail.ugoira
@@ -2569,25 +2577,33 @@ extension on Translations {
 			'novel.reader.lineSpacingCompact' => 'Compact',
 			'novel.reader.lineSpacingRegular' => 'Regular',
 			'novel.reader.lineSpacingRelaxed' => 'Relaxed',
-			'novel.reader.shortcutsHelp' => 'Left/Right or A/D: previous/next chapter. Up/Down or W/S: scroll. Esc: clear the selection, then close.',
+			'novel.reader.pageMode' => 'Page turning',
+			'novel.reader.pageModeScroll' => 'Scroll',
+			'novel.reader.pageModePaged' => 'Pages',
+			'novel.reader.shortcutsHelp' => 'Space, Page Down or Right: next screen; Shift+Space, Page Up or Left: back. Up/Down: scroll (turn pages when paged). [ and ]: previous/next chapter. Home/End: start/end. Esc: clear the selection, hide the bars, then close.',
 			'novel.reader.volumeKeys' => 'Use volume keys',
 			'novel.reader.volumeKeysHelp' => 'Volume down reads forward; volume up reads back.',
 			'novel.reader.startAutoScroll' => 'Start auto scroll',
 			'novel.reader.pauseAutoScroll' => 'Pause auto scroll',
 			'novel.reader.autoScrollSpeed' => 'Scroll speed',
-			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} px/s',
 			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => 'Chapter ${current} of ${total}',
 			'novel.reader.chapterNumber' => ({required Object number}) => 'Chapter ${number}',
 			'novel.reader.pageJump' => ({required Object page}) => 'Go to section ${page}',
 			'novel.reader.previousChapter' => 'Previous chapter',
 			'novel.reader.nextChapter' => 'Next chapter',
 			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',
+			'novel.reader.pageStatus' => ({required Object page, required Object pages, required Object percent}) => '${page} / ${pages} · ${percent}%',
 			'novel.reader.markerSet' => 'Bookmark this place',
 			'novel.reader.markerMenu' => 'Reading bookmark',
 			'novel.reader.markerJump' => ({required Object page}) => 'Go to bookmark (section ${page})',
 			'novel.reader.markerUpdate' => 'Move here',
 			'novel.reader.markerRemove' => 'Remove bookmark',
 			'novel.reader.markerFailed' => 'Could not change the bookmark',
+			'novel.reader.speedVerySlow' => 'Very slow',
+			'novel.reader.speedSlow' => 'Slow',
+			'novel.reader.speedNormal' => 'Normal',
+			'novel.reader.speedFast' => 'Fast',
+			'novel.reader.speedVeryFast' => 'Very fast',
 			'follow.tooltipFollow' => 'Follow user',
 			'follow.tooltipUnfollow' => 'Unfollow',
 			'follow.followed' => 'Following',

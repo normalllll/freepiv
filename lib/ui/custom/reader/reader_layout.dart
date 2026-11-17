@@ -332,10 +332,23 @@ class ReaderLayout extends ChangeNotifier {
     };
   }
 
+  Size _imageSizeOf(int index, NovelUploadedImage block) {
+    final url = block.image == null ? null : novelTextImageUrl(block.image!);
+    return _imageSizes[index] ?? (url == null ? null : _sizes.sizeOf(url)) ?? novelImageFallbackSize;
+  }
+
+  /// How wide the picture in [block] is drawn: the column, or less when the
+  /// height cap of the scroll flow scales it down.
+  double imageWidthOf(int block) {
+    final source = model.blocks[block];
+    if (source is! NovelUploadedImage) return columnWidth;
+    final size = _imageSizeOf(block, source);
+    return math.min(columnWidth, _imageHeight(block, source) * size.width / size.height);
+  }
+
   /// The column wide at the image's ratio; capped below the viewport when scrolling.
   double _imageHeight(int index, NovelUploadedImage block) {
-    final url = block.image == null ? null : novelTextImageUrl(block.image!);
-    final size = _imageSizes[index] ?? (url == null ? null : _sizes.sizeOf(url)) ?? novelImageFallbackSize;
+    final size = _imageSizeOf(index, block);
     final height = columnWidth * size.height / size.width;
     return flow == ReaderFlow.scroll ? math.min(height, viewportHeight * 0.9) : height;
   }

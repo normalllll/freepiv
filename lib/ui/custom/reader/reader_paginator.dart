@@ -84,6 +84,7 @@ class ReaderPaginator {
   final ReaderLayout layout;
   final double pageHeight;
   final _pages = <int, List<ReaderPage>>{};
+  final _spreads = <int, List<ReaderSpread>>{};
 
   /// Measures the chapter fully the first time; later calls return the same list.
   List<ReaderPage> pagesOfChapter(int chapter) => _pages[chapter] ??= _paginate(chapter);
@@ -106,10 +107,12 @@ class ReaderPaginator {
     return ReaderPageRef(chapter: chapter, index: low);
   }
 
-  List<ReaderSpread> spreadsOfChapter(int chapter) {
-    final pages = pagesOfChapter(chapter);
-    return [for (var i = 0; i < pages.length; i += 2) ReaderSpread(left: pages[i], right: i + 1 < pages.length ? pages[i + 1] : null)];
-  }
+  /// Cached like [pagesOfChapter].
+  List<ReaderSpread> spreadsOfChapter(int chapter) => _spreads[chapter] ??= List.unmodifiable(_pair(pagesOfChapter(chapter)));
+
+  static List<ReaderSpread> _pair(List<ReaderPage> pages) => [
+    for (var i = 0; i < pages.length; i += 2) ReaderSpread(left: pages[i], right: i + 1 < pages.length ? pages[i + 1] : null),
+  ];
 
   (int, int) _blockRange(int chapter) {
     final chapters = layout.model.chapters;

@@ -45,7 +45,7 @@ void main() {
     expect(AppSettings.readerPageMode, ReaderPageMode.scroll);
     expect(AppSettings.readerPageAnimation, ReaderPageAnimation.slide);
     expect(AppSettings.readerTapZones, ReaderTapZones.sides);
-    expect(AppSettings.readerAutoScrollSpeed, 36);
+    expect(AppSettings.readerAutoScrollSpeed, ReaderAutoScrollSpeed.normal);
     expect(AppSettings.readerVolumeKeys, isFalse);
   });
 
@@ -130,6 +130,58 @@ void main() {
     });
   });
 
+  group('the retired auto scroll speed', () {
+    const cases = <(num, ReaderAutoScrollSpeed)>[
+      (12, ReaderAutoScrollSpeed.verySlow),
+      (17, ReaderAutoScrollSpeed.verySlow),
+      (18.5, ReaderAutoScrollSpeed.slow),
+      (29, ReaderAutoScrollSpeed.slow),
+      (36, ReaderAutoScrollSpeed.normal),
+      (47, ReaderAutoScrollSpeed.normal),
+      (49, ReaderAutoScrollSpeed.fast),
+      (60, ReaderAutoScrollSpeed.fast),
+      (77, ReaderAutoScrollSpeed.fast),
+      (79, ReaderAutoScrollSpeed.veryFast),
+      (96, ReaderAutoScrollSpeed.veryFast),
+      (500, ReaderAutoScrollSpeed.veryFast),
+    ];
+    for (final (stored, expected) in cases) {
+      test('$stored becomes ${expected.name} and the old key is removed', () async {
+        final box = await _start(directory, {'readerAutoScrollSpeed': stored});
+        expect(AppSettings.readerAutoScrollSpeed, expected);
+        await Future<void>.delayed(Duration.zero);
+        expect(box.containsKey('readerAutoScrollSpeed'), isFalse);
+        expect(box.get('readerAutoScrollStep'), expected.name);
+      });
+    }
+
+    test('a value that is not a number writes nothing and is removed', () async {
+      final box = await _start(directory, {'readerAutoScrollSpeed': 'quick'});
+      expect(AppSettings.readerAutoScrollSpeed, ReaderAutoScrollSpeed.normal);
+      await Future<void>.delayed(Duration.zero);
+      expect(box.containsKey('readerAutoScrollSpeed'), isFalse);
+      expect(box.containsKey('readerAutoScrollStep'), isFalse);
+    });
+
+    test('a saved step is not overwritten', () async {
+      final box = await _start(directory, {'readerAutoScrollSpeed': 96.0, 'readerAutoScrollStep': 'slow'});
+      expect(AppSettings.readerAutoScrollSpeed, ReaderAutoScrollSpeed.slow);
+      await Future<void>.delayed(Duration.zero);
+      expect(box.get('readerAutoScrollStep'), 'slow');
+      expect(box.containsKey('readerAutoScrollSpeed'), isFalse);
+    });
+
+    test('an unknown step falls back to normal', () async {
+      await _start(directory, {'readerAutoScrollStep': 'warp'});
+      expect(AppSettings.readerAutoScrollSpeed, ReaderAutoScrollSpeed.normal);
+    });
+
+    test('the step survives a restart', () async {
+      await _restart(directory, () => AppSettings.readerAutoScrollSpeed = ReaderAutoScrollSpeed.veryFast);
+      expect(AppSettings.readerAutoScrollSpeed, ReaderAutoScrollSpeed.veryFast);
+    });
+  });
+
   test('the providers write every reader setting through', () async {
     await _restart(directory, () {
       final container = ProviderContainer();
@@ -174,7 +226,7 @@ void main() {
       pageMode: ReaderPageMode.scroll,
       pageAnimation: ReaderPageAnimation.slide,
       tapZones: ReaderTapZones.sides,
-      autoScrollSpeed: 36,
+      autoScrollSpeed: ReaderAutoScrollSpeed.normal,
       volumeKeys: false,
     );
     expect(settings(), settings());

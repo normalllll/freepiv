@@ -1893,25 +1893,33 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 	@override String get lineSpacingCompact => '狭め';
 	@override String get lineSpacingRegular => '標準';
 	@override String get lineSpacingRelaxed => '広め';
-	@override String get shortcutsHelp => '←/→ または A/D：前/次の章。↑/↓ または W/S：スクロール。Esc：選択を解除し、もう一度で閉じる。';
+	@override String get pageMode => 'ページ送り';
+	@override String get pageModeScroll => 'スクロール';
+	@override String get pageModePaged => 'ページ';
+	@override String get shortcutsHelp => 'Space、Page Down または →：次の画面。Shift+Space、Page Up または ←：前の画面。↑/↓：スクロール（ページ表示ではページ送り）。[ と ]：前/次の章。Home/End：最初/最後。Esc：選択を解除し、次にバーを隠し、もう一度で閉じる。';
 	@override String get volumeKeys => '音量キーで読む';
 	@override String get volumeKeysHelp => '音量下で先へ、音量上で前へ読み進めます。';
 	@override String get startAutoScroll => '自動スクロール開始';
 	@override String get pauseAutoScroll => '自動スクロール一時停止';
 	@override String get autoScrollSpeed => 'スクロール速度';
-	@override String scrollSpeedValue({required Object speed}) => '${speed} px/秒';
 	@override String chapterPosition({required Object current, required Object total}) => '第 ${current} / ${total} 章';
 	@override String chapterNumber({required Object number}) => '第 ${number} 章';
 	@override String pageJump({required Object page}) => '${page} ページへ';
 	@override String get previousChapter => '前の章';
 	@override String get nextChapter => '次の章';
 	@override String progressValue({required Object percent}) => '${percent}%';
+	@override String pageStatus({required Object page, required Object pages, required Object percent}) => '${page} / ${pages} · ${percent}%';
 	@override String get markerSet => 'ここにしおりを挟む';
 	@override String get markerMenu => 'しおり';
 	@override String markerJump({required Object page}) => 'しおりへ移動（${page} ページ）';
 	@override String get markerUpdate => '現在の位置に更新';
 	@override String get markerRemove => 'しおりを外す';
 	@override String get markerFailed => 'しおりを変更できませんでした';
+	@override String get speedVerySlow => 'とてもゆっくり';
+	@override String get speedSlow => 'ゆっくり';
+	@override String get speedNormal => '標準';
+	@override String get speedFast => '速い';
+	@override String get speedVeryFast => 'とても速い';
 }
 
 // Path: illustDetail.ugoira
@@ -2567,25 +2575,33 @@ extension on TranslationsJaJp {
 			'novel.reader.lineSpacingCompact' => '狭め',
 			'novel.reader.lineSpacingRegular' => '標準',
 			'novel.reader.lineSpacingRelaxed' => '広め',
-			'novel.reader.shortcutsHelp' => '←/→ または A/D：前/次の章。↑/↓ または W/S：スクロール。Esc：選択を解除し、もう一度で閉じる。',
+			'novel.reader.pageMode' => 'ページ送り',
+			'novel.reader.pageModeScroll' => 'スクロール',
+			'novel.reader.pageModePaged' => 'ページ',
+			'novel.reader.shortcutsHelp' => 'Space、Page Down または →：次の画面。Shift+Space、Page Up または ←：前の画面。↑/↓：スクロール（ページ表示ではページ送り）。[ と ]：前/次の章。Home/End：最初/最後。Esc：選択を解除し、次にバーを隠し、もう一度で閉じる。',
 			'novel.reader.volumeKeys' => '音量キーで読む',
 			'novel.reader.volumeKeysHelp' => '音量下で先へ、音量上で前へ読み進めます。',
 			'novel.reader.startAutoScroll' => '自動スクロール開始',
 			'novel.reader.pauseAutoScroll' => '自動スクロール一時停止',
 			'novel.reader.autoScrollSpeed' => 'スクロール速度',
-			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} px/秒',
 			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => '第 ${current} / ${total} 章',
 			'novel.reader.chapterNumber' => ({required Object number}) => '第 ${number} 章',
 			'novel.reader.pageJump' => ({required Object page}) => '${page} ページへ',
 			'novel.reader.previousChapter' => '前の章',
 			'novel.reader.nextChapter' => '次の章',
 			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',
+			'novel.reader.pageStatus' => ({required Object page, required Object pages, required Object percent}) => '${page} / ${pages} · ${percent}%',
 			'novel.reader.markerSet' => 'ここにしおりを挟む',
 			'novel.reader.markerMenu' => 'しおり',
 			'novel.reader.markerJump' => ({required Object page}) => 'しおりへ移動（${page} ページ）',
 			'novel.reader.markerUpdate' => '現在の位置に更新',
 			'novel.reader.markerRemove' => 'しおりを外す',
 			'novel.reader.markerFailed' => 'しおりを変更できませんでした',
+			'novel.reader.speedVerySlow' => 'とてもゆっくり',
+			'novel.reader.speedSlow' => 'ゆっくり',
+			'novel.reader.speedNormal' => '標準',
+			'novel.reader.speedFast' => '速い',
+			'novel.reader.speedVeryFast' => 'とても速い',
 			'follow.tooltipFollow' => 'ユーザーをフォロー',
 			'follow.tooltipUnfollow' => 'フォロー解除',
 			'follow.followed' => 'フォロー中',

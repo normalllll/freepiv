@@ -1893,25 +1893,33 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 	@override String get lineSpacingCompact => '紧凑';
 	@override String get lineSpacingRegular => '标准';
 	@override String get lineSpacingRelaxed => '宽松';
-	@override String get shortcutsHelp => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：滚动。Esc：先清除选择，再退出。';
+	@override String get pageMode => '翻页方式';
+	@override String get pageModeScroll => '滚动';
+	@override String get pageModePaged => '翻页';
+	@override String get shortcutsHelp => '空格、Page Down 或 →：下一屏；Shift+空格、Page Up 或 ←：上一屏。↑/↓：滚动（翻页模式下翻页）。[ 和 ]：上一章 / 下一章。Home/End：开头 / 结尾。Esc：先清除选择，再隐藏工具栏，然后退出。';
 	@override String get volumeKeys => '音量键翻读';
 	@override String get volumeKeysHelp => '音量减向后翻读，音量加向前翻读。';
 	@override String get startAutoScroll => '开始自动滚动';
 	@override String get pauseAutoScroll => '暂停自动滚动';
 	@override String get autoScrollSpeed => '滚动速度';
-	@override String scrollSpeedValue({required Object speed}) => '${speed} 像素/秒';
 	@override String chapterPosition({required Object current, required Object total}) => '第 ${current} / ${total} 章';
 	@override String chapterNumber({required Object number}) => '第 ${number} 章';
 	@override String pageJump({required Object page}) => '跳至第 ${page} 段';
 	@override String get previousChapter => '上一章';
 	@override String get nextChapter => '下一章';
 	@override String progressValue({required Object percent}) => '${percent}%';
+	@override String pageStatus({required Object page, required Object pages, required Object percent}) => '${page} / ${pages} · ${percent}%';
 	@override String get markerSet => '在这里加书签';
 	@override String get markerMenu => '阅读书签';
 	@override String markerJump({required Object page}) => '跳到书签（第 ${page} 段）';
 	@override String get markerUpdate => '更新到当前位置';
 	@override String get markerRemove => '移除书签';
 	@override String get markerFailed => '书签操作失败';
+	@override String get speedVerySlow => '非常慢';
+	@override String get speedSlow => '慢';
+	@override String get speedNormal => '适中';
+	@override String get speedFast => '快';
+	@override String get speedVeryFast => '非常快';
 }
 
 // Path: illustDetail.ugoira
@@ -2567,25 +2575,33 @@ extension on TranslationsZhCn {
 			'novel.reader.lineSpacingCompact' => '紧凑',
 			'novel.reader.lineSpacingRegular' => '标准',
 			'novel.reader.lineSpacingRelaxed' => '宽松',
-			'novel.reader.shortcutsHelp' => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：滚动。Esc：先清除选择，再退出。',
+			'novel.reader.pageMode' => '翻页方式',
+			'novel.reader.pageModeScroll' => '滚动',
+			'novel.reader.pageModePaged' => '翻页',
+			'novel.reader.shortcutsHelp' => '空格、Page Down 或 →：下一屏；Shift+空格、Page Up 或 ←：上一屏。↑/↓：滚动（翻页模式下翻页）。[ 和 ]：上一章 / 下一章。Home/End：开头 / 结尾。Esc：先清除选择，再隐藏工具栏，然后退出。',
 			'novel.reader.volumeKeys' => '音量键翻读',
 			'novel.reader.volumeKeysHelp' => '音量减向后翻读，音量加向前翻读。',
 			'novel.reader.startAutoScroll' => '开始自动滚动',
 			'novel.reader.pauseAutoScroll' => '暂停自动滚动',
 			'novel.reader.autoScrollSpeed' => '滚动速度',
-			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} 像素/秒',
 			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => '第 ${current} / ${total} 章',
 			'novel.reader.chapterNumber' => ({required Object number}) => '第 ${number} 章',
 			'novel.reader.pageJump' => ({required Object page}) => '跳至第 ${page} 段',
 			'novel.reader.previousChapter' => '上一章',
 			'novel.reader.nextChapter' => '下一章',
 			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',
+			'novel.reader.pageStatus' => ({required Object page, required Object pages, required Object percent}) => '${page} / ${pages} · ${percent}%',
 			'novel.reader.markerSet' => '在这里加书签',
 			'novel.reader.markerMenu' => '阅读书签',
 			'novel.reader.markerJump' => ({required Object page}) => '跳到书签（第 ${page} 段）',
 			'novel.reader.markerUpdate' => '更新到当前位置',
 			'novel.reader.markerRemove' => '移除书签',
 			'novel.reader.markerFailed' => '书签操作失败',
+			'novel.reader.speedVerySlow' => '非常慢',
+			'novel.reader.speedSlow' => '慢',
+			'novel.reader.speedNormal' => '适中',
+			'novel.reader.speedFast' => '快',
+			'novel.reader.speedVeryFast' => '非常快',
 			'follow.tooltipFollow' => '关注用户',
 			'follow.tooltipUnfollow' => '取消关注',
 			'follow.followed' => '已关注',

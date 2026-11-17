@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/router/route_activity.dart';
 import 'package:freepiv/core/platform/reader_volume_keys.dart';
+import 'package:freepiv/core/media/image_size_store.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
@@ -12,6 +13,7 @@ import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:frost_ui/frost_ui.dart';
+
 import 'support/frost_test_app.dart';
 
 const _novel = Novel(
@@ -63,7 +65,9 @@ const _text = WebviewNovel(
 );
 
 void main() {
-  testWidgets('a dialog of the root navigator releases the volume keys until it closes', variant: TargetPlatformVariant.only(TargetPlatform.android), (tester) async {
+  testWidgets('a dialog of the root navigator releases the volume keys until it closes', variant: TargetPlatformVariant.only(TargetPlatform.android), (
+    tester,
+  ) async {
     await AppSettings.initialize(store: SampleSettingsStore({'readerVolumeKeys': true}));
     const channel = MethodChannel('test/reader_volume_keys');
     final enabled = <bool>[];
@@ -76,6 +80,7 @@ void main() {
     final navigator = GlobalKey<NavigatorState>();
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [imageSizeStoreProvider.overrideWithValue(MemoryImageSizeStore())],
         child: TranslationProvider(
           child: frostTestApp(
             navigatorKey: navigator,

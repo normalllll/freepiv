@@ -1893,25 +1893,33 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 	@override String get lineSpacingCompact => '緊湊';
 	@override String get lineSpacingRegular => '標準';
 	@override String get lineSpacingRelaxed => '寬鬆';
-	@override String get shortcutsHelp => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：捲動。Esc：先清除選取，再離開。';
+	@override String get pageMode => '翻頁方式';
+	@override String get pageModeScroll => '捲動';
+	@override String get pageModePaged => '翻頁';
+	@override String get shortcutsHelp => '空白鍵、Page Down 或 →：下一屏；Shift+空白鍵、Page Up 或 ←：上一屏。↑/↓：捲動（翻頁模式下翻頁）。[ 和 ]：上一章 / 下一章。Home/End：開頭 / 結尾。Esc：先清除選取，再隱藏工具列，然後離開。';
 	@override String get volumeKeys => '音量鍵翻讀';
 	@override String get volumeKeysHelp => '音量減向後翻讀，音量加向前翻讀。';
 	@override String get startAutoScroll => '開始自動捲動';
 	@override String get pauseAutoScroll => '暫停自動捲動';
 	@override String get autoScrollSpeed => '捲動速度';
-	@override String scrollSpeedValue({required Object speed}) => '${speed} 像素/秒';
 	@override String chapterPosition({required Object current, required Object total}) => '第 ${current} / ${total} 章';
 	@override String chapterNumber({required Object number}) => '第 ${number} 章';
 	@override String pageJump({required Object page}) => '跳至第 ${page} 段';
 	@override String get previousChapter => '上一章';
 	@override String get nextChapter => '下一章';
 	@override String progressValue({required Object percent}) => '${percent}%';
+	@override String pageStatus({required Object page, required Object pages, required Object percent}) => '${page} / ${pages} · ${percent}%';
 	@override String get markerSet => '在這裡加書籤';
 	@override String get markerMenu => '閱讀書籤';
 	@override String markerJump({required Object page}) => '跳到書籤（第 ${page} 段）';
 	@override String get markerUpdate => '更新到目前位置';
 	@override String get markerRemove => '移除書籤';
 	@override String get markerFailed => '書籤操作失敗';
+	@override String get speedVerySlow => '非常慢';
+	@override String get speedSlow => '慢';
+	@override String get speedNormal => '適中';
+	@override String get speedFast => '快';
+	@override String get speedVeryFast => '非常快';
 }
 
 // Path: illustDetail.ugoira
@@ -2567,25 +2575,33 @@ extension on TranslationsZhHantTw {
 			'novel.reader.lineSpacingCompact' => '緊湊',
 			'novel.reader.lineSpacingRegular' => '標準',
 			'novel.reader.lineSpacingRelaxed' => '寬鬆',
-			'novel.reader.shortcutsHelp' => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：捲動。Esc：先清除選取，再離開。',
+			'novel.reader.pageMode' => '翻頁方式',
+			'novel.reader.pageModeScroll' => '捲動',
+			'novel.reader.pageModePaged' => '翻頁',
+			'novel.reader.shortcutsHelp' => '空白鍵、Page Down 或 →：下一屏；Shift+空白鍵、Page Up 或 ←：上一屏。↑/↓：捲動（翻頁模式下翻頁）。[ 和 ]：上一章 / 下一章。Home/End：開頭 / 結尾。Esc：先清除選取，再隱藏工具列，然後離開。',
 			'novel.reader.volumeKeys' => '音量鍵翻讀',
 			'novel.reader.volumeKeysHelp' => '音量減向後翻讀，音量加向前翻讀。',
 			'novel.reader.startAutoScroll' => '開始自動捲動',
 			'novel.reader.pauseAutoScroll' => '暫停自動捲動',
 			'novel.reader.autoScrollSpeed' => '捲動速度',
-			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} 像素/秒',
 			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => '第 ${current} / ${total} 章',
 			'novel.reader.chapterNumber' => ({required Object number}) => '第 ${number} 章',
 			'novel.reader.pageJump' => ({required Object page}) => '跳至第 ${page} 段',
 			'novel.reader.previousChapter' => '上一章',
 			'novel.reader.nextChapter' => '下一章',
 			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',
+			'novel.reader.pageStatus' => ({required Object page, required Object pages, required Object percent}) => '${page} / ${pages} · ${percent}%',
 			'novel.reader.markerSet' => '在這裡加書籤',
 			'novel.reader.markerMenu' => '閱讀書籤',
 			'novel.reader.markerJump' => ({required Object page}) => '跳到書籤（第 ${page} 段）',
 			'novel.reader.markerUpdate' => '更新到目前位置',
 			'novel.reader.markerRemove' => '移除書籤',
 			'novel.reader.markerFailed' => '書籤操作失敗',
+			'novel.reader.speedVerySlow' => '非常慢',
+			'novel.reader.speedSlow' => '慢',
+			'novel.reader.speedNormal' => '適中',
+			'novel.reader.speedFast' => '快',
+			'novel.reader.speedVeryFast' => '非常快',
 			'follow.tooltipFollow' => '關注使用者',
 			'follow.tooltipUnfollow' => '取消關注',
 			'follow.followed' => '已關注',

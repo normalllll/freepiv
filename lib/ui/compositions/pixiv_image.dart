@@ -86,6 +86,7 @@ class AppPixivImage extends ConsumerStatefulWidget {
     this.semanticLabel,
     this.placeholderUrl,
     this.decodeAtLayoutSize = false,
+    this.onImageSize,
     super.key,
   });
 
@@ -112,12 +113,58 @@ class AppPixivImage extends ConsumerStatefulWidget {
   /// cached apart.
   final bool decodeAtLayoutSize;
 
+  /// Called once per loaded picture with its decoded size in pixels, possibly
+  /// during a build when the picture is already decoded. Null changes nothing.
+  final ValueChanged<Size>? onImageSize;
+
   @override
   ConsumerState<AppPixivImage> createState() => _AppPixivImageState();
 }
 
 class _AppPixivImageState extends ConsumerState<AppPixivImage> {
   int _revision = 0;
+
+  /// The picture whose size is reported, and its stream while it loads.
+  ImageProvider? _sized;
+  ImageStream? _sizeStream;
+  ImageStreamListener? _sizeListener;
+
+  @override
+  void dispose() {
+    _stopSizing();
+    super.dispose();
+  }
+
+  void _stopSizing() {
+    if (_sizeListener case final listener?) _sizeStream?.removeListener(listener);
+    _sizeStream = null;
+    _sizeListener = null;
+  }
+
+  /// Reports the size of [image] once it is decoded.
+  void _reportSize(ImageProvider image) {
+    if (widget.onImageSize == null || image == _sized) return;
+    _stopSizing();
+    _sized = image;
+    final stream = image.resolve(createLocalImageConfiguration(context));
+    late final ImageStreamListener listener;
+    listener = ImageStreamListener(
+      (info, _) {
+        stream.removeListener(listener);
+        if (identical(_sizeListener, listener)) _sizeListener = null;
+        final size = Size(info.image.width.toDouble(), info.image.height.toDouble());
+        info.dispose();
+        if (mounted) widget.onImageSize?.call(size);
+      },
+      onError: (_, _) {
+        stream.removeListener(listener);
+        if (identical(_sizeListener, listener)) _sizeListener = null;
+      },
+    );
+    _sizeStream = stream;
+    _sizeListener = listener;
+    stream.addListener(listener);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,16 +178,18 @@ class _AppPixivImageState extends ConsumerState<AppPixivImage> {
   }
 
   Widget _frame(RustMediaTransport transport, Size? decodeBox) {
+    final image = pixivImageProviderFor(
+      transport,
+      widget.url,
+      headers: widget.headers,
+      accountKey: widget.accountKey,
+      revision: _revision,
+      decodeBox: decodeBox,
+      decodeFit: widget.fit,
+    );
+    _reportSize(image);
     return FrostMediaFrame(
-      image: pixivImageProviderFor(
-        transport,
-        widget.url,
-        headers: widget.headers,
-        accountKey: widget.accountKey,
-        revision: _revision,
-        decodeBox: decodeBox,
-        decodeFit: widget.fit,
-      ),
+      image: image,
       aspectRatio: widget.aspectRatio,
       radius: widget.radius,
       fit: widget.fit,

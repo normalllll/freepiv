@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/frost_config.dart';
+import 'package:freepiv/core/media/image_size_store.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
@@ -95,7 +96,7 @@ Future<void> mountPilotPage(
     ProviderScope(
       key: UniqueKey(),
       overrides: [
-        ...{...sampleOverrideMap, ...overrides}.values,
+        ...{...sampleOverrideMap, imageSizeStoreProvider: imageSizeStoreProvider.overrideWithValue(MemoryImageSizeStore()), ...overrides}.values,
       ],
       child: TranslationProvider(
         child: FrostApp.router(config: freepivFrostConfig, routerConfig: router, title: 'freepiv'),

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/core/media/image_size_store.dart';
+import 'package:freepiv/dev/sample_novel_text.dart';
 import 'package:freepiv/features/novel/domain/novel_text.dart';
 import 'package:freepiv/features/novel/domain/reader_model.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
@@ -157,5 +158,38 @@ void main() {
     for (var i = 0; i < blocks.length; i++) {
       expect(layout.isMeasured(i), isTrue, reason: 'block $i');
     }
+  });
+
+  test('every line top maps back to its own line, however the text was measured', () {
+    // Fractional line heights make the prefix sums round.
+    const typesetting = ReaderTypesetting(
+      textSize: 17,
+      lineHeight: 1.83,
+      body: TextStyle(fontSize: 17, height: 1.83),
+      chapterTitle: TextStyle(fontSize: 22.1, height: 1.4),
+      palette: _palette,
+    );
+    final layout = ReaderLayout(
+      model: ReaderModel(parseNovelText(sampleLongNovelText())),
+      typesetting: typesetting,
+      width: 733.3,
+      flow: ReaderFlow.scroll,
+      sizes: MemoryImageSizeStore(),
+      viewportHeight: 701.7,
+      pageJumpLabel: _longLabel,
+    );
+    final blocks = layout.blockCount;
+    // Measure in a scattered order, so blocks above any checked one are a mix of measured and estimated.
+    for (var i = 0; i < blocks; i += 7) {
+      layout.metricsOf((i * 131) % blocks);
+    }
+    var checked = 0;
+    for (var block = blocks ~/ 2; block < blocks ~/ 2 + 400; block++) {
+      for (final line in layout.metricsOf(block).lines) {
+        expect(layout.offsetAtPixel(layout.pixelOfOffset(line.startOffset)), line.startOffset, reason: 'block $block');
+        checked++;
+      }
+    }
+    expect(checked, greaterThan(400));
   });
 }
