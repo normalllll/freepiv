@@ -1,5 +1,5 @@
 // Generated pictures for the sample app and its screenshots: each sample
-// address (`sample:<seed>:<width>x<height>`) draws a soft gradient with a
+// address (`https://sample.invalid/<seed>:<width>x<height>`) draws a soft gradient with a
 // few shapes, so works look like works without any network.
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -7,7 +7,10 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
-const sampleImageScheme = 'sample:';
+/// Sample addresses are https addresses on a reserved host that no request
+/// ever reaches: the sample app answers them itself, and code that accepts
+/// only web addresses accepts them too.
+const sampleImageScheme = 'https://sample.invalid/';
 
 /// The address of a generated sample picture.
 String sampleImageUrl(int seed, {int width = 600, int height = 800}) => '$sampleImageScheme$seed:${width}x$height';

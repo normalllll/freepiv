@@ -9,6 +9,7 @@ import 'package:freepiv/core/history/history_database.dart';
 import 'package:freepiv/core/history/history_models.dart';
 import 'package:freepiv/core/history/history_repository.dart';
 import 'package:freepiv/dev/sample_images.dart';
+import 'package:freepiv/dev/sample_novel_text.dart';
 import 'package:freepiv/core/downloads/download_models.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_accounts.dart';
@@ -831,8 +832,24 @@ class _SampleNovelSeriesSource extends NovelSeriesSource {
   _SampleNovelSeriesSource({required super.seriesId});
 
   @override
-  Future<NovelSeriesPageResult> fetchFirstPage() async => sampleNovelSeries(seriesId);
+  Future<NovelSeriesPageResult> fetchFirstPage() async {
+    switch (sampleNovelSeriesState) {
+      case 'loading':
+        return Completer<NovelSeriesPageResult>().future;
+      case 'error':
+        throw StateError('offline');
+      case 'empty':
+        final page = sampleNovelSeries(seriesId);
+        return NovelSeriesPageResult(novelSeriesDetail: page.novelSeriesDetail, novels: const []);
+    }
+    return sampleNovelSeries(seriesId);
+  }
 }
+
+/// How the sample novel series answers: `loaded`, or for a screenshot of the
+/// other states `loading` (never), `error` or `empty`. Set by the automation
+/// entry.
+String sampleNovelSeriesState = 'loaded';
 
 class _SampleNovelSeries extends NovelSeriesWorks {
   @override
@@ -880,26 +897,62 @@ class _SampleAiShow extends AiShowSetting {
   Future<bool> build(String accountId) async => true;
 }
 
-WebviewNovel sampleNovelText(int novelId) => WebviewNovel(
-  id: '$novelId',
-  title: 'Sample novel',
-  userId: '2000',
-  coverUrl: '',
-  tags: const [],
-  caption: '',
-  cdate: '',
-  rating: const NovelRating(like: 0, bookmark: 120, view: 2000),
-  text: [
-    for (final chapter in ['Dusk', 'The harbour', 'Morning'])
-      ['[chapter:$chapter]', ...List.filled(14, 'The boats came back at dusk, one by one, and the town lit its lamps along the shore.')].join('\n\n'),
-  ].join('\n\n'),
-  illusts: const [],
-  images: const [],
-  glossaryItems: const [],
-  replaceableItemIds: const [],
-  aiType: 0,
-  isOriginal: true,
-);
+/// The place of a sample novel in its series: the first has a next episode
+/// to read, the second one that is not out yet, the rest are in no series.
+NovelNavigationInfo? _sampleNovelNavigation(int novelId) => switch (novelId - 70000) {
+  0 => NovelNavigationInfo(
+    nextNovel: NovelNavigationItem(
+      id: '70001',
+      title: 'The tide table',
+      coverUrl: sampleImageUrl(120, width: 300, height: 420),
+      contentOrder: '2',
+      viewable: true,
+    ),
+  ),
+  1 => NovelNavigationInfo(
+    prevNovel: NovelNavigationItem(
+      id: '70000',
+      title: 'Sample novel 1',
+      coverUrl: sampleImageUrl(120, width: 300, height: 420),
+      contentOrder: '1',
+      viewable: true,
+    ),
+    nextNovel: const NovelNavigationItem(
+      id: '70002',
+      title: 'The last lantern',
+      contentOrder: '3',
+      viewable: false,
+      viewableMessage: 'This episode is not published yet.',
+    ),
+  ),
+  _ => null,
+};
+
+WebviewNovel sampleNovelText(int novelId) {
+  final body = sampleNovelBody(novelId);
+  final navigation = _sampleNovelNavigation(novelId);
+  return WebviewNovel(
+    id: '$novelId',
+    title: 'Sample novel',
+    seriesId: navigation == null ? null : '500',
+    seriesTitle: navigation == null ? null : 'The shore stories',
+    seriesIsWatched: navigation == null ? null : false,
+    seriesNavigation: navigation,
+    userId: '2000',
+    coverUrl: '',
+    tags: const [],
+    caption: '',
+    cdate: '',
+    rating: const NovelRating(like: 0, bookmark: 120, view: 2000),
+    text: body.text,
+    illusts: body.works,
+    images: body.images,
+    glossaryItems: const [],
+    replaceableItemIds: const [],
+    aiType: 0,
+    isOriginal: true,
+  );
+}
 
 class _SampleNovelText extends NovelText {
   @override

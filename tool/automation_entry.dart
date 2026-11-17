@@ -339,6 +339,10 @@ void main() {
           unawaited(AppRouter.router.push(request['location']! as String));
           await _frame();
           return jsonEncode(_state());
+        case 'seriesState':
+          // How the sample novel series answers the next novel page: loaded, loading, error or empty.
+          sampleNovelSeriesState = request['value']! as String;
+          return jsonEncode(_state());
         case 'signedOut':
           // The sign-in page as a signed-out user sees it, and back.
           if (request['value'] == 'true') {
