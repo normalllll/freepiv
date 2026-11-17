@@ -9,6 +9,7 @@ import 'package:freepiv/app/window/app_window.dart';
 import 'package:freepiv/app_links/app_links.dart';
 import 'package:freepiv/core/downloads/download_manager.dart';
 import 'package:freepiv/core/downloads/platform/macos_folder_access.dart';
+import 'package:freepiv/core/media/image_size_store.dart';
 import 'package:freepiv/core/media/rust_media_source.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
@@ -21,6 +22,7 @@ Future<void> main() async {
   useDownloadSessionHeaders(fanboxDownloadSessionHeaders);
   await MacosFolderAccess.restore();
   await initializeAppServices();
+  final imageSizes = await HiveImageSizeStore.open();
   await initializeLocaleSettings();
   refreshPixivApiLanguage();
   unawaited(UpdaterService.checkOnAppStart());
@@ -37,6 +39,6 @@ Future<void> main() async {
   // The native window stays hidden until the first frame is ready, so the
   // runner's template rectangle never shows; it opens where it was left.
   final window = await prepareAppWindow();
-  runApp(FreepivApp(windowController: window));
+  runApp(FreepivApp(windowController: window, overrides: [imageSizeStoreProvider.overrideWithValue(imageSizes)]));
   await showAppWindow(binding, window);
 }

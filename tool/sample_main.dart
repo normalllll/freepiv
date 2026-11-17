@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:freepiv/app/app.dart';
 import 'package:freepiv/app/window/app_window.dart';
 import 'package:freepiv/core/history/history_service.dart';
+import 'package:freepiv/core/media/image_size_store.dart';
 import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/pixiv_service.dart';
 import 'package:freepiv/dev/sample_data.dart';
@@ -28,7 +29,7 @@ Future<void> runSampleApp({Widget Function(Widget app)? wrap}) async {
   pixivApi = createPixivApi(account: AppSettings.accounts.active?.session);
   pixivAccountNotifier.value = pixivApi.account();
   final window = await prepareAppWindow();
-  final app = FreepivApp(windowController: window, overrides: sampleOverrides);
+  final app = FreepivApp(windowController: window, overrides: [...sampleOverrides, imageSizeStoreProvider.overrideWithValue(MemoryImageSizeStore())]);
   runApp(wrap == null ? app : wrap(app));
   await showAppWindow(binding, window);
 }
