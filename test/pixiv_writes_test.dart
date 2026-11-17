@@ -136,16 +136,21 @@ WebviewNovel _text(String body, {String? marker}) {
   );
 }
 
-Future<void> _openReader(WidgetTester tester, {String body = _sectioned, String? marker}) => mountPilotPage(
-  tester,
-  NovelReaderContent(
-    detail: NovelDetailData(
-      novel: sampleNovels(count: 1).single,
-      webviewNovel: _text(body, marker: marker),
+/// Opens the reader with its bars shown, the way a tap in the middle does.
+Future<void> _openReader(WidgetTester tester, {String body = _sectioned, String? marker}) async {
+  await mountPilotPage(
+    tester,
+    NovelReaderContent(
+      detail: NovelDetailData(
+        novel: sampleNovels(count: 1).single,
+        webviewNovel: _text(body, marker: marker),
+      ),
     ),
-  ),
-  observers: [appRootRouteActivity],
-);
+    observers: [appRootRouteActivity],
+  );
+  tester.state<NovelReaderContentState>(find.byType(NovelReaderContent)).chrome.show();
+  await settlePilot(tester);
+}
 
 Future<void> _openOptions(WidgetTester tester, {bool bookmarked = false}) async {
   await mountPilotPage(tester, AppBookmarkOptionsButton(workId: 7, initiallyBookmarked: bookmarked));

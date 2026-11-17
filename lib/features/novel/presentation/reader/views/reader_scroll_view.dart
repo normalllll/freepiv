@@ -21,13 +21,25 @@ typedef ReaderBlockBuilder = Widget Function(BuildContext context, int block, Va
 /// moves only when the controller asks it to ([showOffset], [turn]), when the
 /// reader scrolls, or by [scrollLines] and [advance].
 class ReaderScrollView extends StatefulWidget {
-  const ReaderScrollView({required this.controller, required this.layout, required this.blockBuilder, this.onLink, this.onPageJump, super.key});
+  const ReaderScrollView({
+    required this.controller,
+    required this.layout,
+    required this.blockBuilder,
+    this.endBuilder,
+    this.onLink,
+    this.onPageJump,
+    super.key,
+  });
 
   final ReaderController controller;
 
   /// A layout in [ReaderFlow.scroll] at this view's width and height.
   final ReaderLayout layout;
   final ReaderBlockBuilder blockBuilder;
+
+  /// What follows the last block, in the text column; it is not part of the
+  /// text, so the end of the text is reached before it.
+  final WidgetBuilder? endBuilder;
   final ValueChanged<Uri>? onLink;
   final ValueChanged<int>? onPageJump;
 
@@ -60,12 +72,51 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
 
   ReaderLayout get _layout => widget.layout;
 
+  /// The scroll position that shows the last line of the text at the bottom
+  /// of the view: the end of the scrolling when nothing follows the text.
+  double _textEnd(ScrollPosition position) =>
+      math.min(position.maxScrollExtent, math.max(position.minScrollExtent, _layout.totalExtent - position.viewportDimension));
+
+  /// Whether the view is held at the bottom of the scrolling, where the end
+  /// card is, until the reader moves: the extents change as the text is
+  /// measured and pictures arrive, and the bottom moves with them.
+  bool _pinned = false;
+
+  /// The reader is at the end of the text: the end, not the last line, is
+  /// what to show.
+  bool get _wantsEnd => widget.controller.atEnd && widget.controller.offset >= _layout.model.totalLength;
+
+  void _pin() {
+    _pinned = true;
+    _repinSoon();
+  }
+
+  void _repinSoon() {
+    if (!_pinned) return;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_pinned) return;
+      if (!_scroll.hasClients || !_scroll.position.hasContentDimensions) {
+        _repinSoon();
+        return;
+      }
+      final position = _scroll.position;
+      final bottom = position.maxScrollExtent;
+      if ((position.pixels - bottom).abs() > .5) {
+        _placed = bottom;
+        position.jumpTo(bottom);
+      }
+    });
+    SchedulerBinding.instance.scheduleFrame();
+  }
+
   @override
   void initState() {
     super.initState();
     final pixels = _layout.pixelOfOffset(widget.controller.offset);
     _scroll = ScrollController(initialScrollOffset: pixels)..addListener(_scrolled);
     _placed = pixels;
+    _layout.addListener(_repinSoon);
+    if (_wantsEnd) _pin();
     widget.controller.attach(this);
     _scheduleMeasure();
     _reportEndAfterFrame();
@@ -79,6 +130,9 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
       widget.controller.attach(this);
     }
     if (oldWidget.layout != widget.layout) {
+      oldWidget.layout.removeListener(_repinSoon);
+      widget.layout.addListener(_repinSoon);
+      if (_wantsEnd) _pin();
       // The new layout lays out before anything paints: the reading line
       // keeps its character.
       final pixels = _layout.pixelOfOffset(widget.controller.offset);
@@ -91,6 +145,7 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
 
   @override
   void dispose() {
+    _layout.removeListener(_repinSoon);
     widget.controller.detach(this);
     _move.dispose();
     _scroll.dispose();
@@ -102,6 +157,12 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
   @override
   void showOffset(int offset) {
     _move.stop();
+    if (_wantsEnd) {
+      _pin();
+      _reportEndAfterFrame();
+      return;
+    }
+    _pinned = false;
     final pixels = _layout.pixelOfOffset(offset);
     _reportEndAfterFrame();
     if (!_scroll.hasClients) {
@@ -109,7 +170,7 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
       return;
     }
     final position = _scroll.position;
-    final target = position.hasContentDimensions ? pixels.clamp(position.minScrollExtent, position.maxScrollExtent) : pixels;
+    final target = position.hasContentDimensions ? pixels.clamp(position.minScrollExtent, _textEnd(position)) : pixels;
     _placed = target;
     position.jumpTo(target);
     _scheduleMeasure();
@@ -130,14 +191,17 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
 
   /// Moves [pixels] down at once, for auto scroll; false at the end.
   bool advance(double pixels) {
+    _pinned = false;
     if (!_scroll.hasClients || !_scroll.position.hasContentDimensions) return false;
     final position = _scroll.position;
-    if (position.pixels >= position.maxScrollExtent - .5) return false;
-    position.jumpTo(math.min(position.maxScrollExtent, position.pixels + pixels));
+    final end = _textEnd(position);
+    if (position.pixels >= end - .5) return false;
+    position.jumpTo(math.min(end, position.pixels + pixels));
     return true;
   }
 
   bool _moveBy(double delta, {required Duration duration}) {
+    _pinned = false;
     if (!_scroll.hasClients || !_scroll.position.hasContentDimensions) return false;
     final position = _scroll.position;
     final from = position.pixels;
@@ -178,7 +242,7 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
       final placed = _placed;
       // The reader has moved since; the scroll report covers it.
       if (placed == null || (position.pixels - placed).abs() >= .5) return;
-      final atEnd = position.pixels >= position.maxScrollExtent - .5;
+      final atEnd = position.pixels >= _textEnd(position) - .5;
       final controller = widget.controller;
       if (atEnd != controller.atEnd) controller.reportPosition(controller.offset, atEnd: atEnd);
     });
@@ -192,7 +256,7 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
     final placed = _placed;
     if (placed != null && (position.pixels - placed).abs() < .5) return;
     _placed = null;
-    final atEnd = position.hasContentDimensions && position.pixels >= position.maxScrollExtent - .5;
+    final atEnd = position.hasContentDimensions && position.pixels >= _textEnd(position) - .5;
     widget.controller.reportPosition(_layout.offsetAtPixel(position.pixels), atEnd: atEnd);
     _scheduleMeasure();
   }
@@ -318,7 +382,18 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
       },
       child: CustomScrollView(
         controller: _scroll,
-        slivers: [ReaderSliver(layout: _layout, itemBuilder: _block)],
+        slivers: [
+          ReaderSliver(layout: _layout, itemBuilder: _block),
+          if (widget.endBuilder case final endBuilder?)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 2 * _layout.typesetting.bodyLinePx),
+                child: Center(
+                  child: SizedBox(width: _layout.columnWidth, child: endBuilder(context)),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

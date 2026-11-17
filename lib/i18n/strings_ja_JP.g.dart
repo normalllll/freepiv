@@ -1883,10 +1883,8 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 
 	// Translations
 	@override String get title => '読書';
-	@override String get settings => '読書設定';
 	@override String get emptyBody => '本文がありません';
 	@override String get embeddedImageUnavailable => '画像を表示できません';
-	@override String get openEmbeddedWork => '関連作品を開く';
 	@override String get readingProgress => '読書進捗';
 	@override String get fontSize => '文字サイズ';
 	@override String get lineHeight => '行間';
@@ -1896,13 +1894,11 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 	@override String get pageMode => 'ページ送り';
 	@override String get pageModeScroll => 'スクロール';
 	@override String get pageModePaged => 'ページ';
-	@override String get shortcutsHelp => 'Space、Page Down または →：次の画面。Shift+Space、Page Up または ←：前の画面。↑/↓：スクロール（ページ表示ではページ送り）。[ と ]：前/次の章。Home/End：最初/最後。Esc：選択を解除し、次にバーを隠し、もう一度で閉じる。';
 	@override String get volumeKeys => '音量キーで読む';
 	@override String get volumeKeysHelp => '音量下で先へ、音量上で前へ読み進めます。';
 	@override String get startAutoScroll => '自動スクロール開始';
 	@override String get pauseAutoScroll => '自動スクロール一時停止';
 	@override String get autoScrollSpeed => 'スクロール速度';
-	@override String chapterPosition({required Object current, required Object total}) => '第 ${current} / ${total} 章';
 	@override String chapterNumber({required Object number}) => '第 ${number} 章';
 	@override String pageJump({required Object page}) => '${page} ページへ';
 	@override String get previousChapter => '前の章';
@@ -1920,6 +1916,58 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 	@override String get speedNormal => '標準';
 	@override String get speedFast => '速い';
 	@override String get speedVeryFast => 'とても速い';
+	@override String get more => 'その他';
+	@override String get openDetail => '小説の詳細';
+	@override String get comments => 'コメント';
+	@override String get copyLink => 'リンクをコピー';
+	@override String get appearance => '表示設定';
+	@override String get contents => '目次';
+	@override String illustrationsCount({required Object count}) => '挿絵 · ${count}';
+	@override String progressStatus({required Object percent, required Object minutes}) => '${percent}% · この章はあと約${minutes}分';
+	@override String progressBubble({required Object chapter, required Object percent}) => '${chapter} · ${percent}%';
+	@override String get illustrations => '挿絵';
+	@override String get closeSidebar => '閉じる';
+	@override String illustrationAt({required Object number}) => '挿絵 ${number}';
+	@override String get openIllustration => '画像を開く';
+	@override String get theme => 'テーマ';
+	@override String get themeApp => 'アプリ';
+	@override String get themeWhite => '白';
+	@override String get themePaper => 'ペーパー';
+	@override String get themeGreen => 'グリーン';
+	@override String get themeNight => 'ナイト';
+	@override String get themeBlack => '黒';
+	@override String get font => 'フォント';
+	@override String get fontSans => 'ゴシック';
+	@override String get fontSerif => '明朝';
+	@override String get fontKai => '楷書';
+	@override String get margins => '余白';
+	@override String get marginsNarrow => '狭い';
+	@override String get marginsRegular => '標準';
+	@override String get marginsWide => '広い';
+	@override String get pageAnimation => 'ページ送りの効果';
+	@override String get pageAnimationSlide => 'スライド';
+	@override String get pageAnimationCover => 'カバー';
+	@override String get pageAnimationNone => 'なし';
+	@override String get tapZones => 'タップ領域';
+	@override String get tapZonesSides => '左右でめくる';
+	@override String get tapZonesForward => '常に次へ';
+	@override String get indent => '行頭の字下げ';
+	@override String get shortcuts => 'キーボードショートカット';
+	@override String get shortcutNextScreen => '次の画面・ページ';
+	@override String get shortcutPreviousScreen => '前の画面・ページ';
+	@override String get shortcutLines => '3行スクロール（ページ表示ではページ送り）';
+	@override String get shortcutChapters => '前の章 / 次の章';
+	@override String get shortcutEnds => '先頭 / 末尾';
+	@override String get shortcutContents => '目次';
+	@override String get shortcutEscape => '選択解除・パネルを閉じる・バーを隠す・終了';
+	@override String get shortcutsHint => 'Space / ← → でページ送り · [ ] 章移動 · T 目次';
+	@override String get theEnd => 'おわり';
+	@override String get workUnavailable => 'この作品は利用できません';
+	@override String get workHidden => 'この作品は表示できません';
+	@override String workPage({required Object page}) => '${page} ページ目';
+	@override String get seriesNext => 'シリーズの次の話';
+	@override String get seriesNextUnavailable => 'まだ読めません';
+	@override String seriesPrevious({required Object title}) => '前の話：${title}';
 }
 
 // Path: illustDetail.ugoira
@@ -2565,10 +2613,8 @@ extension on TranslationsJaJp {
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} 段落',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} ページ',
 			'novel.reader.title' => '読書',
-			'novel.reader.settings' => '読書設定',
 			'novel.reader.emptyBody' => '本文がありません',
 			'novel.reader.embeddedImageUnavailable' => '画像を表示できません',
-			'novel.reader.openEmbeddedWork' => '関連作品を開く',
 			'novel.reader.readingProgress' => '読書進捗',
 			'novel.reader.fontSize' => '文字サイズ',
 			'novel.reader.lineHeight' => '行間',
@@ -2578,13 +2624,11 @@ extension on TranslationsJaJp {
 			'novel.reader.pageMode' => 'ページ送り',
 			'novel.reader.pageModeScroll' => 'スクロール',
 			'novel.reader.pageModePaged' => 'ページ',
-			'novel.reader.shortcutsHelp' => 'Space、Page Down または →：次の画面。Shift+Space、Page Up または ←：前の画面。↑/↓：スクロール（ページ表示ではページ送り）。[ と ]：前/次の章。Home/End：最初/最後。Esc：選択を解除し、次にバーを隠し、もう一度で閉じる。',
 			'novel.reader.volumeKeys' => '音量キーで読む',
 			'novel.reader.volumeKeysHelp' => '音量下で先へ、音量上で前へ読み進めます。',
 			'novel.reader.startAutoScroll' => '自動スクロール開始',
 			'novel.reader.pauseAutoScroll' => '自動スクロール一時停止',
 			'novel.reader.autoScrollSpeed' => 'スクロール速度',
-			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => '第 ${current} / ${total} 章',
 			'novel.reader.chapterNumber' => ({required Object number}) => '第 ${number} 章',
 			'novel.reader.pageJump' => ({required Object page}) => '${page} ページへ',
 			'novel.reader.previousChapter' => '前の章',
@@ -2602,6 +2646,58 @@ extension on TranslationsJaJp {
 			'novel.reader.speedNormal' => '標準',
 			'novel.reader.speedFast' => '速い',
 			'novel.reader.speedVeryFast' => 'とても速い',
+			'novel.reader.more' => 'その他',
+			'novel.reader.openDetail' => '小説の詳細',
+			'novel.reader.comments' => 'コメント',
+			'novel.reader.copyLink' => 'リンクをコピー',
+			'novel.reader.appearance' => '表示設定',
+			'novel.reader.contents' => '目次',
+			'novel.reader.illustrationsCount' => ({required Object count}) => '挿絵 · ${count}',
+			'novel.reader.progressStatus' => ({required Object percent, required Object minutes}) => '${percent}% · この章はあと約${minutes}分',
+			'novel.reader.progressBubble' => ({required Object chapter, required Object percent}) => '${chapter} · ${percent}%',
+			'novel.reader.illustrations' => '挿絵',
+			'novel.reader.closeSidebar' => '閉じる',
+			'novel.reader.illustrationAt' => ({required Object number}) => '挿絵 ${number}',
+			'novel.reader.openIllustration' => '画像を開く',
+			'novel.reader.theme' => 'テーマ',
+			'novel.reader.themeApp' => 'アプリ',
+			'novel.reader.themeWhite' => '白',
+			'novel.reader.themePaper' => 'ペーパー',
+			'novel.reader.themeGreen' => 'グリーン',
+			'novel.reader.themeNight' => 'ナイト',
+			'novel.reader.themeBlack' => '黒',
+			'novel.reader.font' => 'フォント',
+			'novel.reader.fontSans' => 'ゴシック',
+			'novel.reader.fontSerif' => '明朝',
+			'novel.reader.fontKai' => '楷書',
+			'novel.reader.margins' => '余白',
+			'novel.reader.marginsNarrow' => '狭い',
+			'novel.reader.marginsRegular' => '標準',
+			'novel.reader.marginsWide' => '広い',
+			'novel.reader.pageAnimation' => 'ページ送りの効果',
+			'novel.reader.pageAnimationSlide' => 'スライド',
+			'novel.reader.pageAnimationCover' => 'カバー',
+			'novel.reader.pageAnimationNone' => 'なし',
+			'novel.reader.tapZones' => 'タップ領域',
+			'novel.reader.tapZonesSides' => '左右でめくる',
+			'novel.reader.tapZonesForward' => '常に次へ',
+			'novel.reader.indent' => '行頭の字下げ',
+			'novel.reader.shortcuts' => 'キーボードショートカット',
+			'novel.reader.shortcutNextScreen' => '次の画面・ページ',
+			'novel.reader.shortcutPreviousScreen' => '前の画面・ページ',
+			'novel.reader.shortcutLines' => '3行スクロール（ページ表示ではページ送り）',
+			'novel.reader.shortcutChapters' => '前の章 / 次の章',
+			'novel.reader.shortcutEnds' => '先頭 / 末尾',
+			'novel.reader.shortcutContents' => '目次',
+			'novel.reader.shortcutEscape' => '選択解除・パネルを閉じる・バーを隠す・終了',
+			'novel.reader.shortcutsHint' => 'Space / ← → でページ送り · [ ] 章移動 · T 目次',
+			'novel.reader.theEnd' => 'おわり',
+			'novel.reader.workUnavailable' => 'この作品は利用できません',
+			'novel.reader.workHidden' => 'この作品は表示できません',
+			'novel.reader.workPage' => ({required Object page}) => '${page} ページ目',
+			'novel.reader.seriesNext' => 'シリーズの次の話',
+			'novel.reader.seriesNextUnavailable' => 'まだ読めません',
+			'novel.reader.seriesPrevious' => ({required Object title}) => '前の話：${title}',
 			'follow.tooltipFollow' => 'ユーザーをフォロー',
 			'follow.tooltipUnfollow' => 'フォロー解除',
 			'follow.followed' => 'フォロー中',

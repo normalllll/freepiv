@@ -1883,10 +1883,8 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 
 	// Translations
 	@override String get title => '閱讀';
-	@override String get settings => '閱讀設定';
 	@override String get emptyBody => '正文為空';
 	@override String get embeddedImageUnavailable => '圖片暫時無法顯示';
-	@override String get openEmbeddedWork => '開啟關聯作品';
 	@override String get readingProgress => '閱讀進度';
 	@override String get fontSize => '字號';
 	@override String get lineHeight => '行距';
@@ -1896,13 +1894,11 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 	@override String get pageMode => '翻頁方式';
 	@override String get pageModeScroll => '捲動';
 	@override String get pageModePaged => '翻頁';
-	@override String get shortcutsHelp => '空白鍵、Page Down 或 →：下一屏；Shift+空白鍵、Page Up 或 ←：上一屏。↑/↓：捲動（翻頁模式下翻頁）。[ 和 ]：上一章 / 下一章。Home/End：開頭 / 結尾。Esc：先清除選取，再隱藏工具列，然後離開。';
 	@override String get volumeKeys => '音量鍵翻讀';
 	@override String get volumeKeysHelp => '音量減向後翻讀，音量加向前翻讀。';
 	@override String get startAutoScroll => '開始自動捲動';
 	@override String get pauseAutoScroll => '暫停自動捲動';
 	@override String get autoScrollSpeed => '捲動速度';
-	@override String chapterPosition({required Object current, required Object total}) => '第 ${current} / ${total} 章';
 	@override String chapterNumber({required Object number}) => '第 ${number} 章';
 	@override String pageJump({required Object page}) => '跳至第 ${page} 段';
 	@override String get previousChapter => '上一章';
@@ -1920,6 +1916,58 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 	@override String get speedNormal => '適中';
 	@override String get speedFast => '快';
 	@override String get speedVeryFast => '非常快';
+	@override String get more => '更多';
+	@override String get openDetail => '小說詳情';
+	@override String get comments => '留言';
+	@override String get copyLink => '複製連結';
+	@override String get appearance => '外觀';
+	@override String get contents => '目錄';
+	@override String illustrationsCount({required Object count}) => '插圖 · ${count}';
+	@override String progressStatus({required Object percent, required Object minutes}) => '${percent}% · 本章約剩 ${minutes} 分鐘';
+	@override String progressBubble({required Object chapter, required Object percent}) => '${chapter} · ${percent}%';
+	@override String get illustrations => '插圖';
+	@override String get closeSidebar => '關閉';
+	@override String illustrationAt({required Object number}) => '插圖 ${number}';
+	@override String get openIllustration => '檢視圖片';
+	@override String get theme => '主題';
+	@override String get themeApp => '跟隨應用';
+	@override String get themeWhite => '白色';
+	@override String get themePaper => '紙張';
+	@override String get themeGreen => '護眼綠';
+	@override String get themeNight => '夜間';
+	@override String get themeBlack => '純黑';
+	@override String get font => '字體';
+	@override String get fontSans => '黑體';
+	@override String get fontSerif => '明體';
+	@override String get fontKai => '楷體';
+	@override String get margins => '邊界';
+	@override String get marginsNarrow => '窄';
+	@override String get marginsRegular => '適中';
+	@override String get marginsWide => '寬';
+	@override String get pageAnimation => '翻頁動畫';
+	@override String get pageAnimationSlide => '滑動';
+	@override String get pageAnimationCover => '覆蓋';
+	@override String get pageAnimationNone => '無';
+	@override String get tapZones => '點按區域';
+	@override String get tapZonesSides => '兩側翻頁';
+	@override String get tapZonesForward => '點擊向前';
+	@override String get indent => '首行縮排';
+	@override String get shortcuts => '鍵盤快速鍵';
+	@override String get shortcutNextScreen => '下一屏或下一頁';
+	@override String get shortcutPreviousScreen => '上一屏或上一頁';
+	@override String get shortcutLines => '捲動三行（分頁時翻頁）';
+	@override String get shortcutChapters => '上一章 / 下一章';
+	@override String get shortcutEnds => '文首 / 文末';
+	@override String get shortcutContents => '目錄';
+	@override String get shortcutEscape => '清除選取、關閉面板、隱藏列、離開';
+	@override String get shortcutsHint => '空白鍵 / ← → 翻頁 · [ ] 切換章節 · T 目錄';
+	@override String get theEnd => '完';
+	@override String get workUnavailable => '該作品無法使用';
+	@override String get workHidden => '該作品無法顯示';
+	@override String workPage({required Object page}) => '第 ${page} 頁';
+	@override String get seriesNext => '系列的下一篇';
+	@override String get seriesNextUnavailable => '暫時無法閱讀';
+	@override String seriesPrevious({required Object title}) => '上一篇：${title}';
 }
 
 // Path: illustDetail.ugoira
@@ -2565,10 +2613,8 @@ extension on TranslationsZhHantTw {
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} 段',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} 頁',
 			'novel.reader.title' => '閱讀',
-			'novel.reader.settings' => '閱讀設定',
 			'novel.reader.emptyBody' => '正文為空',
 			'novel.reader.embeddedImageUnavailable' => '圖片暫時無法顯示',
-			'novel.reader.openEmbeddedWork' => '開啟關聯作品',
 			'novel.reader.readingProgress' => '閱讀進度',
 			'novel.reader.fontSize' => '字號',
 			'novel.reader.lineHeight' => '行距',
@@ -2578,13 +2624,11 @@ extension on TranslationsZhHantTw {
 			'novel.reader.pageMode' => '翻頁方式',
 			'novel.reader.pageModeScroll' => '捲動',
 			'novel.reader.pageModePaged' => '翻頁',
-			'novel.reader.shortcutsHelp' => '空白鍵、Page Down 或 →：下一屏；Shift+空白鍵、Page Up 或 ←：上一屏。↑/↓：捲動（翻頁模式下翻頁）。[ 和 ]：上一章 / 下一章。Home/End：開頭 / 結尾。Esc：先清除選取，再隱藏工具列，然後離開。',
 			'novel.reader.volumeKeys' => '音量鍵翻讀',
 			'novel.reader.volumeKeysHelp' => '音量減向後翻讀，音量加向前翻讀。',
 			'novel.reader.startAutoScroll' => '開始自動捲動',
 			'novel.reader.pauseAutoScroll' => '暫停自動捲動',
 			'novel.reader.autoScrollSpeed' => '捲動速度',
-			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => '第 ${current} / ${total} 章',
 			'novel.reader.chapterNumber' => ({required Object number}) => '第 ${number} 章',
 			'novel.reader.pageJump' => ({required Object page}) => '跳至第 ${page} 段',
 			'novel.reader.previousChapter' => '上一章',
@@ -2602,6 +2646,58 @@ extension on TranslationsZhHantTw {
 			'novel.reader.speedNormal' => '適中',
 			'novel.reader.speedFast' => '快',
 			'novel.reader.speedVeryFast' => '非常快',
+			'novel.reader.more' => '更多',
+			'novel.reader.openDetail' => '小說詳情',
+			'novel.reader.comments' => '留言',
+			'novel.reader.copyLink' => '複製連結',
+			'novel.reader.appearance' => '外觀',
+			'novel.reader.contents' => '目錄',
+			'novel.reader.illustrationsCount' => ({required Object count}) => '插圖 · ${count}',
+			'novel.reader.progressStatus' => ({required Object percent, required Object minutes}) => '${percent}% · 本章約剩 ${minutes} 分鐘',
+			'novel.reader.progressBubble' => ({required Object chapter, required Object percent}) => '${chapter} · ${percent}%',
+			'novel.reader.illustrations' => '插圖',
+			'novel.reader.closeSidebar' => '關閉',
+			'novel.reader.illustrationAt' => ({required Object number}) => '插圖 ${number}',
+			'novel.reader.openIllustration' => '檢視圖片',
+			'novel.reader.theme' => '主題',
+			'novel.reader.themeApp' => '跟隨應用',
+			'novel.reader.themeWhite' => '白色',
+			'novel.reader.themePaper' => '紙張',
+			'novel.reader.themeGreen' => '護眼綠',
+			'novel.reader.themeNight' => '夜間',
+			'novel.reader.themeBlack' => '純黑',
+			'novel.reader.font' => '字體',
+			'novel.reader.fontSans' => '黑體',
+			'novel.reader.fontSerif' => '明體',
+			'novel.reader.fontKai' => '楷體',
+			'novel.reader.margins' => '邊界',
+			'novel.reader.marginsNarrow' => '窄',
+			'novel.reader.marginsRegular' => '適中',
+			'novel.reader.marginsWide' => '寬',
+			'novel.reader.pageAnimation' => '翻頁動畫',
+			'novel.reader.pageAnimationSlide' => '滑動',
+			'novel.reader.pageAnimationCover' => '覆蓋',
+			'novel.reader.pageAnimationNone' => '無',
+			'novel.reader.tapZones' => '點按區域',
+			'novel.reader.tapZonesSides' => '兩側翻頁',
+			'novel.reader.tapZonesForward' => '點擊向前',
+			'novel.reader.indent' => '首行縮排',
+			'novel.reader.shortcuts' => '鍵盤快速鍵',
+			'novel.reader.shortcutNextScreen' => '下一屏或下一頁',
+			'novel.reader.shortcutPreviousScreen' => '上一屏或上一頁',
+			'novel.reader.shortcutLines' => '捲動三行（分頁時翻頁）',
+			'novel.reader.shortcutChapters' => '上一章 / 下一章',
+			'novel.reader.shortcutEnds' => '文首 / 文末',
+			'novel.reader.shortcutContents' => '目錄',
+			'novel.reader.shortcutEscape' => '清除選取、關閉面板、隱藏列、離開',
+			'novel.reader.shortcutsHint' => '空白鍵 / ← → 翻頁 · [ ] 切換章節 · T 目錄',
+			'novel.reader.theEnd' => '完',
+			'novel.reader.workUnavailable' => '該作品無法使用',
+			'novel.reader.workHidden' => '該作品無法顯示',
+			'novel.reader.workPage' => ({required Object page}) => '第 ${page} 頁',
+			'novel.reader.seriesNext' => '系列的下一篇',
+			'novel.reader.seriesNextUnavailable' => '暫時無法閱讀',
+			'novel.reader.seriesPrevious' => ({required Object title}) => '上一篇：${title}',
 			'follow.tooltipFollow' => '關注使用者',
 			'follow.tooltipUnfollow' => '取消關注',
 			'follow.followed' => '已關注',

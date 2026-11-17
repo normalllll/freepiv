@@ -67,6 +67,7 @@ class ReaderPagedView extends StatefulWidget {
     required this.geometry,
     required this.animation,
     required this.blockBuilder,
+    this.endBuilder,
     this.onLink,
     this.onPageJump,
     super.key,
@@ -77,6 +78,10 @@ class ReaderPagedView extends StatefulWidget {
   final ReaderPageGeometry geometry;
   final ReaderPageAnimation animation;
   final ReaderBlockBuilder blockBuilder;
+
+  /// A sheet after the last page, in the text column, with what follows the
+  /// text. Reaching it is the end of the text; it holds no characters.
+  final WidgetBuilder? endBuilder;
   final ValueChanged<Uri>? onLink;
   final ValueChanged<int>? onPageJump;
 
@@ -103,8 +108,11 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
   bool get _spread => widget.geometry.spread;
   double get _width => widget.geometry.spread ? 2 * widget.geometry.pageWidth + widget.geometry.gutter : widget.geometry.pageWidth;
 
-  /// The pages on show, for tests and the status line.
+  /// The pages on show, for tests and the status line; none on the end sheet.
   List<ReaderPage> get visiblePages => _pagesOf(_sheet);
+
+  /// Whether the sheet after the last page is on show.
+  bool get showsEnd => _isEnd(_sheet);
 
   @override
   void initState() {
@@ -174,7 +182,7 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
   void _reportEnd() {
     void report() {
       if (!mounted) return;
-      final atEnd = _neighbour(_sheet, 1) == null;
+      final atEnd = _atTextEnd(_sheet);
       final controller = widget.controller;
       if (atEnd != controller.atEnd) controller.reportPosition(controller.offset, atEnd: atEnd);
     }
@@ -188,23 +196,43 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
   }
 
   void _place(int offset) {
+    // The end of the text is the end sheet, where the end card is.
+    final chapters = _paginator.layout.model.chapters.length;
+    if (widget.endBuilder != null && chapters > 0 && offset >= _paginator.layout.model.totalLength) {
+      _sheet = _Sheet(chapters - 1, _sheetCount(chapters - 1));
+      return;
+    }
     final ref = _paginator.pageAt(offset);
     _sheet = _Sheet(ref.chapter, _spread ? ref.index ~/ 2 : ref.index);
   }
 
   int _sheetCount(int chapter) => _spread ? _paginator.spreadsOfChapter(chapter).length : _paginator.pagesOfChapter(chapter).length;
 
+  /// The sheet after the last page of the text, when there is one.
+  bool _isEnd(_Sheet sheet) =>
+      widget.endBuilder != null && sheet.chapter == _paginator.layout.model.chapters.length - 1 && sheet.index >= _sheetCount(sheet.chapter);
+
+  /// Whether nothing of the text follows [sheet].
+  bool _atTextEnd(_Sheet sheet) {
+    final next = _neighbour(sheet, 1);
+    return next == null || _isEnd(next);
+  }
+
   _Sheet? _neighbour(_Sheet sheet, int direction) {
     final chapters = _paginator.layout.model.chapters.length;
     if (direction > 0) {
+      if (_isEnd(sheet)) return null;
       if (sheet.index + 1 < _sheetCount(sheet.chapter)) return _Sheet(sheet.chapter, sheet.index + 1);
-      return sheet.chapter + 1 < chapters ? _Sheet(sheet.chapter + 1, 0) : null;
+      if (sheet.chapter + 1 < chapters) return _Sheet(sheet.chapter + 1, 0);
+      return widget.endBuilder == null ? null : _Sheet(sheet.chapter, _sheetCount(sheet.chapter));
     }
+    if (_isEnd(sheet)) return _Sheet(sheet.chapter, _sheetCount(sheet.chapter) - 1);
     if (sheet.index > 0) return _Sheet(sheet.chapter, sheet.index - 1);
     return sheet.chapter > 0 ? _Sheet(sheet.chapter - 1, _sheetCount(sheet.chapter - 1) - 1) : null;
   }
 
   List<ReaderPage> _pagesOf(_Sheet sheet) {
+    if (_isEnd(sheet)) return const [];
     if (!_spread) return [_paginator.pagesOfChapter(sheet.chapter)[sheet.index]];
     final spread = _paginator.spreadsOfChapter(sheet.chapter)[sheet.index];
     return [spread.left, ?spread.right];
@@ -221,7 +249,9 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
       _drag = 0;
     });
     _turn.value = 0;
-    widget.controller.reportPosition(_pagesOf(sheet).first.startOffset, atEnd: _neighbour(sheet, 1) == null);
+    // The end sheet leaves the position where it was: it holds no text.
+    final offset = _isEnd(sheet) ? widget.controller.offset : _pagesOf(sheet).first.startOffset;
+    widget.controller.reportPosition(offset, atEnd: _atTextEnd(sheet));
   }
 
   void _finish() {
@@ -356,7 +386,22 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
     return _sheetWidgets[sheet] ??= KeyedSubtree(key: ValueKey(sheet), child: _sheetWidget(sheet));
   }
 
+  Widget _endSheet() {
+    final geometry = widget.geometry;
+    return SizedBox(
+      width: _width,
+      height: geometry.pageHeight,
+      child: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(vertical: _paginator.layout.typesetting.bodyLinePx),
+          child: SizedBox(width: _paginator.layout.columnWidth, child: widget.endBuilder!(context)),
+        ),
+      ),
+    );
+  }
+
   Widget _sheetWidget(_Sheet sheet) {
+    if (_isEnd(sheet)) return _endSheet();
     final pages = _pagesOf(sheet);
     if (!_spread) return _page(pages.single);
     return Row(

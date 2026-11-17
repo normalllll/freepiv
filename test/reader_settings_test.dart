@@ -182,6 +182,20 @@ void main() {
     });
   });
 
+  group('the shortcuts hint', () {
+    test('is unseen on a fresh install and stays seen after a restart', () async {
+      await _start(directory);
+      expect(AppSettings.readerShortcutsHintSeen, isFalse);
+      await _restart(directory, () => AppSettings.readerShortcutsHintSeen = true);
+      expect(AppSettings.readerShortcutsHintSeen, isTrue);
+    });
+
+    test('a stored value that is not a bool reads as unseen', () async {
+      await _start(directory, {'readerShortcutsHintSeen': 'yes'});
+      expect(AppSettings.readerShortcutsHintSeen, isFalse);
+    });
+  });
+
   test('the providers write every reader setting through', () async {
     await _restart(directory, () {
       final container = ProviderContainer();

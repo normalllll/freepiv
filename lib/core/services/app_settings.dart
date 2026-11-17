@@ -192,6 +192,7 @@ class AppSettings {
   static const _legacyReaderAutoScrollSpeedKey = 'readerAutoScrollSpeed';
   static const _readerAutoScrollSpeedKey = 'readerAutoScrollStep';
   static const _readerVolumeKeysKey = 'readerVolumeKeys';
+  static const _readerShortcutsHintSeenKey = 'readerShortcutsHintSeen';
   static const _downloadEntryPositionKey = 'downloadEntryPosition';
   static const _recordHistoryKey = 'recordHistory';
   static const _historyLimitKey = 'historyLimit';
@@ -239,6 +240,7 @@ class AppSettings {
     _readerTapZonesKey,
     _readerAutoScrollSpeedKey,
     _readerVolumeKeysKey,
+    _readerShortcutsHintSeenKey,
     _downloadEntryPositionKey,
     _recordHistoryKey,
     _historyLimitKey,
@@ -456,6 +458,11 @@ class AppSettings {
 
   static set readerVolumeKeys(bool value) => _write(_readerVolumeKeysKey, value);
 
+  /// Whether the one-time hint about the reader's keyboard shortcuts was shown.
+  static bool get readerShortcutsHintSeen => _values[_readerShortcutsHintSeenKey] == true;
+
+  static set readerShortcutsHintSeen(bool value) => _write(_readerShortcutsHintSeenKey, value);
+
   /// Where the phone layout's floating download button last snapped.
   static FrostFloatingEntryPosition get downloadEntryPosition =>
       _downloadEntryPositionFrom(_values[_downloadEntryPositionKey]) ?? const FrostFloatingEntryPosition();
@@ -589,7 +596,7 @@ class AppSettings {
       _maxConcurrentDownloadsKey => value is int && _isValidMaxConcurrentDownloads(value),
       _proxyEnabledKey => value is bool,
       _proxyUrlKey => value is String && normalizeProxyUrl(value) != null,
-      _sidebarExpandedKey || _readerVolumeKeysKey || _recordHistoryKey => value is bool,
+      _sidebarExpandedKey || _readerVolumeKeysKey || _readerShortcutsHintSeenKey || _recordHistoryKey => value is bool,
       _historyLimitKey => _isEnumSettingValue(value, HistoryLimit.values),
       _blockListKey => BlockList.fromJson(value) != null,
       _windowPlacementKey => _windowPlacementFrom(value) != null,

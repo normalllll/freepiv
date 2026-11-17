@@ -23,6 +23,7 @@ import 'package:freepiv/features/novel/presentation/reader/views/reader_scroll_v
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/custom/reader/reader_layout.dart';
+import 'package:freepiv/ui/custom/reader/reader_progress_track.dart';
 import 'package:freepiv/ui/custom/reader/reader_text.dart';
 import 'package:frost_ui/frost_ui.dart';
 
@@ -41,6 +42,10 @@ String _chapters({String title = 'Departure'}) => [
 
 /// The last chapter is shorter than a screen.
 final _withCoda = '${_chapters()}\n\n[chapter:Coda]\n\n$_paragraph';
+
+const _works = [
+  WebviewNovelEmbeddedWork(key: '12345', illustId: 12345, page: 1, visible: true, title: 'A work', xRestrict: 0, userId: '1', userName: 'Someone'),
+];
 
 const _scrollSettings = <String, dynamic>{'readerFontSize': 18.0, 'readerLineSpacing': 'regular', 'readerAutoScrollStep': 'fast'};
 const _pagedSettings = <String, dynamic>{..._scrollSettings, 'readerPageMode': 'paged', 'readerPageAnimation': 'slide'};
@@ -113,7 +118,14 @@ NovelReaderContentState _reader(WidgetTester tester) => tester.state<NovelReader
 
 ReaderController _controller(WidgetTester tester) => _reader(tester).controller!;
 
-String _chapterTitle(WidgetTester tester) => tester.widget<FrostTitleMenu>(find.byKey(const ValueKey('reader-chapters'))).title;
+/// The title between the chapter buttons of the bottom panel.
+String _chapterTitle(WidgetTester tester) => tester.widget<FrostText>(find.byKey(const ValueKey('reader-chapter-title'))).data!;
+
+/// Shows the bars the way a tap in the middle does.
+Future<void> _showBars(WidgetTester tester) async {
+  _reader(tester).chrome.show();
+  await settlePilot(tester);
+}
 
 ScrollPosition _position(WidgetTester tester) => tester.state<ScrollableState>(find.byType(Scrollable).first).position;
 
@@ -148,66 +160,70 @@ void main() {
 
   testWidgets('the bars lie over the text, which starts below a status line', (tester) async {
     await _mount(tester);
-    expect(_reader(tester).chromeVisible, isTrue);
+    expect(_reader(tester).chromeVisible, isFalse, reason: 'the reader opens with the bars hidden');
     final text = tester.getRect(find.byType(ReaderScrollView));
     expect(text.top, lessThan(60), reason: 'only the status line is above the text');
     expect(text.bottom, greaterThan(desktopSize.height - 60));
     expect(find.text('Departure'), findsWidgets, reason: 'the chapter is named in the status line');
-    expect(find.text(t.novel.reader.progressValue(percent: 0)), findsOneWidget);
+    await _showBars(tester);
+    expect(tester.getRect(find.byType(ReaderScrollView)), text, reason: 'the bars lie over the text and do not move it');
   });
 
-  testWidgets('a phone gives the bar to the chapter menu; without chapters, or with room, the title stays', (tester) async {
-    await _mount(tester, size: phoneSize);
-    expect(find.text('A novel'), findsNothing);
-    expect(find.byKey(const ValueKey('reader-chapters')), findsOneWidget);
-
-    await _mount(tester, size: phoneSize, body: _paragraph);
-    expect(find.text('A novel'), findsWidgets);
-
-    await _mount(tester);
-    expect(find.text('A novel'), findsOneWidget);
-    expect(find.byKey(const ValueKey('reader-chapters')), findsOneWidget);
+  testWidgets('the top bar names the novel with its series and author; a phone keeps both lines', (tester) async {
+    for (final size in [desktopSize, phoneSize]) {
+      await _mount(tester, size: size);
+      await _showBars(tester);
+      final novel = _reader(tester).widget.detail.novel;
+      expect(find.text('A novel'), findsOneWidget);
+      expect(find.text('${novel.series.title} · ${novel.user.name}'), findsOneWidget);
+      expect(find.byKey(const ValueKey('reader-chapters')), findsNothing, reason: 'the contents live in the sidebar');
+      expectNoLayoutErrors(tester);
+    }
   });
 
-  testWidgets('large text on a phone numbers the chapters so the bar stays one line, beside the bookmark', (tester) async {
+  testWidgets('large text on a phone keeps the top bar in one row, the bookmark beside the title', (tester) async {
     await _mount(tester, size: phoneSize, textScale: 2, body: '${_chapters()}\n\n[newpage]\n\n$_paragraph');
-    expect(_chapterTitle(tester), '1 / 3');
+    await _showBars(tester);
     expect(find.byKey(const ValueKey('reader-marker')), findsOneWidget);
     expectNoLayoutErrors(tester);
   });
 
-  testWidgets('chapters: the menu, the bar buttons and the bracket keys move between them', (tester) async {
+  testWidgets('chapters: the bar buttons and the bracket keys move between them', (tester) async {
     await _mount(tester);
-    expect(_chapterTitle(tester), t.novel.reader.chapterPosition(current: 1, total: 3));
+    await _showBars(tester);
+    expect(_chapterTitle(tester), 'Departure');
 
     await tester.tap(find.bySemanticsLabel(t.novel.reader.nextChapter));
     await settlePilot(tester);
     expect(_reader(tester).currentChapter.index, 1);
-    expect(_chapterTitle(tester), t.novel.reader.chapterPosition(current: 2, total: 3));
-    final heading = tester.getTopLeft(find.text('Harbour').last);
+    expect(_reader(tester).chromeVisible, isTrue, reason: 'a button of the bar leaves the bars where they are');
+    expect(_chapterTitle(tester), 'Harbour');
+    final heading = tester.getTopLeft(find.descendant(of: find.byType(ReaderScrollView), matching: find.text('Harbour')).first);
     expect(heading.dy, lessThan(desktopSize.height / 3), reason: 'the chapter starts at the top');
 
     await _key(tester, LogicalKeyboardKey.bracketRight);
     expect(_reader(tester).currentChapter.index, 2);
+    expect(_reader(tester).chromeVisible, isFalse, reason: 'a key hides the bars');
     await _key(tester, LogicalKeyboardKey.bracketLeft);
     expect(_reader(tester).currentChapter.index, 1);
 
-    await tester.tap(find.byKey(const ValueKey('reader-chapters')));
-    await settlePilot(tester);
-    await tester.tap(find.text('Departure').last);
+    await _showBars(tester);
+    await tester.tap(find.bySemanticsLabel(t.novel.reader.previousChapter));
     await settlePilot(tester);
     expect(_reader(tester).currentChapter.index, 0);
+    expect(tester.widget<FrostButton>(find.widgetWithText(FrostButton, t.novel.reader.previousChapter)).onPressed, isNull, reason: 'none before the first');
   });
 
-  testWidgets('the progress bar shows how far the reader is and moves there', (tester) async {
+  testWidgets('the progress track shows how far the reader is and moves there', (tester) async {
     await _mount(tester);
-    FrostSlider slider() => tester.widget<FrostSlider>(find.byKey(const ValueKey('reader-progress')));
-    expect(slider().value, 0);
-    slider().onChanged!(.5);
+    await _showBars(tester);
+    ReaderProgressTrack track() => tester.widget<ReaderProgressTrack>(find.byKey(const ValueKey('reader-progress')));
+    expect(track().progress(), 0);
+    track().onChanged!(.5);
     await settlePilot(tester);
     expect(_reader(tester).progress, closeTo(.5, .01));
-    expect(slider().value, closeTo(.5, .01), reason: 'the bar follows');
-    expect(slider().valueLabel!(.5), t.novel.reader.progressValue(percent: 50));
+    expect(track().progress(), closeTo(.5, .01), reason: 'the track follows');
+    expect(track().valueLabel(.5), t.novel.reader.progressValue(percent: 50));
     expect(_reader(tester).currentChapter.index, 1, reason: 'half way is in the middle chapter');
   });
 
@@ -246,7 +262,10 @@ void main() {
       expect(controller.chapter.index, 0);
       await _key(tester, LogicalKeyboardKey.end);
       expect(controller.atEnd, isTrue);
-      expect(_position(tester).pixels, closeTo(_position(tester).maxScrollExtent, .5));
+      // The end card follows the text, so the end of the text is not the end of the scrolling.
+      final textEnd = _reader(tester).layout!.totalExtent - _position(tester).viewportDimension;
+      expect(_position(tester).pixels, closeTo(_position(tester).maxScrollExtent, .5), reason: 'the End key shows the end card');
+      expect(_position(tester).maxScrollExtent, greaterThan(textEnd), reason: 'the end card lies after the text');
       await _key(tester, LogicalKeyboardKey.home);
       expect(controller.offset, 0);
       expect(_position(tester).pixels, 0);
@@ -277,7 +296,7 @@ void main() {
       expect(firstPage(), 0);
       await _key(tester, LogicalKeyboardKey.end);
       expect(controller.atEnd, isTrue);
-      expect(_paged(tester).visiblePages.last.endOffset, controller.model.totalLength);
+      expect(_paged(tester).showsEnd, isTrue, reason: 'the End key shows the end card');
       await _key(tester, LogicalKeyboardKey.home);
       expect(_paged(tester).visiblePages.first.startOffset, 0);
     });
@@ -317,13 +336,13 @@ void main() {
       await settlePilot(tester);
       final forward = _position(tester).pixels;
       expect(forward, greaterThan(200));
-      expect(_reader(tester).chromeVisible, isTrue);
+      expect(_reader(tester).chromeVisible, isFalse);
       await tester.tapAt(middle(tester, 1 / 6));
       await settlePilot(tester);
       expect(_position(tester).pixels, lessThan(forward - 200));
       await tester.tapAt(middle(tester, .5));
       await settlePilot(tester);
-      expect(_reader(tester).chromeVisible, isFalse);
+      expect(_reader(tester).chromeVisible, isTrue);
     });
 
     testWidgets('forward: the centre toggles the bars, every other tap goes forward', (tester) async {
@@ -338,7 +357,7 @@ void main() {
       expect(_position(tester).pixels, greaterThan(first + 200));
       await tester.tapAt(rect.center);
       await settlePilot(tester);
-      expect(_reader(tester).chromeVisible, isFalse);
+      expect(_reader(tester).chromeVisible, isTrue);
     });
 
     testWidgets('paged: the sides turn pages', (tester) async {
@@ -371,15 +390,15 @@ void main() {
     });
 
     testWidgets('tapping an embedded work opens it and leaves the bars; tapping the text toggles them', (tester) async {
-      await _mount(tester, body: ['$_paragraph 1', '[pixivimage:12345]', '$_paragraph 2'].join('\n\n'));
+      await _mount(tester, body: ['$_paragraph 1', '[pixivimage:12345]', '$_paragraph 2'].join('\n\n'), works: _works);
       final shown = _reader(tester).chromeVisible;
-      await tester.tap(find.text(t.novel.reader.openEmbeddedWork));
+      await tester.tap(find.byKey(const ValueKey('reader-work-card')));
       await settlePilot(tester);
       expect(openedLocations.last, AppLocations.illust(12345));
       final covered = tester.state<NovelReaderContentState>(find.byType(NovelReaderContent, skipOffstage: false));
       expect(covered.chromeVisible, shown, reason: 'the button acts on the work alone');
 
-      await _mount(tester, body: ['$_paragraph 1', '[pixivimage:12345]', '$_paragraph 2'].join('\n\n'));
+      await _mount(tester, body: ['$_paragraph 1', '[pixivimage:12345]', '$_paragraph 2'].join('\n\n'), works: _works);
       await tester.tapAt(tester.getCenter(find.byType(ReaderScrollView)));
       await settlePilot(tester);
       expect(_reader(tester).chromeVisible, !shown, reason: 'the text toggles them');
@@ -389,9 +408,11 @@ void main() {
   group('auto scroll', () {
     testWidgets('runs on through the chapters and pauses under a window-wide dialog', (tester) async {
       await _mount(tester);
+      await _showBars(tester);
       await tester.tap(find.byKey(const ValueKey('reader-auto-scroll')));
       await tester.pump();
       expect(_reader(tester).autoScrolling, isTrue);
+      expect(_reader(tester).chromeVisible, isFalse, reason: 'starting hides the bars');
       final start = _position(tester).pixels;
       for (var frame = 0; frame < 20; frame++) {
         await tester.pump(const Duration(milliseconds: 50));
@@ -415,6 +436,7 @@ void main() {
 
     testWidgets('scrolling by hand stops it and hides the bars; a tap brings them back', (tester) async {
       await _mount(tester);
+      await _showBars(tester);
       await tester.tap(find.byKey(const ValueKey('reader-auto-scroll')));
       await settlePilot(tester, frames: 4);
       expect(_reader(tester).autoScrolling, isTrue);
@@ -436,6 +458,7 @@ void main() {
 
   testWidgets('a new text size keeps the character at the reading line', (tester) async {
     await _mount(tester);
+    await _showBars(tester);
     await tester.tap(find.bySemanticsLabel(t.novel.reader.nextChapter));
     await settlePilot(tester);
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
@@ -462,21 +485,6 @@ void main() {
     container.read(readerSettingsProvider.notifier).setPageMode(ReaderPageMode.scroll);
     await settlePilot(tester);
     expect(_readingLine(tester), offset);
-  });
-
-  testWidgets('the reader sliders keep their labels above them, and the panel offers the page mode', (tester) async {
-    await _mount(tester);
-    await tester.tap(find.byKey(const ValueKey('reader-settings')));
-    await settlePilot(tester, frames: 10);
-    final label = find.text(t.novel.reader.fontSize);
-    final slider = find.byKey(const ValueKey('reader-font-size'));
-    expect(tester.getSize(label).width, greaterThan(10));
-    expect(tester.getBottomLeft(label).dy, lessThanOrEqualTo(tester.getTopLeft(slider).dy + 1));
-    expect(find.byKey(const ValueKey('reader-page-mode')), findsOneWidget);
-    await tester.tap(find.text(t.novel.reader.pageModePaged));
-    await settlePilot(tester);
-    expect(find.byType(ReaderPagedView), findsOneWidget);
-    expectNoLayoutErrors(tester);
   });
 
   group('the place is kept', () {
@@ -718,6 +726,7 @@ void main() {
   group('selection and Escape', () {
     testWidgets('selecting with the mouse pauses auto scroll; Escape clears it, then hides the bars, then leaves', (tester) async {
       await _mount(tester);
+      await _showBars(tester);
       await tester.tap(find.byKey(const ValueKey('reader-auto-scroll')));
       await settlePilot(tester, frames: 4);
       expect(_reader(tester).autoScrolling, isTrue);
@@ -737,7 +746,7 @@ void main() {
 
       await _key(tester, LogicalKeyboardKey.escape);
       expect(openedLocations, isEmpty, reason: 'the first Escape only clears the selection');
-      expect(_reader(tester).chromeVisible, isTrue);
+      await _showBars(tester);
       await _key(tester, LogicalKeyboardKey.escape);
       expect(openedLocations, isEmpty);
       expect(_reader(tester).chromeVisible, isFalse, reason: 'the second hides the bars');
@@ -747,6 +756,7 @@ void main() {
 
     testWidgets('touch selection has handles and a copy menu, and pauses auto scroll', (tester) async {
       await _mount(tester, size: phoneSize);
+      await _showBars(tester);
       await tester.tap(find.byKey(const ValueKey('reader-auto-scroll')));
       await settlePilot(tester, frames: 4);
       expect(_reader(tester).autoScrolling, isTrue);
@@ -771,6 +781,7 @@ void main() {
       title: longText,
       body: _chapters(title: longText),
     );
+    await _showBars(tester);
     expectNoLayoutErrors(tester);
   });
 

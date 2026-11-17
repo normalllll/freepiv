@@ -1883,10 +1883,8 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 
 	// Translations
 	@override String get title => '阅读';
-	@override String get settings => '阅读设置';
 	@override String get emptyBody => '正文为空';
 	@override String get embeddedImageUnavailable => '图片暂时无法显示';
-	@override String get openEmbeddedWork => '打开关联作品';
 	@override String get readingProgress => '阅读进度';
 	@override String get fontSize => '字号';
 	@override String get lineHeight => '行距';
@@ -1896,13 +1894,11 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 	@override String get pageMode => '翻页方式';
 	@override String get pageModeScroll => '滚动';
 	@override String get pageModePaged => '翻页';
-	@override String get shortcutsHelp => '空格、Page Down 或 →：下一屏；Shift+空格、Page Up 或 ←：上一屏。↑/↓：滚动（翻页模式下翻页）。[ 和 ]：上一章 / 下一章。Home/End：开头 / 结尾。Esc：先清除选择，再隐藏工具栏，然后退出。';
 	@override String get volumeKeys => '音量键翻读';
 	@override String get volumeKeysHelp => '音量减向后翻读，音量加向前翻读。';
 	@override String get startAutoScroll => '开始自动滚动';
 	@override String get pauseAutoScroll => '暂停自动滚动';
 	@override String get autoScrollSpeed => '滚动速度';
-	@override String chapterPosition({required Object current, required Object total}) => '第 ${current} / ${total} 章';
 	@override String chapterNumber({required Object number}) => '第 ${number} 章';
 	@override String pageJump({required Object page}) => '跳至第 ${page} 段';
 	@override String get previousChapter => '上一章';
@@ -1920,6 +1916,58 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 	@override String get speedNormal => '适中';
 	@override String get speedFast => '快';
 	@override String get speedVeryFast => '非常快';
+	@override String get more => '更多';
+	@override String get openDetail => '小说详情';
+	@override String get comments => '评论';
+	@override String get copyLink => '复制链接';
+	@override String get appearance => '外观';
+	@override String get contents => '目录';
+	@override String illustrationsCount({required Object count}) => '插图 · ${count}';
+	@override String progressStatus({required Object percent, required Object minutes}) => '${percent}% · 本章约剩 ${minutes} 分钟';
+	@override String progressBubble({required Object chapter, required Object percent}) => '${chapter} · ${percent}%';
+	@override String get illustrations => '插图';
+	@override String get closeSidebar => '关闭';
+	@override String illustrationAt({required Object number}) => '插图 ${number}';
+	@override String get openIllustration => '查看图片';
+	@override String get theme => '主题';
+	@override String get themeApp => '跟随应用';
+	@override String get themeWhite => '白色';
+	@override String get themePaper => '纸张';
+	@override String get themeGreen => '护眼绿';
+	@override String get themeNight => '夜间';
+	@override String get themeBlack => '纯黑';
+	@override String get font => '字体';
+	@override String get fontSans => '黑体';
+	@override String get fontSerif => '宋体';
+	@override String get fontKai => '楷体';
+	@override String get margins => '页边距';
+	@override String get marginsNarrow => '窄';
+	@override String get marginsRegular => '适中';
+	@override String get marginsWide => '宽';
+	@override String get pageAnimation => '翻页动画';
+	@override String get pageAnimationSlide => '滑动';
+	@override String get pageAnimationCover => '覆盖';
+	@override String get pageAnimationNone => '无';
+	@override String get tapZones => '点按区域';
+	@override String get tapZonesSides => '两侧翻页';
+	@override String get tapZonesForward => '点击向前';
+	@override String get indent => '首行缩进';
+	@override String get shortcuts => '键盘快捷键';
+	@override String get shortcutNextScreen => '下一屏或下一页';
+	@override String get shortcutPreviousScreen => '上一屏或上一页';
+	@override String get shortcutLines => '滚动三行（分页时翻页）';
+	@override String get shortcutChapters => '上一章 / 下一章';
+	@override String get shortcutEnds => '文首 / 文末';
+	@override String get shortcutContents => '目录';
+	@override String get shortcutEscape => '清除选择、关闭面板、隐藏栏、退出';
+	@override String get shortcutsHint => '空格 / ← → 翻页 · [ ] 切换章节 · T 目录';
+	@override String get theEnd => '完';
+	@override String get workUnavailable => '该作品不可用';
+	@override String get workHidden => '该作品无法显示';
+	@override String workPage({required Object page}) => '第 ${page} 页';
+	@override String get seriesNext => '系列的下一篇';
+	@override String get seriesNextUnavailable => '暂时无法阅读';
+	@override String seriesPrevious({required Object title}) => '上一篇：${title}';
 }
 
 // Path: illustDetail.ugoira
@@ -2565,10 +2613,8 @@ extension on TranslationsZhCn {
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} 段',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} 页',
 			'novel.reader.title' => '阅读',
-			'novel.reader.settings' => '阅读设置',
 			'novel.reader.emptyBody' => '正文为空',
 			'novel.reader.embeddedImageUnavailable' => '图片暂时无法显示',
-			'novel.reader.openEmbeddedWork' => '打开关联作品',
 			'novel.reader.readingProgress' => '阅读进度',
 			'novel.reader.fontSize' => '字号',
 			'novel.reader.lineHeight' => '行距',
@@ -2578,13 +2624,11 @@ extension on TranslationsZhCn {
 			'novel.reader.pageMode' => '翻页方式',
 			'novel.reader.pageModeScroll' => '滚动',
 			'novel.reader.pageModePaged' => '翻页',
-			'novel.reader.shortcutsHelp' => '空格、Page Down 或 →：下一屏；Shift+空格、Page Up 或 ←：上一屏。↑/↓：滚动（翻页模式下翻页）。[ 和 ]：上一章 / 下一章。Home/End：开头 / 结尾。Esc：先清除选择，再隐藏工具栏，然后退出。',
 			'novel.reader.volumeKeys' => '音量键翻读',
 			'novel.reader.volumeKeysHelp' => '音量减向后翻读，音量加向前翻读。',
 			'novel.reader.startAutoScroll' => '开始自动滚动',
 			'novel.reader.pauseAutoScroll' => '暂停自动滚动',
 			'novel.reader.autoScrollSpeed' => '滚动速度',
-			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => '第 ${current} / ${total} 章',
 			'novel.reader.chapterNumber' => ({required Object number}) => '第 ${number} 章',
 			'novel.reader.pageJump' => ({required Object page}) => '跳至第 ${page} 段',
 			'novel.reader.previousChapter' => '上一章',
@@ -2602,6 +2646,58 @@ extension on TranslationsZhCn {
 			'novel.reader.speedNormal' => '适中',
 			'novel.reader.speedFast' => '快',
 			'novel.reader.speedVeryFast' => '非常快',
+			'novel.reader.more' => '更多',
+			'novel.reader.openDetail' => '小说详情',
+			'novel.reader.comments' => '评论',
+			'novel.reader.copyLink' => '复制链接',
+			'novel.reader.appearance' => '外观',
+			'novel.reader.contents' => '目录',
+			'novel.reader.illustrationsCount' => ({required Object count}) => '插图 · ${count}',
+			'novel.reader.progressStatus' => ({required Object percent, required Object minutes}) => '${percent}% · 本章约剩 ${minutes} 分钟',
+			'novel.reader.progressBubble' => ({required Object chapter, required Object percent}) => '${chapter} · ${percent}%',
+			'novel.reader.illustrations' => '插图',
+			'novel.reader.closeSidebar' => '关闭',
+			'novel.reader.illustrationAt' => ({required Object number}) => '插图 ${number}',
+			'novel.reader.openIllustration' => '查看图片',
+			'novel.reader.theme' => '主题',
+			'novel.reader.themeApp' => '跟随应用',
+			'novel.reader.themeWhite' => '白色',
+			'novel.reader.themePaper' => '纸张',
+			'novel.reader.themeGreen' => '护眼绿',
+			'novel.reader.themeNight' => '夜间',
+			'novel.reader.themeBlack' => '纯黑',
+			'novel.reader.font' => '字体',
+			'novel.reader.fontSans' => '黑体',
+			'novel.reader.fontSerif' => '宋体',
+			'novel.reader.fontKai' => '楷体',
+			'novel.reader.margins' => '页边距',
+			'novel.reader.marginsNarrow' => '窄',
+			'novel.reader.marginsRegular' => '适中',
+			'novel.reader.marginsWide' => '宽',
+			'novel.reader.pageAnimation' => '翻页动画',
+			'novel.reader.pageAnimationSlide' => '滑动',
+			'novel.reader.pageAnimationCover' => '覆盖',
+			'novel.reader.pageAnimationNone' => '无',
+			'novel.reader.tapZones' => '点按区域',
+			'novel.reader.tapZonesSides' => '两侧翻页',
+			'novel.reader.tapZonesForward' => '点击向前',
+			'novel.reader.indent' => '首行缩进',
+			'novel.reader.shortcuts' => '键盘快捷键',
+			'novel.reader.shortcutNextScreen' => '下一屏或下一页',
+			'novel.reader.shortcutPreviousScreen' => '上一屏或上一页',
+			'novel.reader.shortcutLines' => '滚动三行（分页时翻页）',
+			'novel.reader.shortcutChapters' => '上一章 / 下一章',
+			'novel.reader.shortcutEnds' => '文首 / 文末',
+			'novel.reader.shortcutContents' => '目录',
+			'novel.reader.shortcutEscape' => '清除选择、关闭面板、隐藏栏、退出',
+			'novel.reader.shortcutsHint' => '空格 / ← → 翻页 · [ ] 切换章节 · T 目录',
+			'novel.reader.theEnd' => '完',
+			'novel.reader.workUnavailable' => '该作品不可用',
+			'novel.reader.workHidden' => '该作品无法显示',
+			'novel.reader.workPage' => ({required Object page}) => '第 ${page} 页',
+			'novel.reader.seriesNext' => '系列的下一篇',
+			'novel.reader.seriesNextUnavailable' => '暂时无法阅读',
+			'novel.reader.seriesPrevious' => ({required Object title}) => '上一篇：${title}',
 			'follow.tooltipFollow' => '关注用户',
 			'follow.tooltipUnfollow' => '取消关注',
 			'follow.followed' => '已关注',

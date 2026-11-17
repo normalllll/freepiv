@@ -1885,10 +1885,8 @@ class Translations$novel$reader$en_US {
 
 	// Translations
 	String get title => 'Reading';
-	String get settings => 'Reading settings';
 	String get emptyBody => 'No body text';
 	String get embeddedImageUnavailable => 'This image is unavailable';
-	String get openEmbeddedWork => 'Open linked artwork';
 	String get readingProgress => 'Reading progress';
 	String get fontSize => 'Font size';
 	String get lineHeight => 'Line height';
@@ -1898,13 +1896,11 @@ class Translations$novel$reader$en_US {
 	String get pageMode => 'Page turning';
 	String get pageModeScroll => 'Scroll';
 	String get pageModePaged => 'Pages';
-	String get shortcutsHelp => 'Space, Page Down or Right: next screen; Shift+Space, Page Up or Left: back. Up/Down: scroll (turn pages when paged). [ and ]: previous/next chapter. Home/End: start/end. Esc: clear the selection, hide the bars, then close.';
 	String get volumeKeys => 'Use volume keys';
 	String get volumeKeysHelp => 'Volume down reads forward; volume up reads back.';
 	String get startAutoScroll => 'Start auto scroll';
 	String get pauseAutoScroll => 'Pause auto scroll';
 	String get autoScrollSpeed => 'Scroll speed';
-	String chapterPosition({required Object current, required Object total}) => 'Chapter ${current} of ${total}';
 	String chapterNumber({required Object number}) => 'Chapter ${number}';
 	String pageJump({required Object page}) => 'Go to section ${page}';
 	String get previousChapter => 'Previous chapter';
@@ -1922,6 +1918,58 @@ class Translations$novel$reader$en_US {
 	String get speedNormal => 'Normal';
 	String get speedFast => 'Fast';
 	String get speedVeryFast => 'Very fast';
+	String get more => 'More';
+	String get openDetail => 'Novel details';
+	String get comments => 'Comments';
+	String get copyLink => 'Copy link';
+	String get appearance => 'Appearance';
+	String get contents => 'Contents';
+	String illustrationsCount({required Object count}) => 'Illustrations · ${count}';
+	String progressStatus({required Object percent, required Object minutes}) => '${percent}% · ${minutes} min left in chapter';
+	String progressBubble({required Object chapter, required Object percent}) => '${chapter} · ${percent}%';
+	String get illustrations => 'Illustrations';
+	String get closeSidebar => 'Close';
+	String illustrationAt({required Object number}) => 'Illustration ${number}';
+	String get openIllustration => 'Open picture';
+	String get theme => 'Theme';
+	String get themeApp => 'App';
+	String get themeWhite => 'White';
+	String get themePaper => 'Paper';
+	String get themeGreen => 'Green';
+	String get themeNight => 'Night';
+	String get themeBlack => 'Black';
+	String get font => 'Font';
+	String get fontSans => 'Sans';
+	String get fontSerif => 'Serif';
+	String get fontKai => 'Kai';
+	String get margins => 'Margins';
+	String get marginsNarrow => 'Narrow';
+	String get marginsRegular => 'Regular';
+	String get marginsWide => 'Wide';
+	String get pageAnimation => 'Page animation';
+	String get pageAnimationSlide => 'Slide';
+	String get pageAnimationCover => 'Cover';
+	String get pageAnimationNone => 'None';
+	String get tapZones => 'Tap zones';
+	String get tapZonesSides => 'Sides turn';
+	String get tapZonesForward => 'Always forward';
+	String get indent => 'First-line indent';
+	String get shortcuts => 'Keyboard shortcuts';
+	String get shortcutNextScreen => 'Next screen or page';
+	String get shortcutPreviousScreen => 'Previous screen or page';
+	String get shortcutLines => 'Scroll three lines (turn pages when paged)';
+	String get shortcutChapters => 'Previous / next chapter';
+	String get shortcutEnds => 'Start / end of the text';
+	String get shortcutContents => 'Contents';
+	String get shortcutEscape => 'Clear the selection, close panels, hide the bars, leave';
+	String get shortcutsHint => 'Space / ← → turn pages · [ ] chapters · T contents';
+	String get theEnd => 'The end';
+	String get workUnavailable => 'This work is unavailable';
+	String get workHidden => 'This work cannot be shown';
+	String workPage({required Object page}) => 'Page ${page}';
+	String get seriesNext => 'Next in the series';
+	String get seriesNextUnavailable => 'Not available yet';
+	String seriesPrevious({required Object title}) => 'Previous: ${title}';
 }
 
 // Path: illustDetail.ugoira
@@ -2567,10 +2615,8 @@ extension on Translations {
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} paragraphs',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} pages',
 			'novel.reader.title' => 'Reading',
-			'novel.reader.settings' => 'Reading settings',
 			'novel.reader.emptyBody' => 'No body text',
 			'novel.reader.embeddedImageUnavailable' => 'This image is unavailable',
-			'novel.reader.openEmbeddedWork' => 'Open linked artwork',
 			'novel.reader.readingProgress' => 'Reading progress',
 			'novel.reader.fontSize' => 'Font size',
 			'novel.reader.lineHeight' => 'Line height',
@@ -2580,13 +2626,11 @@ extension on Translations {
 			'novel.reader.pageMode' => 'Page turning',
 			'novel.reader.pageModeScroll' => 'Scroll',
 			'novel.reader.pageModePaged' => 'Pages',
-			'novel.reader.shortcutsHelp' => 'Space, Page Down or Right: next screen; Shift+Space, Page Up or Left: back. Up/Down: scroll (turn pages when paged). [ and ]: previous/next chapter. Home/End: start/end. Esc: clear the selection, hide the bars, then close.',
 			'novel.reader.volumeKeys' => 'Use volume keys',
 			'novel.reader.volumeKeysHelp' => 'Volume down reads forward; volume up reads back.',
 			'novel.reader.startAutoScroll' => 'Start auto scroll',
 			'novel.reader.pauseAutoScroll' => 'Pause auto scroll',
 			'novel.reader.autoScrollSpeed' => 'Scroll speed',
-			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => 'Chapter ${current} of ${total}',
 			'novel.reader.chapterNumber' => ({required Object number}) => 'Chapter ${number}',
 			'novel.reader.pageJump' => ({required Object page}) => 'Go to section ${page}',
 			'novel.reader.previousChapter' => 'Previous chapter',
@@ -2604,6 +2648,58 @@ extension on Translations {
 			'novel.reader.speedNormal' => 'Normal',
 			'novel.reader.speedFast' => 'Fast',
 			'novel.reader.speedVeryFast' => 'Very fast',
+			'novel.reader.more' => 'More',
+			'novel.reader.openDetail' => 'Novel details',
+			'novel.reader.comments' => 'Comments',
+			'novel.reader.copyLink' => 'Copy link',
+			'novel.reader.appearance' => 'Appearance',
+			'novel.reader.contents' => 'Contents',
+			'novel.reader.illustrationsCount' => ({required Object count}) => 'Illustrations · ${count}',
+			'novel.reader.progressStatus' => ({required Object percent, required Object minutes}) => '${percent}% · ${minutes} min left in chapter',
+			'novel.reader.progressBubble' => ({required Object chapter, required Object percent}) => '${chapter} · ${percent}%',
+			'novel.reader.illustrations' => 'Illustrations',
+			'novel.reader.closeSidebar' => 'Close',
+			'novel.reader.illustrationAt' => ({required Object number}) => 'Illustration ${number}',
+			'novel.reader.openIllustration' => 'Open picture',
+			'novel.reader.theme' => 'Theme',
+			'novel.reader.themeApp' => 'App',
+			'novel.reader.themeWhite' => 'White',
+			'novel.reader.themePaper' => 'Paper',
+			'novel.reader.themeGreen' => 'Green',
+			'novel.reader.themeNight' => 'Night',
+			'novel.reader.themeBlack' => 'Black',
+			'novel.reader.font' => 'Font',
+			'novel.reader.fontSans' => 'Sans',
+			'novel.reader.fontSerif' => 'Serif',
+			'novel.reader.fontKai' => 'Kai',
+			'novel.reader.margins' => 'Margins',
+			'novel.reader.marginsNarrow' => 'Narrow',
+			'novel.reader.marginsRegular' => 'Regular',
+			'novel.reader.marginsWide' => 'Wide',
+			'novel.reader.pageAnimation' => 'Page animation',
+			'novel.reader.pageAnimationSlide' => 'Slide',
+			'novel.reader.pageAnimationCover' => 'Cover',
+			'novel.reader.pageAnimationNone' => 'None',
+			'novel.reader.tapZones' => 'Tap zones',
+			'novel.reader.tapZonesSides' => 'Sides turn',
+			'novel.reader.tapZonesForward' => 'Always forward',
+			'novel.reader.indent' => 'First-line indent',
+			'novel.reader.shortcuts' => 'Keyboard shortcuts',
+			'novel.reader.shortcutNextScreen' => 'Next screen or page',
+			'novel.reader.shortcutPreviousScreen' => 'Previous screen or page',
+			'novel.reader.shortcutLines' => 'Scroll three lines (turn pages when paged)',
+			'novel.reader.shortcutChapters' => 'Previous / next chapter',
+			'novel.reader.shortcutEnds' => 'Start / end of the text',
+			'novel.reader.shortcutContents' => 'Contents',
+			'novel.reader.shortcutEscape' => 'Clear the selection, close panels, hide the bars, leave',
+			'novel.reader.shortcutsHint' => 'Space / ← → turn pages · [ ] chapters · T contents',
+			'novel.reader.theEnd' => 'The end',
+			'novel.reader.workUnavailable' => 'This work is unavailable',
+			'novel.reader.workHidden' => 'This work cannot be shown',
+			'novel.reader.workPage' => ({required Object page}) => 'Page ${page}',
+			'novel.reader.seriesNext' => 'Next in the series',
+			'novel.reader.seriesNextUnavailable' => 'Not available yet',
+			'novel.reader.seriesPrevious' => ({required Object title}) => 'Previous: ${title}',
 			'follow.tooltipFollow' => 'Follow user',
 			'follow.tooltipUnfollow' => 'Unfollow',
 			'follow.followed' => 'Following',
