@@ -1883,31 +1883,16 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 
 	// Translations
 	@override String get title => '読書';
-	@override String get body => '本文';
-	@override String get chapters => '章';
 	@override String get settings => '読書設定';
 	@override String get emptyBody => '本文がありません';
 	@override String get embeddedImageUnavailable => '画像を表示できません';
 	@override String get openEmbeddedWork => '関連作品を開く';
-	@override String totalChars({required Object count}) => '全 ${count} 文字';
-	@override String pagePosition({required Object current, required Object total}) => '${current} / ${total} ページ';
-	@override String pageTotal({required Object total}) => '${total} ページ';
-	@override String currentPage({required Object page}) => '${page} ページ目';
 	@override String get readingProgress => '読書進捗';
-	@override String get previousPage => '前のページ';
-	@override String get nextPage => '次のページ';
-	@override String get display => '表示';
 	@override String get fontSize => '文字サイズ';
 	@override String get lineHeight => '行間';
-	@override String get noChapterMarkers => '章マーカーはありません';
-	@override String get close => '閉じる';
-	@override String get decrease => '小さくする';
-	@override String get increase => '大きくする';
-	@override String get shortcutsTitle => 'ショートカット';
 	@override String get shortcutsHelp => '←/→ または A/D：前/次の章。↑/↓ または W/S：スクロール。Esc：選択を解除し、もう一度で閉じる。';
 	@override String get volumeKeys => '音量キーで読む';
 	@override String get volumeKeysHelp => '音量下で先へ、音量上で前へ読み進めます。';
-	@override String get autoScroll => '自動スクロール';
 	@override String get startAutoScroll => '自動スクロール開始';
 	@override String get pauseAutoScroll => '自動スクロール一時停止';
 	@override String get autoScrollSpeed => 'スクロール速度';
@@ -2568,31 +2553,16 @@ extension on TranslationsJaJp {
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} 段落',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} ページ',
 			'novel.reader.title' => '読書',
-			'novel.reader.body' => '本文',
-			'novel.reader.chapters' => '章',
 			'novel.reader.settings' => '読書設定',
 			'novel.reader.emptyBody' => '本文がありません',
 			'novel.reader.embeddedImageUnavailable' => '画像を表示できません',
 			'novel.reader.openEmbeddedWork' => '関連作品を開く',
-			'novel.reader.totalChars' => ({required Object count}) => '全 ${count} 文字',
-			'novel.reader.pagePosition' => ({required Object current, required Object total}) => '${current} / ${total} ページ',
-			'novel.reader.pageTotal' => ({required Object total}) => '${total} ページ',
-			'novel.reader.currentPage' => ({required Object page}) => '${page} ページ目',
 			'novel.reader.readingProgress' => '読書進捗',
-			'novel.reader.previousPage' => '前のページ',
-			'novel.reader.nextPage' => '次のページ',
-			'novel.reader.display' => '表示',
 			'novel.reader.fontSize' => '文字サイズ',
 			'novel.reader.lineHeight' => '行間',
-			'novel.reader.noChapterMarkers' => '章マーカーはありません',
-			'novel.reader.close' => '閉じる',
-			'novel.reader.decrease' => '小さくする',
-			'novel.reader.increase' => '大きくする',
-			'novel.reader.shortcutsTitle' => 'ショートカット',
 			'novel.reader.shortcutsHelp' => '←/→ または A/D：前/次の章。↑/↓ または W/S：スクロール。Esc：選択を解除し、もう一度で閉じる。',
 			'novel.reader.volumeKeys' => '音量キーで読む',
 			'novel.reader.volumeKeysHelp' => '音量下で先へ、音量上で前へ読み進めます。',
-			'novel.reader.autoScroll' => '自動スクロール',
 			'novel.reader.startAutoScroll' => '自動スクロール開始',
 			'novel.reader.pauseAutoScroll' => '自動スクロール一時停止',
 			'novel.reader.autoScrollSpeed' => 'スクロール速度',

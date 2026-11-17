@@ -1883,31 +1883,16 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 
 	// Translations
 	@override String get title => '阅读';
-	@override String get body => '正文';
-	@override String get chapters => '章节';
 	@override String get settings => '阅读设置';
 	@override String get emptyBody => '正文为空';
 	@override String get embeddedImageUnavailable => '图片暂时无法显示';
 	@override String get openEmbeddedWork => '打开关联作品';
-	@override String totalChars({required Object count}) => '共 ${count} 字';
-	@override String pagePosition({required Object current, required Object total}) => '${current} / ${total} 页';
-	@override String pageTotal({required Object total}) => '${total} 页';
-	@override String currentPage({required Object page}) => '第 ${page} 页';
 	@override String get readingProgress => '阅读进度';
-	@override String get previousPage => '上一页';
-	@override String get nextPage => '下一页';
-	@override String get display => '显示';
 	@override String get fontSize => '字号';
 	@override String get lineHeight => '行距';
-	@override String get noChapterMarkers => '没有章节标记';
-	@override String get close => '关闭';
-	@override String get decrease => '减小';
-	@override String get increase => '增大';
-	@override String get shortcutsTitle => '快捷键';
 	@override String get shortcutsHelp => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：滚动。Esc：先清除选择，再退出。';
 	@override String get volumeKeys => '音量键翻读';
 	@override String get volumeKeysHelp => '音量减向后翻读，音量加向前翻读。';
-	@override String get autoScroll => '自动滚动';
 	@override String get startAutoScroll => '开始自动滚动';
 	@override String get pauseAutoScroll => '暂停自动滚动';
 	@override String get autoScrollSpeed => '滚动速度';
@@ -2568,31 +2553,16 @@ extension on TranslationsZhCn {
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} 段',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} 页',
 			'novel.reader.title' => '阅读',
-			'novel.reader.body' => '正文',
-			'novel.reader.chapters' => '章节',
 			'novel.reader.settings' => '阅读设置',
 			'novel.reader.emptyBody' => '正文为空',
 			'novel.reader.embeddedImageUnavailable' => '图片暂时无法显示',
 			'novel.reader.openEmbeddedWork' => '打开关联作品',
-			'novel.reader.totalChars' => ({required Object count}) => '共 ${count} 字',
-			'novel.reader.pagePosition' => ({required Object current, required Object total}) => '${current} / ${total} 页',
-			'novel.reader.pageTotal' => ({required Object total}) => '${total} 页',
-			'novel.reader.currentPage' => ({required Object page}) => '第 ${page} 页',
 			'novel.reader.readingProgress' => '阅读进度',
-			'novel.reader.previousPage' => '上一页',
-			'novel.reader.nextPage' => '下一页',
-			'novel.reader.display' => '显示',
 			'novel.reader.fontSize' => '字号',
 			'novel.reader.lineHeight' => '行距',
-			'novel.reader.noChapterMarkers' => '没有章节标记',
-			'novel.reader.close' => '关闭',
-			'novel.reader.decrease' => '减小',
-			'novel.reader.increase' => '增大',
-			'novel.reader.shortcutsTitle' => '快捷键',
 			'novel.reader.shortcutsHelp' => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：滚动。Esc：先清除选择，再退出。',
 			'novel.reader.volumeKeys' => '音量键翻读',
 			'novel.reader.volumeKeysHelp' => '音量减向后翻读，音量加向前翻读。',
-			'novel.reader.autoScroll' => '自动滚动',
 			'novel.reader.startAutoScroll' => '开始自动滚动',
 			'novel.reader.pauseAutoScroll' => '暂停自动滚动',
 			'novel.reader.autoScrollSpeed' => '滚动速度',

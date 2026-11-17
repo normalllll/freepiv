@@ -6,6 +6,7 @@
 import '../../../frb_generated.dart';
 import 'enums.dart';
 import 'models.dart';
+
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'responses.freezed.dart';
@@ -266,22 +267,28 @@ class NovelNavigationInfo {
 class NovelNavigationItem {
   final String id;
   final String title;
-  final String userId;
-  final String userName;
+  final String? coverUrl;
+  final String? contentOrder;
+  final bool viewable;
+  final String? viewableMessage;
 
   const NovelNavigationItem({
     required this.id,
     required this.title,
-    required this.userId,
-    required this.userName,
+    this.coverUrl,
+    this.contentOrder,
+    required this.viewable,
+    this.viewableMessage,
   });
-
-  static Future<NovelNavigationItem> default_() =>
-      RustLib.instance.api.pixivRsPixivResponsesNovelNavigationItemDefault();
 
   @override
   int get hashCode =>
-      id.hashCode ^ title.hashCode ^ userId.hashCode ^ userName.hashCode;
+      id.hashCode ^
+      title.hashCode ^
+      coverUrl.hashCode ^
+      contentOrder.hashCode ^
+      viewable.hashCode ^
+      viewableMessage.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -290,8 +297,10 @@ class NovelNavigationItem {
           runtimeType == other.runtimeType &&
           id == other.id &&
           title == other.title &&
-          userId == other.userId &&
-          userName == other.userName;
+          coverUrl == other.coverUrl &&
+          contentOrder == other.contentOrder &&
+          viewable == other.viewable &&
+          viewableMessage == other.viewableMessage;
 }
 
 class NovelPageResult {
@@ -1133,13 +1142,14 @@ class WebviewNovel {
   final NovelRating rating;
   final String text;
   final String? marker;
-  final List<String> illusts;
+  final List<WebviewNovelEmbeddedWork> illusts;
   final List<WebviewNovelImage> images;
   final NovelNavigationInfo? seriesNavigation;
-  final List<String> glossaryItems;
+  final List<WebviewNovelGlossaryItem> glossaryItems;
   final List<String> replaceableItemIds;
   final int aiType;
   final bool isOriginal;
+  final String? language;
 
   const WebviewNovel({
     required this.id,
@@ -1162,6 +1172,7 @@ class WebviewNovel {
     required this.replaceableItemIds,
     required this.aiType,
     required this.isOriginal,
+    this.language,
   });
 
   @override
@@ -1185,7 +1196,8 @@ class WebviewNovel {
       glossaryItems.hashCode ^
       replaceableItemIds.hashCode ^
       aiType.hashCode ^
-      isOriginal.hashCode;
+      isOriginal.hashCode ^
+      language.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -1211,7 +1223,100 @@ class WebviewNovel {
           glossaryItems == other.glossaryItems &&
           replaceableItemIds == other.replaceableItemIds &&
           aiType == other.aiType &&
-          isOriginal == other.isOriginal;
+          isOriginal == other.isOriginal &&
+          language == other.language;
+}
+
+/// An illustration embedded in a novel body, referenced by `[pixivimage:<key>]`.
+class WebviewNovelEmbeddedWork {
+  final String key;
+  final int illustId;
+  final int page;
+  final bool visible;
+  final String? availableMessage;
+  final String title;
+  final int xRestrict;
+  final String userId;
+  final String userName;
+  final String? userImageUrl;
+  final String? imageMedium;
+  final String? imageOriginal;
+
+  const WebviewNovelEmbeddedWork({
+    required this.key,
+    required this.illustId,
+    required this.page,
+    required this.visible,
+    this.availableMessage,
+    required this.title,
+    required this.xRestrict,
+    required this.userId,
+    required this.userName,
+    this.userImageUrl,
+    this.imageMedium,
+    this.imageOriginal,
+  });
+
+  @override
+  int get hashCode =>
+      key.hashCode ^
+      illustId.hashCode ^
+      page.hashCode ^
+      visible.hashCode ^
+      availableMessage.hashCode ^
+      title.hashCode ^
+      xRestrict.hashCode ^
+      userId.hashCode ^
+      userName.hashCode ^
+      userImageUrl.hashCode ^
+      imageMedium.hashCode ^
+      imageOriginal.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WebviewNovelEmbeddedWork &&
+          runtimeType == other.runtimeType &&
+          key == other.key &&
+          illustId == other.illustId &&
+          page == other.page &&
+          visible == other.visible &&
+          availableMessage == other.availableMessage &&
+          title == other.title &&
+          xRestrict == other.xRestrict &&
+          userId == other.userId &&
+          userName == other.userName &&
+          userImageUrl == other.userImageUrl &&
+          imageMedium == other.imageMedium &&
+          imageOriginal == other.imageOriginal;
+}
+
+class WebviewNovelGlossaryItem {
+  final String id;
+  final String name;
+  final String overview;
+  final String? coverImage;
+
+  const WebviewNovelGlossaryItem({
+    required this.id,
+    required this.name,
+    required this.overview,
+    this.coverImage,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^ name.hashCode ^ overview.hashCode ^ coverImage.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WebviewNovelGlossaryItem &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          overview == other.overview &&
+          coverImage == other.coverImage;
 }
 
 class WebviewNovelImage {

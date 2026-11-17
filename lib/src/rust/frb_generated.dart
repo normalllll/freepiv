@@ -9,12 +9,16 @@ import 'api/image_utils.dart';
 import 'api/media.dart';
 import 'api/proxy.dart';
 import 'api/zip_utils.dart';
+
 import 'dart:async';
 import 'dart:convert';
+
 import 'frb_generated.dart';
 import 'frb_generated.io.dart'
     if (dart.library.js_interop) 'frb_generated.web.dart';
+
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+
 import 'third_party/pixiv_rs/error.dart';
 import 'third_party/pixiv_rs/fanbox.dart';
 import 'third_party/pixiv_rs/pixiv/api.dart';
@@ -77,7 +81,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.14.0-beta.2';
 
   @override
-  int get rustContentHash => -1312131418;
+  int get rustContentHash => -1164577473;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -833,8 +837,6 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<NovelNavigationInfo> pixivRsPixivResponsesNovelNavigationInfoDefault();
-
-  Future<NovelNavigationItem> pixivRsPixivResponsesNovelNavigationItemDefault();
 
   Future<void> pixivRsPixivEnumsNovelRankingModeAsPixivParam({
     required NovelRankingMode that,
@@ -6828,37 +6830,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<NovelNavigationItem>
-  pixivRsPixivResponsesNovelNavigationItemDefault() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 160,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_novel_navigation_item,
-          decodeErrorData: null,
-        ),
-        constMeta: kPixivRsPixivResponsesNovelNavigationItemDefaultConstMeta,
-        argValues: [],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kPixivRsPixivResponsesNovelNavigationItemDefaultConstMeta =>
-      const TaskConstMeta(
-        debugName: "novel_navigation_item_default",
-        argNames: [],
-      );
-
-  @override
   Future<void> pixivRsPixivEnumsNovelRankingModeAsPixivParam({
     required NovelRankingMode that,
   }) {
@@ -6870,7 +6841,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 161,
+            funcId: 160,
             port: port_,
           );
         },
@@ -6900,7 +6871,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 162,
+            funcId: 161,
             port: port_,
           );
         },
@@ -6932,7 +6903,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 163,
+            funcId: 162,
             port: port_,
           );
         },
@@ -6967,7 +6938,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 164,
+            funcId: 163,
             port: port_,
           );
         },
@@ -7002,7 +6973,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 165,
+            funcId: 164,
             port: port_,
           );
         },
@@ -7043,7 +7014,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 166,
+            funcId: 165,
             port: port_,
           );
         },
@@ -7092,7 +7063,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 167,
+            funcId: 166,
             port: port_,
           );
         },
@@ -7127,7 +7098,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 168,
+            funcId: 167,
             port: port_,
           );
         },
@@ -7162,7 +7133,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 169,
+            funcId: 168,
             port: port_,
           );
         },
@@ -7192,7 +7163,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 170,
+            funcId: 169,
             port: port_,
           );
         },
@@ -7227,7 +7198,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 171,
+            funcId: 170,
             port: port_,
           );
         },
@@ -7256,7 +7227,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 172,
+            funcId: 171,
             port: port_,
           );
         },
@@ -7284,7 +7255,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 173,
+            funcId: 172,
             port: port_,
           );
         },
@@ -7317,7 +7288,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 174,
+            funcId: 173,
             port: port_,
           );
         },
@@ -7350,7 +7321,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 175,
+            funcId: 174,
             port: port_,
           );
         },
@@ -7380,7 +7351,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 176,
+            funcId: 175,
             port: port_,
           );
         },
@@ -7410,7 +7381,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 177,
+            funcId: 176,
             port: port_,
           );
         },
@@ -7443,7 +7414,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 178,
+            funcId: 177,
             port: port_,
           );
         },
@@ -7476,7 +7447,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 179,
+            funcId: 178,
             port: port_,
           );
         },
@@ -7516,7 +7487,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 180,
+              funcId: 179,
               port: port_,
             );
           },
@@ -7548,7 +7519,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 181,
+            funcId: 180,
             port: port_,
           );
         },
@@ -7580,7 +7551,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 182,
+            funcId: 181,
             port: port_,
           );
         },
@@ -7613,7 +7584,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 183,
+            funcId: 182,
             port: port_,
           );
         },
@@ -7860,9 +7831,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Map<String, String> dco_decode_Map_String_String_None(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return Map.fromEntries(
-      dco_decode_list_record_string_string(
-        raw,
-      ).map((e) => MapEntry(e.$1, e.$2)),
+      dco_decode_list_record_string_string(raw)
+          .map((e) => MapEntry(e.$1, e.$2)),
     );
   }
 
@@ -9210,6 +9180,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<WebviewNovelEmbeddedWork> dco_decode_list_webview_novel_embedded_work(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeList(raw)
+        .map(dco_decode_webview_novel_embedded_work)
+        .toList();
+  }
+
+  @protected
+  List<WebviewNovelGlossaryItem> dco_decode_list_webview_novel_glossary_item(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeList(raw)
+        .map(dco_decode_webview_novel_glossary_item)
+        .toList();
+  }
+
+  @protected
   List<WebviewNovelImage> dco_decode_list_webview_novel_image(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dcoDecodeList(raw).map(dco_decode_webview_novel_image).toList();
@@ -9349,13 +9339,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   NovelNavigationItem dco_decode_novel_navigation_item(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = dcoDecodeList(raw);
-    if (arr.length != 4)
-      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return NovelNavigationItem(
       id: dco_decode_String(arr[0]),
       title: dco_decode_String(arr[1]),
-      userId: dco_decode_String(arr[2]),
-      userName: dco_decode_String(arr[3]),
+      coverUrl: dco_decode_opt_String(arr[2]),
+      contentOrder: dco_decode_opt_String(arr[3]),
+      viewable: dco_decode_bool(arr[4]),
+      viewableMessage: dco_decode_opt_String(arr[5]),
     );
   }
 
@@ -10285,8 +10277,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   WebviewNovel dco_decode_webview_novel(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = dcoDecodeList(raw);
-    if (arr.length != 20)
-      throw Exception('unexpected arr length: expect 20 but see ${arr.length}');
+    if (arr.length != 21)
+      throw Exception('unexpected arr length: expect 21 but see ${arr.length}');
     return WebviewNovel(
       id: dco_decode_String(arr[0]),
       title: dco_decode_String(arr[1]),
@@ -10301,15 +10293,52 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       rating: dco_decode_novel_rating(arr[10]),
       text: dco_decode_String(arr[11]),
       marker: dco_decode_opt_String(arr[12]),
-      illusts: dco_decode_list_String(arr[13]),
+      illusts: dco_decode_list_webview_novel_embedded_work(arr[13]),
       images: dco_decode_list_webview_novel_image(arr[14]),
       seriesNavigation: dco_decode_opt_box_autoadd_novel_navigation_info(
         arr[15],
       ),
-      glossaryItems: dco_decode_list_String(arr[16]),
+      glossaryItems: dco_decode_list_webview_novel_glossary_item(arr[16]),
       replaceableItemIds: dco_decode_list_String(arr[17]),
       aiType: dco_decode_CastedPrimitive_i_64(arr[18]),
       isOriginal: dco_decode_bool(arr[19]),
+      language: dco_decode_opt_String(arr[20]),
+    );
+  }
+
+  @protected
+  WebviewNovelEmbeddedWork dco_decode_webview_novel_embedded_work(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = dcoDecodeList(raw);
+    if (arr.length != 12)
+      throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
+    return WebviewNovelEmbeddedWork(
+      key: dco_decode_String(arr[0]),
+      illustId: dco_decode_CastedPrimitive_u_64(arr[1]),
+      page: dco_decode_u_32(arr[2]),
+      visible: dco_decode_bool(arr[3]),
+      availableMessage: dco_decode_opt_String(arr[4]),
+      title: dco_decode_String(arr[5]),
+      xRestrict: dco_decode_i_32(arr[6]),
+      userId: dco_decode_String(arr[7]),
+      userName: dco_decode_String(arr[8]),
+      userImageUrl: dco_decode_opt_String(arr[9]),
+      imageMedium: dco_decode_opt_String(arr[10]),
+      imageOriginal: dco_decode_opt_String(arr[11]),
+    );
+  }
+
+  @protected
+  WebviewNovelGlossaryItem dco_decode_webview_novel_glossary_item(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = dcoDecodeList(raw);
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return WebviewNovelGlossaryItem(
+      id: dco_decode_String(arr[0]),
+      name: dco_decode_String(arr[1]),
+      overview: dco_decode_String(arr[2]),
+      coverImage: dco_decode_opt_String(arr[3]),
     );
   }
 
@@ -12373,6 +12402,34 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<WebviewNovelEmbeddedWork> sse_decode_list_webview_novel_embedded_work(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <WebviewNovelEmbeddedWork>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_webview_novel_embedded_work(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<WebviewNovelGlossaryItem> sse_decode_list_webview_novel_glossary_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <WebviewNovelGlossaryItem>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_webview_novel_glossary_item(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<WebviewNovelImage> sse_decode_list_webview_novel_image(
     SseDeserializer deserializer,
   ) {
@@ -12560,13 +12617,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_id = sse_decode_String(deserializer);
     var var_title = sse_decode_String(deserializer);
-    var var_userId = sse_decode_String(deserializer);
-    var var_userName = sse_decode_String(deserializer);
+    var var_coverUrl = sse_decode_opt_String(deserializer);
+    var var_contentOrder = sse_decode_opt_String(deserializer);
+    var var_viewable = sse_decode_bool(deserializer);
+    var var_viewableMessage = sse_decode_opt_String(deserializer);
     return NovelNavigationItem(
       id: var_id,
       title: var_title,
-      userId: var_userId,
-      userName: var_userName,
+      coverUrl: var_coverUrl,
+      contentOrder: var_contentOrder,
+      viewable: var_viewable,
+      viewableMessage: var_viewableMessage,
     );
   }
 
@@ -13701,15 +13762,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_rating = sse_decode_novel_rating(deserializer);
     var var_text = sse_decode_String(deserializer);
     var var_marker = sse_decode_opt_String(deserializer);
-    var var_illusts = sse_decode_list_String(deserializer);
+    var var_illusts = sse_decode_list_webview_novel_embedded_work(deserializer);
     var var_images = sse_decode_list_webview_novel_image(deserializer);
     var var_seriesNavigation = sse_decode_opt_box_autoadd_novel_navigation_info(
       deserializer,
     );
-    var var_glossaryItems = sse_decode_list_String(deserializer);
+    var var_glossaryItems = sse_decode_list_webview_novel_glossary_item(
+      deserializer,
+    );
     var var_replaceableItemIds = sse_decode_list_String(deserializer);
     var var_aiType = sse_decode_CastedPrimitive_i_64(deserializer);
     var var_isOriginal = sse_decode_bool(deserializer);
+    var var_language = sse_decode_opt_String(deserializer);
     return WebviewNovel(
       id: var_id,
       title: var_title,
@@ -13731,6 +13795,57 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       replaceableItemIds: var_replaceableItemIds,
       aiType: var_aiType,
       isOriginal: var_isOriginal,
+      language: var_language,
+    );
+  }
+
+  @protected
+  WebviewNovelEmbeddedWork sse_decode_webview_novel_embedded_work(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_key = sse_decode_String(deserializer);
+    var var_illustId = sse_decode_CastedPrimitive_u_64(deserializer);
+    var var_page = sse_decode_u_32(deserializer);
+    var var_visible = sse_decode_bool(deserializer);
+    var var_availableMessage = sse_decode_opt_String(deserializer);
+    var var_title = sse_decode_String(deserializer);
+    var var_xRestrict = sse_decode_i_32(deserializer);
+    var var_userId = sse_decode_String(deserializer);
+    var var_userName = sse_decode_String(deserializer);
+    var var_userImageUrl = sse_decode_opt_String(deserializer);
+    var var_imageMedium = sse_decode_opt_String(deserializer);
+    var var_imageOriginal = sse_decode_opt_String(deserializer);
+    return WebviewNovelEmbeddedWork(
+      key: var_key,
+      illustId: var_illustId,
+      page: var_page,
+      visible: var_visible,
+      availableMessage: var_availableMessage,
+      title: var_title,
+      xRestrict: var_xRestrict,
+      userId: var_userId,
+      userName: var_userName,
+      userImageUrl: var_userImageUrl,
+      imageMedium: var_imageMedium,
+      imageOriginal: var_imageOriginal,
+    );
+  }
+
+  @protected
+  WebviewNovelGlossaryItem sse_decode_webview_novel_glossary_item(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_overview = sse_decode_String(deserializer);
+    var var_coverImage = sse_decode_opt_String(deserializer);
+    return WebviewNovelGlossaryItem(
+      id: var_id,
+      name: var_name,
+      overview: var_overview,
+      coverImage: var_coverImage,
     );
   }
 
@@ -15576,6 +15691,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_webview_novel_embedded_work(
+    List<WebviewNovelEmbeddedWork> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_webview_novel_embedded_work(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_webview_novel_glossary_item(
+    List<WebviewNovelGlossaryItem> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_webview_novel_glossary_item(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_webview_novel_image(
     List<WebviewNovelImage> self,
     SseSerializer serializer,
@@ -15716,8 +15855,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.id, serializer);
     sse_encode_String(self.title, serializer);
-    sse_encode_String(self.userId, serializer);
-    sse_encode_String(self.userName, serializer);
+    sse_encode_opt_String(self.coverUrl, serializer);
+    sse_encode_opt_String(self.contentOrder, serializer);
+    sse_encode_bool(self.viewable, serializer);
+    sse_encode_opt_String(self.viewableMessage, serializer);
   }
 
   @protected
@@ -16659,16 +16800,49 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_novel_rating(self.rating, serializer);
     sse_encode_String(self.text, serializer);
     sse_encode_opt_String(self.marker, serializer);
-    sse_encode_list_String(self.illusts, serializer);
+    sse_encode_list_webview_novel_embedded_work(self.illusts, serializer);
     sse_encode_list_webview_novel_image(self.images, serializer);
     sse_encode_opt_box_autoadd_novel_navigation_info(
       self.seriesNavigation,
       serializer,
     );
-    sse_encode_list_String(self.glossaryItems, serializer);
+    sse_encode_list_webview_novel_glossary_item(self.glossaryItems, serializer);
     sse_encode_list_String(self.replaceableItemIds, serializer);
     sse_encode_CastedPrimitive_i_64(self.aiType, serializer);
     sse_encode_bool(self.isOriginal, serializer);
+    sse_encode_opt_String(self.language, serializer);
+  }
+
+  @protected
+  void sse_encode_webview_novel_embedded_work(
+    WebviewNovelEmbeddedWork self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.key, serializer);
+    sse_encode_CastedPrimitive_u_64(self.illustId, serializer);
+    sse_encode_u_32(self.page, serializer);
+    sse_encode_bool(self.visible, serializer);
+    sse_encode_opt_String(self.availableMessage, serializer);
+    sse_encode_String(self.title, serializer);
+    sse_encode_i_32(self.xRestrict, serializer);
+    sse_encode_String(self.userId, serializer);
+    sse_encode_String(self.userName, serializer);
+    sse_encode_opt_String(self.userImageUrl, serializer);
+    sse_encode_opt_String(self.imageMedium, serializer);
+    sse_encode_opt_String(self.imageOriginal, serializer);
+  }
+
+  @protected
+  void sse_encode_webview_novel_glossary_item(
+    WebviewNovelGlossaryItem self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.overview, serializer);
+    sse_encode_opt_String(self.coverImage, serializer);
   }
 
   @protected

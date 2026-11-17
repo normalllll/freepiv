@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
@@ -26,34 +24,11 @@ Map<String, String> novelEmbeddedImageUrls(WebviewNovel webviewNovel) => {
 };
 
 /// Pixiv works embedded with `[pixivimage:<id>]` or `[pixivimage:<id>-<page>]`,
-/// keyed like the marker. The webview reports them as one JSON object, which
-/// the bridge passes through as a string:
-/// `{"<key>": {"illust": {"images": {"original": …, "medium": …}}}}`.
-Map<String, String> novelEmbeddedWorkUrls(WebviewNovel webviewNovel) {
-  final urls = <String, String>{};
-  for (final raw in webviewNovel.illusts) {
-    final Object? decoded;
-    try {
-      decoded = jsonDecode(raw);
-    } on FormatException {
-      continue;
-    }
-    if (decoded is! Map<String, Object?>) continue;
-    for (final MapEntry(:key, :value) in decoded.entries) {
-      if (_bestWorkImageUrl(value) case final url?) urls[key] = url;
-    }
-  }
-  return urls;
-}
-
-String? _bestWorkImageUrl(Object? work) {
-  if (work case {'illust': {'images': final Map<String, Object?> images}} || {'images': final Map<String, Object?> images}) {
-    for (final size in const ['original', 'large', 'medium', 'small']) {
-      if (images[size] case final String url when _isImageUrl(url)) return url;
-    }
-  }
-  return null;
-}
+/// keyed like the marker.
+Map<String, String> novelEmbeddedWorkUrls(WebviewNovel webviewNovel) => {
+  for (final work in webviewNovel.illusts)
+    if (work.imageOriginal ?? work.imageMedium case final url? when _isImageUrl(url)) work.key: url,
+};
 
 List<String> novelExtraImageUrls(Novel novel, WebviewNovel? webviewNovel) {
   if (webviewNovel == null) return const [];
@@ -93,4 +68,33 @@ String? _bestNovelImageUrl(WebviewNovelImage image) {
 bool _isImageUrl(String value) {
   final uri = Uri.tryParse(value);
   return uri != null && (uri.scheme == 'http' || uri.scheme == 'https') && uri.host.isNotEmpty;
+}
+
+/// Image inside the text: 1200x1200, then 480mw, then the original.
+String? novelTextImageUrl(WebviewNovelImage image) {
+  final urls = image.urls;
+  return _firstImageUrl([urls.size1200X1200, urls.size480Mw, urls.original]);
+}
+
+/// Embedded Pixiv work inside the text: medium, then the original.
+String? novelEmbeddedWorkImageUrl(WebviewNovelEmbeddedWork work) => _firstImageUrl([work.imageMedium, work.imageOriginal]);
+
+/// Full-screen viewer: the original, then 1200x1200.
+String? novelViewerImageUrl(WebviewNovelImage image) {
+  final urls = image.urls;
+  return _firstImageUrl([urls.original, urls.size1200X1200]);
+}
+
+/// Detail page illustration strip: 240mw, then 480mw.
+String? novelStripImageUrl(WebviewNovelImage image) {
+  final urls = image.urls;
+  return _firstImageUrl([urls.size240Mw, urls.size480Mw]);
+}
+
+String? _firstImageUrl(List<String?> candidates) {
+  for (final candidate in candidates) {
+    final trimmed = candidate?.trim();
+    if (trimmed != null && _isImageUrl(trimmed)) return trimmed;
+  }
+  return null;
 }

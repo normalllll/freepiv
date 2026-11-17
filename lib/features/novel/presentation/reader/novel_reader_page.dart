@@ -16,12 +16,12 @@ import 'package:freepiv/core/platform/reader_volume_keys.dart';
 import 'package:freepiv/features/downloads/presentation/content_image_entries.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
 import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
-import 'package:freepiv/features/novel/domain/novel_text_parser.dart';
+import 'package:freepiv/features/novel/domain/novel_text.dart';
+import 'package:freepiv/features/novel/domain/reader_model.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_not_found_page.dart';
 import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
 import 'package:freepiv/features/novel/presentation/reader/novel_reading_session.dart';
-import 'package:freepiv/features/novel/presentation/reader/reader_model.dart';
 import 'package:freepiv/features/novel/presentation/reader/reader_scroll_clock.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/features/novel/logic/novel_marker_logic.dart';
@@ -113,6 +113,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   final _topBar = GlobalKey();
   final _blockKeys = <int, GlobalKey>{};
   late ReaderModel _model;
+  late Map<String, String> _imageUrls;
 
   late double _fontSize;
   late double _lineHeight;
@@ -142,7 +143,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   int get currentBlock => _block;
 
   /// The chapter being read.
-  ReaderChapter get currentChapter => _model.chapterOf(_block);
+  ReaderChapter get currentChapter => _model.chapters.lastWhere((chapter) => chapter.firstBlock <= _block, orElse: () => _model.chapters.first);
 
   bool get autoScrolling => _autoScrolling;
 
@@ -182,6 +183,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     pixivAccountNotifier.addListener(_accountChangedListener);
     appRootRouteActivity.addListener(_activityChanged);
     _scroll.addListener(_scrolled);
+    _imageUrls = novelEmbeddedImageUrls(widget.detail.webviewNovel);
     _model = _buildModel();
     _pending = novelReadingPosition(context, _novel.id);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -193,7 +195,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
 
   ReaderModel _buildModel() {
     final webview = widget.detail.webviewNovel;
-    return ReaderModel(parseNovelText(webview.text, imageUrls: novelEmbeddedImageUrls(webview)));
+    return ReaderModel(parseWebviewNovel(webview));
   }
 
   /// False while the reader is out of the tree (its route being removed
@@ -252,7 +254,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
 
   @override
   void didChangeMetrics() {
-    if (_model.isEmpty) return;
+    if (_model.blocks.isEmpty) return;
     _pause();
     _pending ??= _position();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -300,7 +302,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     final box = _box(_block);
     final offset = box == null ? null : _offsetOf(box);
     final fraction = box == null || offset == null || box.size.height <= 0 ? 0.0 : ((_scroll.offset + _textTop - offset) / box.size.height).clamp(0.0, 1.0);
-    final characters = novelTextBlockCharacterCount(_model.blocks.isEmpty ? const NovelTextPageBreak() : _model.blocks[_block]);
+    final characters = (_model.blocks.isEmpty ? 0 : _model.blocks[_block].length);
     return NovelReadingPosition(
       segmentIndex: currentChapter.index,
       textOffset: _model.offsetOf(_block) + (characters * fraction).round(),
@@ -316,19 +318,19 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   double _progress = 0;
 
   double _measureProgress() {
-    if (_model.totalCharacters == 0) return 0;
+    if (_model.totalLength == 0) return 0;
     if (_scroll.hasClients && _scroll.position.hasContentDimensions && _scroll.offset >= _scroll.position.maxScrollExtent - .5) return 1;
     final box = _box(_block);
     final offset = box == null ? null : _offsetOf(box);
     final fraction = box == null || offset == null || box.size.height <= 0 || !_scroll.hasClients
         ? 0.0
         : ((_scroll.offset + _textTop - offset) / box.size.height).clamp(0.0, 1.0);
-    final characters = novelTextBlockCharacterCount(_model.blocks[_block]);
-    return ((_model.offsetOf(_block) + characters * fraction) / _model.totalCharacters).clamp(0.0, 1.0);
+    final characters = _model.blocks[_block].length;
+    return ((_model.offsetOf(_block) + characters * fraction) / _model.totalLength).clamp(0.0, 1.0);
   }
 
   void _save() {
-    if (_model.isEmpty) return;
+    if (_model.blocks.isEmpty) return;
     final position = _pending ?? _position();
     novelReadingSessions.writeState(context, position, identifier: novelReadingSessionKey(_novel.id, accountId: _sessionAccount));
   }
@@ -336,7 +338,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   void _restore() {
     final saved = _pending;
     if (saved == null) return;
-    final block = saved.blockIndex >= 0 && saved.blockIndex < _model.blocks.length ? saved.blockIndex : _model.blockAtOffset(saved.textOffset);
+    final block = saved.blockIndex >= 0 && saved.blockIndex < _model.blocks.length ? saved.blockIndex : _model.blockAt(saved.textOffset);
     _jumpToBlock(block, fraction: saved.blockFraction, then: () => _pending = null);
   }
 
@@ -361,7 +363,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
       then?.call();
       return;
     }
-    final share = _model.totalCharacters == 0 ? block / math.max(1, _model.blocks.length) : _model.offsetOf(block) / _model.totalCharacters;
+    final share = _model.totalLength == 0 ? block / math.max(1, _model.blocks.length) : _model.offsetOf(block) / _model.totalLength;
     _scroll.jumpTo((position.maxScrollExtent * share).clamp(position.minScrollExtent, position.maxScrollExtent));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _jumpToBlock(block, fraction: fraction, then: then, attempts: attempts - 1);
@@ -388,7 +390,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
 
   void _goToMarker(int page) {
     _pause();
-    _jumpToBlock(_model.firstBlockOfPage(page));
+    _jumpToBlock(_model.blockAt(_model.offsetOfPage(page)));
   }
 
   /// The reading bookmark on Pixiv: one press sets it at the section being
@@ -403,13 +405,16 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
         key: const ValueKey('reader-marker'),
         icon: PivIcons.bookOpen,
         label: t.markerSet,
-        onPressed: usable ? () => unawaited(_changeMarker((marker) => marker.set(_model.pageOf(_block)))) : null,
+        onPressed: usable ? () => unawaited(_changeMarker((marker) => marker.set(_model.pageOf(_model.offsetOf(_block))))) : null,
       );
     }
     return FrostMenuAnchor(
       entries: [
         FrostMenuAction(t.markerJump(page: page), onSelected: usable ? () => _goToMarker(page) : null),
-        FrostMenuAction(t.markerUpdate, onSelected: usable ? () => unawaited(_changeMarker((marker) => marker.set(_model.pageOf(_block)))) : null),
+        FrostMenuAction(
+          t.markerUpdate,
+          onSelected: usable ? () => unawaited(_changeMarker((marker) => marker.set(_model.pageOf(_model.offsetOf(_block))))) : null,
+        ),
         FrostMenuAction(t.markerRemove, destructive: true, onSelected: usable ? () => unawaited(_changeMarker((marker) => marker.remove())) : null),
       ],
       builder: (context, focusNode, toggle) => FrostButton.icon(
@@ -425,9 +430,9 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   /// Moves to the place [value] of the way through the text.
   void _jumpToProgress(double value) {
     _pause();
-    final target = value * _model.totalCharacters;
-    final block = _model.blockAtOffset(target.floor());
-    final characters = novelTextBlockCharacterCount(_model.blocks[block]);
+    final target = value * _model.totalLength;
+    final block = _model.blockAt(target.floor());
+    final characters = _model.blocks[block].length;
     final fraction = characters == 0 ? 0.0 : ((target - _model.offsetOf(block)) / characters).clamp(0.0, 1.0);
     _jumpToBlock(block, fraction: fraction);
   }
@@ -468,7 +473,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   void _toggleAutoScroll() {
     if (_autoScrolling) {
       _pause();
-    } else if (_controlsEligible && !_model.isEmpty) {
+    } else if (_controlsEligible && _model.blocks.isNotEmpty) {
       _clock.reset();
       setState(() => _autoScrolling = true);
       _ticker.start();
@@ -590,7 +595,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     final enabled = !_accountChanged;
     final chapters = _model.chapters;
     final chapter = chapters.isEmpty ? null : currentChapter;
-    final body = _model.isEmpty
+    final body = _model.blocks.isEmpty
         ? Center(
             child: FrostEmptyState(icon: PivIcons.bookOpen, title: t.novel.reader.emptyBody),
           )
@@ -618,7 +623,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
                         itemCount: _model.blocks.length,
                         itemBuilder: (context, index) => KeyedSubtree(
                           key: _blockKeys.putIfAbsent(index, GlobalKey.new),
-                          child: _ReaderBlock(block: _model.blocks[index], typesetting: typesetting, first: index == 0, novel: _novel),
+                          child: _ReaderBlock(block: _model.blocks[index], typesetting: typesetting, first: index == 0, novel: _novel, imageUrls: _imageUrls),
                         ),
                       ),
                     ),
@@ -725,7 +730,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
                     icon: _autoScrolling ? PivIcons.pause : PivIcons.play,
                     label: _autoScrolling ? t.novel.reader.pauseAutoScroll : t.novel.reader.startAutoScroll,
                     selected: _autoScrolling,
-                    onPressed: enabled && !_model.isEmpty ? _toggleAutoScroll : null,
+                    onPressed: enabled && _model.blocks.isNotEmpty ? _toggleAutoScroll : null,
                   ),
                 ],
               ),
@@ -847,67 +852,92 @@ class _Bar extends StatelessWidget {
 /// One block of the text: a paragraph, a chapter title, a page break or an
 /// illustration (or the way to the work it shows).
 class _ReaderBlock extends ConsumerWidget {
-  const _ReaderBlock({required this.block, required this.typesetting, required this.first, required this.novel});
+  const _ReaderBlock({required this.block, required this.typesetting, required this.first, required this.novel, required this.imageUrls});
 
-  final NovelTextBlock block;
+  final NovelBlock block;
   final ReaderTypesetting typesetting;
   final bool first;
   final Novel novel;
+
+  /// Image addresses keyed by the marker payload.
+  final Map<String, String> imageUrls;
 
   /// Illustrations keep this shape until theirs is known.
   static const _imageRatio = 4 / 3;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final t = context.t;
     return switch (block) {
-      NovelTextParagraph(:final text) => ReaderParagraph(text: text, typesetting: typesetting),
-      NovelTextChapter(:final title) => ReaderChapterTitle(title: title, typesetting: typesetting, first: first),
+      // Until the layout draws spans itself, a line reads as its text.
+      NovelLine(:final spans) => ReaderParagraph(text: _lineText(spans), typesetting: typesetting),
+      NovelChapterTitle(:final title) => ReaderChapterTitle(title: title, typesetting: typesetting, first: first),
       // The paragraph above already ends with the gap.
-      NovelTextPageBreak() => Padding(
+      NovelPageBreak() => Padding(
         padding: EdgeInsets.only(bottom: typesetting.paragraphGap),
         child: const FrostDivider(),
       ),
-      // Taps on an illustration or its button act on it, not on the bars.
-      NovelTextImage(:final id, :final isPixivWork, :final url) => _KeepsBars(
-        child: Padding(
-          padding: EdgeInsets.only(bottom: typesetting.paragraphGap),
-          child: switch ((url, isPixivWork ? int.tryParse(id.split('-').first) : null)) {
-            (final url?, _) => FrostContextMenuRegion(
-              entries: contentImageMenu(context, ref.read(rustMediaTransportProvider), url: url, title: novel.title),
-              child: Semantics(
-                button: true,
-                image: true,
-                label: t.novel.detail.images,
-                child: FrostClickSurface(
-                  shape: FrostClickShape.rounded(BorderRadius.circular(FrostRadius.lg)),
-                  onTap: () => unawaited(
-                    GoRouter.of(context).push(
-                      AppRoute.originalImageViewer.path,
-                      extra: OriginalImageViewerArgs(
-                        title: novel.title,
-                        source: DownloadSourceScope.of(context),
-                        pages: [OriginalImagePage(url: url, previewUrl: url, downloadOrigin: DownloadOrigin.ofImageUrl(Uri.parse(url)))],
-                      ),
+      NovelUploadedImage(:final id) => _illustration(context, ref, imageUrls[id], null),
+      NovelEmbeddedWork(:final key, :final illustId) => _illustration(context, ref, imageUrls[key], illustId),
+    };
+  }
+
+  static String _lineText(List<NovelInline> spans) {
+    final text = StringBuffer();
+    for (final span in spans) {
+      switch (span) {
+        case NovelPlain(text: final value) || NovelLink(text: final value):
+          text.write(value);
+        case NovelRuby(:final base):
+          text.write(base);
+        case NovelPageJump():
+          break;
+      }
+    }
+    return text.toString();
+  }
+
+  /// An illustration, or the way to the work [illustId] when it has no image
+  /// address. Taps on either act on it, not on the bars.
+  Widget _illustration(BuildContext context, WidgetRef ref, String? url, int? illustId) {
+    final t = context.t;
+    return _KeepsBars(
+      child: Padding(
+        padding: EdgeInsets.only(bottom: typesetting.paragraphGap),
+        child: switch ((url, illustId)) {
+          (final url?, _) => FrostContextMenuRegion(
+            entries: contentImageMenu(context, ref.read(rustMediaTransportProvider), url: url, title: novel.title),
+            child: Semantics(
+              button: true,
+              image: true,
+              label: t.novel.detail.images,
+              child: FrostClickSurface(
+                shape: FrostClickShape.rounded(BorderRadius.circular(FrostRadius.lg)),
+                onTap: () => unawaited(
+                  GoRouter.of(context).push(
+                    AppRoute.originalImageViewer.path,
+                    extra: OriginalImageViewerArgs(
+                      title: novel.title,
+                      source: DownloadSourceScope.of(context),
+                      pages: [OriginalImagePage(url: url, previewUrl: url, downloadOrigin: DownloadOrigin.ofImageUrl(Uri.parse(url)))],
                     ),
                   ),
-                  child: AppPixivImage(url: url, aspectRatio: _imageRatio, fit: BoxFit.contain),
                 ),
+                child: AppPixivImage(url: url, aspectRatio: _imageRatio, fit: BoxFit.contain),
               ),
             ),
-            (null, final work?) => Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: FrostButton.outlined(
-                label: t.novel.reader.openEmbeddedWork,
-                icon: PivIcons.externalLink,
-                onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.illust(work))),
-              ),
+          ),
+          (null, final work?) => Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: FrostButton.outlined(
+              label: t.novel.reader.openEmbeddedWork,
+              icon: PivIcons.externalLink,
+              onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.illust(work))),
             ),
-            _ => FrostText(t.novel.reader.embeddedImageUnavailable, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
-          },
-        ),
+          ),
+          _ => FrostText(t.novel.reader.embeddedImageUnavailable, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
+        },
       ),
-    };
+    );
   }
 }
 

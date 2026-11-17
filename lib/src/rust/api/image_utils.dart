@@ -4,11 +4,12 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'image_utils.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `clamp_crop`, `decode_error`, `decode_oriented`, `encode_jpeg_within`, `encode_jpeg`, `flatten_on_white`
+// These functions are ignored because they are not marked as `pub`: `clamp_crop`, `crop_to_square`, `decode_error`, `decode_oriented`, `eight_bit_rgb_or_rgba`, `encode_jpeg_within`, `encode_jpeg`, `flatten_on_white`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `fmt`, `fmt`, `fmt`, `fmt`, `from`, `source`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<GifError>>

@@ -1885,31 +1885,16 @@ class Translations$novel$reader$en_US {
 
 	// Translations
 	String get title => 'Reading';
-	String get body => 'Body';
-	String get chapters => 'Chapters';
 	String get settings => 'Reading settings';
 	String get emptyBody => 'No body text';
 	String get embeddedImageUnavailable => 'This image is unavailable';
 	String get openEmbeddedWork => 'Open linked artwork';
-	String totalChars({required Object count}) => '${count} chars';
-	String pagePosition({required Object current, required Object total}) => '${current} / ${total} pages';
-	String pageTotal({required Object total}) => '${total} pages';
-	String currentPage({required Object page}) => 'Page ${page}';
 	String get readingProgress => 'Reading progress';
-	String get previousPage => 'Previous page';
-	String get nextPage => 'Next page';
-	String get display => 'Display';
 	String get fontSize => 'Font size';
 	String get lineHeight => 'Line height';
-	String get noChapterMarkers => 'No chapter markers';
-	String get close => 'Close';
-	String get decrease => 'Decrease';
-	String get increase => 'Increase';
-	String get shortcutsTitle => 'Shortcuts';
 	String get shortcutsHelp => 'Left/Right or A/D: previous/next chapter. Up/Down or W/S: scroll. Esc: clear the selection, then close.';
 	String get volumeKeys => 'Use volume keys';
 	String get volumeKeysHelp => 'Volume down reads forward; volume up reads back.';
-	String get autoScroll => 'Auto scroll';
 	String get startAutoScroll => 'Start auto scroll';
 	String get pauseAutoScroll => 'Pause auto scroll';
 	String get autoScrollSpeed => 'Scroll speed';
@@ -2570,31 +2555,16 @@ extension on Translations {
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} paragraphs',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} pages',
 			'novel.reader.title' => 'Reading',
-			'novel.reader.body' => 'Body',
-			'novel.reader.chapters' => 'Chapters',
 			'novel.reader.settings' => 'Reading settings',
 			'novel.reader.emptyBody' => 'No body text',
 			'novel.reader.embeddedImageUnavailable' => 'This image is unavailable',
 			'novel.reader.openEmbeddedWork' => 'Open linked artwork',
-			'novel.reader.totalChars' => ({required Object count}) => '${count} chars',
-			'novel.reader.pagePosition' => ({required Object current, required Object total}) => '${current} / ${total} pages',
-			'novel.reader.pageTotal' => ({required Object total}) => '${total} pages',
-			'novel.reader.currentPage' => ({required Object page}) => 'Page ${page}',
 			'novel.reader.readingProgress' => 'Reading progress',
-			'novel.reader.previousPage' => 'Previous page',
-			'novel.reader.nextPage' => 'Next page',
-			'novel.reader.display' => 'Display',
 			'novel.reader.fontSize' => 'Font size',
 			'novel.reader.lineHeight' => 'Line height',
-			'novel.reader.noChapterMarkers' => 'No chapter markers',
-			'novel.reader.close' => 'Close',
-			'novel.reader.decrease' => 'Decrease',
-			'novel.reader.increase' => 'Increase',
-			'novel.reader.shortcutsTitle' => 'Shortcuts',
 			'novel.reader.shortcutsHelp' => 'Left/Right or A/D: previous/next chapter. Up/Down or W/S: scroll. Esc: clear the selection, then close.',
 			'novel.reader.volumeKeys' => 'Use volume keys',
 			'novel.reader.volumeKeysHelp' => 'Volume down reads forward; volume up reads back.',
-			'novel.reader.autoScroll' => 'Auto scroll',
 			'novel.reader.startAutoScroll' => 'Start auto scroll',
 			'novel.reader.pauseAutoScroll' => 'Pause auto scroll',
 			'novel.reader.autoScrollSpeed' => 'Scroll speed',

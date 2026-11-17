@@ -7,12 +7,12 @@ import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/me/logic/account_edit_logic.dart';
 import 'package:freepiv/features/me/presentation/account_edit_pages.dart';
 import 'package:freepiv/features/me/presentation/following_page.dart';
-import 'package:freepiv/features/novel/domain/novel_text_parser.dart';
+import 'package:freepiv/features/novel/domain/novel_text.dart';
+import 'package:freepiv/features/novel/domain/reader_model.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/novel/logic/novel_marker_logic.dart';
 import 'package:freepiv/features/novel/presentation/detail/novel_detail_page.dart';
 import 'package:freepiv/features/novel/presentation/reader/novel_reader_page.dart';
-import 'package:freepiv/features/novel/presentation/reader/reader_model.dart';
 import 'package:freepiv/features/series/series_page.dart';
 import 'package:freepiv/features/series/series_widgets.dart';
 import 'package:freepiv/features/series/watchlist_page.dart';
@@ -443,10 +443,9 @@ void main() {
       final model = ReaderModel(parseNovelText(_sectioned));
       expect(model.pageCount, 3);
       expect(model.pageOf(0), 1);
-      final second = model.firstBlockOfPage(2);
-      expect(model.pageOf(second), 2);
-      expect(model.pageOf(model.firstBlockOfPage(3)), 3);
-      expect(model.pageOf(model.firstBlockOfPage(99)), 3, reason: 'a bookmark past the end stays in the text');
+      expect(model.pageOf(model.offsetOfPage(2)), 2);
+      expect(model.pageOf(model.offsetOfPage(3)), 3);
+      expect(model.pageOf(model.offsetOfPage(99)), 3, reason: 'a bookmark past the end stays in the text');
     });
 
     test('the marker is read from its JSON', () {

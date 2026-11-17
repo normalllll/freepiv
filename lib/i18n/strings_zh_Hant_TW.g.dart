@@ -1883,31 +1883,16 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 
 	// Translations
 	@override String get title => '閱讀';
-	@override String get body => '正文';
-	@override String get chapters => '章節';
 	@override String get settings => '閱讀設定';
 	@override String get emptyBody => '正文為空';
 	@override String get embeddedImageUnavailable => '圖片暫時無法顯示';
 	@override String get openEmbeddedWork => '開啟關聯作品';
-	@override String totalChars({required Object count}) => '共 ${count} 字';
-	@override String pagePosition({required Object current, required Object total}) => '${current} / ${total} 頁';
-	@override String pageTotal({required Object total}) => '${total} 頁';
-	@override String currentPage({required Object page}) => '第 ${page} 頁';
 	@override String get readingProgress => '閱讀進度';
-	@override String get previousPage => '上一頁';
-	@override String get nextPage => '下一頁';
-	@override String get display => '顯示';
 	@override String get fontSize => '字號';
 	@override String get lineHeight => '行距';
-	@override String get noChapterMarkers => '沒有章節標記';
-	@override String get close => '關閉';
-	@override String get decrease => '減小';
-	@override String get increase => '增大';
-	@override String get shortcutsTitle => '快捷鍵';
 	@override String get shortcutsHelp => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：捲動。Esc：先清除選取，再離開。';
 	@override String get volumeKeys => '音量鍵翻讀';
 	@override String get volumeKeysHelp => '音量減向後翻讀，音量加向前翻讀。';
-	@override String get autoScroll => '自動捲動';
 	@override String get startAutoScroll => '開始自動捲動';
 	@override String get pauseAutoScroll => '暫停自動捲動';
 	@override String get autoScrollSpeed => '捲動速度';
@@ -2568,31 +2553,16 @@ extension on TranslationsZhHantTw {
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} 段',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} 頁',
 			'novel.reader.title' => '閱讀',
-			'novel.reader.body' => '正文',
-			'novel.reader.chapters' => '章節',
 			'novel.reader.settings' => '閱讀設定',
 			'novel.reader.emptyBody' => '正文為空',
 			'novel.reader.embeddedImageUnavailable' => '圖片暫時無法顯示',
 			'novel.reader.openEmbeddedWork' => '開啟關聯作品',
-			'novel.reader.totalChars' => ({required Object count}) => '共 ${count} 字',
-			'novel.reader.pagePosition' => ({required Object current, required Object total}) => '${current} / ${total} 頁',
-			'novel.reader.pageTotal' => ({required Object total}) => '${total} 頁',
-			'novel.reader.currentPage' => ({required Object page}) => '第 ${page} 頁',
 			'novel.reader.readingProgress' => '閱讀進度',
-			'novel.reader.previousPage' => '上一頁',
-			'novel.reader.nextPage' => '下一頁',
-			'novel.reader.display' => '顯示',
 			'novel.reader.fontSize' => '字號',
 			'novel.reader.lineHeight' => '行距',
-			'novel.reader.noChapterMarkers' => '沒有章節標記',
-			'novel.reader.close' => '關閉',
-			'novel.reader.decrease' => '減小',
-			'novel.reader.increase' => '增大',
-			'novel.reader.shortcutsTitle' => '快捷鍵',
 			'novel.reader.shortcutsHelp' => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：捲動。Esc：先清除選取，再離開。',
 			'novel.reader.volumeKeys' => '音量鍵翻讀',
 			'novel.reader.volumeKeysHelp' => '音量減向後翻讀，音量加向前翻讀。',
-			'novel.reader.autoScroll' => '自動捲動',
 			'novel.reader.startAutoScroll' => '開始自動捲動',
 			'novel.reader.pauseAutoScroll' => '暫停自動捲動',
 			'novel.reader.autoScrollSpeed' => '捲動速度',

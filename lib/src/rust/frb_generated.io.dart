@@ -9,11 +9,15 @@ import 'api/image_utils.dart';
 import 'api/media.dart';
 import 'api/proxy.dart';
 import 'api/zip_utils.dart';
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
+
 import 'frb_generated.dart';
+
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
+
 import 'third_party/pixiv_rs/error.dart';
 import 'third_party/pixiv_rs/fanbox.dart';
 import 'third_party/pixiv_rs/pixiv/api.dart';
@@ -619,6 +623,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<WatchlistSeries> dco_decode_list_watchlist_series(dynamic raw);
 
   @protected
+  List<WebviewNovelEmbeddedWork> dco_decode_list_webview_novel_embedded_work(
+    dynamic raw,
+  );
+
+  @protected
+  List<WebviewNovelGlossaryItem> dco_decode_list_webview_novel_glossary_item(
+    dynamic raw,
+  );
+
+  @protected
   List<WebviewNovelImage> dco_decode_list_webview_novel_image(dynamic raw);
 
   @protected
@@ -920,6 +934,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   WebviewNovel dco_decode_webview_novel(dynamic raw);
+
+  @protected
+  WebviewNovelEmbeddedWork dco_decode_webview_novel_embedded_work(dynamic raw);
+
+  @protected
+  WebviewNovelGlossaryItem dco_decode_webview_novel_glossary_item(dynamic raw);
 
   @protected
   WebviewNovelImage dco_decode_webview_novel_image(dynamic raw);
@@ -1602,6 +1622,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<WebviewNovelEmbeddedWork> sse_decode_list_webview_novel_embedded_work(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<WebviewNovelGlossaryItem> sse_decode_list_webview_novel_glossary_item(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<WebviewNovelImage> sse_decode_list_webview_novel_image(
     SseDeserializer deserializer,
   );
@@ -1963,6 +1993,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   WebviewNovel sse_decode_webview_novel(SseDeserializer deserializer);
+
+  @protected
+  WebviewNovelEmbeddedWork sse_decode_webview_novel_embedded_work(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  WebviewNovelGlossaryItem sse_decode_webview_novel_glossary_item(
+    SseDeserializer deserializer,
+  );
 
   @protected
   WebviewNovelImage sse_decode_webview_novel_image(
@@ -2803,6 +2843,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_webview_novel_embedded_work(
+    List<WebviewNovelEmbeddedWork> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_webview_novel_glossary_item(
+    List<WebviewNovelGlossaryItem> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_webview_novel_image(
     List<WebviewNovelImage> self,
     SseSerializer serializer,
@@ -3257,6 +3309,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_webview_novel(WebviewNovel self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_webview_novel_embedded_work(
+    WebviewNovelEmbeddedWork self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_webview_novel_glossary_item(
+    WebviewNovelGlossaryItem self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_webview_novel_image(
