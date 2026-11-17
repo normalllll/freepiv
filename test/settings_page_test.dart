@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -174,9 +175,36 @@ void main() {
     await tester.tap(find.byWidgetPredicate((widget) => widget is FrostColorSwatch && widget.label == t.settings.theme.custom));
     await settlePilot(tester, frames: 6);
     final hex = find.descendant(of: find.byType(FrostDialog), matching: find.byType(EditableText));
+    expect(find.text(t.settings.theme.invalidHex).hitTestable(), findsNothing);
     await tester.enterText(hex, '#12');
     await settlePilot(tester, frames: 2);
-    expect(find.text(t.settings.theme.invalidHex), findsOneWidget);
+    expect(find.text(t.settings.theme.invalidHex).hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('the custom editor keeps its sliders in place while a drag passes through a rejected colour', (tester) async {
+    await mountPilotPage(tester, const SettingsPage());
+    await tester.tap(find.byWidgetPredicate((widget) => widget is FrostColorSwatch && widget.label == t.settings.theme.custom));
+    await settlePilot(tester, frames: 30);
+    final hue = find.descendant(of: find.byType(FrostDialog), matching: find.byType(FrostSlider)).first;
+    final rejected = find
+        .byWidgetPredicate((widget) => widget is FrostText && (widget.data == t.settings.theme.rejectedLight || widget.data == t.settings.theme.rejectedDark))
+        .hitTestable();
+    final home = tester.getRect(hue);
+    expect(rejected, findsNothing);
+
+    final start = Offset(home.right - 40, home.top + home.height / 2);
+    final mouse = await tester.startGesture(start, kind: PointerDeviceKind.mouse);
+    await tester.pump();
+    for (final step in [Offset(-120, 150), Offset(home.center.dx - start.dx, 0), Offset(home.center.dx - start.dx, -150), Offset.zero]) {
+      await mouse.moveTo(start + step);
+      await settlePilot(tester, frames: 4);
+      expect(tester.getRect(hue), home, reason: 'the hue slider stays put with the pointer at $step');
+      if (step.dy == 0 && step.dx != 0) expect(rejected, findsOneWidget, reason: 'the middle of the hues is rejected here');
+    }
+    await mouse.up();
+    await settlePilot(tester);
+    expect(rejected, findsNothing);
+    expect(tester.getRect(hue), home);
   });
 
   group('accounts section', () {

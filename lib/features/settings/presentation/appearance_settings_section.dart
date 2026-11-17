@@ -173,17 +173,24 @@ class _CustomAccentEditorState extends ConsumerState<_CustomAccentEditor> {
     final rejected = validation.severity == FrostAccentSeverity.rejected;
     final warning = validation.severity == FrostAccentSeverity.warning;
     final light = widget.brightness == Brightness.light;
+    final rejectedMessage = light ? labels.rejectedLight : labels.rejectedDark;
+    final message = !_validHex
+        ? labels.invalidHex
+        : rejected
+        ? rejectedMessage
+        : _error ?? (warning ? labels.weakContrast : null);
     return FrostDialog(
       title: light ? labels.editLightAccent : labels.editDarkAccent,
-      leadingAction: rejected
-          ? FrostDialogAction(
-              label: labels.useDefault,
-              onPressed: () {
-                _setHsv(HSVColor.fromColor(freepivFrostConfig.palettes.defaultAccent(widget.brightness)));
-                return false;
-              },
-            )
-          : null,
+      // Always present, so the dialog keeps its size as the colour moves
+      // between accepted and rejected.
+      leadingAction: FrostDialogAction(
+        label: labels.useDefault,
+        enabled: rejected,
+        onPressed: () {
+          _setHsv(HSVColor.fromColor(freepivFrostConfig.palettes.defaultAccent(widget.brightness)));
+          return false;
+        },
+      ),
       actions: [
         FrostDialogAction(label: t.common.cancel, role: FrostButtonRole.cancel),
         FrostDialogAction(
@@ -220,14 +227,24 @@ class _CustomAccentEditorState extends ConsumerState<_CustomAccentEditor> {
                 FrostSlider(value: value, max: max, semanticLabel: label, onChanged: _saving ? null : (value) => _setHsv(change(value))),
               ],
             ),
-          FrostTextField(
-            controller: _hex,
-            label: labels.hex,
-            error: _validHex ? (rejected ? (light ? labels.rejectedLight : labels.rejectedDark) : null) : labels.invalidHex,
-            onChanged: _setHex,
+          FrostTextField(controller: _hex, label: labels.hex, onChanged: _setHex),
+          // The dialog is centred, so a message that came and went while a
+          // slider is dragged would move the sliders under the pointer. Every
+          // message is laid out unseen and the slot is as tall as the tallest.
+          Stack(
+            children: [
+              for (final candidate in [labels.invalidHex, rejectedMessage, labels.saveFailed, labels.weakContrast])
+                Visibility(
+                  visible: false,
+                  maintainSize: true,
+                  maintainAnimation: true,
+                  maintainState: true,
+                  child: FrostText(candidate, role: FrostTextRole.footnote),
+                ),
+              if (message != null)
+                FrostText(message, role: FrostTextRole.footnote, tone: message == labels.weakContrast ? FrostTextTone.secondary : FrostTextTone.negative),
+            ],
           ),
-          if (warning) FrostText(labels.weakContrast, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
-          if (_error case final error?) FrostText(error, role: FrostTextRole.footnote),
         ],
       ),
     );
