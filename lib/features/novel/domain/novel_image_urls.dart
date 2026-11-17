@@ -1,3 +1,4 @@
+import 'package:freepiv/core/services/app_settings.dart' show PreviewImageQuality;
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 
@@ -70,10 +71,27 @@ bool _isImageUrl(String value) {
   return uri != null && (uri.scheme == 'http' || uri.scheme == 'https') && uri.host.isNotEmpty;
 }
 
-/// Image inside the text: 1200x1200, then 480mw, then the original.
-String? novelTextImageUrl(WebviewNovelImage image) {
+/// Image inside the text, by the preview quality: medium is 480mw and large
+/// 1200x1200, each falling back to the other and then to the original.
+String? novelTextImageUrl(WebviewNovelImage image, PreviewImageQuality quality) {
   final urls = image.urls;
-  return _firstImageUrl([urls.size1200X1200, urls.size480Mw, urls.original]);
+  return _firstImageUrl(switch (quality) {
+    PreviewImageQuality.medium => [urls.size480Mw, urls.size1200X1200, urls.original],
+    PreviewImageQuality.large => [urls.size1200X1200, urls.size480Mw, urls.original],
+  });
+}
+
+/// What shows in an image's place until its [novelTextImageUrl] has loaded:
+/// the small picture, which the strip and the illustrations panel have
+/// usually fetched already.
+String? novelTextPlaceholderUrl(WebviewNovelImage image) => novelStripImageUrl(image);
+
+/// The key an uploaded picture's size is remembered under. It is one variant
+/// picked the same way whatever the quality setting, so every place that
+/// shows the picture, at any size, finds the one ratio.
+String? novelImageSizeKey(WebviewNovelImage image) {
+  final urls = image.urls;
+  return _firstImageUrl([urls.size1200X1200, urls.size480Mw, urls.original, urls.size240Mw]);
 }
 
 /// Embedded Pixiv work inside the text: medium, then the original.

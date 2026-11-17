@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/core/history/history_repository.dart';
 import 'package:freepiv/core/history/history_service.dart';
+import 'package:freepiv/core/media/image_size_store.dart';
 
 import 'support/memory_history.dart';
 import 'support/pilot_harness.dart';
@@ -61,5 +62,28 @@ void main() {
     await reopen(tester, size, readerScrollSettings);
     final top = readerState(tester).layout!.pixelOfOffset(inside);
     expect(position(tester).pixels, closeTo(top, 0.5), reason: 'the line alone');
+  });
+  testWidgets('a reading line inside a picture reopens inside it', (tester) async {
+    const size = Size(390, 800);
+    final body = [for (var i = 0; i < 3; i++) '$readerParagraph a$i', '[uploadedimage:1]', for (var i = 0; i < 20; i++) '$readerParagraph b$i'].join('\n\n');
+    final text = readerText(body);
+    // The picture's size is known to the second opening, as it is on a device.
+    final sizes = {imageSizeStoreProvider: imageSizeStoreProvider.overrideWithValue(MemoryImageSizeStore())};
+    await mountReader(tester, history, text: text, size: size, overrides: sizes);
+    final layout = readerState(tester).layout!;
+    final controller = readerController(tester);
+    final block = layout.model.imageBlocks.single;
+    final offset = layout.model.offsetOf(block);
+    final pixel = layout.pixelOfPosition(offset, 0.6);
+    expect(pixel, greaterThan(layout.topOf(block) + 10), reason: 'well inside the picture');
+    position(tester).jumpTo(pixel);
+    await settlePilot(tester);
+    expect(controller.depth, closeTo(0.6, 0.02));
+    await controller.saveNow();
+
+    await tester.pumpWidget(const SizedBox());
+    await readerStorageIdle(tester);
+    await mountReader(tester, history, text: text, size: size, overrides: sizes);
+    expect(position(tester).pixels, closeTo(pixel, 0.5), reason: 'the same pixel inside the picture');
   });
 }

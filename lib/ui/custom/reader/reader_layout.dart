@@ -290,8 +290,15 @@ class ReaderLayout extends ChangeNotifier {
     if (source is! NovelUploadedImage) return 0;
     // Same rule as the store: an unusable size would poison the extents.
     if (!size.width.isFinite || !size.height.isFinite || size.width <= 0 || size.height <= 0) return 0;
-    final url = source.image == null ? null : novelTextImageUrl(source.image!);
-    if (url != null) _sizes.record(url, size);
+    final key = source.image == null ? null : novelImageSizeKey(source.image!);
+    // A size of the shape already known (a variant's rounding, the same
+    // picture again) leaves the frame as it is.
+    final known = _imageSizes[block] ?? (key == null ? null : _sizes.sizeOf(key));
+    if (known != null && ((size.width / size.height) / (known.width / known.height) - 1).abs() < 0.01) {
+      _imageSizes[block] ??= known;
+      return 0;
+    }
+    if (key != null) _sizes.record(key, size);
     _imageSizes[block] = size;
     final metrics = _fixedMetrics(block, source);
     _metrics[block] = metrics;
@@ -379,8 +386,8 @@ class ReaderLayout extends ChangeNotifier {
   }
 
   Size _imageSizeOf(int index, NovelUploadedImage block) {
-    final url = block.image == null ? null : novelTextImageUrl(block.image!);
-    return _imageSizes[index] ?? (url == null ? null : _sizes.sizeOf(url)) ?? novelImageFallbackSize;
+    final key = block.image == null ? null : novelImageSizeKey(block.image!);
+    return _imageSizes[index] ?? (key == null ? null : _sizes.sizeOf(key)) ?? novelImageFallbackSize;
   }
 
   /// How wide the picture in [block] is drawn: the column, or less when the

@@ -132,7 +132,8 @@ void main() {
           expect(readerController(tester).atEnd, isTrue);
           expect(readerController(tester).progress, 1.0);
           if (name == 'paged') {
-            expect(tester.state<ReaderPagedViewState>(find.byType(ReaderPagedView)).showsEnd, isTrue);
+            final view = tester.state<ReaderPagedViewState>(find.byType(ReaderPagedView));
+            expect(view.showsEnd, !view.endCardOnLastPage, reason: 'the page holding the card');
           } else {
             expect(position(tester).pixels, closeTo(position(tester).maxScrollExtent, .5));
           }

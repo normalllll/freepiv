@@ -1,9 +1,12 @@
-import 'package:flutter/foundation.dart' show Uint8List;
+import 'dart:ui' show ImageFilter;
+
+import 'package:flutter/foundation.dart' show Uint8List, setEquals;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_media_cache/flutter_media_cache.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/core/media/logic.dart';
+import 'package:freepiv/core/media/media_header_sizes.dart';
 import 'package:freepiv/core/media/rust_media_source.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/ui/compositions/skeletons.dart';
@@ -42,6 +45,11 @@ ImageProvider pixivImageProvider(
   decodeFit: decodeFit,
 );
 
+/// The request for the image at [url], the same one [pixivImageProvider]
+/// makes: its cache key identifies the picture's bytes.
+MediaRequest pixivMediaRequest(String url, {Map<String, String>? headers, String? accountKey}) =>
+    MediaRequest(url: url, headers: headers ?? pixivRefererHeaders, allowDiskCache: accountKey == null, accountKey: accountKey ?? '');
+
 /// [pixivImageProvider] through [transport], for code outside a widget's
 /// build (the window's ambient backdrop). Equal arguments give an equal
 /// provider, so the picture a card already decoded is reused.
@@ -57,10 +65,7 @@ ImageProvider pixivImageProviderFor(
 }) {
   if (pixivImageOverride?.call(url) case final image?) return image;
   return CachedMediaImage(
-    RustMediaSource.through(
-      transport,
-      MediaRequest(url: url, headers: headers ?? pixivRefererHeaders, allowDiskCache: accountKey == null, accountKey: accountKey ?? ''),
-    ),
+    RustMediaSource.through(transport, pixivMediaRequest(url, headers: headers, accountKey: accountKey)),
     store: appPictureStore,
     reloadRevision: revision,
     keepBytes: keepBytes,
@@ -75,6 +80,9 @@ Uint8List? pixivImageBytes(ImageProvider image) => image is CachedMediaImage ? i
 /// A Pixiv image in a Frost media frame: Frost's placeholder while it loads
 /// and fades it in; a failed image offers a retry in its place. Works without
 /// an address (sample data) keep the placeholder.
+/// The blur of a placeholder drawn with [AppPixivImage.blurPlaceholder].
+const _placeholderBlur = 8.0;
+
 class AppPixivImage extends ConsumerStatefulWidget {
   const AppPixivImage({
     required this.url,
@@ -85,6 +93,7 @@ class AppPixivImage extends ConsumerStatefulWidget {
     this.accountKey,
     this.semanticLabel,
     this.placeholderUrl,
+    this.blurPlaceholder = false,
     this.decodeAtLayoutSize = false,
     this.onImageSize,
     super.key,
@@ -107,13 +116,19 @@ class AppPixivImage extends ConsumerStatefulWidget {
   /// [url] arrives.
   final String? placeholderUrl;
 
+  /// Draws the placeholder blurred, so a small picture stretched over the frame
+  /// reads as a preview; the blur is gone once [url] is shown.
+  final bool blurPlaceholder;
+
   /// Decodes the picture no larger than it is laid out, for a picture that
   /// comes in one size only, often far larger than the frame. Off where the
   /// same picture is shown elsewhere at another size: each size is decoded and
   /// cached apart.
   final bool decodeAtLayoutSize;
 
-  /// Called once per loaded picture with its decoded size in pixels, possibly
+  /// Called with the picture's size in pixels: first the size its download
+  /// declares in its first bytes, as soon as they arrive, then the decoded
+  /// size when that differs (the decoded size is the authority). Possibly
   /// during a build when the picture is already decoded. Null changes nothing.
   final ValueChanged<Size>? onImageSize;
 
@@ -129,8 +144,46 @@ class _AppPixivImageState extends ConsumerState<AppPixivImage> {
   ImageStream? _sizeStream;
   ImageStreamListener? _sizeListener;
 
+  /// The size last reported, and what listens for the sizes the downloads of
+  /// the picture and of its placeholder declare.
+  Size? _reported;
+  Set<String> _headerKeys = const {};
+  final _headerOffs = <void Function()>[];
+
+  /// Whether two sizes have the same shape: ratios within 1 %, so the rounding
+  /// of a small variant never moves a frame.
+  static bool _sameShape(Size a, Size b) => ((a.width / a.height) / (b.width / b.height) - 1).abs() < 0.01;
+
+  /// Reports [size] unless it has the shape of the one reported already.
+  void _report(Size size) {
+    if (!mounted) return;
+    final last = _reported;
+    if (last != null && _sameShape(last, size)) return;
+    _reported = size;
+    widget.onImageSize?.call(size);
+  }
+
+  /// Follows the sizes the downloads under [keys] declare; whichever comes
+  /// first is reported, the other only if its shape differs.
+  void _watchHeaders(Set<String> keys) {
+    if (widget.onImageSize == null || setEquals(keys, _headerKeys)) return;
+    for (final off in _headerOffs) {
+      off();
+    }
+    _headerOffs.clear();
+    _headerKeys = keys;
+    _reported = null;
+    for (final key in keys) {
+      _headerOffs.add(mediaHeaderSizes.listen(key, _report));
+      if (mediaHeaderSizes.sizeOf(key) case final known?) _report(known);
+    }
+  }
+
   @override
   void dispose() {
+    for (final off in _headerOffs) {
+      off();
+    }
     _stopSizing();
     super.dispose();
   }
@@ -154,7 +207,7 @@ class _AppPixivImageState extends ConsumerState<AppPixivImage> {
         if (identical(_sizeListener, listener)) _sizeListener = null;
         final size = Size(info.image.width.toDouble(), info.image.height.toDouble());
         info.dispose();
-        if (mounted) widget.onImageSize?.call(size);
+        _report(size);
       },
       onError: (_, _) {
         stream.removeListener(listener);
@@ -188,6 +241,12 @@ class _AppPixivImageState extends ConsumerState<AppPixivImage> {
       decodeFit: widget.fit,
     );
     _reportSize(image);
+    if (widget.onImageSize != null) {
+      _watchHeaders({
+        for (final url in [widget.url, ?widget.placeholderUrl])
+          if (url.isNotEmpty) pixivMediaRequest(url, headers: widget.headers, accountKey: widget.accountKey).cacheKey,
+      });
+    }
     return FrostMediaFrame(
       image: image,
       aspectRatio: widget.aspectRatio,
@@ -195,11 +254,21 @@ class _AppPixivImageState extends ConsumerState<AppPixivImage> {
       fit: widget.fit,
       semanticLabel: widget.semanticLabel,
       placeholderBuilder: switch (widget.placeholderUrl) {
-        final placeholder? when placeholder.isNotEmpty && placeholder != widget.url => (context, _) => Image(
-          image: pixivImageProviderFor(transport, placeholder, headers: widget.headers, accountKey: widget.accountKey),
-          fit: widget.fit,
-          excludeFromSemantics: true,
-        ),
+        final placeholder? when placeholder.isNotEmpty && placeholder != widget.url => (context, _) {
+          final small = Image(
+            image: pixivImageProviderFor(transport, placeholder, headers: widget.headers, accountKey: widget.accountKey),
+            fit: widget.fit,
+            excludeFromSemantics: true,
+          );
+          if (!widget.blurPlaceholder) return small;
+          // The blur bleeds past the frame's edge: clipped, and clamped so the edge stays solid.
+          return ClipRect(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: _placeholderBlur, sigmaY: _placeholderBlur, tileMode: TileMode.clamp),
+              child: small,
+            ),
+          );
+        },
         _ => null,
       },
       errorBuilder: (context, error) => Center(

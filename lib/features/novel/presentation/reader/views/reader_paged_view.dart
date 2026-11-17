@@ -5,12 +5,14 @@ import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freepiv/core/services/app_settings.dart';
+import 'package:freepiv/features/novel/domain/novel_text.dart';
 import 'package:freepiv/features/novel/presentation/reader/reader_controller.dart';
 import 'package:freepiv/features/novel/presentation/reader/views/reader_scroll_view.dart' show ReaderBlockBuilder;
 import 'package:freepiv/ui/custom/reader/reader_page_turn.dart';
 import 'package:freepiv/ui/custom/reader/reader_paginator.dart';
 import 'package:freepiv/ui/custom/reader/reader_paragraph.dart';
 import 'package:freepiv/ui/custom/reader/reader_typesetting.dart';
+import 'package:frost_ui/frost_ui.dart' show FrostGap;
 
 /// How a text area of [size] is divided into pages: one page, or two side by
 /// side when the area is at least 960 wide and wider than tall.
@@ -70,6 +72,7 @@ class ReaderPagedView extends StatefulWidget {
     this.endBuilder,
     this.onLink,
     this.onPageJump,
+    this.onRepaginated,
     super.key,
   });
 
@@ -84,6 +87,10 @@ class ReaderPagedView extends StatefulWidget {
   final WidgetBuilder? endBuilder;
   final ValueChanged<Uri>? onLink;
   final ValueChanged<int>? onPageJump;
+
+  /// Called when pictures changed the pages, with the page on show kept: what
+  /// reads page numbers asks again.
+  final VoidCallback? onRepaginated;
 
   @override
   State<ReaderPagedView> createState() => ReaderPagedViewState();
@@ -107,6 +114,38 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
   ReaderPaginator get _paginator => widget.paginator;
   bool get _spread => widget.geometry.spread;
   double get _width => widget.geometry.spread ? 2 * widget.geometry.pageWidth + widget.geometry.gutter : widget.geometry.pageWidth;
+
+  /// The height of the end card at the text column's width, once measured.
+  double? _endHeight;
+  final _endProbe = GlobalKey();
+
+  /// Whether the end card sits under the text of the last page: it is measured,
+  /// and fits in what is left of that page after a section gap. Until it is
+  /// measured, and when it does not fit, it has a sheet of its own.
+  bool get _cardOnLast {
+    final height = _endHeight;
+    if (widget.endBuilder == null || height == null) return false;
+    return _usedHeight(_lastPage) + FrostGap.section + height <= widget.geometry.pageHeight;
+  }
+
+  /// Whether the end card sits on the last text page, for tests.
+  @visibleForTesting
+  bool get endCardOnLastPage => _cardOnLast;
+
+  /// Whether a sheet after the last page holds the end card.
+  bool get _hasEndSheet => widget.endBuilder != null && !_cardOnLast;
+
+  ReaderPage get _lastPage {
+    final chapter = _paginator.layout.model.chapters.length - 1;
+    return _paginator.pagesOfChapter(chapter).last;
+  }
+
+  static double _usedHeight(ReaderPage page) => page.items.fold(0.0, (used, item) => math.max(used, item.top + item.height));
+
+  bool _isLastPage(ReaderPage page) {
+    final last = _lastPage;
+    return page.chapter == last.chapter && page.index == last.index;
+  }
 
   /// The pages on show, for tests and the status line; none on the end sheet.
   List<ReaderPage> get visiblePages => _pagesOf(_sheet);
@@ -198,7 +237,7 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
   void _place(int offset) {
     // The end of the text is the end sheet, where the end card is.
     final chapters = _paginator.layout.model.chapters.length;
-    if (widget.endBuilder != null && chapters > 0 && offset >= _paginator.layout.model.totalLength) {
+    if (chapters > 0 && offset >= _paginator.layout.model.totalLength && _hasEndSheet) {
       _sheet = _Sheet(chapters - 1, _sheetCount(chapters - 1));
       return;
     }
@@ -210,7 +249,7 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
 
   /// The sheet after the last page of the text, when there is one.
   bool _isEnd(_Sheet sheet) =>
-      widget.endBuilder != null && sheet.chapter == _paginator.layout.model.chapters.length - 1 && sheet.index >= _sheetCount(sheet.chapter);
+      widget.endBuilder != null && sheet.chapter == _paginator.layout.model.chapters.length - 1 && _hasEndSheet && sheet.index >= _sheetCount(sheet.chapter);
 
   /// Whether nothing of the text follows [sheet].
   bool _atTextEnd(_Sheet sheet) {
@@ -224,7 +263,7 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
       if (_isEnd(sheet)) return null;
       if (sheet.index + 1 < _sheetCount(sheet.chapter)) return _Sheet(sheet.chapter, sheet.index + 1);
       if (sheet.chapter + 1 < chapters) return _Sheet(sheet.chapter + 1, 0);
-      return widget.endBuilder == null ? null : _Sheet(sheet.chapter, _sheetCount(sheet.chapter));
+      return _hasEndSheet ? _Sheet(sheet.chapter, _sheetCount(sheet.chapter)) : null;
     }
     if (_isEnd(sheet)) return _Sheet(sheet.chapter, _sheetCount(sheet.chapter) - 1);
     if (sheet.index > 0) return _Sheet(sheet.chapter, sheet.index - 1);
@@ -370,10 +409,112 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
                 left: left + column * (1 - scale) / 2,
                 width: column * scale,
                 height: height,
-                child: widget.blockBuilder(context, block, null),
+                child: _picture(block),
               ),
             },
+          if (_cardOnLast && _isLastPage(page))
+            Positioned(top: _usedHeight(page) + FrostGap.section, left: left, width: column, height: _endHeight, child: widget.endBuilder!(context)),
         ],
+      ),
+    );
+  }
+
+  /// The block's picture or card, reporting a picture's size.
+  Widget _picture(int block) =>
+      widget.blockBuilder(context, block, _paginator.layout.model.blocks[block] is NovelUploadedImage ? (size) => _imageSized(block, size) : null);
+
+  /// Takes the size of the picture in [block]: the layout and the pages follow
+  /// it, and the page shown stays the one holding the reading offset.
+  void _imageSized(int block, Size size) {
+    void apply() {
+      if (!mounted) return;
+      final layout = _paginator.layout;
+      final extent = layout.extentOf(block);
+      final offset = widget.controller.offset;
+      layout.updateImageSize(block, size, anchorBlock: 0);
+      if (layout.extentOf(block) == extent) return;
+      _paginator.invalidate();
+      // A turn or drag in progress belongs to the old pages.
+      _turn.stop();
+      _turn.value = 0;
+      _incoming = null;
+      _direction = 0;
+      _drag = 0;
+      _dragging = false;
+      _sheetWidgets.clear();
+      _place(offset);
+      setState(() {});
+      _reportEnd();
+      widget.onRepaginated?.call();
+    }
+
+    // The picture may report while the page is building.
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) => apply());
+      SchedulerBinding.instance.scheduleFrame();
+    } else {
+      apply();
+    }
+  }
+
+  /// The end card built out of sight at the text column's width, so its height
+  /// is known before it is placed.
+  Widget _endMeasure() {
+    if (widget.endBuilder == null) return const SizedBox.shrink();
+    SchedulerBinding.instance.addPostFrameCallback((_) => _measureEnd());
+    return Offstage(
+      // The card takes the height it needs, not the page's.
+      child: OverflowBox(
+        alignment: Alignment.topLeft,
+        minWidth: 0,
+        maxWidth: _paginator.layout.columnWidth,
+        minHeight: 0,
+        maxHeight: double.infinity,
+        // The card may grow once what it shows has loaded.
+        child: NotificationListener<SizeChangedLayoutNotification>(
+          onNotification: (_) {
+            SchedulerBinding.instance.addPostFrameCallback((_) => _measureEnd());
+            return true;
+          },
+          child: SizeChangedLayoutNotifier(
+            child: SizedBox(key: _endProbe, width: _paginator.layout.columnWidth, child: widget.endBuilder!(context)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _measureEnd() {
+    if (!mounted) return;
+    final box = _endProbe.currentContext?.findRenderObject();
+    final height = box is RenderBox && box.hasSize ? box.size.height : null;
+    if (height == null || height == _endHeight) return;
+    final before = _hasEndSheet;
+    _endHeight = height;
+    _sheetWidgets.clear();
+    setState(() {});
+    if (before == _hasEndSheet) return;
+    // The end moved between a sheet of its own and the last page.
+    _place(widget.controller.offset);
+    _reportEnd();
+  }
+
+  /// The pictures of the pages before and after the one shown, built out of
+  /// sight so they load, and have their size, before they are turned to.
+  Widget _preload() {
+    final items = <ReaderBlockItem>[];
+    for (final direction in [-1, 1]) {
+      final sheet = _neighbour(_sheet, direction);
+      if (sheet == null) continue;
+      for (final page in _pagesOf(sheet)) {
+        items.addAll(page.items.whereType<ReaderBlockItem>().where((item) => _paginator.layout.model.blocks[item.block] is NovelUploadedImage));
+      }
+    }
+    if (items.isEmpty) return const SizedBox.shrink();
+    final column = _paginator.layout.columnWidth;
+    return Offstage(
+      child: Column(
+        children: [for (final item in items) SizedBox(key: ValueKey(item.block), width: column * item.scale, height: item.height, child: _picture(item.block))],
       ),
     );
   }
@@ -429,21 +570,27 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
       onHorizontalDragEnd: _dragEnd,
       onHorizontalDragCancel: _dragCancel,
       child: ClipRect(
-        child: AnimatedBuilder(
-          animation: _turn,
-          builder: (context, _) {
-            if (next == null || _direction == 0) return Center(child: current);
-            return ReaderPageTurn(
-              cover: widget.animation == ReaderPageAnimation.cover,
-              direction: _direction,
-              progress: _turn.value,
-              width: _width,
-              background: background,
-              current: current,
-              next: next,
-            );
-          },
-        ),
+        child: Stack(fit: StackFit.expand, children: [_animated(background, current, incoming, next), _preload(), _endMeasure()]),
+      ),
+    );
+  }
+
+  Widget _animated(Color background, Widget current, _Sheet? incoming, Widget? next) {
+    return ClipRect(
+      child: AnimatedBuilder(
+        animation: _turn,
+        builder: (context, _) {
+          if (next == null || _direction == 0) return Center(child: current);
+          return ReaderPageTurn(
+            cover: widget.animation == ReaderPageAnimation.cover,
+            direction: _direction,
+            progress: _turn.value,
+            width: _width,
+            background: background,
+            current: current,
+            next: next,
+          );
+        },
       ),
     );
   }

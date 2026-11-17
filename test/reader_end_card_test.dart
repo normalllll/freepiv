@@ -218,13 +218,25 @@ void main() {
   group('paged', () {
     ReaderPagedViewState view(WidgetTester tester) => tester.state<ReaderPagedViewState>(find.byType(ReaderPagedView));
 
-    testWidgets('the card is a last page: reaching the last text page is the end, the card holds no text', (tester) async {
-      await mount(
+    String paragraphs(int count) => [for (var i = 0; i < count; i++) '$readerParagraph $i'].join('\n\n');
+
+    /// Mounts the first text length whose last page has no room left for the card.
+    Future<void> mountNearlyFull(WidgetTester tester, WebviewNovel Function(String text) make, {Size size = desktopSize}) async {
+      for (var count = 1; count < 80; count++) {
+        await mount(tester, text: make(paragraphs(count)), settings: readerPagedSettings, size: size);
+        await settlePilot(tester);
+        if (!view(tester).endCardOnLastPage) return;
+      }
+      fail('no text length leaves the card without room');
+    }
+
+    testWidgets('a card without room is a last page: reaching the last text page is the end, the card holds no text', (tester) async {
+      await mountNearlyFull(
         tester,
-        text: series(
+        (text) => series(
+          text: text,
           next: _item(id: '70001', title: 'The tide table'),
         ),
-        settings: readerPagedSettings,
       );
       final controller = readerController(tester);
       controller.goToEnd();
@@ -251,6 +263,84 @@ void main() {
       expect(view(tester).showsEnd, isFalse);
       expect(card(), findsNothing);
       expect(view(tester).visiblePages, isNotEmpty);
+    });
+
+    /// The sheets of the text, counted by turning to the end from the start.
+    Future<int> sheets(WidgetTester tester) async {
+      readerController(tester).goToStart();
+      await settlePilot(tester);
+      var count = 1;
+      while (readerController(tester).nextScreen()) {
+        await settlePilot(tester);
+        count++;
+      }
+      return count;
+    }
+
+    testWidgets('a last page with room holds the card under its text, and no page of its own follows', (tester) async {
+      await mount(tester, text: readerText(paragraphs(1)), settings: readerPagedSettings, size: phoneSize);
+      await settlePilot(tester);
+      expect(view(tester).endCardOnLastPage, isTrue);
+      expect(await sheets(tester), 1, reason: 'the card shares the only page');
+      final controller = readerController(tester);
+      controller.goToEnd();
+      await settlePilot(tester);
+      expect(view(tester).showsEnd, isFalse);
+      expect(card(), findsOneWidget);
+      expect(controller.atEnd, isTrue);
+      expect(controller.nextScreen(), isFalse);
+      final last = tester.getRect(find.byType(ReaderParagraph).last);
+      expect(tester.getRect(card()).top, greaterThanOrEqualTo(last.bottom), reason: 'under the last line, not pinned to the bottom');
+      expect(tester.getRect(card()).top, lessThan(last.bottom + 80), reason: 'a section gap after the text');
+    });
+
+    testWidgets('a nearly full last page leaves the card a page of its own, one sheet more', (tester) async {
+      // The first text length whose last page has no room left for the card.
+      int? full;
+      var withCard = 0;
+      for (var count = 1; count < 40 && full == null; count++) {
+        await mount(tester, text: readerText(paragraphs(count)), settings: readerPagedSettings, size: phoneSize);
+        await settlePilot(tester);
+        if (!view(tester).endCardOnLastPage) {
+          full = count;
+          withCard = await sheets(tester);
+        }
+      }
+      expect(full, isNotNull);
+      expect(view(tester).endCardOnLastPage, isFalse);
+      final controller = readerController(tester);
+      controller.goToEnd();
+      await settlePilot(tester);
+      expect(view(tester).showsEnd, isTrue);
+      expect(card(), findsOneWidget);
+      final pages = view(tester).widget.paginator.pagesOfChapter(0).length;
+      expect(withCard, pages + 1, reason: 'the text pages and the card page');
+    });
+
+    testWidgets('in a spread the card sits under the text of the last page', (tester) async {
+      await mount(tester, text: readerText(paragraphs(1)), settings: readerPagedSettings, size: const Size(1200, 700));
+      await settlePilot(tester);
+      expect(view(tester).endCardOnLastPage, isTrue);
+      readerController(tester).goToEnd();
+      await settlePilot(tester);
+      expect(view(tester).showsEnd, isFalse);
+      expect(card(), findsOneWidget);
+      expect(readerController(tester).atEnd, isTrue);
+    });
+
+    testWidgets('reopening at the end lands on the page that holds the card', (tester) async {
+      await mount(tester, text: readerText(paragraphs(1)), settings: readerPagedSettings, size: phoneSize);
+      final controller = readerController(tester);
+      controller.goToEnd();
+      await settlePilot(tester);
+      await controller.saveNow();
+      await tester.pumpWidget(const SizedBox());
+      await readerStorageIdle(tester);
+      await mount(tester, text: readerText(paragraphs(1)), settings: readerPagedSettings, size: phoneSize);
+      await settlePilot(tester);
+      expect(readerController(tester).atEnd, isTrue);
+      expect(card(), findsOneWidget);
+      expect(view(tester).showsEnd, isFalse);
     });
 
     testWidgets('on a phone the card scrolls inside its page and the next novel opens', (tester) async {

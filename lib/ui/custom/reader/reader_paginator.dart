@@ -89,6 +89,13 @@ class ReaderPaginator {
   /// Measures the chapter fully the first time; later calls return the same list.
   List<ReaderPage> pagesOfChapter(int chapter) => _pages[chapter] ??= _paginate(chapter);
 
+  /// Forgets every page, after the layout changed under them (a picture's
+  /// size arrived); the next use paginates again.
+  void invalidate() {
+    _pages.clear();
+    _spreads.clear();
+  }
+
   /// The page holding [offset]; the end of the text is on the last page.
   ReaderPageRef pageAt(int offset) {
     final model = layout.model;

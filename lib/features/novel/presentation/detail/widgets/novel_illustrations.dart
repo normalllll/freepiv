@@ -88,13 +88,13 @@ class _TileState extends ConsumerState<_Tile> {
   Size? _measured;
 
   double _ratio(ImageSizeStore sizes) {
-    final size = _measured ?? sizes.sizeOf(widget.picture.thumbnailUrl) ?? (widget.picture.isWork ? null : novelImageFallbackSize);
+    final size = _measured ?? sizes.sizeOf(widget.picture.sizeKey ?? widget.picture.thumbnailUrl) ?? (widget.picture.isWork ? null : novelImageFallbackSize);
     if (size == null || size.height <= 0) return NovelIllustrations.workRatio;
     return (size.width / size.height).clamp(0.25, 4.0);
   }
 
   void _loaded(ImageSizeStore sizes, Size size) {
-    unawaited(sizes.record(widget.picture.thumbnailUrl, size));
+    unawaited(sizes.record(widget.picture.sizeKey ?? widget.picture.thumbnailUrl, size));
     if (size == _measured) return;
     // The picture may report while the page is building.
     SchedulerBinding.instance.addPostFrameCallback((_) {

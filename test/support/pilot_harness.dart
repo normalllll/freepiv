@@ -69,7 +69,7 @@ Future<void> mountPilotPage(
     pixivAccountNotifier.value = sampleAccount;
     addTearDown(() => pixivAccountNotifier.value = null);
   }
-  pixivImageOverride = sampleImageProvider;
+  pixivImageOverride ??= sampleImageProvider;
   addTearDown(() => pixivImageOverride = null);
   openedLocations.clear();
   openedExtras.clear();

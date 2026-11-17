@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/router/route_activity.dart';
 import 'package:freepiv/core/history/history_repository.dart';
@@ -93,6 +94,7 @@ Future<void> mountReader(
   Size size = desktopSize,
   double textScale = 1,
   String title = 'A novel',
+  Map<Object, Override> overrides = const {},
 }) async {
   await readerStorageIdle(tester);
   final novel = sampleNovels(count: 1, title: title).single;
@@ -109,6 +111,7 @@ Future<void> mountReader(
     settings: {...sampleSettings, ...settings},
     observers: [appRootRouteActivity],
     history: history,
+    overrides: overrides,
   );
   await readerStorageIdle(tester);
   await settlePilot(tester);

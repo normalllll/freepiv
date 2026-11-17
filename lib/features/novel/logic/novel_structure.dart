@@ -7,9 +7,9 @@ import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 /// One picture of a novel, in the order of the text: an uploaded image or a
 /// Pixiv work embedded in it.
 class NovelPicture {
-  const NovelPicture.uploaded({required this.thumbnailUrl, required this.viewerUrl}) : illustId = null;
+  const NovelPicture.uploaded({required this.thumbnailUrl, required this.viewerUrl, required String this.sizeKey}) : illustId = null;
 
-  const NovelPicture.work({required this.thumbnailUrl, required int this.illustId}) : viewerUrl = null;
+  const NovelPicture.work({required this.thumbnailUrl, required int this.illustId}) : viewerUrl = null, sizeKey = null;
 
   /// The small picture for a strip.
   final String thumbnailUrl;
@@ -18,6 +18,10 @@ class NovelPicture {
   /// opens its own page.
   final String? viewerUrl;
   final int? illustId;
+
+  /// The key the picture's size is remembered under, shared with the reader;
+  /// null for an embedded work, which is remembered by its thumbnail.
+  final String? sizeKey;
 
   bool get isWork => illustId != null;
 }
@@ -45,7 +49,13 @@ final novelStructureProvider = Provider.autoDispose.family<NovelStructure?, int>
     switch (model.blocks[index]) {
       case NovelUploadedImage(:final image?):
         if (novelStripImageUrl(image) case final thumbnail?) {
-          pictures.add(NovelPicture.uploaded(thumbnailUrl: thumbnail, viewerUrl: novelViewerImageUrl(image) ?? thumbnail));
+          pictures.add(
+            NovelPicture.uploaded(
+              thumbnailUrl: thumbnail,
+              viewerUrl: novelViewerImageUrl(image) ?? thumbnail,
+              sizeKey: novelImageSizeKey(image) ?? thumbnail,
+            ),
+          );
         }
       case NovelEmbeddedWork(:final work?, :final illustId):
         if (novelEmbeddedWorkImageUrl(work) case final thumbnail?) pictures.add(NovelPicture.work(thumbnailUrl: thumbnail, illustId: illustId));

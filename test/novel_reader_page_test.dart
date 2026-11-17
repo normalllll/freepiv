@@ -296,7 +296,8 @@ void main() {
       expect(firstPage(), 0);
       await _key(tester, LogicalKeyboardKey.end);
       expect(controller.atEnd, isTrue);
-      expect(_paged(tester).showsEnd, isTrue, reason: 'the End key shows the end card');
+      expect(find.byKey(const ValueKey('reader-end-card')), findsOneWidget, reason: 'the End key shows the end card');
+      expect(_paged(tester).showsEnd, !_paged(tester).endCardOnLastPage, reason: 'on a page of its own unless it fits under the text');
       await _key(tester, LogicalKeyboardKey.home);
       expect(_paged(tester).visiblePages.first.startOffset, 0);
     });

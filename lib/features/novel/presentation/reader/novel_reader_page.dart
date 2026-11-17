@@ -405,15 +405,22 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     return [
       for (final block in _model.imageBlocks)
         switch (_model.blocks[block]) {
-          NovelUploadedImage(:final image) => _illustration(block, image == null ? null : novelStripImageUrl(image), sizes, isWork: false),
+          NovelUploadedImage(:final image) => _illustration(
+            block,
+            image == null ? null : novelStripImageUrl(image),
+            sizes,
+            isWork: false,
+            sizeKey: image == null ? null : novelImageSizeKey(image),
+          ),
           NovelEmbeddedWork(:final work) => _illustration(block, work == null ? null : novelEmbeddedWorkImageUrl(work), sizes, isWork: true),
           _ => _illustration(block, null, sizes, isWork: false),
         },
     ];
   }
 
-  ReaderIllustration _illustration(int block, String? url, ImageSizeStore sizes, {required bool isWork}) {
-    final size = (url == null ? null : sizes.sizeOf(url)) ?? (isWork ? const Size(3, 4) : novelImageFallbackSize);
+  ReaderIllustration _illustration(int block, String? url, ImageSizeStore sizes, {required bool isWork, String? sizeKey}) {
+    final key = sizeKey ?? url;
+    final size = (key == null ? null : sizes.sizeOf(key)) ?? (isWork ? const Size(3, 4) : novelImageFallbackSize);
     return ReaderIllustration(block: block, offset: _model.offsetOf(block), url: url, aspectRatio: size.width / size.height, isWork: isWork);
   }
 
@@ -421,7 +428,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   List<({int block, OriginalImagePage page})> get _viewerPages => [
     for (final block in _model.imageBlocks)
       if (_model.blocks[block] case NovelUploadedImage(:final image?))
-        if (novelTextImageUrl(image) case final url?)
+        if (novelTextImageUrl(image, ref.read(previewImageQualityProvider)) case final url?)
           (
             block: block,
             page: OriginalImagePage(
@@ -744,7 +751,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
       );
     }
     final image = block is NovelUploadedImage ? block.image : null;
-    final url = image == null ? null : novelTextImageUrl(image);
+    final url = image == null ? null : novelTextImageUrl(image, ref.read(previewImageQualityProvider));
     final viewerUrl = image == null ? null : novelViewerImageUrl(image) ?? url;
     final child = url == null
         ? Align(
@@ -772,7 +779,13 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
                     ),
                   );
                 },
-                child: AppPixivImage(url: url, fit: BoxFit.contain, onImageSize: onImageSize),
+                child: AppPixivImage(
+                  url: url,
+                  placeholderUrl: novelTextPlaceholderUrl(image!),
+                  blurPlaceholder: true,
+                  fit: BoxFit.contain,
+                  onImageSize: onImageSize,
+                ),
               ),
             ),
           );
@@ -812,6 +825,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
             endBuilder: _endCard,
             onLink: _openLink,
             onPageJump: _goToSection,
+            onRepaginated: () => _layouts.value++,
           );
         }
         return ReaderScrollView(
@@ -875,6 +889,9 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   Widget build(BuildContext context) {
     final t = context.t;
     ref.listen(readerSettingsProvider, (_, next) => _applySettings(next));
+    // The pictures follow the preview quality; the layout does not depend on
+    // it, so a change keeps the place.
+    ref.watch(previewImageQualityProvider);
     // Follow the route being covered by another page.
     ModalRoute.isCurrentOf(context);
     WidgetsBinding.instance.addPostFrameCallback((_) => _activityChanged());
@@ -899,7 +916,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
         child: ReaderSelectableText(
           areaKey: _region,
           onSelectionChanged: _selectionChanged,
-          child: _TapZones(onTap: _tapped, child: _view(controller, typesetting)),
+          child: _TapZones(onTap: _tapped, coasting: () => _scrollView.currentState?.isCoasting ?? false, child: _view(controller, typesetting)),
         ),
       );
     }
@@ -1081,9 +1098,12 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
 /// A tap on the text, not a drag or a selection, reports where it landed in
 /// the area. Taps on a link, an image or an embedded work act on those alone.
 class _TapZones extends StatefulWidget {
-  const _TapZones({required this.onTap, required this.child});
+  const _TapZones({required this.onTap, required this.coasting, required this.child});
 
   final void Function(Offset position, Size size) onTap;
+
+  /// Whether a fling is coasting: a touch then only stops it.
+  final bool Function() coasting;
   final Widget child;
 
   @override
@@ -1103,6 +1123,7 @@ class _TapZonesState extends State<_TapZones> {
 
   Offset? _down;
   Duration? _downAt;
+  bool _stopsFling = false;
 
   /// Longer presses select text.
   static const _tapDuration = Duration(milliseconds: 300);
@@ -1113,11 +1134,12 @@ class _TapZonesState extends State<_TapZones> {
     onPointerDown: (event) {
       _down = event.position;
       _downAt = event.timeStamp;
+      _stopsFling = widget.coasting();
     },
     onPointerUp: (event) {
       final down = _down, downAt = _downAt;
       _down = null;
-      if (down == null || downAt == null) return;
+      if (down == null || downAt == null || _stopsFling) return;
       if ((event.position - down).distance > kTouchSlop || event.timeStamp - downAt > _tapDuration) return;
       if (_onOwnTarget(event)) return;
       final box = context.findRenderObject();

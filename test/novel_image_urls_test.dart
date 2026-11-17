@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freepiv/core/services/app_settings.dart' show PreviewImageQuality;
 import 'package:freepiv/core/downloads/models/download_origin.dart';
 import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
 import 'package:freepiv/features/novel/domain/novel_text.dart';
@@ -82,10 +83,29 @@ void _imageUrlTests() {
   const d = 'https://i.pximg.net/d.jpg';
 
   group('novel image url choice', () {
-    test('text: 1200x1200, then 480mw, then original', () {
-      expect(novelTextImageUrl(_image(s1200: a, s480: b, original: c)), a);
-      expect(novelTextImageUrl(_image(s480: b, original: c)), b);
-      expect(novelTextImageUrl(_image(original: c, s240: d)), c);
+    test('text: medium is 480mw, then 1200x1200, then original', () {
+      const medium = PreviewImageQuality.medium;
+      expect(novelTextImageUrl(_image(s1200: a, s480: b, original: c), medium), b);
+      expect(novelTextImageUrl(_image(s1200: a, original: c), medium), a);
+      expect(novelTextImageUrl(_image(original: c, s240: d), medium), c);
+    });
+    test('text: large is 1200x1200, then 480mw, then original', () {
+      const large = PreviewImageQuality.large;
+      expect(novelTextImageUrl(_image(s1200: a, s480: b, original: c), large), a);
+      expect(novelTextImageUrl(_image(s480: b, original: c), large), b);
+      expect(novelTextImageUrl(_image(original: c, s240: d), large), c);
+      expect(novelTextImageUrl(_image(s240: d), large), isNull);
+    });
+    test('text placeholder is the small picture: 240mw, then 480mw', () {
+      expect(novelTextPlaceholderUrl(_image(s240: d, s480: b, s1200: a)), d);
+      expect(novelTextPlaceholderUrl(_image(s480: b, s1200: a)), b);
+      expect(novelTextPlaceholderUrl(_image(s1200: a)), isNull);
+    });
+    test('the size key does not follow the quality setting or the variants a picture has', () {
+      final full = _image(s240: d, s480: b, s1200: a, original: c);
+      expect(novelImageSizeKey(full), a);
+      expect(novelImageSizeKey(_image(s480: b, original: c)), b);
+      expect(novelImageSizeKey(_image(s240: d)), d);
     });
     test('embedded work: medium, then original', () {
       expect(novelEmbeddedWorkImageUrl(_work('1-1', medium: a, original: b)), a);
@@ -100,12 +120,12 @@ void _imageUrlTests() {
       expect(novelStripImageUrl(_image(s480: b, original: c)), b);
     });
     test('blank and non-http candidates are skipped', () {
-      expect(novelTextImageUrl(_image(s1200: '  ', s480: 'not a url', original: a)), a);
+      expect(novelTextImageUrl(_image(s1200: '  ', s480: 'not a url', original: a), PreviewImageQuality.large), a);
       expect(novelStripImageUrl(_image(s240: 'ftp://host/x.jpg', s480: b)), b);
       expect(novelEmbeddedWorkImageUrl(_work('1-1', medium: '', original: a)), a);
     });
     test('no usable candidate gives null', () {
-      expect(novelTextImageUrl(_image()), isNull);
+      expect(novelTextImageUrl(_image(), PreviewImageQuality.medium), isNull);
       expect(novelViewerImageUrl(_image(s240: a)), isNull);
       expect(novelStripImageUrl(_image(s1200: ' ', original: 'x')), isNull);
       expect(novelEmbeddedWorkImageUrl(_work('1-1')), isNull);

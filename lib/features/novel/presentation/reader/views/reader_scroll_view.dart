@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freepiv/features/novel/domain/novel_text.dart';
@@ -47,6 +48,9 @@ class ReaderScrollView extends StatefulWidget {
   State<ReaderScrollView> createState() => ReaderScrollViewState();
 }
 
+/// How many screens above and below the viewport are built and loaded.
+const cacheScreens = 3.0;
+
 class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerProviderStateMixin implements ReaderViewport {
   /// How long background measuring may take in one frame.
   static const _measureBudget = Duration(milliseconds: 4);
@@ -69,6 +73,32 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
   /// while the position is still there, so nothing is reported.
   double? _placed;
   bool _measureScheduled = false;
+
+  /// Corrections the layout owes the position (a picture above the reading
+  /// line changed size, text above was measured), applied by the sliver in
+  /// its next layout. That is where Flutter keeps a fling's own speed.
+  final _corrections = ReaderScrollCorrections();
+
+  void _correct(double correction) => _corrections.add(correction);
+
+  /// The position with the corrections still to be applied: where the view is
+  /// as far as the layout is concerned.
+  double get _effectivePixels => _scroll.position.pixels + _corrections.pending;
+
+  /// Whether a fling is coasting, or a touch has just stopped one: a touch
+  /// then only stops it. The scrollable holds the fling when the touch lands,
+  /// before the page's tap zones hear of it, so the stop itself counts.
+  bool get isCoasting => !_move.isAnimating && (_justStopped || (_scroll.hasClients && _scroll.position.isScrollingNotifier.value));
+
+  bool _justStopped = false;
+
+  /// A scroll ended during an input event or a frame; it counts as just
+  /// stopped until the frame has passed.
+  void _stopped() {
+    _justStopped = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) => _justStopped = false);
+    SchedulerBinding.instance.scheduleFrame();
+  }
 
   ReaderLayout get _layout => widget.layout;
 
@@ -265,11 +295,12 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
   void _scheduleMeasure() {
     if (_measureScheduled) return;
     _measureScheduled = true;
-    SchedulerBinding.instance.addPostFrameCallback((_) {
+    // At the start of the next frame, so what it owes the position is
+    // applied in that frame's layout, before anything is painted.
+    SchedulerBinding.instance.scheduleFrameCallback((_) {
       _measureScheduled = false;
       if (mounted) _measurePass();
     });
-    SchedulerBinding.instance.scheduleFrame();
   }
 
   void _measurePass() {
@@ -289,14 +320,13 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
   /// Runs [change] to the layout and moves the scroll position so the reading
   /// line stays on the same character, at the same depth inside its line.
   T _keepingReadingLine<T>(T Function() change) {
-    final position = _scroll.position;
-    final pixels = position.pixels;
+    final pixels = _effectivePixels;
     final offset = _layout.offsetAtPixel(pixels);
     final within = pixels - _layout.pixelOfOffset(offset);
     final result = change();
     final correction = _layout.pixelOfOffset(offset) + within - pixels;
     if (correction.abs() > 1e-6) {
-      position.correctBy(correction);
+      _correct(correction);
       if (_placed != null) _placed = _placed! + correction;
     }
     return result;
@@ -307,10 +337,9 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
   void imageSized(int block, Size size) {
     void apply() {
       if (!mounted || !_scroll.hasClients || !_scroll.position.hasPixels) return;
-      final position = _scroll.position;
-      final shift = _layout.updateImageSize(block, size, anchorBlock: _layout.blockAtPixel(position.pixels));
+      final shift = _layout.updateImageSize(block, size, anchorBlock: _layout.blockAtPixel(_effectivePixels));
       if (shift != 0) {
-        position.correctBy(shift);
+        _correct(shift);
         if (_placed != null) _placed = _placed! + shift;
       }
     }
@@ -374,16 +403,21 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
 
   @override
   Widget build(BuildContext context) {
-    return NotificationListener<ScrollStartNotification>(
+    return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
+        if (notification is ScrollEndNotification) _stopped();
         // A drag takes over from a turn in progress.
-        if (notification.dragDetails != null) _move.stop();
+        if (notification is ScrollStartNotification && notification.dragDetails != null) _move.stop();
+        if (notification is UserScrollNotification && notification.direction != ScrollDirection.idle) _pinned = false;
         return false;
       },
       child: CustomScrollView(
         controller: _scroll,
+        // Pictures load a screen or so before they are seen, so a frame has its
+        // size by then and nothing visible moves when it arrives.
+        scrollCacheExtent: const ScrollCacheExtent.viewport(cacheScreens),
         slivers: [
-          ReaderSliver(layout: _layout, itemBuilder: _block),
+          ReaderSliver(layout: _layout, corrections: _corrections, itemBuilder: _block),
           if (widget.endBuilder case final endBuilder?)
             SliverToBoxAdapter(
               child: Padding(
