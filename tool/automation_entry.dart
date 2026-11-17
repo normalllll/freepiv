@@ -21,13 +21,17 @@ import 'package:freepiv/app/theme/appearance_logic.dart';
 import 'package:freepiv/features/ranking/logic/ranking_logic.dart';
 import 'package:freepiv/features/search/presentation/app_search.dart';
 import 'sample_main.dart' as app;
+import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, visibleForTesting;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_driver/driver_extension.dart';
 import 'package:flutter_test/flutter_test.dart' show simulateKeyDownEvent, simulateKeyUpEvent;
+import 'package:path_provider/path_provider.dart';
 
+// The Windows window calls load their libraries on first use, which only the
+// Windows branches reach.
 final _user = DynamicLibrary.open('user32.dll');
 final _alloc = DynamicLibrary.open('ole32.dll').lookupFunction<Pointer<Void> Function(IntPtr), Pointer<Void> Function(int)>('CoTaskMemAlloc');
 final _enumWindows = _user
@@ -65,9 +69,36 @@ int _window() {
 bool _mouseAdded = false;
 Offset _heldAt = Offset.zero;
 
-Map<String, Object?> _state() => {
-  'native': {'pid': pid, 'hwnd': _window(), 'isForeground': _foreground() == _window()},
+/// What the automation tool attaches by: the window on Windows, the package
+/// and the instance token on Android.
+Map<String, Object?> _state() => automationState();
+
+@visibleForTesting
+Map<String, Object?> automationState() => {
+  'native': switch (defaultTargetPlatform) {
+    TargetPlatform.windows => {'pid': pid, 'hwnd': _window(), 'isForeground': _foreground() == _window()},
+    TargetPlatform.android => {'pid': pid, 'package': _androidPackage(), 'instanceToken': instanceToken},
+    _ => {'pid': pid},
+  },
 };
+
+/// Identifies this run of the app; the tool reads it from `files/capture-instance`
+/// to tell this process from an earlier one with the same package.
+final instanceToken = '${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}-$pid';
+
+String _androidPackage() {
+  try {
+    final name = File('/proc/self/cmdline').readAsBytesSync().takeWhile((byte) => byte != 0).toList();
+    return utf8.decode(name).split(':').first;
+  } on Object {
+    return '';
+  }
+}
+
+Future<void> _writeInstanceToken() async {
+  final files = await getApplicationSupportDirectory();
+  await File('${files.path}/capture-instance').writeAsString(instanceToken);
+}
 
 Future<void> _frame() async {
   WidgetsBinding.instance.scheduleForcedFrame();
@@ -218,6 +249,11 @@ const _keys = {
   'Enter': LogicalKeyboardKey.enter,
   'ArrowDown': LogicalKeyboardKey.arrowDown,
   'ArrowUp': LogicalKeyboardKey.arrowUp,
+  'ArrowRight': LogicalKeyboardKey.arrowRight,
+  'Space': LogicalKeyboardKey.space,
+  'End': LogicalKeyboardKey.end,
+  'Home': LogicalKeyboardKey.home,
+  'T': LogicalKeyboardKey.keyT,
 };
 
 void main() {
@@ -309,7 +345,14 @@ void main() {
           for (var i = 1; i <= steps; i++) {
             await Future<void>.delayed(const Duration(milliseconds: 16));
             GestureBinding.instance.handlePointerEvent(
-              PointerMoveEvent(pointer: 9002, kind: PointerDeviceKind.mouse, device: 9, position: from + by * (i / steps), delta: by / steps.toDouble()),
+              PointerMoveEvent(
+                pointer: 9002,
+                kind: PointerDeviceKind.mouse,
+                device: 9,
+                position: from + by * (i / steps),
+                delta: by / steps.toDouble(),
+                buttons: kPrimaryButton,
+              ),
             );
           }
           GestureBinding.instance.handlePointerEvent(PointerUpEvent(pointer: 9002, kind: PointerDeviceKind.mouse, device: 9, position: from + by));
@@ -325,7 +368,7 @@ void main() {
         case 'pointerMove':
           final to = _heldAt + Offset(_num(request['dx']).toDouble(), _num(request['dy']).toDouble());
           GestureBinding.instance.handlePointerEvent(
-            PointerMoveEvent(pointer: 9003, kind: PointerDeviceKind.mouse, device: 9, position: to, delta: to - _heldAt),
+            PointerMoveEvent(pointer: 9003, kind: PointerDeviceKind.mouse, device: 9, position: to, delta: to - _heldAt, buttons: kPrimaryButton),
           );
           _heldAt = to;
           await _frame();
@@ -392,6 +435,7 @@ void main() {
           return jsonEncode(_state());
         case 'resize':
           final ratio = WidgetsBinding.instance.renderViews.first.flutterView.devicePixelRatio;
+          if (defaultTargetPlatform != TargetPlatform.windows) throw UnsupportedError('resize needs a desktop window');
           _setWindowPos(_window(), 0, 0, 0, (_num(request['width']) * ratio).round(), (_num(request['height']) * ratio).round(), _noMoveNoZOrderNoActivate);
           await _frame();
           return jsonEncode(_state());
@@ -422,6 +466,7 @@ void main() {
     _errors.add(details.exceptionAsString());
     present(details);
   };
+  if (defaultTargetPlatform == TargetPlatform.android) unawaited(_writeInstanceToken());
   app.runSampleApp(wrap: _captureHost);
 }
 
