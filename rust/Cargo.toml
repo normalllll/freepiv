@@ -13,7 +13,8 @@ pixiv_rs = { git = "https://github.com/normalllll/pixiv_rs.git", branch = "main"
 futures-util = "0.3.34"
 reqwest = { version = "0.13.5", default-features = false, features = ["rustls-no-provider", "stream", "http2", "socks", "system-proxy"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
-tokio = { version = "1", features = ["fs", "io-util"] }
+tokio = { version = "1", features = ["fs", "io-util", "macros"] }
+tokio-util = "0.7.19"
 md-5 = "0.11.0"
 sha2 = "0.11.0"
 gif = { version = "0.14.2" }
@@ -21,6 +22,9 @@ image = { version = "0.25.10", default-features = false, features = ["gif", "jpe
 fast_image_resize = { version = "6.1.0", features = ["image"] }
 zip = { version = "9.0.0-pre3" }
 thiserror = "2.0.21"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "net", "rt-multi-thread", "time"] }
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
 

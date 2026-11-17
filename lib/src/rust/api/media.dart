@@ -4,6 +4,7 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These functions are ignored because they are not marked as `pub`: `forward_media`
@@ -12,11 +13,20 @@ Stream<MediaChunk> streamMedia({
   required String url,
   String? proxy,
   required Map<String, String> headers,
+  required MediaCancel cancel,
 }) => RustLib.instance.api.crateApiMediaStreamMedia(
   url: url,
   proxy: proxy,
   headers: headers,
+  cancel: cancel,
 );
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MediaCancel>>
+abstract class MediaCancel implements RustOpaqueInterface {
+  void cancel();
+
+  factory MediaCancel() => RustLib.instance.api.crateApiMediaMediaCancelNew();
+}
 
 class MediaChunk {
   final Uint8List bytes;
