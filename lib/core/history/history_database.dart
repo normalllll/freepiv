@@ -56,6 +56,11 @@ class ReadingProgressRecords extends Table {
 class HistoryDatabase extends _$HistoryDatabase {
   HistoryDatabase() : super(_openConnection());
 
+  /// The database in [file], which is deleted and created again when it
+  /// cannot be opened or migrated; a second failure is thrown to the first
+  /// caller that uses the database.
+  HistoryDatabase.atFile(File file) : super(LazyDatabase(() => _openFile(file)));
+
   /// Opens [executor] instead of the app's database file, e.g. in memory.
   HistoryDatabase.withExecutor(super.executor);
 
@@ -75,6 +80,29 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final directory = await appSupportDirectory();
     await directory.create(recursive: true);
-    return NativeDatabase.createInBackground(File(p.join(directory.path, 'history.sqlite')));
+    return _openFile(File(p.join(directory.path, 'history.sqlite')));
   });
+}
+
+/// Opens [file], first checking on a probe connection that it opens and
+/// migrates. A file that does not is deleted and tried once more, losing its
+/// history, which is a convenience; the next failure is thrown.
+Future<QueryExecutor> _openFile(File file) async {
+  for (var attempt = 0; ; attempt++) {
+    try {
+      final probe = HistoryDatabase.withExecutor(NativeDatabase(file));
+      try {
+        await probe.customSelect('SELECT 1').get();
+      } finally {
+        await probe.close();
+      }
+      return NativeDatabase.createInBackground(file);
+    } catch (_) {
+      if (attempt > 0) rethrow;
+      for (final path in [file.path, '${file.path}-wal', '${file.path}-shm', '${file.path}-journal']) {
+        final stale = File(path);
+        if (stale.existsSync()) stale.deleteSync();
+      }
+    }
+  }
 }
