@@ -1902,6 +1902,7 @@ class Translations$novel$reader$zh_Hant_TW extends Translations$novel$reader$en_
 	@override String scrollSpeedValue({required Object speed}) => '${speed} 像素/秒';
 	@override String chapterPosition({required Object current, required Object total}) => '第 ${current} / ${total} 章';
 	@override String chapterNumber({required Object number}) => '第 ${number} 章';
+	@override String pageJump({required Object page}) => '跳至第 ${page} 段';
 	@override String get previousChapter => '上一章';
 	@override String get nextChapter => '下一章';
 	@override String progressValue({required Object percent}) => '${percent}%';
@@ -2575,6 +2576,7 @@ extension on TranslationsZhHantTw {
 			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} 像素/秒',
 			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => '第 ${current} / ${total} 章',
 			'novel.reader.chapterNumber' => ({required Object number}) => '第 ${number} 章',
+			'novel.reader.pageJump' => ({required Object page}) => '跳至第 ${page} 段',
 			'novel.reader.previousChapter' => '上一章',
 			'novel.reader.nextChapter' => '下一章',
 			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',

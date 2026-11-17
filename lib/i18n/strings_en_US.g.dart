@@ -1904,6 +1904,7 @@ class Translations$novel$reader$en_US {
 	String scrollSpeedValue({required Object speed}) => '${speed} px/s';
 	String chapterPosition({required Object current, required Object total}) => 'Chapter ${current} of ${total}';
 	String chapterNumber({required Object number}) => 'Chapter ${number}';
+	String pageJump({required Object page}) => 'Go to section ${page}';
 	String get previousChapter => 'Previous chapter';
 	String get nextChapter => 'Next chapter';
 	String progressValue({required Object percent}) => '${percent}%';
@@ -2577,6 +2578,7 @@ extension on Translations {
 			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} px/s',
 			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => 'Chapter ${current} of ${total}',
 			'novel.reader.chapterNumber' => ({required Object number}) => 'Chapter ${number}',
+			'novel.reader.pageJump' => ({required Object page}) => 'Go to section ${page}',
 			'novel.reader.previousChapter' => 'Previous chapter',
 			'novel.reader.nextChapter' => 'Next chapter',
 			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',

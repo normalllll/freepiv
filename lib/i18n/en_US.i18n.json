@@ -776,6 +776,7 @@
       "scrollSpeedValue": "$speed px/s",
       "chapterPosition": "Chapter $current of $total",
       "chapterNumber": "Chapter $number",
+      "pageJump": "Go to section $page",
       "previousChapter": "Previous chapter",
       "nextChapter": "Next chapter",
       "progressValue": "$percent%",

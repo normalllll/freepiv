@@ -776,6 +776,7 @@
       "scrollSpeedValue": "$speed px/秒",
       "chapterPosition": "第 $current / $total 章",
       "chapterNumber": "第 $number 章",
+      "pageJump": "$page ページへ",
       "previousChapter": "前の章",
       "nextChapter": "次の章",
       "progressValue": "$percent%",

@@ -31,9 +31,12 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
 import 'package:freepiv/ui/compositions/pixiv_image.dart';
+import 'package:freepiv/ui/custom/reader/reader_line_text.dart';
 import 'package:freepiv/ui/custom/reader/reader_text.dart';
+import 'package:freepiv/ui/custom/reader/reader_typesetting.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// The novel reader: the whole text read top to bottom,
 /// chapter titles dividing it, on the reading surface. A tap on the text
@@ -125,6 +128,9 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
 
   late double _fontSize;
   late ReaderLineSpacing _lineSpacing;
+
+  /// The rest of the typography: theme, font and indent.
+  late ReaderSettings _settings;
   late double _speed;
   late bool _volumeEnabled;
   late final ReaderVolumeKeyLease _volumeLease;
@@ -176,6 +182,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   void initState() {
     super.initState();
     final saved = ref.read(readerSettingsProvider);
+    _settings = saved;
     _fontSize = saved.textSize;
     _lineSpacing = saved.lineSpacing;
     _speed = saved.autoScrollSpeed;
@@ -423,10 +430,28 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     }
   }
 
-  void _goToMarker(int page) {
+  void _goToMarker(int page) => _goToSection(page);
+
+  /// Moves to the start of the 1-based `[newpage]` section [page].
+  void _goToSection(int page) {
     _pause();
     _jumpToBlock(_model.blockAt(_model.offsetOfPage(page)));
   }
+
+  /// The saved settings at the size and spacing in use.
+  ReaderSettings get _typography => ReaderSettings(
+    textSize: _fontSize,
+    lineSpacing: _lineSpacing,
+    margins: _settings.margins,
+    theme: _settings.theme,
+    font: _settings.font,
+    indent: _settings.indent,
+    pageMode: _settings.pageMode,
+    pageAnimation: _settings.pageAnimation,
+    tapZones: _settings.tapZones,
+    autoScrollSpeed: _settings.autoScrollSpeed,
+    volumeKeys: _settings.volumeKeys,
+  );
 
   /// The reading bookmark on Pixiv: one press sets it at the section being
   /// read; once set, a menu moves to it, moves it here or removes it.
@@ -541,14 +566,16 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
 
   // ---- Settings.
 
-  /// A new size or spacing keeps the reader's place.
+  /// A change that reflows the text (size, spacing, font or indent) keeps
+  /// the reader's place.
   void _applySettings(ReaderSettings next) {
-    final reflow = next.textSize != _fontSize || next.lineSpacing != _lineSpacing;
+    final reflow = next.textSize != _fontSize || next.lineSpacing != _lineSpacing || next.font != _settings.font || next.indent != _settings.indent;
     if (reflow) {
       _pause();
       _pending ??= _position();
     }
     setState(() {
+      _settings = next;
       _fontSize = next.textSize.clamp(readerFontSizes.min, readerFontSizes.max);
       _lineSpacing = next.lineSpacing;
       _speed = next.autoScrollSpeed;
@@ -625,7 +652,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     // Follow the route being covered by another page.
     ModalRoute.isCurrentOf(context);
     WidgetsBinding.instance.addPostFrameCallback((_) => _activityChanged());
-    final typesetting = ReaderTypesetting.of(context, size: _fontSize, spacing: _lineSpacing.lineHeight);
+    final typesetting = ReaderTypesetting.of(context, _typography, language: widget.detail.webviewNovel.language);
     final padding = MediaQuery.paddingOf(context);
     final enabled = !_accountChanged;
     final chapters = _model.chapters;
@@ -658,7 +685,14 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
                         itemCount: _model.blocks.length,
                         itemBuilder: (context, index) => KeyedSubtree(
                           key: _blockKeys.putIfAbsent(index, GlobalKey.new),
-                          child: _ReaderBlock(block: _model.blocks[index], typesetting: typesetting, first: index == 0, novel: _novel, imageUrls: _imageUrls),
+                          child: _ReaderBlock(
+                            block: _model.blocks[index],
+                            typesetting: typesetting,
+                            first: index == 0,
+                            novel: _novel,
+                            imageUrls: _imageUrls,
+                            onPageJump: _goToSection,
+                          ),
                         ),
                       ),
                     ),
@@ -697,7 +731,10 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
         role: FrostSurfaceRole.reading,
         child: Stack(
           children: [
-            Positioned.fill(child: body),
+            Positioned.fill(
+              // The app theme reads on the reading surface itself.
+              child: _settings.theme == ReaderTheme.app ? body : ColoredBox(color: typesetting.palette.background, child: body),
+            ),
             _Bar(
               key: _topBar,
               top: true,
@@ -887,7 +924,14 @@ class _Bar extends StatelessWidget {
 /// One block of the text: a paragraph, a chapter title, a page break or an
 /// illustration (or the way to the work it shows).
 class _ReaderBlock extends ConsumerWidget {
-  const _ReaderBlock({required this.block, required this.typesetting, required this.first, required this.novel, required this.imageUrls});
+  const _ReaderBlock({
+    required this.block,
+    required this.typesetting,
+    required this.first,
+    required this.novel,
+    required this.imageUrls,
+    required this.onPageJump,
+  });
 
   final NovelBlock block;
   final ReaderTypesetting typesetting;
@@ -897,14 +941,24 @@ class _ReaderBlock extends ConsumerWidget {
   /// Image addresses keyed by the marker payload.
   final Map<String, String> imageUrls;
 
+  /// Moves to a 1-based `[newpage]` section.
+  final ValueChanged<int> onPageJump;
+
   /// Illustrations keep this shape until theirs is known.
   static const _imageRatio = 4 / 3;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return switch (block) {
-      // Until the layout draws spans itself, a line reads as its text.
-      NovelLine(:final spans) => ReaderParagraph(text: _lineText(spans), typesetting: typesetting),
+      final NovelLine line => Padding(
+        padding: EdgeInsets.only(bottom: typesetting.paragraphGap),
+        child: ReaderParagraph(
+          text: ReaderLineText.line(line, typesetting, pageJumpLabel: (page) => context.t.novel.reader.pageJump(page: page)),
+          typesetting: typesetting,
+          onLink: (url) => unawaited(launchUrl(url, mode: LaunchMode.externalApplication)),
+          onPageJump: onPageJump,
+        ),
+      ),
       NovelChapterTitle(:final title) => ReaderChapterTitle(title: title, typesetting: typesetting, first: first),
       // The paragraph above already ends with the gap.
       NovelPageBreak() => Padding(
@@ -914,21 +968,6 @@ class _ReaderBlock extends ConsumerWidget {
       NovelUploadedImage(:final id) => _illustration(context, ref, imageUrls[id], null),
       NovelEmbeddedWork(:final key, :final illustId) => _illustration(context, ref, imageUrls[key], illustId),
     };
-  }
-
-  static String _lineText(List<NovelInline> spans) {
-    final text = StringBuffer();
-    for (final span in spans) {
-      switch (span) {
-        case NovelPlain(text: final value) || NovelLink(text: final value):
-          text.write(value);
-        case NovelRuby(:final base):
-          text.write(base);
-        case NovelPageJump():
-          break;
-      }
-    }
-    return text.toString();
   }
 
   /// An illustration, or the way to the work [illustId] when it has no image

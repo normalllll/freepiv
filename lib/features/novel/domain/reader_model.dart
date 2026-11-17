@@ -21,9 +21,18 @@ class ReaderChapter {
 /// Chapters divide at each chapter title; a text without titles divides at
 /// each page break that follows some content; otherwise it is one chapter.
 class ReaderModel {
-  ReaderModel._(this.blocks, this.chapters, this._offsets, this.totalLength, this._solid, this._breaks, this.imageBlocks);
+  ReaderModel._(this.blocks, this.chapters, this._offsets, this.totalLength, this._solid, this._breaks, this.imageBlocks, this._continuations);
 
-  factory ReaderModel(List<NovelBlock> blocks) {
+  /// A line longer than this many characters is laid out in pieces.
+  static const longLine = 4000;
+
+  /// A piece is cut at a sentence end once it holds at least [pieceMin]
+  /// characters, and at a character boundary at [pieceMax] when there was none.
+  static const pieceMin = 1200;
+  static const pieceMax = 2400;
+
+  factory ReaderModel(List<NovelBlock> parsed) {
+    final (blocks, continuations) = _inPieces(parsed);
     final offsets = List<int>.filled(blocks.length, 0);
     final solid = <int>[];
     final breaks = <int>[];
@@ -47,7 +56,10 @@ class ReaderModel {
     }
 
     final starts = <(int, String?)>[];
-    final titles = [for (var i = 0; i < blocks.length; i++) if (blocks[i] is NovelChapterTitle) i];
+    final titles = [
+      for (var i = 0; i < blocks.length; i++)
+        if (blocks[i] is NovelChapterTitle) i,
+    ];
     if (titles.isNotEmpty) {
       if (hasContent(0, titles.first)) starts.add((0, null));
       for (final i in titles) {
@@ -70,8 +82,137 @@ class ReaderModel {
           endOffset: c + 1 < starts.length ? offsets[starts[c + 1].$1] : total,
         ),
     ];
-    return ReaderModel._(List.unmodifiable(blocks), chapters, offsets, total, solid, breaks, List.unmodifiable(images));
+    return ReaderModel._(List.unmodifiable(blocks), chapters, offsets, total, solid, breaks, List.unmodifiable(images), continuations);
   }
+
+  /// [parsed] with each line longer than [longLine] cut into consecutive
+  /// pieces, and the indices of the pieces that continue the one before. A
+  /// piece ends at a sentence end, else at a character boundary that is not
+  /// inside a ruby, a link or a page jump. The pieces hold the line's
+  /// characters in order, so offsets are the line's own.
+  static (List<NovelBlock>, Set<int>) _inPieces(List<NovelBlock> parsed) {
+    if (!parsed.any((block) => block is NovelLine && block.length > longLine)) return (parsed, const {});
+    final blocks = <NovelBlock>[];
+    final continuations = <int>{};
+    for (final block in parsed) {
+      if (block is! NovelLine || block.length <= longLine) {
+        blocks.add(block);
+        continue;
+      }
+      final pieces = _cutLine(block.spans);
+      for (var i = 0; i < pieces.length; i++) {
+        if (i > 0) continuations.add(blocks.length);
+        blocks.add(i == 0 ? NovelLine(pieces[i], blankLinesBefore: block.blankLinesBefore, authorIndented: block.authorIndented) : NovelLine(pieces[i]));
+      }
+    }
+    return (blocks, continuations);
+  }
+
+  static const _sentenceEnds = '。！？!?…．.';
+  static const _closers = "」』）)】〕”’\"'";
+
+  static List<List<NovelInline>> _cutLine(List<NovelInline> spans) {
+    // Where the line may be cut: after a sentence end, and at any boundary.
+    final sentences = <int>[];
+    final boundaries = <int>[];
+    var at = 0;
+    for (final span in spans) {
+      if (span is NovelPlain) {
+        final text = span.text;
+        for (var i = 0; i < text.length; i++) {
+          boundaries.add(at + i);
+          if (_sentenceEnds.contains(text[i]) && (i + 1 >= text.length || !(_sentenceEnds.contains(text[i + 1]) || _closers.contains(text[i + 1])))) {
+            sentences.add(at + i + 1);
+          } else if (_closers.contains(text[i]) && i > 0 && _sentenceEnds.contains(text[i - 1]) && (i + 1 >= text.length || !_closers.contains(text[i + 1]))) {
+            sentences.add(at + i + 1);
+          }
+        }
+      } else {
+        boundaries.add(at);
+      }
+      at += span.length;
+    }
+    final total = at;
+    final cuts = <int>[];
+    var start = 0;
+    var s = 0;
+    var b = 0;
+    while (total - start > pieceMax) {
+      // The last sentence end in [start + pieceMin, start + pieceMax], else the last boundary up to start + pieceMax.
+      var cut = -1;
+      while (s < sentences.length && sentences[s] <= start + pieceMax) {
+        if (sentences[s] >= start + pieceMin) cut = sentences[s];
+        s++;
+      }
+      if (cut < 0) {
+        while (b < boundaries.length && boundaries[b] <= start + pieceMax) {
+          b++;
+        }
+        cut = b > 0 ? boundaries[b - 1] : start + pieceMax;
+        // A line that is one unbroken ruby or link cannot be cut: take it whole.
+        if (cut <= start) {
+          cut = boundaries.firstWhere((boundary) => boundary > start, orElse: () => total);
+        }
+      }
+      cuts.add(cut);
+      start = cut;
+      // Sentence ends at or before the cut belong to the piece before it.
+      s = 0;
+      while (s < sentences.length && sentences[s] <= cut) {
+        s++;
+      }
+      b = 0;
+      while (b < boundaries.length && boundaries[b] <= cut) {
+        b++;
+      }
+    }
+    // Slice the spans at the cuts.
+    final pieces = <List<NovelInline>>[];
+    var current = <NovelInline>[];
+    var position = 0;
+    var next = 0;
+    for (final span in spans) {
+      if (span is NovelPlain) {
+        var text = span.text;
+        while (next < cuts.length && cuts[next] < position + text.length && cuts[next] > position) {
+          final local = cuts[next] - position;
+          current.add(NovelPlain(text.substring(0, local)));
+          pieces.add(current);
+          current = [];
+          text = text.substring(local);
+          position = cuts[next];
+          next++;
+        }
+        if (text.isNotEmpty) current.add(NovelPlain(text));
+        position += text.length;
+      } else {
+        if (next < cuts.length && cuts[next] == position && current.isNotEmpty) {
+          pieces.add(current);
+          current = [];
+          next++;
+        }
+        current.add(span);
+        position += span.length;
+      }
+      // A cut that falls exactly at the end of this span.
+      if (next < cuts.length && cuts[next] == position) {
+        pieces.add(current);
+        current = [];
+        next++;
+      }
+    }
+    if (current.isNotEmpty) pieces.add(current);
+    return pieces;
+  }
+
+  /// Indices of the blocks that continue the line of the block before them.
+  final Set<int> _continuations;
+
+  /// Whether [block] is a piece that continues the line of the block before it.
+  bool continues(int block) => _continuations.contains(block);
+
+  /// Whether the block after [block] continues its line.
+  bool isContinuedBy(int block) => _continuations.contains(block + 1);
 
   /// Every block, as parsed.
   final List<NovelBlock> blocks;

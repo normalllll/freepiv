@@ -1902,6 +1902,7 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 	@override String scrollSpeedValue({required Object speed}) => '${speed} px/秒';
 	@override String chapterPosition({required Object current, required Object total}) => '第 ${current} / ${total} 章';
 	@override String chapterNumber({required Object number}) => '第 ${number} 章';
+	@override String pageJump({required Object page}) => '${page} ページへ';
 	@override String get previousChapter => '前の章';
 	@override String get nextChapter => '次の章';
 	@override String progressValue({required Object percent}) => '${percent}%';
@@ -2575,6 +2576,7 @@ extension on TranslationsJaJp {
 			'novel.reader.scrollSpeedValue' => ({required Object speed}) => '${speed} px/秒',
 			'novel.reader.chapterPosition' => ({required Object current, required Object total}) => '第 ${current} / ${total} 章',
 			'novel.reader.chapterNumber' => ({required Object number}) => '第 ${number} 章',
+			'novel.reader.pageJump' => ({required Object page}) => '${page} ページへ',
 			'novel.reader.previousChapter' => '前の章',
 			'novel.reader.nextChapter' => '次の章',
 			'novel.reader.progressValue' => ({required Object percent}) => '${percent}%',
