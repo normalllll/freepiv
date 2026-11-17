@@ -1013,7 +1013,21 @@
     "bookmarks": "ブックマーク $count",
     "related": "関連小説",
     "noRelated": "関連小説はありません",
-    "authorNovels": "作者のほかの小説"
+    "authorNovels": "作者のほかの小説",
+    "original": "オリジナル",
+    "readingTime": "約 $minutes 分",
+    "readingTimeHours": "約 $hours 時間 $minutes 分",
+    "readingTimeWholeHours": "約 $hours 時間",
+    "factLength": "文字数",
+    "factStructure": "構成",
+    "factPublished": "公開日",
+    "factReception": "ブックマーク・閲覧",
+    "chapterCount": "$count 章",
+    "sectionCount": "$count セクション",
+    "views": "閲覧 $count",
+    "partOf": "第 $part 話 / 全 $total 話",
+    "allParts": "全 $count 話を見る",
+    "seriesFailed": "シリーズを読み込めませんでした"
   },
   "commentsPage": {
     "empty": "まだコメントはありません。最初のコメントを書きましょう"

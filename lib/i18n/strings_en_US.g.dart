@@ -844,6 +844,20 @@ class Translations$novelDetail$en_US {
 	String get related => 'Related novels';
 	String get noRelated => 'No related novels';
 	String get authorNovels => 'More by the author';
+	String get original => 'Original';
+	String readingTime({required Object minutes}) => '${minutes} min read';
+	String readingTimeHours({required Object hours, required Object minutes}) => '${hours} h ${minutes} min read';
+	String readingTimeWholeHours({required Object hours}) => '${hours} h read';
+	String get factLength => 'Length';
+	String get factStructure => 'Structure';
+	String get factPublished => 'Published';
+	String get factReception => 'Bookmarks · views';
+	String chapterCount({required Object count}) => '${count} chapters';
+	String sectionCount({required Object count}) => '${count} sections';
+	String views({required Object count}) => '${count} views';
+	String partOf({required Object part, required Object total}) => 'Part ${part} of ${total}';
+	String allParts({required Object count}) => 'All ${count} parts';
+	String get seriesFailed => 'Could not load the series';
 }
 
 // Path: commentsPage
@@ -2851,6 +2865,20 @@ extension on Translations {
 			'novelDetail.related' => 'Related novels',
 			'novelDetail.noRelated' => 'No related novels',
 			'novelDetail.authorNovels' => 'More by the author',
+			'novelDetail.original' => 'Original',
+			'novelDetail.readingTime' => ({required Object minutes}) => '${minutes} min read',
+			'novelDetail.readingTimeHours' => ({required Object hours, required Object minutes}) => '${hours} h ${minutes} min read',
+			'novelDetail.readingTimeWholeHours' => ({required Object hours}) => '${hours} h read',
+			'novelDetail.factLength' => 'Length',
+			'novelDetail.factStructure' => 'Structure',
+			'novelDetail.factPublished' => 'Published',
+			'novelDetail.factReception' => 'Bookmarks · views',
+			'novelDetail.chapterCount' => ({required Object count}) => '${count} chapters',
+			'novelDetail.sectionCount' => ({required Object count}) => '${count} sections',
+			'novelDetail.views' => ({required Object count}) => '${count} views',
+			'novelDetail.partOf' => ({required Object part, required Object total}) => 'Part ${part} of ${total}',
+			'novelDetail.allParts' => ({required Object count}) => 'All ${count} parts',
+			'novelDetail.seriesFailed' => 'Could not load the series',
 			'commentsPage.empty' => 'No comments yet. Write the first one',
 			'searchPage.minWidth' => 'Minimum width',
 			'searchPage.minHeight' => 'Minimum height',

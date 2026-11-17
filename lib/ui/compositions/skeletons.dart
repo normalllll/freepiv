@@ -53,6 +53,8 @@ const _noImages = ImageUrls(squareMedium: '', medium: '', large: '');
 
 const _placeholderTags = [Tag(name: 'original'), Tag(name: 'landscape')];
 
+const _tallTags = [Tag(name: 'original character'), Tag(name: 'landscape photography'), Tag(name: 'reference material')];
+
 /// A work of usual size standing in while the real one loads. Only its
 /// geometry is ever seen: everything built from it is painted as bones.
 Illust illustPlaceholder({int id = 0}) => Illust(
@@ -81,17 +83,19 @@ Illust illustPlaceholder({int id = 0}) => Illust(
   illustAiType: 1,
 );
 
-/// A novel to lay out and paint as bones while the real one loads.
-Novel novelPlaceholder({int id = 0}) => Novel(
+/// A novel to lay out and paint as bones while the real one loads. With
+/// [tall] its title fills two lines and its three tags wrap: the tallest a
+/// row gets.
+Novel novelPlaceholder({int id = 0, bool tall = false}) => Novel(
   id: id,
-  title: 'A novel title',
+  title: tall ? 'A novel title that runs over two lines of its row, as the longest titles of a series or an author do, and then some' : 'A novel title',
   caption: 'The first line of what the author says about this novel, as long as a usual caption, and the line after it.',
   restrict: 0,
   xRestrict: 0,
   isOriginal: true,
   imageUrls: _noImages,
   createDate: '2026-01-01T00:00:00+09:00',
-  tags: _placeholderTags,
+  tags: tall ? _tallTags : _placeholderTags,
   pageCount: 1,
   textLength: 10000,
   user: appPlaceholderUser,

@@ -1013,7 +1013,21 @@
     "bookmarks": "$count 收藏",
     "related": "相关小说",
     "noRelated": "暂无相关小说",
-    "authorNovels": "作者的其他小说"
+    "authorNovels": "作者的其他小说",
+    "original": "原创",
+    "readingTime": "约 $minutes 分钟",
+    "readingTimeHours": "约 $hours 小时 $minutes 分钟",
+    "readingTimeWholeHours": "约 $hours 小时",
+    "factLength": "字数",
+    "factStructure": "结构",
+    "factPublished": "发布",
+    "factReception": "收藏 · 浏览",
+    "chapterCount": "$count 章",
+    "sectionCount": "$count 节",
+    "views": "$count 浏览",
+    "partOf": "第 $part 话 / 共 $total 话",
+    "allParts": "全部 $count 话",
+    "seriesFailed": "无法加载系列"
   },
   "commentsPage": {
     "empty": "还没有评论，来写第一条"

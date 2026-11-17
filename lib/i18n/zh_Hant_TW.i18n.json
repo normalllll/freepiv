@@ -1013,7 +1013,21 @@
     "bookmarks": "$count 收藏",
     "related": "相關小說",
     "noRelated": "暫無相關小說",
-    "authorNovels": "作者的其他小說"
+    "authorNovels": "作者的其他小說",
+    "original": "原創",
+    "readingTime": "約 $minutes 分鐘",
+    "readingTimeHours": "約 $hours 小時 $minutes 分鐘",
+    "readingTimeWholeHours": "約 $hours 小時",
+    "factLength": "字數",
+    "factStructure": "結構",
+    "factPublished": "發布",
+    "factReception": "收藏 · 瀏覽",
+    "chapterCount": "$count 章",
+    "sectionCount": "$count 節",
+    "views": "$count 瀏覽",
+    "partOf": "第 $part 話 / 共 $total 話",
+    "allParts": "全部 $count 話",
+    "seriesFailed": "無法載入系列"
   },
   "commentsPage": {
     "empty": "還沒有留言，來寫第一則"

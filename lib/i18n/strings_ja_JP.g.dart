@@ -842,6 +842,20 @@ class _Translations$novelDetail$ja_JP extends Translations$novelDetail$en_US {
 	@override String get related => '関連小説';
 	@override String get noRelated => '関連小説はありません';
 	@override String get authorNovels => '作者のほかの小説';
+	@override String get original => 'オリジナル';
+	@override String readingTime({required Object minutes}) => '約 ${minutes} 分';
+	@override String readingTimeHours({required Object hours, required Object minutes}) => '約 ${hours} 時間 ${minutes} 分';
+	@override String readingTimeWholeHours({required Object hours}) => '約 ${hours} 時間';
+	@override String get factLength => '文字数';
+	@override String get factStructure => '構成';
+	@override String get factPublished => '公開日';
+	@override String get factReception => 'ブックマーク・閲覧';
+	@override String chapterCount({required Object count}) => '${count} 章';
+	@override String sectionCount({required Object count}) => '${count} セクション';
+	@override String views({required Object count}) => '閲覧 ${count}';
+	@override String partOf({required Object part, required Object total}) => '第 ${part} 話 / 全 ${total} 話';
+	@override String allParts({required Object count}) => '全 ${count} 話を見る';
+	@override String get seriesFailed => 'シリーズを読み込めませんでした';
 }
 
 // Path: commentsPage
@@ -2849,6 +2863,20 @@ extension on TranslationsJaJp {
 			'novelDetail.related' => '関連小説',
 			'novelDetail.noRelated' => '関連小説はありません',
 			'novelDetail.authorNovels' => '作者のほかの小説',
+			'novelDetail.original' => 'オリジナル',
+			'novelDetail.readingTime' => ({required Object minutes}) => '約 ${minutes} 分',
+			'novelDetail.readingTimeHours' => ({required Object hours, required Object minutes}) => '約 ${hours} 時間 ${minutes} 分',
+			'novelDetail.readingTimeWholeHours' => ({required Object hours}) => '約 ${hours} 時間',
+			'novelDetail.factLength' => '文字数',
+			'novelDetail.factStructure' => '構成',
+			'novelDetail.factPublished' => '公開日',
+			'novelDetail.factReception' => 'ブックマーク・閲覧',
+			'novelDetail.chapterCount' => ({required Object count}) => '${count} 章',
+			'novelDetail.sectionCount' => ({required Object count}) => '${count} セクション',
+			'novelDetail.views' => ({required Object count}) => '閲覧 ${count}',
+			'novelDetail.partOf' => ({required Object part, required Object total}) => '第 ${part} 話 / 全 ${total} 話',
+			'novelDetail.allParts' => ({required Object count}) => '全 ${count} 話を見る',
+			'novelDetail.seriesFailed' => 'シリーズを読み込めませんでした',
 			'commentsPage.empty' => 'まだコメントはありません。最初のコメントを書きましょう',
 			'searchPage.minWidth' => '最小の幅',
 			'searchPage.minHeight' => '最小の高さ',

@@ -426,10 +426,16 @@ Future<HistoryRepository> sampleHistoryRepository() async {
     await repository.record(account, HistoryEntry.ofNovel(novels[index], now.subtract(Duration(hours: index * 9 + 2))), limit: HistoryLimit.standard);
   }
   await repository.record(sampleSecondAccount.user.id, HistoryEntry.ofIllust(illusts.first, now), limit: HistoryLimit.standard);
-  final length = novels.first.textLength;
-  await repository.saveReadingProgress(account, novels.first.id, ReadingProgress(offset: length * 38 ~/ 100, totalLength: length, updatedAt: now));
+  for (final (index, percent) in [(0, 38), (1, 72), (3, 5)]) {
+    final length = novels[index].textLength;
+    await repository.saveReadingProgress(account, novels[index].id, ReadingProgress(offset: length * percent ~/ 100, totalLength: length, updatedAt: now));
+  }
   return repository;
 }
+
+/// The place in [sampleNovels] of the novel that is R-18 and AI-generated; it
+/// is in a series, like every third one.
+const _restrictedAiNovel = 6;
 
 /// Novels by sample authors, some long-titled and in a series. [varied]
 /// mixes in a second author and the tag 猫 as [sampleIllusts] does.
@@ -440,8 +446,8 @@ List<Novel> sampleNovels({int count = 12, String? title, String? author, bool va
       title: title ?? (index.isEven ? 'Sample novel ${index + 1}' : 'A rather long sample novel title that needs two lines ${index + 1}'),
       caption: 'The opening of a story about the sea, the town on its shore and the people who wait there for the boats to come back.',
       restrict: 0,
-      xRestrict: 0,
-      isOriginal: true,
+      xRestrict: index == _restrictedAiNovel ? 1 : 0,
+      isOriginal: index != _restrictedAiNovel,
       imageUrls: ImageUrls(
         squareMedium: sampleImageUrl(40 + index, width: 240, height: 240),
         medium: sampleImageUrl(40 + index, width: 240, height: 340),
@@ -469,7 +475,7 @@ List<Novel> sampleNovels({int count = 12, String? title, String? author, bool va
       isMuted: false,
       isMypixivOnly: false,
       isXRestricted: false,
-      novelAiType: 1,
+      novelAiType: index == _restrictedAiNovel ? 2 : 1,
     ),
 ];
 
@@ -951,8 +957,8 @@ WebviewNovel sampleNovelText(int novelId) {
     images: body.images,
     glossaryItems: const [],
     replaceableItemIds: const [],
-    aiType: 0,
-    isOriginal: true,
+    aiType: novelId - 70000 == _restrictedAiNovel ? 2 : 0,
+    isOriginal: novelId - 70000 != _restrictedAiNovel,
   );
 }
 
@@ -1135,10 +1141,17 @@ class _SampleIllustDetail extends IllustDetail {
       args.illust ?? sampleIllusts().firstWhere((illust) => illust.id == args.resolvedIllustId, orElse: () => sampleIllusts().first);
 }
 
+const sampleNovelLoadingId = 79001;
+const sampleNovelFailingId = 79002;
+
 class _SampleNovelDetail extends NovelDetail {
   @override
-  FutureOr<Novel> build(NovelDetailArgs args) =>
-      args.novel ?? sampleNovels().firstWhere((novel) => novel.id == args.novelId, orElse: () => sampleNovels().first);
+  FutureOr<Novel> build(NovelDetailArgs args) {
+    // Two ids that never answer and that fail, for the page's other states.
+    if (args.novelId == sampleNovelLoadingId) return Completer<Novel>().future;
+    if (args.novelId == sampleNovelFailingId) throw StateError('offline');
+    return args.novel ?? sampleNovels().firstWhere((novel) => novel.id == args.novelId, orElse: () => sampleNovels().first);
+  }
 }
 
 /// Newest feeds answering from the sample works; private follows are empty.

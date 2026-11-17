@@ -14,7 +14,6 @@ import 'package:freepiv/features/novel/logic/novel_marker_logic.dart';
 import 'package:freepiv/features/novel/presentation/detail/novel_detail_page.dart';
 import 'package:freepiv/features/novel/presentation/reader/novel_reader_page.dart';
 import 'package:freepiv/features/series/series_page.dart';
-import 'package:freepiv/features/series/series_widgets.dart';
 import 'package:freepiv/features/series/watchlist_page.dart';
 import 'package:freepiv/features/settings/presentation/settings_page.dart';
 import 'package:freepiv/features/user_detail/logic/user_detail_logic.dart';
@@ -401,8 +400,9 @@ void main() {
     testWidgets('a novel in a series links to it from its page', (tester) async {
       final novel = sampleNovels().firstWhere((novel) => novel.series.id != null);
       await mountPilotPage(tester, NovelDetailPage(novel: novel));
-      expect(tester.widget<AppSeriesLink>(find.byType(AppSeriesLink)).seriesId, novel.series.id);
-      await tester.tap(find.byType(AppSeriesLink));
+      final header = find.widgetWithText(FrostListRow, novel.series.title!);
+      expect(header, findsOneWidget);
+      await tester.tap(header);
       await settlePilot(tester);
       expect(openedLocations.last, AppLocations.series(AppSeriesKind.novel, novel.series.id!));
     });

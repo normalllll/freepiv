@@ -189,7 +189,13 @@ class AppCommentRowsSkeleton extends StatelessWidget {
   /// Null fills the window; a number is for a short fixed preview.
   final int? count;
 
-  static final _comment = Comment(id: 0, comment: 'A comment of usual length', date: '2026-01-01T12:00:00+09:00', user: appPlaceholderUser, hasReplies: false);
+  static final _comment = Comment(
+    id: 0,
+    comment: 'A comment of usual length, which runs over two lines of the thread when the window is wide and a few more when it is narrow',
+    date: '2026-01-01T12:00:00+09:00',
+    user: appPlaceholderUser,
+    hasReplies: false,
+  );
 
   @override
   Widget build(BuildContext context) {

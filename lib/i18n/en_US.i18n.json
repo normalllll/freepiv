@@ -1013,7 +1013,21 @@
     "bookmarks": "$count bookmarks",
     "related": "Related novels",
     "noRelated": "No related novels",
-    "authorNovels": "More by the author"
+    "authorNovels": "More by the author",
+    "original": "Original",
+    "readingTime": "$minutes min read",
+    "readingTimeHours": "$hours h $minutes min read",
+    "readingTimeWholeHours": "$hours h read",
+    "factLength": "Length",
+    "factStructure": "Structure",
+    "factPublished": "Published",
+    "factReception": "Bookmarks · views",
+    "chapterCount": "$count chapters",
+    "sectionCount": "$count sections",
+    "views": "$count views",
+    "partOf": "Part $part of $total",
+    "allParts": "All $count parts",
+    "seriesFailed": "Could not load the series"
   },
   "commentsPage": {
     "empty": "No comments yet. Write the first one"

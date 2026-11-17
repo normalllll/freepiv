@@ -1,42 +1,42 @@
 import 'dart:async';
 
+import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
-import 'package:freepiv/core/core.dart';
-import 'package:freepiv/core/media/logic.dart';
+import 'package:freepiv/core/history/history_models.dart';
 import 'package:freepiv/features/comments/presentation/comment_thread_item.dart';
-import 'package:freepiv/features/downloads/presentation/content_image_entries.dart';
 import 'package:freepiv/features/downloads/presentation/download_source_scope.dart';
-import 'package:freepiv/features/illust/presentation/illust_info.dart' show IllustAuthorLine;
-import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
+import 'package:freepiv/features/novel/logic/novel_series_progress.dart';
+import 'package:freepiv/features/novel/logic/novel_structure.dart';
 import 'package:freepiv/features/novel/logic/reading_progress.dart';
+import 'package:freepiv/features/novel/presentation/detail/widgets/novel_about.dart';
+import 'package:freepiv/features/novel/presentation/detail/widgets/novel_actions.dart';
+import 'package:freepiv/features/novel/presentation/detail/widgets/novel_author_novels.dart';
+import 'package:freepiv/features/novel/presentation/detail/widgets/novel_facts.dart';
+import 'package:freepiv/features/novel/presentation/detail/widgets/novel_head.dart';
+import 'package:freepiv/features/novel/presentation/detail/widgets/novel_illustrations.dart';
+import 'package:freepiv/features/novel/presentation/detail/widgets/novel_series_block.dart';
 import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
-import 'package:freepiv/features/series/series_widgets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
-import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/error.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/models.dart';
-import 'package:freepiv/ui/compositions/bookmark_options.dart';
+import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart' show WebviewNovel;
 import 'package:freepiv/ui/compositions/content_rows.dart';
-import 'package:freepiv/ui/compositions/loading_section.dart';
 import 'package:freepiv/ui/compositions/page_error.dart';
-import 'package:freepiv/ui/compositions/pixiv_image.dart';
-import 'package:freepiv/ui/compositions/pixiv_text.dart';
-import 'package:freepiv/ui/compositions/work_actions.dart';
 import 'package:freepiv/ui/compositions/skeletons.dart';
-import 'package:freepiv/ui/compositions/tag_menu.dart';
 import 'package:frost_data/frost_data.dart';
 import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
-/// The novel page, a reading column: cover, title,
-/// author and meta, then Start / Continue reading as the solid button with
-/// Bookmark, the caption, tags, the illustrations, comments, the author's
-/// other novels and related novels. The text loads apart: when it fails the
-/// page stays usable and only reading waits for a retry.
+/// The novel page. Wide windows put the cover, the reading button and the
+/// facts in a column beside the title, caption, series and illustrations; a
+/// narrow window stacks them, and a phone pins the reading button in a bar at
+/// the bottom. Comments, the author's other novels and related novels follow
+/// below. The text loads apart: when it fails the page stays usable and only
+/// reading waits for a retry.
 class NovelDetailPage extends ConsumerWidget {
   const NovelDetailPage({this.novelId, this.novel, super.key}) : assert(novelId != null || novel != null);
 
@@ -67,6 +67,20 @@ class NovelDetailPage extends ConsumerWidget {
   }
 }
 
+/// How the page lays out at the width it has.
+enum _Layout { wide, narrow }
+
+/// The content width from which the page has two columns.
+const _wideFrom = 960.0;
+
+/// The width from which a narrow page puts the title block beside the cover.
+const _sideBySideFrom = 600.0;
+
+const _leftColumn = 300.0;
+
+/// The cover's width beside the title block.
+const _sideCoverWidth = 160.0;
+
 class NovelDetailContent extends ConsumerStatefulWidget {
   const NovelDetailContent({required this.novel, super.key});
 
@@ -78,9 +92,13 @@ class NovelDetailContent extends ConsumerStatefulWidget {
 
 class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
   final _scroll = ScrollController();
-  final _headKey = GlobalKey();
-  bool _headGone = false;
-  double _headHeight = 0;
+  final _titleKey = GlobalKey();
+  final _chromeKey = GlobalKey();
+  bool _titleGone = false;
+
+  /// Where the title block ends, in the scrolled content; its last place stands
+  /// while the list has dropped it.
+  double _titleBottom = 0;
 
   Novel get _novel => widget.novel;
 
@@ -96,17 +114,23 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
     super.dispose();
   }
 
-  /// Once the title has scrolled away the header carries it and the
-  /// reading button. The list drops the head when it is far above; its last
-  /// height still stands.
+  /// Once the title block has gone under the header, the header carries the
+  /// title and the reading button.
   void _scrolled() {
-    _headHeight = _headKey.currentContext?.size?.height ?? _headHeight;
-    final gone = _headHeight > 0 && _scroll.offset > _headHeight;
-    if (gone != _headGone) setState(() => _headGone = gone);
+    final box = _titleKey.currentContext?.findRenderObject();
+    if (box is RenderBox && box.attached && box.hasSize) {
+      _titleBottom = RenderAbstractViewport.of(box).getOffsetToReveal(box, 0).offset + box.size.height;
+    }
+    // The height the pinned header covers, which the content under it starts below.
+    final header = _chromeKey.currentContext == null ? 0.0 : MediaQuery.paddingOf(_chromeKey.currentContext!).top;
+    final gone = _titleBottom > 0 && _titleBottom - _scroll.offset <= header;
+    if (gone != _titleGone) setState(() => _titleGone = gone);
   }
 
   Future<void> _read() async {
     await GoRouter.of(context).push(AppLocations.novelReader(_novel.id), extra: _novel);
+    // The reader may have moved the progress of this novel in its series.
+    ref.invalidate(novelBatchReadingProgressProvider);
     if (mounted) setState(() {});
   }
 
@@ -117,255 +141,279 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
     final webview = text.value;
     final readable = webview?.text.trim().isNotEmpty ?? false;
     final progress = ref.watch(novelReadingProgressProvider(_novel.id)).value;
+    final phone = FrostSizeClass.of(context) == FrostSizeClass.compact;
     final readLabel = progress == null ? t.novel.detail.startReading : t.novel.detail.continueReading(percent: progress.percent);
     final related = ref.watch(novelRelatedWorksProvider(_novel.id));
-    return DownloadSourceScope(
-      source: novelDownloadSource(_novel),
-      child: FrostPinnedChrome(
-        chrome: FrostContentColumn(
-          maxWidth: FrostMetrics.readingMaxWidth,
-          child: FrostPageHeader(
-            title: _headGone ? FrostText(_novel.title) : null,
-            actions: [
-              if (_headGone && readable)
-                FrostToolbarItem.action(icon: PivIcons.newspaper, label: readLabel, showsLabel: true, onPressed: () => unawaited(_read())),
-            ],
-          ),
-        ),
-        body: FrostLoadingScrollView(
-          controller: _scroll,
-          slivers: [
-            const FrostChromeSpacer(),
-            FrostSliverContentColumn(
-              maxWidth: FrostMetrics.readingMaxWidth,
-              sliver: SliverList.list(
-                children: [
-                  KeyedSubtree(
-                    key: _headKey,
-                    child: _NovelHead(novel: _novel),
-                  ),
-                  if (_novel.series case Series(:final id?, :final title?))
-                    Padding(
-                      padding: const EdgeInsets.only(top: FrostGap.related),
-                      child: AppSeriesLink(kind: AppSeriesKind.novel, seriesId: id, title: title),
-                    ),
-                  const SizedBox(height: FrostGap.group),
-                  Wrap(
-                    spacing: FrostGap.related,
-                    runSpacing: FrostGap.related,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      FrostButton.prominent(label: readLabel, icon: PivIcons.newspaper, onPressed: readable ? () => unawaited(_read()) : null),
-                      AppBookmarkBuilder(
-                        workId: _novel.id,
-                        initiallyBookmarked: _novel.isBookmarked,
-                        novel: true,
-                        builder: (context, bookmarked, toggle) => AppDetailBookmarkButton(
-                          bookmarked: bookmarked,
-                          label: bookmarked ? t.novelDetail.bookmarked : t.novelDetail.bookmark,
-                          onPressed: toggle,
-                        ),
-                      ),
-                      AppBookmarkOptionsButton(workId: _novel.id, initiallyBookmarked: _novel.isBookmarked, novel: true),
-                    ],
-                  ),
-                  if (text.hasError && !text.isLoading)
-                    Row(
-                      children: [
-                        Flexible(
-                          child: FrostText(t.novelText.loadFailed, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
-                        ),
-                        FrostButton.quiet(label: t.common.retry, onPressed: () => unawaited(ref.read(novelTextProvider(_novel.id).notifier).reload())),
-                      ],
-                    ),
-                  _NovelAbout(novel: _novel, caption: webview?.caption),
-                  _NovelImages(novel: _novel, imageUrls: novelExtraImageUrls(_novel, webview)),
-                  const SizedBox(height: FrostGap.section),
-                  AppCommentsPreview(
-                    value: ref.watch(novelCommentsProvider(_novel.id)),
-                    total: _novel.totalComments,
-                    onRetry: () => unawaited(ref.read(novelCommentsProvider(_novel.id).notifier).reload()),
-                    location: AppLocations.novelComments(_novel.id),
-                  ),
-                  const SizedBox(height: FrostGap.section),
-                  _AuthorNovels(novel: _novel),
-                  const SizedBox(height: FrostGap.section),
-                  FrostSectionHeader(title: t.novelDetail.related),
-                ],
+    void read() => unawaited(_read());
+    final onRead = readable ? read : null;
+    final textFailed = text.hasError && !text.isLoading;
+    final structure = ref.watch(novelStructureProvider(_novel.id));
+    final Widget scroll = FrostLoadingScrollView(
+      controller: _scroll,
+      slivers: [
+        FrostChromeSpacer(key: _chromeKey),
+        FrostSliverContentColumn(
+          sliver: SliverToBoxAdapter(
+            child: KeyedSubtree(
+              key: const ValueKey('detail-head'),
+              child: _DetailHead(
+                titleKey: _titleKey,
+                novel: _novel,
+                webview: webview,
+                phone: phone,
+                controls: (inline) => _Controls(
+                  novel: _novel,
+                  progress: progress,
+                  onRead: onRead,
+                  phone: phone,
+                  inline: inline,
+                  textFailed: textFailed,
+                  onRetry: () => unawaited(ref.read(novelTextProvider(_novel.id).notifier).reload()),
+                ),
+                about: NovelAbout(novel: _novel, caption: webview?.caption),
+                facts: NovelFacts(novel: _novel, structure: structure, loading: text.isLoading),
+                images: NovelIllustrations(novel: _novel, pictures: structure?.pictures ?? const []),
+                showControlsOnPhone: textFailed,
               ),
-            ),
-            FrostSliverContentColumn(
-              maxWidth: FrostMetrics.readingMaxWidth,
-              sliver: FrostSliverDataList<Novel>(
-                source: related,
-                firstLoadSkeleton: const AppNovelRowsSkeleton(),
-                empty: FrostText(t.novelDetail.noRelated, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
-                itemBuilder: (context, novel, index) => AppNovelRow(novel: novel),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Cover, title, author line and meta.
-class _NovelHead extends ConsumerWidget {
-  const _NovelHead({required this.novel});
-
-  final Novel novel;
-
-  static const coverWidth = 96.0;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final t = context.t;
-    final cover = novel.imageUrls.medium;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: FrostGap.group,
-      children: [
-        SizedBox(
-          width: coverWidth,
-          child: FrostContextMenuRegion(
-            entries: contentImageMenu(context, ref.read(rustMediaTransportProvider), url: cover, title: novel.title),
-            child: FrostThumbnail(
-              size: FrostThumbnailSize.large,
-              semanticLabel: t.novel.detail.images,
-              image: AppPixivImage(url: cover, aspectRatio: 1 / 1.414, radius: 0),
-              onPressed: () => _openImages(context, novel, [cover], 0),
             ),
           ),
         ),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: FrostGap.related,
+        FrostSliverContentColumn(
+          sliver: SliverList.list(
             children: [
-              FrostText(novel.title, content: true, role: FrostTextRole.title2, selectable: true),
-              IllustAuthorLine(user: novel.user),
-              FrostMetaLine(
-                items: [
-                  t.novel.detail.totalChars(count: formatCount(novel.textLength)),
-                  formatPixivDate(novel.createDate),
-                  t.novelDetail.bookmarks(count: formatCount(novel.totalBookmarks)),
-                ],
+              const SizedBox(height: FrostGap.section),
+              AppCommentsPreview(
+                value: ref.watch(novelCommentsProvider(_novel.id)),
+                total: _novel.totalComments,
+                onRetry: () => unawaited(ref.read(novelCommentsProvider(_novel.id).notifier).reload()),
+                location: AppLocations.novelComments(_novel.id),
               ),
+              const SizedBox(height: FrostGap.section),
+              NovelAuthorNovels(novel: _novel),
+              const SizedBox(height: FrostGap.section),
+              FrostSectionHeader(title: t.novelDetail.related),
             ],
+          ),
+        ),
+        FrostSliverContentColumn(
+          sliver: FrostSliverDataList<Novel>(
+            source: related,
+            firstLoadSkeleton: const AppNovelRowsSkeleton(),
+            empty: FrostText(t.novelDetail.noRelated, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
+            itemBuilder: (context, novel, index) => AppNovelRow(novel: novel),
           ),
         ),
       ],
     );
+    return DownloadSourceScope(
+      source: novelDownloadSource(_novel),
+      child: FrostPinnedChrome(
+        chrome: FrostContentColumn(
+          child: FrostPageHeader(
+            title: _titleGone ? FrostText(_novel.title) : null,
+            actions: [
+              if (_titleGone && readable && !phone) FrostToolbarItem.action(icon: PivIcons.newspaper, label: readLabel, showsLabel: true, onPressed: read),
+            ],
+          ),
+        ),
+        body: phone
+            ? Column(
+                children: [
+                  Expanded(child: scroll),
+                  NovelBottomActionBar(novel: _novel, progress: progress, onRead: onRead),
+                ],
+              )
+            : scroll,
+      ),
+    );
   }
 }
 
-void _openImages(BuildContext context, Novel novel, List<String> urls, int index) => unawaited(
-  GoRouter.of(context).push(
-    AppRoute.originalImageViewer.path,
-    extra: OriginalImageViewerArgs(
-      title: novel.title,
-      source: DownloadSourceScope.of(context),
-      initialIndex: index,
-      pages: [for (final url in urls) OriginalImagePage(url: url, previewUrl: url, downloadOrigin: DownloadOrigin.ofImageUrl(Uri.parse(url)))],
-    ),
-  ),
-);
-
-/// The caption and the tags, which search novels, with the gap above them; a
-/// novel with neither leaves nothing.
-class _NovelAbout extends StatelessWidget {
-  const _NovelAbout({required this.novel, required this.caption});
+/// The head of the page: cover, title block and controls, then what follows
+/// them in the layout the width allows. The skeleton builds it from a
+/// placeholder novel with the pieces that need data left out, so the cover,
+/// the title and the controls sit where the loaded ones will.
+class _DetailHead extends StatelessWidget {
+  const _DetailHead({
+    required this.novel,
+    required this.webview,
+    required this.phone,
+    required this.controls,
+    this.titleKey,
+    this.about,
+    this.facts,
+    this.images,
+    this.showControlsOnPhone = false,
+  });
 
   final Novel novel;
-  final String? caption;
+  final WebviewNovel? webview;
+  final bool phone;
+
+  /// The controls, told whether the read button and the bookmark row share a row.
+  final Widget Function(bool inline) controls;
+
+  /// Names the title block, for what follows its scrolling.
+  final GlobalKey? titleKey;
+  final Widget? about;
+  final Widget? facts;
+  final Widget? images;
+
+  /// Whether the controls are in the page on a phone, which otherwise leaves them to the bottom bar.
+  final bool showControlsOnPhone;
 
   @override
   Widget build(BuildContext context) {
-    final text = plainTextFromHtml(caption?.trim().isNotEmpty ?? false ? caption! : novel.caption).trim();
-    if (text.isEmpty && novel.tags.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: FrostGap.section),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: FrostGap.group,
-        children: [
-          if (text.isNotEmpty) AppPixivText(caption?.trim().isNotEmpty ?? false ? caption! : novel.caption),
-          if (novel.tags.isNotEmpty)
-            FrostWrap(
-              children: [
-                for (final tag in novel.tags)
-                  FrostTag(
-                    label: '#${tag.name}',
-                    detail: tag.translatedName,
-                    style: FrostTagStyle.topic,
-                    onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.tagSearch(tag.name, kind: AppSearchKind.novel))),
-                    contextMenu: workTagMenu(context, tag.name),
-                  ),
-              ],
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The novel's illustrations as a thumbnail strip opening the viewer.
-class _NovelImages extends ConsumerWidget {
-  const _NovelImages({required this.novel, required this.imageUrls});
-
-  final Novel novel;
-  final List<String> imageUrls;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (imageUrls.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: FrostGap.section),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: FrostGap.related,
-        children: [
-          FrostSectionHeader(title: context.t.novel.detail.images),
-          FrostThumbnailStrip(
-            itemCount: imageUrls.length,
-            selectedIndex: null,
-            onSelected: (index) => _openImages(context, novel, imageUrls, index),
-            itemBuilder: (context, index) => FrostContextMenuRegion(
-              entries: contentImageMenu(context, ref.read(rustMediaTransportProvider), url: imageUrls[index], title: novel.title),
-              child: AppPixivImage(url: imageUrls[index], aspectRatio: 1, radius: 0),
-            ),
+    final novel = this.novel;
+    final seriesBlock = switch (novel.series) {
+      Series(:final id?, :final title?) when about != null => NovelSeriesBlock(novel: novel, seriesId: id, title: title),
+      _ => null,
+    };
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final layout = constraints.maxWidth >= _wideFrom ? _Layout.wide : _Layout.narrow;
+        // Where both fit, the read button and the bookmark row share one row.
+        final controls = this.controls(layout == _Layout.narrow);
+        return switch (layout) {
+          _Layout.wide => Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: FrostGap.section,
+            children: [
+              SizedBox(
+                width: _leftColumn,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: FrostGap.group,
+                  children: [
+                    NovelCover(novel: novel, webview: webview, width: _leftColumn),
+                    controls,
+                    ?facts,
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: FrostGap.section,
+                  children: [
+                    NovelTitleBlock(key: titleKey, novel: novel, webview: webview, titleRole: FrostTextRole.title1),
+                    ?about,
+                    ?seriesBlock,
+                    ?images,
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+          _Layout.narrow => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: FrostGap.section,
+            children: [
+              if (constraints.maxWidth >= _sideBySideFrom)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: FrostGap.section,
+                  children: [
+                    NovelCover(novel: novel, webview: webview, width: _sideCoverWidth),
+                    // The title at the cover's top and the controls at its bottom: the cover is
+                    // taller than the title block, and the controls keep their place whatever the title.
+                    Expanded(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: _sideCoverWidth / NovelCover.ratio),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          spacing: FrostGap.group,
+                          children: [
+                            NovelTitleBlock(key: titleKey, novel: novel, webview: webview),
+                            if (!phone || showControlsOnPhone) controls,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: FrostGap.group,
+                  children: [
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: NovelCover(novel: novel, webview: webview, width: 140),
+                    ),
+                    NovelTitleBlock(key: titleKey, novel: novel, webview: webview),
+                  ],
+                ),
+              if (constraints.maxWidth < _sideBySideFrom && (!phone || showControlsOnPhone)) controls,
+              ?about,
+              ?facts,
+              ?seriesBlock,
+              ?images,
+            ],
+          ),
+        };
+      },
     );
   }
 }
 
-/// The author's other novels, with the way to their page.
-class _AuthorNovels extends ConsumerWidget {
-  const _AuthorNovels({required this.novel});
+/// The read button and the secondary row, which a phone leaves to its bottom
+/// bar, and the retry that follows a text that failed to load.
+class _Controls extends StatelessWidget {
+  const _Controls({
+    required this.novel,
+    required this.progress,
+    required this.onRead,
+    required this.phone,
+    required this.inline,
+    required this.textFailed,
+    required this.onRetry,
+  });
 
   final Novel novel;
+  final ReadingProgress? progress;
+  final VoidCallback? onRead;
+  final bool phone;
 
-  static const shown = 3;
+  /// Read, bookmark and More on one row rather than stacked.
+  final bool inline;
+  final bool textFailed;
+  final VoidCallback onRetry;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final t = context.t;
-    final provider = novelUserWorksProvider(novel.user.id);
-    return AppLoadingSection(
-      title: t.novelDetail.authorNovels,
-      value: ref.watch(provider),
-      onRetry: () => unawaited(ref.read(provider.notifier).reload()),
-      failed: t.illust.works.failed,
-      skeleton: const AppNovelRowsSkeleton(count: shown, showAuthor: false),
-      action: FrostButton.quiet(label: t.home.seeMore, onPressed: () => unawaited(GoRouter.of(context).push(AppLocations.user(novel.user.id)))),
-      builder: (page) {
-        final others = page.novels.where((other) => other.id != novel.id).take(shown).toList();
-        if (others.isEmpty) return FrostText(t.illust.works.empty, role: FrostTextRole.footnote, tone: FrostTextTone.secondary);
-        return Column(children: [for (final other in others) AppNovelRow(novel: other, showAuthor: false)]);
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: FrostGap.group,
+      children: [
+        if (!phone && inline)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: FrostGap.related,
+            children: [
+              Expanded(
+                child: NovelReadButton(progress: progress, onPressed: onRead),
+              ),
+              NovelSecondaryActions(novel: novel, fill: false),
+            ],
+          )
+        else if (!phone) ...[
+          NovelReadButton(progress: progress, onPressed: onRead),
+          NovelSecondaryActions(novel: novel),
+        ],
+        if (textFailed)
+          Row(
+            children: [
+              Expanded(
+                child: FrostText(t.novelText.loadFailed, role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
+              ),
+              FrostButton.quiet(label: t.common.retry, onPressed: onRetry),
+            ],
+          ),
+      ],
     );
   }
 }
@@ -375,39 +423,39 @@ class _NovelDetailSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.t;
-    return FrostPinnedChrome(
-      chrome: const FrostPageHeader(),
-      body: FrostLoadingScrollView(
-        slivers: [
-          const FrostChromeSpacer(),
-          FrostSliverContentColumn(
-            maxWidth: FrostMetrics.readingMaxWidth,
-            sliver: SliverToBoxAdapter(
-              child: appBones(
-                DownloadSourceScope(
-                  source: novelDownloadSource(novelPlaceholder()),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    spacing: FrostGap.group,
-                    children: [
-                      _NovelHead(novel: novelPlaceholder()),
-                      Wrap(
-                        spacing: FrostGap.related,
-                        runSpacing: FrostGap.related,
-                        children: [
-                          FrostButton.prominent(label: t.novel.detail.startReading, icon: PivIcons.newspaper, onPressed: () {}),
-                          AppDetailBookmarkButton(bookmarked: false, label: t.novelDetail.bookmark, onPressed: () {}),
-                        ],
-                      ),
-                    ],
-                  ),
+    final placeholder = novelPlaceholder();
+    final phone = FrostSizeClass.of(context) == FrostSizeClass.compact;
+    final scroll = FrostLoadingScrollView(
+      slivers: [
+        const FrostChromeSpacer(),
+        FrostSliverContentColumn(
+          sliver: SliverToBoxAdapter(
+            child: appBones(
+              DownloadSourceScope(
+                source: novelDownloadSource(placeholder),
+                child: _DetailHead(
+                  novel: placeholder,
+                  webview: null,
+                  phone: phone,
+                  controls: (inline) =>
+                      _Controls(novel: placeholder, progress: null, onRead: () {}, phone: phone, inline: inline, textFailed: false, onRetry: () {}),
                 ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+    return FrostPinnedChrome(
+      chrome: const FrostPageHeader(),
+      body: phone
+          ? Column(
+              children: [
+                Expanded(child: scroll),
+                appBones(NovelBottomActionBar(novel: placeholder, progress: null, onRead: () {})),
+              ],
+            )
+          : scroll,
     );
   }
 }

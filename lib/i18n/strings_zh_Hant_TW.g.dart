@@ -842,6 +842,20 @@ class Translations$novelDetail$zh_Hant_TW extends Translations$novelDetail$en_US
 	@override String get related => '相關小說';
 	@override String get noRelated => '暫無相關小說';
 	@override String get authorNovels => '作者的其他小說';
+	@override String get original => '原創';
+	@override String readingTime({required Object minutes}) => '約 ${minutes} 分鐘';
+	@override String readingTimeHours({required Object hours, required Object minutes}) => '約 ${hours} 小時 ${minutes} 分鐘';
+	@override String readingTimeWholeHours({required Object hours}) => '約 ${hours} 小時';
+	@override String get factLength => '字數';
+	@override String get factStructure => '結構';
+	@override String get factPublished => '發布';
+	@override String get factReception => '收藏 · 瀏覽';
+	@override String chapterCount({required Object count}) => '${count} 章';
+	@override String sectionCount({required Object count}) => '${count} 節';
+	@override String views({required Object count}) => '${count} 瀏覽';
+	@override String partOf({required Object part, required Object total}) => '第 ${part} 話 / 共 ${total} 話';
+	@override String allParts({required Object count}) => '全部 ${count} 話';
+	@override String get seriesFailed => '無法載入系列';
 }
 
 // Path: commentsPage
@@ -2849,6 +2863,20 @@ extension on TranslationsZhHantTw {
 			'novelDetail.related' => '相關小說',
 			'novelDetail.noRelated' => '暫無相關小說',
 			'novelDetail.authorNovels' => '作者的其他小說',
+			'novelDetail.original' => '原創',
+			'novelDetail.readingTime' => ({required Object minutes}) => '約 ${minutes} 分鐘',
+			'novelDetail.readingTimeHours' => ({required Object hours, required Object minutes}) => '約 ${hours} 小時 ${minutes} 分鐘',
+			'novelDetail.readingTimeWholeHours' => ({required Object hours}) => '約 ${hours} 小時',
+			'novelDetail.factLength' => '字數',
+			'novelDetail.factStructure' => '結構',
+			'novelDetail.factPublished' => '發布',
+			'novelDetail.factReception' => '收藏 · 瀏覽',
+			'novelDetail.chapterCount' => ({required Object count}) => '${count} 章',
+			'novelDetail.sectionCount' => ({required Object count}) => '${count} 節',
+			'novelDetail.views' => ({required Object count}) => '${count} 瀏覽',
+			'novelDetail.partOf' => ({required Object part, required Object total}) => '第 ${part} 話 / 共 ${total} 話',
+			'novelDetail.allParts' => ({required Object count}) => '全部 ${count} 話',
+			'novelDetail.seriesFailed' => '無法載入系列',
 			'commentsPage.empty' => '還沒有留言，來寫第一則',
 			'searchPage.minWidth' => '最小寬度',
 			'searchPage.minHeight' => '最小高度',

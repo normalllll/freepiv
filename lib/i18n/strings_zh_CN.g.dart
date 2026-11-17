@@ -842,6 +842,20 @@ class Translations$novelDetail$zh_CN extends Translations$novelDetail$en_US {
 	@override String get related => '相关小说';
 	@override String get noRelated => '暂无相关小说';
 	@override String get authorNovels => '作者的其他小说';
+	@override String get original => '原创';
+	@override String readingTime({required Object minutes}) => '约 ${minutes} 分钟';
+	@override String readingTimeHours({required Object hours, required Object minutes}) => '约 ${hours} 小时 ${minutes} 分钟';
+	@override String readingTimeWholeHours({required Object hours}) => '约 ${hours} 小时';
+	@override String get factLength => '字数';
+	@override String get factStructure => '结构';
+	@override String get factPublished => '发布';
+	@override String get factReception => '收藏 · 浏览';
+	@override String chapterCount({required Object count}) => '${count} 章';
+	@override String sectionCount({required Object count}) => '${count} 节';
+	@override String views({required Object count}) => '${count} 浏览';
+	@override String partOf({required Object part, required Object total}) => '第 ${part} 话 / 共 ${total} 话';
+	@override String allParts({required Object count}) => '全部 ${count} 话';
+	@override String get seriesFailed => '无法加载系列';
 }
 
 // Path: commentsPage
@@ -2849,6 +2863,20 @@ extension on TranslationsZhCn {
 			'novelDetail.related' => '相关小说',
 			'novelDetail.noRelated' => '暂无相关小说',
 			'novelDetail.authorNovels' => '作者的其他小说',
+			'novelDetail.original' => '原创',
+			'novelDetail.readingTime' => ({required Object minutes}) => '约 ${minutes} 分钟',
+			'novelDetail.readingTimeHours' => ({required Object hours, required Object minutes}) => '约 ${hours} 小时 ${minutes} 分钟',
+			'novelDetail.readingTimeWholeHours' => ({required Object hours}) => '约 ${hours} 小时',
+			'novelDetail.factLength' => '字数',
+			'novelDetail.factStructure' => '结构',
+			'novelDetail.factPublished' => '发布',
+			'novelDetail.factReception' => '收藏 · 浏览',
+			'novelDetail.chapterCount' => ({required Object count}) => '${count} 章',
+			'novelDetail.sectionCount' => ({required Object count}) => '${count} 节',
+			'novelDetail.views' => ({required Object count}) => '${count} 浏览',
+			'novelDetail.partOf' => ({required Object part, required Object total}) => '第 ${part} 话 / 共 ${total} 话',
+			'novelDetail.allParts' => ({required Object count}) => '全部 ${count} 话',
+			'novelDetail.seriesFailed' => '无法加载系列',
 			'commentsPage.empty' => '还没有评论，来写第一条',
 			'searchPage.minWidth' => '最小宽度',
 			'searchPage.minHeight' => '最小高度',

@@ -228,15 +228,19 @@ class AppRowsSkeleton extends StatelessWidget {
 
 /// First-load placeholders for a list of novels: [AppNovelRow] with its cover.
 class AppNovelRowsSkeleton extends StatelessWidget {
-  const AppNovelRowsSkeleton({this.count, this.showAuthor = true, super.key});
+  const AppNovelRowsSkeleton({this.count, this.showAuthor = true, this.tall = false, super.key});
 
   /// Null fills the window; a number is for a short fixed preview.
   final int? count;
   final bool showAuthor;
 
+  /// Titles over two lines: the tallest rows, for a section whose content may
+  /// not be taller than its placeholder.
+  final bool tall;
+
   @override
   Widget build(BuildContext context) {
-    final novel = novelPlaceholder();
+    final novel = novelPlaceholder(tall: tall);
     final rows = count ?? appSkeletonCount(context, shortestExtent: AppNovelRow.coverWidth / AppNovelRow.coverRatio);
     return appBones(
       Column(
