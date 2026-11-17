@@ -886,6 +886,16 @@ class $ReadingProgressRecordsTable extends ReadingProgressRecords
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _depthMeta = const VerificationMeta('depth');
+  @override
+  late final GeneratedColumn<double> depth = GeneratedColumn<double>(
+    'depth',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     account,
@@ -893,6 +903,7 @@ class $ReadingProgressRecordsTable extends ReadingProgressRecords
     offset,
     totalLength,
     updatedAt,
+    depth,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -949,6 +960,12 @@ class $ReadingProgressRecordsTable extends ReadingProgressRecords
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('depth')) {
+      context.handle(
+        _depthMeta,
+        depth.isAcceptableOrUnknown(data['depth']!, _depthMeta),
+      );
+    }
     return context;
   }
 
@@ -978,6 +995,10 @@ class $ReadingProgressRecordsTable extends ReadingProgressRecords
         DriftSqlType.int,
         data['${effectivePrefix}updated_at'],
       )!,
+      depth: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}depth'],
+      )!,
     );
   }
 
@@ -1001,12 +1022,17 @@ class ReadingProgressRow extends DataClass
 
   /// Milliseconds since the epoch, UTC.
   final int updatedAt;
+
+  /// How far the reading line sat inside its line, as a share of the line's
+  /// height: 0 up to, not including, 1.
+  final double depth;
   const ReadingProgressRow({
     required this.account,
     required this.novelId,
     required this.offset,
     required this.totalLength,
     required this.updatedAt,
+    required this.depth,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1016,6 +1042,7 @@ class ReadingProgressRow extends DataClass
     map['offset'] = Variable<int>(offset);
     map['total_length'] = Variable<int>(totalLength);
     map['updated_at'] = Variable<int>(updatedAt);
+    map['depth'] = Variable<double>(depth);
     return map;
   }
 
@@ -1026,6 +1053,7 @@ class ReadingProgressRow extends DataClass
       offset: Value(offset),
       totalLength: Value(totalLength),
       updatedAt: Value(updatedAt),
+      depth: Value(depth),
     );
   }
 
@@ -1040,6 +1068,7 @@ class ReadingProgressRow extends DataClass
       offset: serializer.fromJson<int>(json['offset']),
       totalLength: serializer.fromJson<int>(json['totalLength']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
+      depth: serializer.fromJson<double>(json['depth']),
     );
   }
   @override
@@ -1051,6 +1080,7 @@ class ReadingProgressRow extends DataClass
       'offset': serializer.toJson<int>(offset),
       'totalLength': serializer.toJson<int>(totalLength),
       'updatedAt': serializer.toJson<int>(updatedAt),
+      'depth': serializer.toJson<double>(depth),
     };
   }
 
@@ -1060,12 +1090,14 @@ class ReadingProgressRow extends DataClass
     int? offset,
     int? totalLength,
     int? updatedAt,
+    double? depth,
   }) => ReadingProgressRow(
     account: account ?? this.account,
     novelId: novelId ?? this.novelId,
     offset: offset ?? this.offset,
     totalLength: totalLength ?? this.totalLength,
     updatedAt: updatedAt ?? this.updatedAt,
+    depth: depth ?? this.depth,
   );
   ReadingProgressRow copyWithCompanion(ReadingProgressRecordsCompanion data) {
     return ReadingProgressRow(
@@ -1076,6 +1108,7 @@ class ReadingProgressRow extends DataClass
           ? data.totalLength.value
           : this.totalLength,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      depth: data.depth.present ? data.depth.value : this.depth,
     );
   }
 
@@ -1086,14 +1119,15 @@ class ReadingProgressRow extends DataClass
           ..write('novelId: $novelId, ')
           ..write('offset: $offset, ')
           ..write('totalLength: $totalLength, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('depth: $depth')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(account, novelId, offset, totalLength, updatedAt);
+      Object.hash(account, novelId, offset, totalLength, updatedAt, depth);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1102,7 +1136,8 @@ class ReadingProgressRow extends DataClass
           other.novelId == this.novelId &&
           other.offset == this.offset &&
           other.totalLength == this.totalLength &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.depth == this.depth);
 }
 
 class ReadingProgressRecordsCompanion
@@ -1112,6 +1147,7 @@ class ReadingProgressRecordsCompanion
   final Value<int> offset;
   final Value<int> totalLength;
   final Value<int> updatedAt;
+  final Value<double> depth;
   final Value<int> rowid;
   const ReadingProgressRecordsCompanion({
     this.account = const Value.absent(),
@@ -1119,6 +1155,7 @@ class ReadingProgressRecordsCompanion
     this.offset = const Value.absent(),
     this.totalLength = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.depth = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ReadingProgressRecordsCompanion.insert({
@@ -1127,6 +1164,7 @@ class ReadingProgressRecordsCompanion
     required int offset,
     required int totalLength,
     required int updatedAt,
+    this.depth = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : account = Value(account),
        novelId = Value(novelId),
@@ -1139,6 +1177,7 @@ class ReadingProgressRecordsCompanion
     Expression<int>? offset,
     Expression<int>? totalLength,
     Expression<int>? updatedAt,
+    Expression<double>? depth,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1147,6 +1186,7 @@ class ReadingProgressRecordsCompanion
       if (offset != null) 'offset': offset,
       if (totalLength != null) 'total_length': totalLength,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (depth != null) 'depth': depth,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1157,6 +1197,7 @@ class ReadingProgressRecordsCompanion
     Value<int>? offset,
     Value<int>? totalLength,
     Value<int>? updatedAt,
+    Value<double>? depth,
     Value<int>? rowid,
   }) {
     return ReadingProgressRecordsCompanion(
@@ -1165,6 +1206,7 @@ class ReadingProgressRecordsCompanion
       offset: offset ?? this.offset,
       totalLength: totalLength ?? this.totalLength,
       updatedAt: updatedAt ?? this.updatedAt,
+      depth: depth ?? this.depth,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1187,6 +1229,9 @@ class ReadingProgressRecordsCompanion
     if (updatedAt.present) {
       map['updated_at'] = Variable<int>(updatedAt.value);
     }
+    if (depth.present) {
+      map['depth'] = Variable<double>(depth.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1201,6 +1246,7 @@ class ReadingProgressRecordsCompanion
           ..write('offset: $offset, ')
           ..write('totalLength: $totalLength, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('depth: $depth, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1621,6 +1667,7 @@ typedef $$ReadingProgressRecordsTableCreateCompanionBuilder =
       required int offset,
       required int totalLength,
       required int updatedAt,
+      Value<double> depth,
       Value<int> rowid,
     });
 typedef $$ReadingProgressRecordsTableUpdateCompanionBuilder =
@@ -1630,6 +1677,7 @@ typedef $$ReadingProgressRecordsTableUpdateCompanionBuilder =
       Value<int> offset,
       Value<int> totalLength,
       Value<int> updatedAt,
+      Value<double> depth,
       Value<int> rowid,
     });
 
@@ -1664,6 +1712,11 @@ class $$ReadingProgressRecordsTableFilterComposer
 
   ColumnFilters<int> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get depth => $composableBuilder(
+    column: $table.depth,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1701,6 +1754,11 @@ class $$ReadingProgressRecordsTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<double> get depth => $composableBuilder(
+    column: $table.depth,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ReadingProgressRecordsTableAnnotationComposer
@@ -1728,6 +1786,9 @@ class $$ReadingProgressRecordsTableAnnotationComposer
 
   GeneratedColumn<int> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<double> get depth =>
+      $composableBuilder(column: $table.depth, builder: (column) => column);
 }
 
 class $$ReadingProgressRecordsTableTableManager
@@ -1781,6 +1842,7 @@ class $$ReadingProgressRecordsTableTableManager
                 Value<int> offset = const Value.absent(),
                 Value<int> totalLength = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
+                Value<double> depth = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ReadingProgressRecordsCompanion(
                 account: account,
@@ -1788,6 +1850,7 @@ class $$ReadingProgressRecordsTableTableManager
                 offset: offset,
                 totalLength: totalLength,
                 updatedAt: updatedAt,
+                depth: depth,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1797,6 +1860,7 @@ class $$ReadingProgressRecordsTableTableManager
                 required int offset,
                 required int totalLength,
                 required int updatedAt,
+                Value<double> depth = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ReadingProgressRecordsCompanion.insert(
                 account: account,
@@ -1804,6 +1868,7 @@ class $$ReadingProgressRecordsTableTableManager
                 offset: offset,
                 totalLength: totalLength,
                 updatedAt: updatedAt,
+                depth: depth,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

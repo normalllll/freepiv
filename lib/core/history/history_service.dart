@@ -33,14 +33,14 @@ Future<ReadingProgress?> loadReadingProgress(int novelId) async {
 
 /// Keeps where the current account stopped reading [novelId], whether or not
 /// the history is being recorded. Signed out or unwritable, it does nothing.
-Future<void> saveReadingProgress(int novelId, {required int offset, required int totalLength}) async {
+Future<void> saveReadingProgress(int novelId, {required int offset, required int totalLength, double depth = 0}) async {
   final account = AppSettings.accounts.activeId;
   if (account == null) return;
   try {
     await historyRepository.saveReadingProgress(
       account,
       novelId,
-      ReadingProgress(offset: offset, totalLength: totalLength, updatedAt: DateTime.now()),
+      ReadingProgress(offset: offset, totalLength: totalLength, updatedAt: DateTime.now(), depth: depth),
     );
   } catch (_) {
     // Losing a reading position is not worth an error.

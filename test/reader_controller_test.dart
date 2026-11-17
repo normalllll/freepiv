@@ -6,11 +6,15 @@ import 'package:freepiv/features/novel/presentation/reader/reader_controller.dar
 
 class FakeViewport implements ReaderViewport {
   final shown = <int>[];
+  final depths = <double>[];
   final turns = <int>[];
   bool turnResult = true;
 
   @override
-  void showOffset(int offset) => shown.add(offset);
+  void showOffset(int offset, {double depth = 0}) {
+    shown.add(offset);
+    depths.add(depth);
+  }
 
   @override
   bool turn(int direction) {
@@ -21,10 +25,12 @@ class FakeViewport implements ReaderViewport {
 
 class SinkCalls {
   final calls = <(int, int)>[];
+  final depths = <double>[];
   Object? error;
 
-  Future<void> call(int offset, int totalLength) async {
+  Future<void> call(int offset, int totalLength, double depth) async {
     calls.add((offset, totalLength));
+    depths.add(depth);
     if (error != null) throw error!;
   }
 }
@@ -51,6 +57,46 @@ void main() {
     expect(chapterModel.chapters.length, 3);
     expect(sectionModel.pageCount, 3);
     expect(total, greaterThan(10));
+  });
+
+  group('depth inside the line', () {
+    ReaderController deep(SinkCalls sink, {double depth = 0.4}) =>
+        ReaderController(model: chapterModel, initialOffset: 7, initialDepth: depth, mode: ReaderPageMode.scroll, save: sink.call);
+
+    test('starts at the depth it was given and hands it to the view', () {
+      final c = deep(SinkCalls());
+      final view = FakeViewport();
+      expect(c.depth, 0.4);
+      c.attach(view);
+      expect(view.depths, [0.4]);
+    });
+
+    test('a move of the depth alone is saved with the offset', () async {
+      final sink = SinkCalls();
+      final c = deep(sink);
+      c.reportPosition(7, depth: 0.8);
+      await c.saveNow();
+      expect(sink.depths, [0.8]);
+      c.reportPosition(7, depth: 0.8);
+      await c.saveNow();
+      expect(sink.depths, [0.8], reason: 'nothing changed');
+    });
+
+    test('a command resets the depth, and the end keeps none', () async {
+      final sink = SinkCalls();
+      final c = deep(sink);
+      c.goToOffset(9);
+      expect(c.depth, 0);
+      c.reportPosition(9, depth: 0.5);
+      c.goToEnd();
+      await c.saveNow();
+      expect(sink.depths.last, 0);
+    });
+
+    test('a depth outside 0 to 1 is held inside it', () {
+      expect(deep(SinkCalls(), depth: 3).depth, lessThan(1));
+      expect(deep(SinkCalls(), depth: -1).depth, 0);
+    });
   });
 
   group('initial state', () {
@@ -428,155 +474,155 @@ void main() {
 
   group('saving', () {
     testWidgets('a change saves once after the interval with the offset and total length', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, sink: sink);
-        c.reportPosition(10);
-        await tester.pump(const Duration(milliseconds: 999));
-        expect(sink.calls, isEmpty);
-        await tester.pump(const Duration(milliseconds: 1));
-        expect(sink.calls, [(10, total)]);
+      final sink = SinkCalls();
+      final c = make(chapterModel, sink: sink);
+      c.reportPosition(10);
+      await tester.pump(const Duration(milliseconds: 999));
+      expect(sink.calls, isEmpty);
+      await tester.pump(const Duration(milliseconds: 1));
+      expect(sink.calls, [(10, total)]);
     });
 
     testWidgets('changes within the interval save only the latest offset', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, sink: sink);
-        c.reportPosition(10);
-        await tester.pump(const Duration(milliseconds: 400));
-        c.reportPosition(20);
-        c.goToOffset(25);
-        await tester.pump(const Duration(milliseconds: 600));
-        expect(sink.calls, [(25, total)]);
-        await tester.pump(const Duration(seconds: 5));
-        expect(sink.calls.length, 1);
+      final sink = SinkCalls();
+      final c = make(chapterModel, sink: sink);
+      c.reportPosition(10);
+      await tester.pump(const Duration(milliseconds: 400));
+      c.reportPosition(20);
+      c.goToOffset(25);
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(sink.calls, [(25, total)]);
+      await tester.pump(const Duration(seconds: 5));
+      expect(sink.calls.length, 1);
     });
 
     testWidgets('a change after a save starts a new interval', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, sink: sink);
-        c.reportPosition(10);
-        await tester.pump(const Duration(seconds: 1));
-        c.reportPosition(30);
-        await tester.pump(const Duration(milliseconds: 500));
-        expect(sink.calls.length, 1);
-        await tester.pump(const Duration(milliseconds: 500));
-        expect(sink.calls, [(10, total), (30, total)]);
+      final sink = SinkCalls();
+      final c = make(chapterModel, sink: sink);
+      c.reportPosition(10);
+      await tester.pump(const Duration(seconds: 1));
+      c.reportPosition(30);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(sink.calls.length, 1);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(sink.calls, [(10, total), (30, total)]);
     });
 
     testWidgets('a custom interval is honoured', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, sink: sink, interval: const Duration(seconds: 3));
-        c.reportPosition(10);
-        await tester.pump(const Duration(seconds: 2));
-        expect(sink.calls, isEmpty);
-        await tester.pump(const Duration(seconds: 1));
-        expect(sink.calls, [(10, total)]);
+      final sink = SinkCalls();
+      final c = make(chapterModel, sink: sink, interval: const Duration(seconds: 3));
+      c.reportPosition(10);
+      await tester.pump(const Duration(seconds: 2));
+      expect(sink.calls, isEmpty);
+      await tester.pump(const Duration(seconds: 1));
+      expect(sink.calls, [(10, total)]);
     });
 
     testWidgets('commands schedule a save too', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, sink: sink);
-        c.goToChapter(2);
-        await tester.pump(const Duration(seconds: 1));
-        expect(sink.calls, [(chapterModel.chapters[2].startOffset, total)]);
+      final sink = SinkCalls();
+      final c = make(chapterModel, sink: sink);
+      c.goToChapter(2);
+      await tester.pump(const Duration(seconds: 1));
+      expect(sink.calls, [(chapterModel.chapters[2].startOffset, total)]);
     });
 
     testWidgets('nothing is saved when the offset is back at the initial offset', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, initial: 7, sink: sink);
-        c.reportPosition(15);
-        c.reportPosition(7);
-        await tester.pump(const Duration(seconds: 3));
-        expect(sink.calls, isEmpty);
+      final sink = SinkCalls();
+      final c = make(chapterModel, initial: 7, sink: sink);
+      c.reportPosition(15);
+      c.reportPosition(7);
+      await tester.pump(const Duration(seconds: 3));
+      expect(sink.calls, isEmpty);
     });
 
     testWidgets('nothing is saved when the offset equals the last saved offset', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, sink: sink);
-        c.reportPosition(10);
-        await tester.pump(const Duration(seconds: 1));
-        c.reportPosition(18);
-        c.reportPosition(10);
-        await tester.pump(const Duration(seconds: 3));
-        expect(sink.calls, [(10, total)]);
+      final sink = SinkCalls();
+      final c = make(chapterModel, sink: sink);
+      c.reportPosition(10);
+      await tester.pump(const Duration(seconds: 1));
+      c.reportPosition(18);
+      c.reportPosition(10);
+      await tester.pump(const Duration(seconds: 3));
+      expect(sink.calls, [(10, total)]);
     });
 
     testWidgets('a clamped initial offset counts as the initial offset', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, initial: total + 40, sink: sink);
-        c.goToOffset(total + 1);
-        c.saveNow();
-        await tester.pump(const Duration(seconds: 3));
-        expect(sink.calls, isEmpty);
+      final sink = SinkCalls();
+      final c = make(chapterModel, initial: total + 40, sink: sink);
+      c.goToOffset(total + 1);
+      c.saveNow();
+      await tester.pump(const Duration(seconds: 3));
+      expect(sink.calls, isEmpty);
     });
 
     testWidgets('saveNow writes immediately and cancels the pending timer', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, sink: sink);
-        c.reportPosition(12);
-        c.saveNow();
-        await tester.pump();
-        expect(sink.calls, [(12, total)]);
-        await tester.pump(const Duration(seconds: 5));
-        expect(sink.calls.length, 1);
+      final sink = SinkCalls();
+      final c = make(chapterModel, sink: sink);
+      c.reportPosition(12);
+      c.saveNow();
+      await tester.pump();
+      expect(sink.calls, [(12, total)]);
+      await tester.pump(const Duration(seconds: 5));
+      expect(sink.calls.length, 1);
     });
 
     testWidgets('saveNow twice writes once', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, sink: sink);
-        c.reportPosition(12);
-        c.saveNow();
-        c.saveNow();
-        await tester.pump();
-        expect(sink.calls.length, 1);
+      final sink = SinkCalls();
+      final c = make(chapterModel, sink: sink);
+      c.reportPosition(12);
+      c.saveNow();
+      c.saveNow();
+      await tester.pump();
+      expect(sink.calls.length, 1);
     });
 
     testWidgets('saveNow without a change writes nothing', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, initial: 4, sink: sink);
-        c.saveNow();
-        await tester.pump();
-        expect(sink.calls, isEmpty);
+      final sink = SinkCalls();
+      final c = make(chapterModel, initial: 4, sink: sink);
+      c.saveNow();
+      await tester.pump();
+      expect(sink.calls, isEmpty);
     });
 
     testWidgets('dispose saves a changed offset', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, sink: sink);
-        c.reportPosition(16);
-        c.dispose();
-        await tester.pump();
-        expect(sink.calls, [(16, total)]);
-        await tester.pump(const Duration(seconds: 5));
-        expect(sink.calls.length, 1);
+      final sink = SinkCalls();
+      final c = make(chapterModel, sink: sink);
+      c.reportPosition(16);
+      c.dispose();
+      await tester.pump();
+      expect(sink.calls, [(16, total)]);
+      await tester.pump(const Duration(seconds: 5));
+      expect(sink.calls.length, 1);
     });
 
     testWidgets('dispose without a change writes nothing', (tester) async {
-        final sink = SinkCalls();
-        final c = make(chapterModel, sink: sink);
-        c.dispose();
-        await tester.pump();
-        expect(sink.calls, isEmpty);
+      final sink = SinkCalls();
+      final c = make(chapterModel, sink: sink);
+      c.dispose();
+      await tester.pump();
+      expect(sink.calls, isEmpty);
     });
 
     testWidgets('sink errors are swallowed by saveNow', (tester) async {
-        final sink = SinkCalls()..error = StateError('disk full');
-        final c = make(chapterModel, sink: sink);
-        c.reportPosition(10);
-        Object? thrown;
-        c.saveNow().catchError((Object e) => thrown = e);
-        await tester.pump();
-        expect(sink.calls, [(10, total)]);
-        expect(thrown, isNull);
+      final sink = SinkCalls()..error = StateError('disk full');
+      final c = make(chapterModel, sink: sink);
+      c.reportPosition(10);
+      Object? thrown;
+      c.saveNow().catchError((Object e) => thrown = e);
+      await tester.pump();
+      expect(sink.calls, [(10, total)]);
+      expect(thrown, isNull);
     });
 
     testWidgets('sink errors are swallowed by the timed save and by dispose', (tester) async {
-        final sink = SinkCalls()..error = StateError('disk full');
-        final c = make(chapterModel, sink: sink);
-        c.reportPosition(10);
-        await tester.pump(const Duration(seconds: 1));
-        c.reportPosition(20);
-        c.dispose();
-        await tester.pump();
-        expect(sink.calls.isNotEmpty, isTrue);
+      final sink = SinkCalls()..error = StateError('disk full');
+      final c = make(chapterModel, sink: sink);
+      c.reportPosition(10);
+      await tester.pump(const Duration(seconds: 1));
+      c.reportPosition(20);
+      c.dispose();
+      await tester.pump();
+      expect(sink.calls.isNotEmpty, isTrue);
     });
   });
 }

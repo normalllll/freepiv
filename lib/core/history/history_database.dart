@@ -48,6 +48,10 @@ class ReadingProgressRecords extends Table {
   /// Milliseconds since the epoch, UTC.
   IntColumn get updatedAt => integer()();
 
+  /// How far the reading line sat inside its line, as a share of the line's
+  /// height: 0 up to, not including, 1.
+  RealColumn get depth => real().withDefault(const Constant(0))();
+
   @override
   Set<Column<Object>> get primaryKey => {account, novelId};
 }

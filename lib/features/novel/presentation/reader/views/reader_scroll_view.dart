@@ -112,7 +112,7 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
   @override
   void initState() {
     super.initState();
-    final pixels = _layout.pixelOfOffset(widget.controller.offset);
+    final pixels = _layout.pixelOfPosition(widget.controller.offset, widget.controller.depth);
     _scroll = ScrollController(initialScrollOffset: pixels)..addListener(_scrolled);
     _placed = pixels;
     _layout.addListener(_repinSoon);
@@ -135,7 +135,7 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
       if (_wantsEnd) _pin();
       // The new layout lays out before anything paints: the reading line
       // keeps its character.
-      final pixels = _layout.pixelOfOffset(widget.controller.offset);
+      final pixels = _layout.pixelOfPosition(widget.controller.offset, widget.controller.depth);
       if (_scroll.hasClients) _scroll.position.correctPixels(pixels);
       _placed = pixels;
       _scheduleMeasure();
@@ -155,7 +155,7 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
   // ---- ReaderViewport.
 
   @override
-  void showOffset(int offset) {
+  void showOffset(int offset, {double depth = 0}) {
     _move.stop();
     if (_wantsEnd) {
       _pin();
@@ -163,7 +163,7 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
       return;
     }
     _pinned = false;
-    final pixels = _layout.pixelOfOffset(offset);
+    final pixels = _layout.pixelOfPosition(offset, depth);
     _reportEndAfterFrame();
     if (!_scroll.hasClients) {
       _placed = pixels;
@@ -257,7 +257,7 @@ class ReaderScrollViewState extends State<ReaderScrollView> with SingleTickerPro
     if (placed != null && (position.pixels - placed).abs() < .5) return;
     _placed = null;
     final atEnd = position.hasContentDimensions && position.pixels >= _textEnd(position) - .5;
-    widget.controller.reportPosition(_layout.offsetAtPixel(position.pixels), atEnd: atEnd);
+    widget.controller.reportPosition(_layout.offsetAtPixel(position.pixels), atEnd: atEnd, depth: _layout.depthAtPixel(position.pixels));
     _scheduleMeasure();
   }
 

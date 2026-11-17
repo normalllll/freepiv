@@ -136,6 +136,7 @@ class HistoryRepository {
             offset: progress.offset,
             totalLength: progress.totalLength,
             updatedAt: progress.updatedAt.millisecondsSinceEpoch,
+            depth: Value(progress.depth),
           ),
         );
   }
@@ -144,6 +145,7 @@ class HistoryRepository {
     offset: row.offset,
     totalLength: row.totalLength,
     updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt, isUtc: true),
+    depth: row.depth,
   );
 
   Future<void> _prune(String account, HistoryLimit limit) async {

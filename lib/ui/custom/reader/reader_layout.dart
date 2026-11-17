@@ -170,14 +170,18 @@ class ReaderLayout extends ChangeNotifier {
   /// so at a block's exact top the two can round apart; the result is settled
   /// against [topOf], which [pixelOfOffset] uses, so a pixel it returns maps
   /// back to its own block.
+  static const _pixelTolerance = 1e-6;
+
   int blockAtPixel(double y) {
     if (blockCount == 0) return 0;
     if (y < 0) return 0;
     var block = math.min(_tree.search(y), blockCount - 1);
-    while (block + 1 < blockCount && topOf(block + 1) <= y) {
+    // A pixel a rounding error short of a block's top is that block's: sums of
+    // extents in another order differ in the last bits.
+    while (block + 1 < blockCount && topOf(block + 1) <= y + _pixelTolerance) {
       block++;
     }
-    while (block > 0 && topOf(block) > y) {
+    while (block > 0 && topOf(block) > y + _pixelTolerance) {
       block--;
     }
     return block;
@@ -201,6 +205,48 @@ class ReaderLayout extends ChangeNotifier {
     return top + lines[_lineAt(lines, at)].top;
   }
 
+  /// [pixelOfOffset] moved down by [depth], a share of the line's height (of a
+  /// picture's, which has no lines), when [offset] starts its line or picture;
+  /// an offset that no longer starts a line (the text is set another way)
+  /// stays at the line's top.
+  double pixelOfPosition(int offset, double depth) {
+    final top = pixelOfOffset(offset);
+    if (depth <= 0 || blockCount == 0) return top;
+    final at = offset.clamp(0, model.totalLength);
+    final block = model.blockAt(at);
+    final metrics = metricsOf(block);
+    final lines = metrics.lines;
+    if (lines.isEmpty) return at == model.offsetOf(block) ? top + depth.clamp(0.0, 1.0) * _bodyExtent(block, metrics) : top;
+    final line = lines[_lineAt(lines, at)];
+    return line.startOffset == at ? top + depth.clamp(0.0, 1.0) * line.height : top;
+  }
+
+  /// The height of a block without lines, below its top gap.
+  double _bodyExtent(int block, ReaderBlockMetrics metrics) => math.max(0.0, extentOf(block) - metrics.topGap);
+
+  /// How far [y] lies inside its visual line, as a share of the line's height:
+  /// 0 up to, not including, 1; 0 where there is no line.
+  double depthAtPixel(double y) {
+    if (blockCount == 0) return 0;
+    final block = blockAtPixel(y);
+    final metrics = metricsOf(block);
+    final top = topOf(block) + metrics.topGap;
+    final lines = metrics.lines;
+    if (y < top) return 0;
+    if (lines.isEmpty) {
+      final height = _bodyExtent(block, metrics);
+      return height <= 0 ? 0 : ((y - top) / height).clamp(0.0, 1 - 1e-9);
+    }
+    var found = 0;
+    for (var i = 1; i < lines.length; i++) {
+      if (top + lines[i].top > y + _pixelTolerance) break;
+      found = i;
+    }
+    final line = lines[found];
+    if (line.height <= 0) return 0;
+    return ((y - (top + line.top)) / line.height).clamp(0.0, 1 - 1e-9);
+  }
+
   /// The model offset of the first character of the visual line at [y].
   int offsetAtPixel(double y) {
     if (blockCount == 0) return 0;
@@ -214,7 +260,7 @@ class ReaderLayout extends ChangeNotifier {
     if (y < top || lines.isEmpty) return model.offsetOf(block);
     var found = 0;
     for (var i = 1; i < lines.length; i++) {
-      if (top + lines[i].top > y) break;
+      if (top + lines[i].top > y + _pixelTolerance) break;
       found = i;
     }
     return lines[found].startOffset;

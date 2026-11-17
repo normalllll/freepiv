@@ -40,11 +40,15 @@ enum HistoryLimit {
 /// parsed text of that moment.
 @immutable
 class ReadingProgress {
-  const ReadingProgress({required this.offset, required this.totalLength, required this.updatedAt});
+  const ReadingProgress({required this.offset, required this.totalLength, required this.updatedAt, this.depth = 0});
 
   final int offset;
   final int totalLength;
   final DateTime updatedAt;
+
+  /// How far the reading line sat inside the line starting at [offset], as a
+  /// share of the line's height, from 0 up to, not including, 1.
+  final double depth;
 
   /// 0 to 1; 0 when the text is empty.
   double get fraction => totalLength <= 0 ? 0 : (offset / totalLength).clamp(0.0, 1.0);
@@ -53,11 +57,11 @@ class ReadingProgress {
   int get percent => totalLength <= 0 ? 0 : (offset.clamp(0, totalLength) * 100) ~/ totalLength;
 
   @override
-  int get hashCode => Object.hash(offset, totalLength, updatedAt);
+  int get hashCode => Object.hash(offset, totalLength, updatedAt, depth);
 
   @override
   bool operator ==(Object other) =>
-      other is ReadingProgress && other.offset == offset && other.totalLength == totalLength && other.updatedAt == updatedAt;
+      other is ReadingProgress && other.offset == offset && other.totalLength == totalLength && other.updatedAt == updatedAt && other.depth == depth;
 }
 
 /// A work as it was when it was last viewed: just what a card or a row of the

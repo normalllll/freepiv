@@ -150,7 +150,7 @@ class ReaderPagedViewState extends State<ReaderPagedView> with SingleTickerProvi
   // ---- ReaderViewport.
 
   @override
-  void showOffset(int offset) {
+  void showOffset(int offset, {double depth = 0}) {
     _settle();
     _place(offset);
     if (SchedulerBinding.instance.schedulerPhase != SchedulerPhase.persistentCallbacks && mounted) setState(() {});

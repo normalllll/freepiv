@@ -15,14 +15,14 @@ import 'support/reader_harness.dart';
 class _Sink {
   final calls = <(int, int)>[];
 
-  Future<void> call(int offset, int totalLength) async => calls.add((offset, totalLength));
+  Future<void> call(int offset, int totalLength, double depth) async => calls.add((offset, totalLength));
 }
 
 class _Viewport implements ReaderViewport {
   final shown = <int>[];
 
   @override
-  void showOffset(int offset) => shown.add(offset);
+  void showOffset(int offset, {double depth = 0}) => shown.add(offset);
 
   @override
   bool turn(int direction) => true;

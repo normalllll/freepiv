@@ -17,8 +17,8 @@ import 'support/memory_history.dart';
 
 final _day = DateTime.utc(2026, 11, 1);
 
-ReadingProgress _progress(int offset, {int total = 1000, DateTime? at}) =>
-    ReadingProgress(offset: offset, totalLength: total, updatedAt: at ?? _day);
+ReadingProgress _progress(int offset, {int total = 1000, DateTime? at, double depth = 0}) =>
+    ReadingProgress(offset: offset, totalLength: total, updatedAt: at ?? _day, depth: depth);
 
 HistoryEntry _entry(int workId, DateTime at, {HistoryWorkKind kind = HistoryWorkKind.novel}) => HistoryEntry(
   kind: kind,
@@ -40,6 +40,7 @@ void _expectProgress(ReadingProgress? actual, ReadingProgress expected) {
   expect(actual, isNotNull);
   expect(actual!.offset, expected.offset);
   expect(actual.totalLength, expected.totalLength);
+  expect(actual.depth, expected.depth);
   expect(actual.updatedAt.isAtSameMomentAs(expected.updatedAt), isTrue, reason: '${actual.updatedAt} vs ${expected.updatedAt}');
 }
 
@@ -56,6 +57,15 @@ void main() {
       await history.saveReadingProgress('1000', 7, _progress(250));
 
       _expectProgress(await history.readingProgress('1000', 7), _progress(250));
+    });
+
+    test('the depth inside the line is kept with the offset, and 0 when none was given', () async {
+      await history.saveReadingProgress('1000', 7, _progress(250, depth: 0.37));
+      await history.saveReadingProgress('1000', 8, _progress(250));
+
+      _expectProgress(await history.readingProgress('1000', 7), _progress(250, depth: 0.37));
+      expect((await history.readingProgress('1000', 8))!.depth, 0);
+      expect((await history.readingProgressOf('1000', [7, 8]))[7]!.depth, 0.37);
     });
 
     test('nothing saved reads as null', () async {
@@ -236,7 +246,7 @@ void main() {
   group('service', () {
     test('saving stamps the time, and loading returns what was saved for the current account', () async {
       final before = DateTime.now();
-      await saveReadingProgress(7, offset: 300, totalLength: 1000);
+      await saveReadingProgress(7, offset: 300, totalLength: 1000, depth: 0.25);
       final after = DateTime.now();
 
       final loaded = await loadReadingProgress(7);
@@ -244,6 +254,7 @@ void main() {
       expect(loaded!.offset, 300);
       expect(loaded.totalLength, 1000);
       expect(loaded.percent, 30);
+      expect(loaded.depth, 0.25);
       // Stored in whole milliseconds.
       expect(loaded.updatedAt.millisecondsSinceEpoch, inInclusiveRange(before.millisecondsSinceEpoch - 1, after.millisecondsSinceEpoch));
       _expectProgress(await history.readingProgress('1000', 7), loaded);

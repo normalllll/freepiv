@@ -269,12 +269,13 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
       _controller = ReaderController(
         model: _model,
         initialOffset: saved?.offset ?? 0,
+        initialDepth: saved?.depth ?? 0,
         // Read to the end: the text opens with its end card in view.
         initialAtEnd: saved != null && saved.totalLength > 0 && saved.offset >= saved.totalLength,
         mode: _settings.pageMode,
-        save: (offset, totalLength) async {
+        save: (offset, totalLength, depth) async {
           if (_accountChanged) return;
-          await saveReadingProgress(novelId, offset: offset, totalLength: totalLength);
+          await saveReadingProgress(novelId, offset: offset, totalLength: totalLength, depth: depth);
           // The detail page under the reader shows the progress.
           container.invalidate(novelReadingProgressProvider(novelId));
         },

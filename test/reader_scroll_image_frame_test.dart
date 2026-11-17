@@ -62,7 +62,7 @@ void main() {
     expect(layout.imageWidthOf(1), 180);
     expect(layout.imageWidthOf(0), 600, reason: 'text blocks keep the column');
 
-    final controller = ReaderController(model: model, initialOffset: 0, mode: ReaderPageMode.scroll, save: (_, _) async {});
+    final controller = ReaderController(model: model, initialOffset: 0, mode: ReaderPageMode.scroll, save: (_, _, _) async {});
     addTearDown(controller.dispose);
     await tester.pumpWidget(
       Directionality(
