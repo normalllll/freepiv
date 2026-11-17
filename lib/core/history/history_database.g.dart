@@ -3,32 +3,64 @@
 part of 'history_database.dart';
 
 // ignore_for_file: type=lint
-class $HistoryRecordsTable extends HistoryRecords with TableInfo<$HistoryRecordsTable, HistoryRow> {
+class $HistoryRecordsTable extends HistoryRecords
+    with TableInfo<$HistoryRecordsTable, HistoryRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $HistoryRecordsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _accountMeta = const VerificationMeta('account');
+  static const VerificationMeta _accountMeta = const VerificationMeta(
+    'account',
+  );
   @override
-  late final GeneratedColumn<String> account = GeneratedColumn<String>('account', aliasedName, false, type: DriftSqlType.string, requiredDuringInsert: true);
-  @override
-  late final GeneratedColumnWithTypeConverter<HistoryWorkKind, String> kind = GeneratedColumn<String>(
-    'kind',
+  late final GeneratedColumn<String> account = GeneratedColumn<String>(
+    'account',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-  ).withConverter<HistoryWorkKind>($HistoryRecordsTable.$converterkind);
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<HistoryWorkKind, String> kind =
+      GeneratedColumn<String>(
+        'kind',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<HistoryWorkKind>($HistoryRecordsTable.$converterkind);
   static const VerificationMeta _workIdMeta = const VerificationMeta('workId');
   @override
-  late final GeneratedColumn<int> workId = GeneratedColumn<int>('work_id', aliasedName, false, type: DriftSqlType.int, requiredDuringInsert: true);
+  late final GeneratedColumn<int> workId = GeneratedColumn<int>(
+    'work_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
-  late final GeneratedColumn<String> title = GeneratedColumn<String>('title', aliasedName, false, type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _authorIdMeta = const VerificationMeta('authorId');
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _authorIdMeta = const VerificationMeta(
+    'authorId',
+  );
   @override
-  late final GeneratedColumn<int> authorId = GeneratedColumn<int>('author_id', aliasedName, false, type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _authorNameMeta = const VerificationMeta('authorName');
+  late final GeneratedColumn<int> authorId = GeneratedColumn<int>(
+    'author_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _authorNameMeta = const VerificationMeta(
+    'authorName',
+  );
   @override
   late final GeneratedColumn<String> authorName = GeneratedColumn<String>(
     'author_name',
@@ -37,7 +69,9 @@ class $HistoryRecordsTable extends HistoryRecords with TableInfo<$HistoryRecords
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _thumbnailUrlMeta = const VerificationMeta('thumbnailUrl');
+  static const VerificationMeta _thumbnailUrlMeta = const VerificationMeta(
+    'thumbnailUrl',
+  );
   @override
   late final GeneratedColumn<String> thumbnailUrl = GeneratedColumn<String>(
     'thumbnail_url',
@@ -46,10 +80,20 @@ class $HistoryRecordsTable extends HistoryRecords with TableInfo<$HistoryRecords
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _xRestrictMeta = const VerificationMeta('xRestrict');
+  static const VerificationMeta _xRestrictMeta = const VerificationMeta(
+    'xRestrict',
+  );
   @override
-  late final GeneratedColumn<int> xRestrict = GeneratedColumn<int>('x_restrict', aliasedName, false, type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _aiGeneratedMeta = const VerificationMeta('aiGenerated');
+  late final GeneratedColumn<int> xRestrict = GeneratedColumn<int>(
+    'x_restrict',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _aiGeneratedMeta = const VerificationMeta(
+    'aiGenerated',
+  );
   @override
   late final GeneratedColumn<bool> aiGenerated = GeneratedColumn<bool>(
     'ai_generated',
@@ -57,23 +101,61 @@ class $HistoryRecordsTable extends HistoryRecords with TableInfo<$HistoryRecords
     false,
     type: DriftSqlType.bool,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('CHECK ("ai_generated" IN (0, 1))'),
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("ai_generated" IN (0, 1))',
+    ),
   );
-  static const VerificationMeta _viewedAtMeta = const VerificationMeta('viewedAt');
+  static const VerificationMeta _viewedAtMeta = const VerificationMeta(
+    'viewedAt',
+  );
   @override
-  late final GeneratedColumn<int> viewedAt = GeneratedColumn<int>('viewed_at', aliasedName, false, type: DriftSqlType.int, requiredDuringInsert: true);
+  late final GeneratedColumn<int> viewedAt = GeneratedColumn<int>(
+    'viewed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _widthMeta = const VerificationMeta('width');
   @override
-  late final GeneratedColumn<int> width = GeneratedColumn<int>('width', aliasedName, true, type: DriftSqlType.int, requiredDuringInsert: false);
+  late final GeneratedColumn<int> width = GeneratedColumn<int>(
+    'width',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _heightMeta = const VerificationMeta('height');
   @override
-  late final GeneratedColumn<int> height = GeneratedColumn<int>('height', aliasedName, true, type: DriftSqlType.int, requiredDuringInsert: false);
-  static const VerificationMeta _pageCountMeta = const VerificationMeta('pageCount');
+  late final GeneratedColumn<int> height = GeneratedColumn<int>(
+    'height',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pageCountMeta = const VerificationMeta(
+    'pageCount',
+  );
   @override
-  late final GeneratedColumn<int> pageCount = GeneratedColumn<int>('page_count', aliasedName, true, type: DriftSqlType.int, requiredDuringInsert: false);
-  static const VerificationMeta _textLengthMeta = const VerificationMeta('textLength');
+  late final GeneratedColumn<int> pageCount = GeneratedColumn<int>(
+    'page_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _textLengthMeta = const VerificationMeta(
+    'textLength',
+  );
   @override
-  late final GeneratedColumn<int> textLength = GeneratedColumn<int>('text_length', aliasedName, true, type: DriftSqlType.int, requiredDuringInsert: false);
+  late final GeneratedColumn<int> textLength = GeneratedColumn<int>(
+    'text_length',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     account,
@@ -97,65 +179,113 @@ class $HistoryRecordsTable extends HistoryRecords with TableInfo<$HistoryRecords
   String get actualTableName => $name;
   static const String $name = 'history_records';
   @override
-  VerificationContext validateIntegrity(Insertable<HistoryRow> instance, {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<HistoryRow> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('account')) {
-      context.handle(_accountMeta, account.isAcceptableOrUnknown(data['account']!, _accountMeta));
+      context.handle(
+        _accountMeta,
+        account.isAcceptableOrUnknown(data['account']!, _accountMeta),
+      );
     } else if (isInserting) {
       context.missing(_accountMeta);
     }
     if (data.containsKey('work_id')) {
-      context.handle(_workIdMeta, workId.isAcceptableOrUnknown(data['work_id']!, _workIdMeta));
+      context.handle(
+        _workIdMeta,
+        workId.isAcceptableOrUnknown(data['work_id']!, _workIdMeta),
+      );
     } else if (isInserting) {
       context.missing(_workIdMeta);
     }
     if (data.containsKey('title')) {
-      context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('author_id')) {
-      context.handle(_authorIdMeta, authorId.isAcceptableOrUnknown(data['author_id']!, _authorIdMeta));
+      context.handle(
+        _authorIdMeta,
+        authorId.isAcceptableOrUnknown(data['author_id']!, _authorIdMeta),
+      );
     } else if (isInserting) {
       context.missing(_authorIdMeta);
     }
     if (data.containsKey('author_name')) {
-      context.handle(_authorNameMeta, authorName.isAcceptableOrUnknown(data['author_name']!, _authorNameMeta));
+      context.handle(
+        _authorNameMeta,
+        authorName.isAcceptableOrUnknown(data['author_name']!, _authorNameMeta),
+      );
     } else if (isInserting) {
       context.missing(_authorNameMeta);
     }
     if (data.containsKey('thumbnail_url')) {
-      context.handle(_thumbnailUrlMeta, thumbnailUrl.isAcceptableOrUnknown(data['thumbnail_url']!, _thumbnailUrlMeta));
+      context.handle(
+        _thumbnailUrlMeta,
+        thumbnailUrl.isAcceptableOrUnknown(
+          data['thumbnail_url']!,
+          _thumbnailUrlMeta,
+        ),
+      );
     } else if (isInserting) {
       context.missing(_thumbnailUrlMeta);
     }
     if (data.containsKey('x_restrict')) {
-      context.handle(_xRestrictMeta, xRestrict.isAcceptableOrUnknown(data['x_restrict']!, _xRestrictMeta));
+      context.handle(
+        _xRestrictMeta,
+        xRestrict.isAcceptableOrUnknown(data['x_restrict']!, _xRestrictMeta),
+      );
     } else if (isInserting) {
       context.missing(_xRestrictMeta);
     }
     if (data.containsKey('ai_generated')) {
-      context.handle(_aiGeneratedMeta, aiGenerated.isAcceptableOrUnknown(data['ai_generated']!, _aiGeneratedMeta));
+      context.handle(
+        _aiGeneratedMeta,
+        aiGenerated.isAcceptableOrUnknown(
+          data['ai_generated']!,
+          _aiGeneratedMeta,
+        ),
+      );
     } else if (isInserting) {
       context.missing(_aiGeneratedMeta);
     }
     if (data.containsKey('viewed_at')) {
-      context.handle(_viewedAtMeta, viewedAt.isAcceptableOrUnknown(data['viewed_at']!, _viewedAtMeta));
+      context.handle(
+        _viewedAtMeta,
+        viewedAt.isAcceptableOrUnknown(data['viewed_at']!, _viewedAtMeta),
+      );
     } else if (isInserting) {
       context.missing(_viewedAtMeta);
     }
     if (data.containsKey('width')) {
-      context.handle(_widthMeta, width.isAcceptableOrUnknown(data['width']!, _widthMeta));
+      context.handle(
+        _widthMeta,
+        width.isAcceptableOrUnknown(data['width']!, _widthMeta),
+      );
     }
     if (data.containsKey('height')) {
-      context.handle(_heightMeta, height.isAcceptableOrUnknown(data['height']!, _heightMeta));
+      context.handle(
+        _heightMeta,
+        height.isAcceptableOrUnknown(data['height']!, _heightMeta),
+      );
     }
     if (data.containsKey('page_count')) {
-      context.handle(_pageCountMeta, pageCount.isAcceptableOrUnknown(data['page_count']!, _pageCountMeta));
+      context.handle(
+        _pageCountMeta,
+        pageCount.isAcceptableOrUnknown(data['page_count']!, _pageCountMeta),
+      );
     }
     if (data.containsKey('text_length')) {
-      context.handle(_textLengthMeta, textLength.isAcceptableOrUnknown(data['text_length']!, _textLengthMeta));
+      context.handle(
+        _textLengthMeta,
+        textLength.isAcceptableOrUnknown(data['text_length']!, _textLengthMeta),
+      );
     }
     return context;
   }
@@ -166,20 +296,64 @@ class $HistoryRecordsTable extends HistoryRecords with TableInfo<$HistoryRecords
   HistoryRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return HistoryRow(
-      account: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}account'])!,
-      kind: $HistoryRecordsTable.$converterkind.fromSql(attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}kind'])!),
-      workId: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}work_id'])!,
-      title: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      authorId: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}author_id'])!,
-      authorName: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}author_name'])!,
-      thumbnailUrl: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}thumbnail_url'])!,
-      xRestrict: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}x_restrict'])!,
-      aiGenerated: attachedDatabase.typeMapping.read(DriftSqlType.bool, data['${effectivePrefix}ai_generated'])!,
-      viewedAt: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}viewed_at'])!,
-      width: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}width']),
-      height: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}height']),
-      pageCount: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}page_count']),
-      textLength: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}text_length']),
+      account: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}account'],
+      )!,
+      kind: $HistoryRecordsTable.$converterkind.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}kind'],
+        )!,
+      ),
+      workId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}work_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      authorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}author_id'],
+      )!,
+      authorName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}author_name'],
+      )!,
+      thumbnailUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}thumbnail_url'],
+      )!,
+      xRestrict: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}x_restrict'],
+      )!,
+      aiGenerated: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}ai_generated'],
+      )!,
+      viewedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}viewed_at'],
+      )!,
+      width: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}width'],
+      ),
+      height: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}height'],
+      ),
+      pageCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}page_count'],
+      ),
+      textLength: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}text_length'],
+      ),
     );
   }
 
@@ -188,7 +362,8 @@ class $HistoryRecordsTable extends HistoryRecords with TableInfo<$HistoryRecords
     return $HistoryRecordsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<HistoryWorkKind, String, String> $converterkind = const EnumNameConverter<HistoryWorkKind>(HistoryWorkKind.values);
+  static JsonTypeConverter2<HistoryWorkKind, String, String> $converterkind =
+      const EnumNameConverter<HistoryWorkKind>(HistoryWorkKind.values);
 }
 
 class HistoryRow extends DataClass implements Insertable<HistoryRow> {
@@ -228,7 +403,9 @@ class HistoryRow extends DataClass implements Insertable<HistoryRow> {
     final map = <String, Expression>{};
     map['account'] = Variable<String>(account);
     {
-      map['kind'] = Variable<String>($HistoryRecordsTable.$converterkind.toSql(kind));
+      map['kind'] = Variable<String>(
+        $HistoryRecordsTable.$converterkind.toSql(kind),
+      );
     }
     map['work_id'] = Variable<int>(workId);
     map['title'] = Variable<String>(title);
@@ -265,18 +442,31 @@ class HistoryRow extends DataClass implements Insertable<HistoryRow> {
       xRestrict: Value(xRestrict),
       aiGenerated: Value(aiGenerated),
       viewedAt: Value(viewedAt),
-      width: width == null && nullToAbsent ? const Value.absent() : Value(width),
-      height: height == null && nullToAbsent ? const Value.absent() : Value(height),
-      pageCount: pageCount == null && nullToAbsent ? const Value.absent() : Value(pageCount),
-      textLength: textLength == null && nullToAbsent ? const Value.absent() : Value(textLength),
+      width: width == null && nullToAbsent
+          ? const Value.absent()
+          : Value(width),
+      height: height == null && nullToAbsent
+          ? const Value.absent()
+          : Value(height),
+      pageCount: pageCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pageCount),
+      textLength: textLength == null && nullToAbsent
+          ? const Value.absent()
+          : Value(textLength),
     );
   }
 
-  factory HistoryRow.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
+  factory HistoryRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return HistoryRow(
       account: serializer.fromJson<String>(json['account']),
-      kind: $HistoryRecordsTable.$converterkind.fromJson(serializer.fromJson<String>(json['kind'])),
+      kind: $HistoryRecordsTable.$converterkind.fromJson(
+        serializer.fromJson<String>(json['kind']),
+      ),
       workId: serializer.fromJson<int>(json['workId']),
       title: serializer.fromJson<String>(json['title']),
       authorId: serializer.fromJson<int>(json['authorId']),
@@ -296,7 +486,9 @@ class HistoryRow extends DataClass implements Insertable<HistoryRow> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'account': serializer.toJson<String>(account),
-      'kind': serializer.toJson<String>($HistoryRecordsTable.$converterkind.toJson(kind)),
+      'kind': serializer.toJson<String>(
+        $HistoryRecordsTable.$converterkind.toJson(kind),
+      ),
       'workId': serializer.toJson<int>(workId),
       'title': serializer.toJson<String>(title),
       'authorId': serializer.toJson<int>(authorId),
@@ -350,15 +542,23 @@ class HistoryRow extends DataClass implements Insertable<HistoryRow> {
       workId: data.workId.present ? data.workId.value : this.workId,
       title: data.title.present ? data.title.value : this.title,
       authorId: data.authorId.present ? data.authorId.value : this.authorId,
-      authorName: data.authorName.present ? data.authorName.value : this.authorName,
-      thumbnailUrl: data.thumbnailUrl.present ? data.thumbnailUrl.value : this.thumbnailUrl,
+      authorName: data.authorName.present
+          ? data.authorName.value
+          : this.authorName,
+      thumbnailUrl: data.thumbnailUrl.present
+          ? data.thumbnailUrl.value
+          : this.thumbnailUrl,
       xRestrict: data.xRestrict.present ? data.xRestrict.value : this.xRestrict,
-      aiGenerated: data.aiGenerated.present ? data.aiGenerated.value : this.aiGenerated,
+      aiGenerated: data.aiGenerated.present
+          ? data.aiGenerated.value
+          : this.aiGenerated,
       viewedAt: data.viewedAt.present ? data.viewedAt.value : this.viewedAt,
       width: data.width.present ? data.width.value : this.width,
       height: data.height.present ? data.height.value : this.height,
       pageCount: data.pageCount.present ? data.pageCount.value : this.pageCount,
-      textLength: data.textLength.present ? data.textLength.value : this.textLength,
+      textLength: data.textLength.present
+          ? data.textLength.value
+          : this.textLength,
     );
   }
 
@@ -384,8 +584,22 @@ class HistoryRow extends DataClass implements Insertable<HistoryRow> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(account, kind, workId, title, authorId, authorName, thumbnailUrl, xRestrict, aiGenerated, viewedAt, width, height, pageCount, textLength);
+  int get hashCode => Object.hash(
+    account,
+    kind,
+    workId,
+    title,
+    authorId,
+    authorName,
+    thumbnailUrl,
+    xRestrict,
+    aiGenerated,
+    viewedAt,
+    width,
+    height,
+    pageCount,
+    textLength,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -544,7 +758,9 @@ class HistoryRecordsCompanion extends UpdateCompanion<HistoryRow> {
       map['account'] = Variable<String>(account.value);
     }
     if (kind.present) {
-      map['kind'] = Variable<String>($HistoryRecordsTable.$converterkind.toSql(kind.value));
+      map['kind'] = Variable<String>(
+        $HistoryRecordsTable.$converterkind.toSql(kind.value),
+      );
     }
     if (workId.present) {
       map['work_id'] = Variable<int>(workId.value);
@@ -611,52 +827,441 @@ class HistoryRecordsCompanion extends UpdateCompanion<HistoryRow> {
   }
 }
 
+class $ReadingProgressRecordsTable extends ReadingProgressRecords
+    with TableInfo<$ReadingProgressRecordsTable, ReadingProgressRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ReadingProgressRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _accountMeta = const VerificationMeta(
+    'account',
+  );
+  @override
+  late final GeneratedColumn<String> account = GeneratedColumn<String>(
+    'account',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _novelIdMeta = const VerificationMeta(
+    'novelId',
+  );
+  @override
+  late final GeneratedColumn<int> novelId = GeneratedColumn<int>(
+    'novel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _offsetMeta = const VerificationMeta('offset');
+  @override
+  late final GeneratedColumn<int> offset = GeneratedColumn<int>(
+    'offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalLengthMeta = const VerificationMeta(
+    'totalLength',
+  );
+  @override
+  late final GeneratedColumn<int> totalLength = GeneratedColumn<int>(
+    'total_length',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    account,
+    novelId,
+    offset,
+    totalLength,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'reading_progress_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ReadingProgressRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('account')) {
+      context.handle(
+        _accountMeta,
+        account.isAcceptableOrUnknown(data['account']!, _accountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_accountMeta);
+    }
+    if (data.containsKey('novel_id')) {
+      context.handle(
+        _novelIdMeta,
+        novelId.isAcceptableOrUnknown(data['novel_id']!, _novelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_novelIdMeta);
+    }
+    if (data.containsKey('offset')) {
+      context.handle(
+        _offsetMeta,
+        offset.isAcceptableOrUnknown(data['offset']!, _offsetMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_offsetMeta);
+    }
+    if (data.containsKey('total_length')) {
+      context.handle(
+        _totalLengthMeta,
+        totalLength.isAcceptableOrUnknown(
+          data['total_length']!,
+          _totalLengthMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_totalLengthMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {account, novelId};
+  @override
+  ReadingProgressRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ReadingProgressRow(
+      account: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}account'],
+      )!,
+      novelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}novel_id'],
+      )!,
+      offset: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}offset'],
+      )!,
+      totalLength: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_length'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ReadingProgressRecordsTable createAlias(String alias) {
+    return $ReadingProgressRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class ReadingProgressRow extends DataClass
+    implements Insertable<ReadingProgressRow> {
+  /// The account's ID in the account book.
+  final String account;
+  final int novelId;
+
+  /// Character offset in the parsed text.
+  final int offset;
+
+  /// The parsed text's length when the offset was saved.
+  final int totalLength;
+
+  /// Milliseconds since the epoch, UTC.
+  final int updatedAt;
+  const ReadingProgressRow({
+    required this.account,
+    required this.novelId,
+    required this.offset,
+    required this.totalLength,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['account'] = Variable<String>(account);
+    map['novel_id'] = Variable<int>(novelId);
+    map['offset'] = Variable<int>(offset);
+    map['total_length'] = Variable<int>(totalLength);
+    map['updated_at'] = Variable<int>(updatedAt);
+    return map;
+  }
+
+  ReadingProgressRecordsCompanion toCompanion(bool nullToAbsent) {
+    return ReadingProgressRecordsCompanion(
+      account: Value(account),
+      novelId: Value(novelId),
+      offset: Value(offset),
+      totalLength: Value(totalLength),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ReadingProgressRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ReadingProgressRow(
+      account: serializer.fromJson<String>(json['account']),
+      novelId: serializer.fromJson<int>(json['novelId']),
+      offset: serializer.fromJson<int>(json['offset']),
+      totalLength: serializer.fromJson<int>(json['totalLength']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'account': serializer.toJson<String>(account),
+      'novelId': serializer.toJson<int>(novelId),
+      'offset': serializer.toJson<int>(offset),
+      'totalLength': serializer.toJson<int>(totalLength),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+    };
+  }
+
+  ReadingProgressRow copyWith({
+    String? account,
+    int? novelId,
+    int? offset,
+    int? totalLength,
+    int? updatedAt,
+  }) => ReadingProgressRow(
+    account: account ?? this.account,
+    novelId: novelId ?? this.novelId,
+    offset: offset ?? this.offset,
+    totalLength: totalLength ?? this.totalLength,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ReadingProgressRow copyWithCompanion(ReadingProgressRecordsCompanion data) {
+    return ReadingProgressRow(
+      account: data.account.present ? data.account.value : this.account,
+      novelId: data.novelId.present ? data.novelId.value : this.novelId,
+      offset: data.offset.present ? data.offset.value : this.offset,
+      totalLength: data.totalLength.present
+          ? data.totalLength.value
+          : this.totalLength,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReadingProgressRow(')
+          ..write('account: $account, ')
+          ..write('novelId: $novelId, ')
+          ..write('offset: $offset, ')
+          ..write('totalLength: $totalLength, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(account, novelId, offset, totalLength, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReadingProgressRow &&
+          other.account == this.account &&
+          other.novelId == this.novelId &&
+          other.offset == this.offset &&
+          other.totalLength == this.totalLength &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ReadingProgressRecordsCompanion
+    extends UpdateCompanion<ReadingProgressRow> {
+  final Value<String> account;
+  final Value<int> novelId;
+  final Value<int> offset;
+  final Value<int> totalLength;
+  final Value<int> updatedAt;
+  final Value<int> rowid;
+  const ReadingProgressRecordsCompanion({
+    this.account = const Value.absent(),
+    this.novelId = const Value.absent(),
+    this.offset = const Value.absent(),
+    this.totalLength = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ReadingProgressRecordsCompanion.insert({
+    required String account,
+    required int novelId,
+    required int offset,
+    required int totalLength,
+    required int updatedAt,
+    this.rowid = const Value.absent(),
+  }) : account = Value(account),
+       novelId = Value(novelId),
+       offset = Value(offset),
+       totalLength = Value(totalLength),
+       updatedAt = Value(updatedAt);
+  static Insertable<ReadingProgressRow> custom({
+    Expression<String>? account,
+    Expression<int>? novelId,
+    Expression<int>? offset,
+    Expression<int>? totalLength,
+    Expression<int>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (account != null) 'account': account,
+      if (novelId != null) 'novel_id': novelId,
+      if (offset != null) 'offset': offset,
+      if (totalLength != null) 'total_length': totalLength,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ReadingProgressRecordsCompanion copyWith({
+    Value<String>? account,
+    Value<int>? novelId,
+    Value<int>? offset,
+    Value<int>? totalLength,
+    Value<int>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ReadingProgressRecordsCompanion(
+      account: account ?? this.account,
+      novelId: novelId ?? this.novelId,
+      offset: offset ?? this.offset,
+      totalLength: totalLength ?? this.totalLength,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (account.present) {
+      map['account'] = Variable<String>(account.value);
+    }
+    if (novelId.present) {
+      map['novel_id'] = Variable<int>(novelId.value);
+    }
+    if (offset.present) {
+      map['offset'] = Variable<int>(offset.value);
+    }
+    if (totalLength.present) {
+      map['total_length'] = Variable<int>(totalLength.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReadingProgressRecordsCompanion(')
+          ..write('account: $account, ')
+          ..write('novelId: $novelId, ')
+          ..write('offset: $offset, ')
+          ..write('totalLength: $totalLength, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$HistoryDatabase extends GeneratedDatabase {
   _$HistoryDatabase(QueryExecutor e) : super(e);
   $HistoryDatabaseManager get managers => $HistoryDatabaseManager(this);
   late final $HistoryRecordsTable historyRecords = $HistoryRecordsTable(this);
+  late final $ReadingProgressRecordsTable readingProgressRecords =
+      $ReadingProgressRecordsTable(this);
   @override
-  Iterable<TableInfo<Table, Object?>> get allTables => allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  Iterable<TableInfo<Table, Object?>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [historyRecords];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    historyRecords,
+    readingProgressRecords,
+  ];
 }
 
-typedef $$HistoryRecordsTableCreateCompanionBuilder = HistoryRecordsCompanion Function({
-  required String account,
-  required HistoryWorkKind kind,
-  required int workId,
-  required String title,
-  required int authorId,
-  required String authorName,
-  required String thumbnailUrl,
-  required int xRestrict,
-  required bool aiGenerated,
-  required int viewedAt,
-  Value<int?> width,
-  Value<int?> height,
-  Value<int?> pageCount,
-  Value<int?> textLength,
-  Value<int> rowid,
-});
-typedef $$HistoryRecordsTableUpdateCompanionBuilder = HistoryRecordsCompanion Function({
-  Value<String> account,
-  Value<HistoryWorkKind> kind,
-  Value<int> workId,
-  Value<String> title,
-  Value<int> authorId,
-  Value<String> authorName,
-  Value<String> thumbnailUrl,
-  Value<int> xRestrict,
-  Value<bool> aiGenerated,
-  Value<int> viewedAt,
-  Value<int?> width,
-  Value<int?> height,
-  Value<int?> pageCount,
-  Value<int?> textLength,
-  Value<int> rowid,
-});
+typedef $$HistoryRecordsTableCreateCompanionBuilder =
+    HistoryRecordsCompanion Function({
+      required String account,
+      required HistoryWorkKind kind,
+      required int workId,
+      required String title,
+      required int authorId,
+      required String authorName,
+      required String thumbnailUrl,
+      required int xRestrict,
+      required bool aiGenerated,
+      required int viewedAt,
+      Value<int?> width,
+      Value<int?> height,
+      Value<int?> pageCount,
+      Value<int?> textLength,
+      Value<int> rowid,
+    });
+typedef $$HistoryRecordsTableUpdateCompanionBuilder =
+    HistoryRecordsCompanion Function({
+      Value<String> account,
+      Value<HistoryWorkKind> kind,
+      Value<int> workId,
+      Value<String> title,
+      Value<int> authorId,
+      Value<String> authorName,
+      Value<String> thumbnailUrl,
+      Value<int> xRestrict,
+      Value<bool> aiGenerated,
+      Value<int> viewedAt,
+      Value<int?> width,
+      Value<int?> height,
+      Value<int?> pageCount,
+      Value<int?> textLength,
+      Value<int> rowid,
+    });
 
-class $$HistoryRecordsTableFilterComposer extends Composer<_$HistoryDatabase, $HistoryRecordsTable> {
+class $$HistoryRecordsTableFilterComposer
+    extends Composer<_$HistoryDatabase, $HistoryRecordsTable> {
   $$HistoryRecordsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -664,37 +1269,80 @@ class $$HistoryRecordsTableFilterComposer extends Composer<_$HistoryDatabase, $H
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get account => $composableBuilder(column: $table.account, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get account => $composableBuilder(
+    column: $table.account,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnWithTypeConverterFilters<HistoryWorkKind, HistoryWorkKind, String> get kind =>
-      $composableBuilder(column: $table.kind, builder: (column) => ColumnWithTypeConverterFilters(column));
+  ColumnWithTypeConverterFilters<HistoryWorkKind, HistoryWorkKind, String>
+  get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
 
-  ColumnFilters<int> get workId => $composableBuilder(column: $table.workId, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get workId => $composableBuilder(
+    column: $table.workId,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<String> get title => $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get authorId => $composableBuilder(column: $table.authorId, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get authorId => $composableBuilder(
+    column: $table.authorId,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<String> get authorName => $composableBuilder(column: $table.authorName, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get authorName => $composableBuilder(
+    column: $table.authorName,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<String> get thumbnailUrl => $composableBuilder(column: $table.thumbnailUrl, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get thumbnailUrl => $composableBuilder(
+    column: $table.thumbnailUrl,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get xRestrict => $composableBuilder(column: $table.xRestrict, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get xRestrict => $composableBuilder(
+    column: $table.xRestrict,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<bool> get aiGenerated => $composableBuilder(column: $table.aiGenerated, builder: (column) => ColumnFilters(column));
+  ColumnFilters<bool> get aiGenerated => $composableBuilder(
+    column: $table.aiGenerated,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get viewedAt => $composableBuilder(column: $table.viewedAt, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get viewedAt => $composableBuilder(
+    column: $table.viewedAt,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get width => $composableBuilder(column: $table.width, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get width => $composableBuilder(
+    column: $table.width,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get height => $composableBuilder(column: $table.height, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get height => $composableBuilder(
+    column: $table.height,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get pageCount => $composableBuilder(column: $table.pageCount, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get pageCount => $composableBuilder(
+    column: $table.pageCount,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get textLength => $composableBuilder(column: $table.textLength, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get textLength => $composableBuilder(
+    column: $table.textLength,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
-class $$HistoryRecordsTableOrderingComposer extends Composer<_$HistoryDatabase, $HistoryRecordsTable> {
+class $$HistoryRecordsTableOrderingComposer
+    extends Composer<_$HistoryDatabase, $HistoryRecordsTable> {
   $$HistoryRecordsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -702,36 +1350,79 @@ class $$HistoryRecordsTableOrderingComposer extends Composer<_$HistoryDatabase, 
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get account => $composableBuilder(column: $table.account, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get account => $composableBuilder(
+    column: $table.account,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<String> get kind => $composableBuilder(column: $table.kind, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get workId => $composableBuilder(column: $table.workId, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get workId => $composableBuilder(
+    column: $table.workId,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<String> get title => $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get authorId => $composableBuilder(column: $table.authorId, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get authorId => $composableBuilder(
+    column: $table.authorId,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<String> get authorName => $composableBuilder(column: $table.authorName, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get authorName => $composableBuilder(
+    column: $table.authorName,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<String> get thumbnailUrl => $composableBuilder(column: $table.thumbnailUrl, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get thumbnailUrl => $composableBuilder(
+    column: $table.thumbnailUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get xRestrict => $composableBuilder(column: $table.xRestrict, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get xRestrict => $composableBuilder(
+    column: $table.xRestrict,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<bool> get aiGenerated => $composableBuilder(column: $table.aiGenerated, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<bool> get aiGenerated => $composableBuilder(
+    column: $table.aiGenerated,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get viewedAt => $composableBuilder(column: $table.viewedAt, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get viewedAt => $composableBuilder(
+    column: $table.viewedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get width => $composableBuilder(column: $table.width, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get width => $composableBuilder(
+    column: $table.width,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get height => $composableBuilder(column: $table.height, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get height => $composableBuilder(
+    column: $table.height,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get pageCount => $composableBuilder(column: $table.pageCount, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get pageCount => $composableBuilder(
+    column: $table.pageCount,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get textLength => $composableBuilder(column: $table.textLength, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get textLength => $composableBuilder(
+    column: $table.textLength,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
-class $$HistoryRecordsTableAnnotationComposer extends Composer<_$HistoryDatabase, $HistoryRecordsTable> {
+class $$HistoryRecordsTableAnnotationComposer
+    extends Composer<_$HistoryDatabase, $HistoryRecordsTable> {
   $$HistoryRecordsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -739,33 +1430,55 @@ class $$HistoryRecordsTableAnnotationComposer extends Composer<_$HistoryDatabase
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get account => $composableBuilder(column: $table.account, builder: (column) => column);
+  GeneratedColumn<String> get account =>
+      $composableBuilder(column: $table.account, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<HistoryWorkKind, String> get kind => $composableBuilder(column: $table.kind, builder: (column) => column);
+  GeneratedColumnWithTypeConverter<HistoryWorkKind, String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
 
-  GeneratedColumn<int> get workId => $composableBuilder(column: $table.workId, builder: (column) => column);
+  GeneratedColumn<int> get workId =>
+      $composableBuilder(column: $table.workId, builder: (column) => column);
 
-  GeneratedColumn<String> get title => $composableBuilder(column: $table.title, builder: (column) => column);
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
 
-  GeneratedColumn<int> get authorId => $composableBuilder(column: $table.authorId, builder: (column) => column);
+  GeneratedColumn<int> get authorId =>
+      $composableBuilder(column: $table.authorId, builder: (column) => column);
 
-  GeneratedColumn<String> get authorName => $composableBuilder(column: $table.authorName, builder: (column) => column);
+  GeneratedColumn<String> get authorName => $composableBuilder(
+    column: $table.authorName,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<String> get thumbnailUrl => $composableBuilder(column: $table.thumbnailUrl, builder: (column) => column);
+  GeneratedColumn<String> get thumbnailUrl => $composableBuilder(
+    column: $table.thumbnailUrl,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<int> get xRestrict => $composableBuilder(column: $table.xRestrict, builder: (column) => column);
+  GeneratedColumn<int> get xRestrict =>
+      $composableBuilder(column: $table.xRestrict, builder: (column) => column);
 
-  GeneratedColumn<bool> get aiGenerated => $composableBuilder(column: $table.aiGenerated, builder: (column) => column);
+  GeneratedColumn<bool> get aiGenerated => $composableBuilder(
+    column: $table.aiGenerated,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<int> get viewedAt => $composableBuilder(column: $table.viewedAt, builder: (column) => column);
+  GeneratedColumn<int> get viewedAt =>
+      $composableBuilder(column: $table.viewedAt, builder: (column) => column);
 
-  GeneratedColumn<int> get width => $composableBuilder(column: $table.width, builder: (column) => column);
+  GeneratedColumn<int> get width =>
+      $composableBuilder(column: $table.width, builder: (column) => column);
 
-  GeneratedColumn<int> get height => $composableBuilder(column: $table.height, builder: (column) => column);
+  GeneratedColumn<int> get height =>
+      $composableBuilder(column: $table.height, builder: (column) => column);
 
-  GeneratedColumn<int> get pageCount => $composableBuilder(column: $table.pageCount, builder: (column) => column);
+  GeneratedColumn<int> get pageCount =>
+      $composableBuilder(column: $table.pageCount, builder: (column) => column);
 
-  GeneratedColumn<int> get textLength => $composableBuilder(column: $table.textLength, builder: (column) => column);
+  GeneratedColumn<int> get textLength => $composableBuilder(
+    column: $table.textLength,
+    builder: (column) => column,
+  );
 }
 
 class $$HistoryRecordsTableTableManager
@@ -779,18 +1492,26 @@ class $$HistoryRecordsTableTableManager
           $$HistoryRecordsTableAnnotationComposer,
           $$HistoryRecordsTableCreateCompanionBuilder,
           $$HistoryRecordsTableUpdateCompanionBuilder,
-          (HistoryRow, BaseReferences<_$HistoryDatabase, $HistoryRecordsTable, HistoryRow>),
+          (
+            HistoryRow,
+            BaseReferences<_$HistoryDatabase, $HistoryRecordsTable, HistoryRow>,
+          ),
           HistoryRow,
           PrefetchHooks Function()
         > {
-  $$HistoryRecordsTableTableManager(_$HistoryDatabase db, $HistoryRecordsTable table)
-    : super(
+  $$HistoryRecordsTableTableManager(
+    _$HistoryDatabase db,
+    $HistoryRecordsTable table,
+  ) : super(
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$HistoryRecordsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () => $$HistoryRecordsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () => $$HistoryRecordsTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$HistoryRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HistoryRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HistoryRecordsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> account = const Value.absent(),
@@ -861,8 +1582,14 @@ class $$HistoryRecordsTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) =>
-                    (e.readTable<$HistoryRecordsTable, HistoryRow>(table), BaseReferences<_$HistoryDatabase, $HistoryRecordsTable, HistoryRow>(db, table, e)),
+                (e) => (
+                  e.readTable<$HistoryRecordsTable, HistoryRow>(table),
+                  BaseReferences<
+                    _$HistoryDatabase,
+                    $HistoryRecordsTable,
+                    HistoryRow
+                  >(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: null,
@@ -880,13 +1607,254 @@ typedef $$HistoryRecordsTableProcessedTableManager =
       $$HistoryRecordsTableAnnotationComposer,
       $$HistoryRecordsTableCreateCompanionBuilder,
       $$HistoryRecordsTableUpdateCompanionBuilder,
-      (HistoryRow, BaseReferences<_$HistoryDatabase, $HistoryRecordsTable, HistoryRow>),
+      (
+        HistoryRow,
+        BaseReferences<_$HistoryDatabase, $HistoryRecordsTable, HistoryRow>,
+      ),
       HistoryRow,
+      PrefetchHooks Function()
+    >;
+typedef $$ReadingProgressRecordsTableCreateCompanionBuilder =
+    ReadingProgressRecordsCompanion Function({
+      required String account,
+      required int novelId,
+      required int offset,
+      required int totalLength,
+      required int updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ReadingProgressRecordsTableUpdateCompanionBuilder =
+    ReadingProgressRecordsCompanion Function({
+      Value<String> account,
+      Value<int> novelId,
+      Value<int> offset,
+      Value<int> totalLength,
+      Value<int> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$ReadingProgressRecordsTableFilterComposer
+    extends Composer<_$HistoryDatabase, $ReadingProgressRecordsTable> {
+  $$ReadingProgressRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get account => $composableBuilder(
+    column: $table.account,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get novelId => $composableBuilder(
+    column: $table.novelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get offset => $composableBuilder(
+    column: $table.offset,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalLength => $composableBuilder(
+    column: $table.totalLength,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ReadingProgressRecordsTableOrderingComposer
+    extends Composer<_$HistoryDatabase, $ReadingProgressRecordsTable> {
+  $$ReadingProgressRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get account => $composableBuilder(
+    column: $table.account,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get novelId => $composableBuilder(
+    column: $table.novelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get offset => $composableBuilder(
+    column: $table.offset,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalLength => $composableBuilder(
+    column: $table.totalLength,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ReadingProgressRecordsTableAnnotationComposer
+    extends Composer<_$HistoryDatabase, $ReadingProgressRecordsTable> {
+  $$ReadingProgressRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get account =>
+      $composableBuilder(column: $table.account, builder: (column) => column);
+
+  GeneratedColumn<int> get novelId =>
+      $composableBuilder(column: $table.novelId, builder: (column) => column);
+
+  GeneratedColumn<int> get offset =>
+      $composableBuilder(column: $table.offset, builder: (column) => column);
+
+  GeneratedColumn<int> get totalLength => $composableBuilder(
+    column: $table.totalLength,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ReadingProgressRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$HistoryDatabase,
+          $ReadingProgressRecordsTable,
+          ReadingProgressRow,
+          $$ReadingProgressRecordsTableFilterComposer,
+          $$ReadingProgressRecordsTableOrderingComposer,
+          $$ReadingProgressRecordsTableAnnotationComposer,
+          $$ReadingProgressRecordsTableCreateCompanionBuilder,
+          $$ReadingProgressRecordsTableUpdateCompanionBuilder,
+          (
+            ReadingProgressRow,
+            BaseReferences<
+              _$HistoryDatabase,
+              $ReadingProgressRecordsTable,
+              ReadingProgressRow
+            >,
+          ),
+          ReadingProgressRow,
+          PrefetchHooks Function()
+        > {
+  $$ReadingProgressRecordsTableTableManager(
+    _$HistoryDatabase db,
+    $ReadingProgressRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ReadingProgressRecordsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$ReadingProgressRecordsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ReadingProgressRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> account = const Value.absent(),
+                Value<int> novelId = const Value.absent(),
+                Value<int> offset = const Value.absent(),
+                Value<int> totalLength = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReadingProgressRecordsCompanion(
+                account: account,
+                novelId: novelId,
+                offset: offset,
+                totalLength: totalLength,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String account,
+                required int novelId,
+                required int offset,
+                required int totalLength,
+                required int updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ReadingProgressRecordsCompanion.insert(
+                account: account,
+                novelId: novelId,
+                offset: offset,
+                totalLength: totalLength,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ReadingProgressRecordsTable, ReadingProgressRow>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$HistoryDatabase,
+                    $ReadingProgressRecordsTable,
+                    ReadingProgressRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ReadingProgressRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$HistoryDatabase,
+      $ReadingProgressRecordsTable,
+      ReadingProgressRow,
+      $$ReadingProgressRecordsTableFilterComposer,
+      $$ReadingProgressRecordsTableOrderingComposer,
+      $$ReadingProgressRecordsTableAnnotationComposer,
+      $$ReadingProgressRecordsTableCreateCompanionBuilder,
+      $$ReadingProgressRecordsTableUpdateCompanionBuilder,
+      (
+        ReadingProgressRow,
+        BaseReferences<
+          _$HistoryDatabase,
+          $ReadingProgressRecordsTable,
+          ReadingProgressRow
+        >,
+      ),
+      ReadingProgressRow,
       PrefetchHooks Function()
     >;
 
 class $HistoryDatabaseManager {
   final _$HistoryDatabase _db;
   $HistoryDatabaseManager(this._db);
-  $$HistoryRecordsTableTableManager get historyRecords => $$HistoryRecordsTableTableManager(_db, _db.historyRecords);
+  $$HistoryRecordsTableTableManager get historyRecords =>
+      $$HistoryRecordsTableTableManager(_db, _db.historyRecords);
+  $$ReadingProgressRecordsTableTableManager get readingProgressRecords =>
+      $$ReadingProgressRecordsTableTableManager(
+        _db,
+        _db.readingProgressRecords,
+      );
 }

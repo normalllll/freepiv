@@ -426,6 +426,8 @@ Future<HistoryRepository> sampleHistoryRepository() async {
     await repository.record(account, HistoryEntry.ofNovel(novels[index], now.subtract(Duration(hours: index * 9 + 2))), limit: HistoryLimit.standard);
   }
   await repository.record(sampleSecondAccount.user.id, HistoryEntry.ofIllust(illusts.first, now), limit: HistoryLimit.standard);
+  final length = novels.first.textLength;
+  await repository.saveReadingProgress(account, novels.first.id, ReadingProgress(offset: length * 38 ~/ 100, totalLength: length, updatedAt: now));
   return repository;
 }
 

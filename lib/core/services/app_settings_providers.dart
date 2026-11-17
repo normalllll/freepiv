@@ -225,10 +225,29 @@ class SidebarExpandedNotifier extends Notifier<bool> {
 /// The novel reader's typography and controls, kept across launches.
 @immutable
 class ReaderSettings {
-  const ReaderSettings({required this.textSize, required this.lineHeight, required this.autoScrollSpeed, required this.volumeKeys});
+  const ReaderSettings({
+    required this.textSize,
+    required this.lineSpacing,
+    required this.margins,
+    required this.theme,
+    required this.font,
+    required this.indent,
+    required this.pageMode,
+    required this.pageAnimation,
+    required this.tapZones,
+    required this.autoScrollSpeed,
+    required this.volumeKeys,
+  });
 
   final double textSize;
-  final double lineHeight;
+  final ReaderLineSpacing lineSpacing;
+  final ReaderMargins margins;
+  final ReaderTheme theme;
+  final ReaderFont font;
+  final bool indent;
+  final ReaderPageMode pageMode;
+  final ReaderPageAnimation pageAnimation;
+  final ReaderTapZones tapZones;
   final double autoScrollSpeed;
   final bool volumeKeys;
 
@@ -236,19 +255,33 @@ class ReaderSettings {
   bool operator ==(Object other) =>
       other is ReaderSettings &&
       other.textSize == textSize &&
-      other.lineHeight == lineHeight &&
+      other.lineSpacing == lineSpacing &&
+      other.margins == margins &&
+      other.theme == theme &&
+      other.font == font &&
+      other.indent == indent &&
+      other.pageMode == pageMode &&
+      other.pageAnimation == pageAnimation &&
+      other.tapZones == tapZones &&
       other.autoScrollSpeed == autoScrollSpeed &&
       other.volumeKeys == volumeKeys;
 
   @override
-  int get hashCode => Object.hash(textSize, lineHeight, autoScrollSpeed, volumeKeys);
+  int get hashCode => Object.hash(textSize, lineSpacing, margins, theme, font, indent, pageMode, pageAnimation, tapZones, autoScrollSpeed, volumeKeys);
 }
 
 class ReaderSettingsNotifier extends Notifier<ReaderSettings> {
   @override
   ReaderSettings build() => ReaderSettings(
     textSize: AppSettings.readerFontSize,
-    lineHeight: AppSettings.readerLineHeight,
+    lineSpacing: AppSettings.readerLineSpacing,
+    margins: AppSettings.readerMargins,
+    theme: AppSettings.readerTheme,
+    font: AppSettings.readerFont,
+    indent: AppSettings.readerIndent,
+    pageMode: AppSettings.readerPageMode,
+    pageAnimation: AppSettings.readerPageAnimation,
+    tapZones: AppSettings.readerTapZones,
     autoScrollSpeed: AppSettings.readerAutoScrollSpeed,
     volumeKeys: AppSettings.readerVolumeKeys,
   );
@@ -258,8 +291,43 @@ class ReaderSettingsNotifier extends Notifier<ReaderSettings> {
     state = build();
   }
 
-  void setLineHeight(double value) {
-    AppSettings.readerLineHeight = value;
+  void setLineSpacing(ReaderLineSpacing value) {
+    AppSettings.readerLineSpacing = value;
+    state = build();
+  }
+
+  void setMargins(ReaderMargins value) {
+    AppSettings.readerMargins = value;
+    state = build();
+  }
+
+  void setTheme(ReaderTheme value) {
+    AppSettings.readerTheme = value;
+    state = build();
+  }
+
+  void setFont(ReaderFont value) {
+    AppSettings.readerFont = value;
+    state = build();
+  }
+
+  void setIndent(bool value) {
+    AppSettings.readerIndent = value;
+    state = build();
+  }
+
+  void setPageMode(ReaderPageMode value) {
+    AppSettings.readerPageMode = value;
+    state = build();
+  }
+
+  void setPageAnimation(ReaderPageAnimation value) {
+    AppSettings.readerPageAnimation = value;
+    state = build();
+  }
+
+  void setTapZones(ReaderTapZones value) {
+    AppSettings.readerTapZones = value;
     state = build();
   }
 

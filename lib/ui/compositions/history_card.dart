@@ -68,9 +68,12 @@ class AppHistoryCard extends StatelessWidget {
 /// A novel of the browsing history, as it was when last viewed: its cover,
 /// title, author and length, without the bookmark button.
 class AppHistoryNovelRow extends StatelessWidget {
-  const AppHistoryNovelRow({required this.entry, required this.onRemove, super.key});
+  const AppHistoryNovelRow({required this.entry, required this.onRemove, this.progress, super.key});
 
   final HistoryEntry entry;
+
+  /// Where the account stopped reading, shown as a bar when there is one.
+  final ReadingProgress? progress;
 
   /// Removes the entry from the history.
   final VoidCallback onRemove;
@@ -109,6 +112,11 @@ class AppHistoryNovelRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (length != null) FrostMetaLine(items: [t.user.meta.novelChars(count: length)]),
+                    if (progress case final progress?)
+                      FrostProgressBar(
+                        value: progress.fraction,
+                        semanticLabel: t.novel.detail.continueReading(percent: progress.percent),
+                      ),
                     if (badges.isNotEmpty) Wrap(spacing: FrostGap.inline, runSpacing: FrostGap.inline, children: badges),
                   ],
                 ),

@@ -1869,7 +1869,7 @@ class _Translations$novel$detail$ja_JP extends Translations$novel$detail$en_US {
 	@override String get series => 'シリーズ';
 	@override String get content => '本文';
 	@override String get startReading => '読み始める';
-	@override String get continueReading => '続きを読む';
+	@override String continueReading({required Object percent}) => '続きを読む · ${percent}%';
 	@override String totalChars({required Object count}) => '全 ${count} 文字';
 	@override String paragraphCount({required Object count}) => '${count} 段落';
 	@override String segmentCount({required Object count}) => '${count} ページ';
@@ -1890,6 +1890,9 @@ class _Translations$novel$reader$ja_JP extends Translations$novel$reader$en_US {
 	@override String get readingProgress => '読書進捗';
 	@override String get fontSize => '文字サイズ';
 	@override String get lineHeight => '行間';
+	@override String get lineSpacingCompact => '狭め';
+	@override String get lineSpacingRegular => '標準';
+	@override String get lineSpacingRelaxed => '広め';
 	@override String get shortcutsHelp => '←/→ または A/D：前/次の章。↑/↓ または W/S：スクロール。Esc：選択を解除し、もう一度で閉じる。';
 	@override String get volumeKeys => '音量キーで読む';
 	@override String get volumeKeysHelp => '音量下で先へ、音量上で前へ読み進めます。';
@@ -2548,7 +2551,7 @@ extension on TranslationsJaJp {
 			'novel.detail.series' => 'シリーズ',
 			'novel.detail.content' => '本文',
 			'novel.detail.startReading' => '読み始める',
-			'novel.detail.continueReading' => '続きを読む',
+			'novel.detail.continueReading' => ({required Object percent}) => '続きを読む · ${percent}%',
 			'novel.detail.totalChars' => ({required Object count}) => '全 ${count} 文字',
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} 段落',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} ページ',
@@ -2560,6 +2563,9 @@ extension on TranslationsJaJp {
 			'novel.reader.readingProgress' => '読書進捗',
 			'novel.reader.fontSize' => '文字サイズ',
 			'novel.reader.lineHeight' => '行間',
+			'novel.reader.lineSpacingCompact' => '狭め',
+			'novel.reader.lineSpacingRegular' => '標準',
+			'novel.reader.lineSpacingRelaxed' => '広め',
 			'novel.reader.shortcutsHelp' => '←/→ または A/D：前/次の章。↑/↓ または W/S：スクロール。Esc：選択を解除し、もう一度で閉じる。',
 			'novel.reader.volumeKeys' => '音量キーで読む',
 			'novel.reader.volumeKeysHelp' => '音量下で先へ、音量上で前へ読み進めます。',

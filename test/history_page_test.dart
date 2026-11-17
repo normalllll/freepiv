@@ -40,6 +40,8 @@ Future<void> _seed(HistoryRepository history) async {
   await add('1000', _entry(3, 2, kind: HistoryWorkKind.ugoira));
   await add('1000', _entry(10, 1, kind: HistoryWorkKind.novel));
   await add('1000', _entry(11, 2, kind: HistoryWorkKind.novel));
+  await history.saveReadingProgress('1000', 11, ReadingProgress(offset: 4500, totalLength: 9000, updatedAt: _day));
+  await history.saveReadingProgress('1001', 10, ReadingProgress(offset: 900, totalLength: 9000, updatedAt: _day));
   await add('1001', _entry(4, 9, title: 'Other account work'));
 }
 
@@ -63,6 +65,18 @@ Future<void> _menu(WidgetTester tester, Finder target, String item) async {
 }
 
 void main() {
+  testWidgets('a novel row shows a bar where the account stopped reading, and none for a novel not started', (tester) async {
+    await _open(tester);
+    await _novels(tester);
+
+    final rows = {for (final row in tester.widgetList<AppHistoryNovelRow>(find.byType(AppHistoryNovelRow))) row.entry.workId: row};
+    expect(rows[11]!.progress!.percent, 50);
+    expect(rows[10]!.progress, isNull, reason: 'another account\x27s progress');
+    final bars = tester.widgetList<FrostProgressBar>(find.byType(FrostProgressBar)).toList();
+    expect(bars.map((bar) => bar.value), [0.5]);
+    expectNoLayoutErrors(tester);
+  });
+
   testWidgets('the illustrations and manga of the current account, the last viewed first, under a line saying they stay on this device', (tester) async {
     await _open(tester);
 

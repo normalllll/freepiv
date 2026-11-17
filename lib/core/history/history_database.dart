@@ -32,7 +32,27 @@ class HistoryRecords extends Table {
   Set<Column<Object>> get primaryKey => {account, kind, workId};
 }
 
-@DriftDatabase(tables: [HistoryRecords])
+/// Where each account stopped reading each novel.
+@DataClassName('ReadingProgressRow')
+class ReadingProgressRecords extends Table {
+  /// The account's ID in the account book.
+  TextColumn get account => text()();
+  IntColumn get novelId => integer()();
+
+  /// Character offset in the parsed text.
+  IntColumn get offset => integer()();
+
+  /// The parsed text's length when the offset was saved.
+  IntColumn get totalLength => integer()();
+
+  /// Milliseconds since the epoch, UTC.
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {account, novelId};
+}
+
+@DriftDatabase(tables: [HistoryRecords, ReadingProgressRecords])
 class HistoryDatabase extends _$HistoryDatabase {
   HistoryDatabase() : super(_openConnection());
 
@@ -40,7 +60,15 @@ class HistoryDatabase extends _$HistoryDatabase {
   HistoryDatabase.withExecutor(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (migrator) => migrator.createAll(),
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) await migrator.createTable(readingProgressRecords);
+    },
+  );
 }
 
 LazyDatabase _openConnection() {

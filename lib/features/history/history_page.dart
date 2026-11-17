@@ -91,8 +91,12 @@ class _HistoryPageState extends ConsumerState<HistoryPage> with SingleTickerProv
                 source: source,
                 firstLoadSkeleton: const AppNovelRowsSkeleton(),
                 empty: empty,
-                itemBuilder: (context, entry, index) =>
-                    AppHistoryNovelRow(key: ValueKey(entry.workId), entry: entry, onRemove: () => unawaited(source.remove(entry))),
+                itemBuilder: (context, entry, index) => AppHistoryNovelRow(
+                  key: ValueKey(entry.workId),
+                  entry: entry,
+                  progress: source.progress[entry.workId],
+                  onRemove: () => unawaited(source.remove(entry)),
+                ),
               ),
             ),
           ];

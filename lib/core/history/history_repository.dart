@@ -6,14 +6,22 @@ import 'history_models.dart';
 /// The browsing history of every account, kept on this device. Each account
 /// has its own entries and its own limit applies to them.
 class HistoryRepository {
-  HistoryRepository(this._db);
+  HistoryRepository(this._database);
 
   /// The repository on the app's own database file.
   factory HistoryRepository.open() => HistoryRepository(HistoryDatabase());
 
-  final HistoryDatabase _db;
+  final HistoryDatabase _database;
+  bool _closed = false;
 
-  Future<void> close() => _db.close();
+  /// The database, unless the repository was closed: a database that was
+  /// closed before its first use would otherwise open on demand.
+  HistoryDatabase get _db => _closed ? throw StateError('The history was closed.') : _database;
+
+  Future<void> close() {
+    _closed = true;
+    return _database.close();
+  }
 
   /// Remembers [entry] for [account], replacing what an earlier view of the
   /// same work kept, then drops the account's oldest entries beyond [limit].
@@ -87,14 +95,56 @@ class HistoryRepository {
     });
   }
 
+  /// Forgets one viewed work; a novel's reading progress goes with it.
   Future<void> remove(String account, HistoryWorkKind kind, int workId) async {
-    await (_db.delete(_db.historyRecords)..where((row) => row.account.equals(account) & row.kind.equalsValue(kind) & row.workId.equals(workId))).go();
+    await _db.transaction(() async {
+      await (_db.delete(_db.historyRecords)..where((row) => row.account.equals(account) & row.kind.equalsValue(kind) & row.workId.equals(workId))).go();
+      if (kind.isNovel) {
+        await (_db.delete(_db.readingProgressRecords)..where((row) => row.account.equals(account) & row.novelId.equals(workId))).go();
+      }
+    });
   }
 
-  /// Forgets everything [account] has viewed.
+  /// Forgets everything [account] has viewed and where it stopped reading.
   Future<void> clear(String account) async {
-    await (_db.delete(_db.historyRecords)..where((row) => row.account.equals(account))).go();
+    await _db.transaction(() async {
+      await (_db.delete(_db.historyRecords)..where((row) => row.account.equals(account))).go();
+      await (_db.delete(_db.readingProgressRecords)..where((row) => row.account.equals(account))).go();
+    });
   }
+
+  Future<ReadingProgress?> readingProgress(String account, int novelId) async {
+    final row = await (_db.select(_db.readingProgressRecords)..where((row) => row.account.equals(account) & row.novelId.equals(novelId))).getSingleOrNull();
+    return row == null ? null : _progress(row);
+  }
+
+  /// The stored progress of those of [novelIds] that have one.
+  Future<Map<int, ReadingProgress>> readingProgressOf(String account, Iterable<int> novelIds) async {
+    final ids = novelIds.toSet();
+    if (ids.isEmpty) return const {};
+    final rows = await (_db.select(_db.readingProgressRecords)..where((row) => row.account.equals(account) & row.novelId.isIn(ids))).get();
+    return {for (final row in rows) row.novelId: _progress(row)};
+  }
+
+  Future<void> saveReadingProgress(String account, int novelId, ReadingProgress progress) async {
+    await _db
+        .into(_db.readingProgressRecords)
+        .insertOnConflictUpdate(
+          ReadingProgressRecordsCompanion.insert(
+            account: account,
+            novelId: novelId,
+            offset: progress.offset,
+            totalLength: progress.totalLength,
+            updatedAt: progress.updatedAt.millisecondsSinceEpoch,
+          ),
+        );
+  }
+
+  ReadingProgress _progress(ReadingProgressRow row) => ReadingProgress(
+    offset: row.offset,
+    totalLength: row.totalLength,
+    updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt, isUtc: true),
+  );
 
   Future<void> _prune(String account, HistoryLimit limit) async {
     await _db.customUpdate(

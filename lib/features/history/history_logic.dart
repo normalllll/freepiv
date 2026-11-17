@@ -11,10 +11,16 @@ class HistorySource extends FrostListSource<HistoryEntry> {
 
   final bool novels;
 
+  /// Where the account stopped reading the listed novels, by novel ID.
+  Map<int, ReadingProgress> progress = const {};
+
   @override
   Future<List<HistoryEntry>> initList() async {
     final account = AppSettings.accounts.activeId;
-    return account == null ? const [] : historyRepository.list(account, novels: novels);
+    if (account == null) return const [];
+    final entries = await historyRepository.list(account, novels: novels);
+    progress = novels ? await historyRepository.readingProgressOf(account, [for (final entry in entries) entry.workId]) : const {};
+    return entries;
   }
 
   @override
@@ -29,6 +35,7 @@ class HistorySource extends FrostListSource<HistoryEntry> {
     final account = AppSettings.accounts.activeId;
     if (account == null) return;
     await historyRepository.remove(account, entry.kind, entry.workId);
+    if (entry.kind.isNovel) progress = {...progress}..remove(entry.workId);
     removeWhere((item) => item.kind == entry.kind && item.workId == entry.workId);
   }
 }

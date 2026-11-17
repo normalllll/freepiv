@@ -750,7 +750,7 @@
       "series": "Series",
       "content": "Content",
       "startReading": "Start reading",
-      "continueReading": "Continue reading",
+      "continueReading": "Continue reading · ${percent}%",
       "totalChars": "$count chars",
       "paragraphCount": "$count paragraphs",
       "segmentCount": "$count pages"
@@ -764,6 +764,9 @@
       "readingProgress": "Reading progress",
       "fontSize": "Font size",
       "lineHeight": "Line height",
+      "lineSpacingCompact": "Compact",
+      "lineSpacingRegular": "Regular",
+      "lineSpacingRelaxed": "Relaxed",
       "shortcutsHelp": "Left/Right or A/D: previous/next chapter. Up/Down or W/S: scroll. Esc: clear the selection, then close.",
       "volumeKeys": "Use volume keys",
       "volumeKeysHelp": "Volume down reads forward; volume up reads back.",

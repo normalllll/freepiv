@@ -1869,7 +1869,7 @@ class Translations$novel$detail$zh_CN extends Translations$novel$detail$en_US {
 	@override String get series => '系列';
 	@override String get content => '正文';
 	@override String get startReading => '开始阅读';
-	@override String get continueReading => '继续阅读';
+	@override String continueReading({required Object percent}) => '继续阅读 · ${percent}%';
 	@override String totalChars({required Object count}) => '共 ${count} 字';
 	@override String paragraphCount({required Object count}) => '${count} 段';
 	@override String segmentCount({required Object count}) => '${count} 页';
@@ -1890,6 +1890,9 @@ class Translations$novel$reader$zh_CN extends Translations$novel$reader$en_US {
 	@override String get readingProgress => '阅读进度';
 	@override String get fontSize => '字号';
 	@override String get lineHeight => '行距';
+	@override String get lineSpacingCompact => '紧凑';
+	@override String get lineSpacingRegular => '标准';
+	@override String get lineSpacingRelaxed => '宽松';
 	@override String get shortcutsHelp => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：滚动。Esc：先清除选择，再退出。';
 	@override String get volumeKeys => '音量键翻读';
 	@override String get volumeKeysHelp => '音量减向后翻读，音量加向前翻读。';
@@ -2548,7 +2551,7 @@ extension on TranslationsZhCn {
 			'novel.detail.series' => '系列',
 			'novel.detail.content' => '正文',
 			'novel.detail.startReading' => '开始阅读',
-			'novel.detail.continueReading' => '继续阅读',
+			'novel.detail.continueReading' => ({required Object percent}) => '继续阅读 · ${percent}%',
 			'novel.detail.totalChars' => ({required Object count}) => '共 ${count} 字',
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} 段',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} 页',
@@ -2560,6 +2563,9 @@ extension on TranslationsZhCn {
 			'novel.reader.readingProgress' => '阅读进度',
 			'novel.reader.fontSize' => '字号',
 			'novel.reader.lineHeight' => '行距',
+			'novel.reader.lineSpacingCompact' => '紧凑',
+			'novel.reader.lineSpacingRegular' => '标准',
+			'novel.reader.lineSpacingRelaxed' => '宽松',
 			'novel.reader.shortcutsHelp' => '←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：滚动。Esc：先清除选择，再退出。',
 			'novel.reader.volumeKeys' => '音量键翻读',
 			'novel.reader.volumeKeysHelp' => '音量减向后翻读，音量加向前翻读。',

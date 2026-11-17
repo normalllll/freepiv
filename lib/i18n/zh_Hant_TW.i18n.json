@@ -750,7 +750,7 @@
       "series": "系列",
       "content": "正文",
       "startReading": "開始閱讀",
-      "continueReading": "繼續閱讀",
+      "continueReading": "繼續閱讀 · ${percent}%",
       "totalChars": "共 $count 字",
       "paragraphCount": "$count 段",
       "segmentCount": "$count 頁"
@@ -764,6 +764,9 @@
       "readingProgress": "閱讀進度",
       "fontSize": "字號",
       "lineHeight": "行距",
+      "lineSpacingCompact": "緊湊",
+      "lineSpacingRegular": "標準",
+      "lineSpacingRelaxed": "寬鬆",
       "shortcutsHelp": "←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：捲動。Esc：先清除選取，再離開。",
       "volumeKeys": "音量鍵翻讀",
       "volumeKeysHelp": "音量減向後翻讀，音量加向前翻讀。",

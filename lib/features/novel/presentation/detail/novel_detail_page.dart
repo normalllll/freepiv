@@ -12,8 +12,8 @@ import 'package:freepiv/features/downloads/presentation/download_source_scope.da
 import 'package:freepiv/features/illust/presentation/illust_info.dart' show IllustAuthorLine;
 import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
+import 'package:freepiv/features/novel/logic/reading_progress.dart';
 import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
-import 'package:freepiv/features/novel/presentation/reader/novel_reading_session.dart';
 import 'package:freepiv/features/series/series_widgets.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/shared/widgets/original_image_viewer_page.dart';
@@ -116,7 +116,8 @@ class _NovelDetailContentState extends ConsumerState<NovelDetailContent> {
     final text = ref.watch(novelTextProvider(_novel.id));
     final webview = text.value;
     final readable = webview?.text.trim().isNotEmpty ?? false;
-    final readLabel = novelReadingPosition(context, _novel.id) == null ? t.novel.detail.startReading : t.novel.detail.continueReading;
+    final progress = ref.watch(novelReadingProgressProvider(_novel.id)).value;
+    final readLabel = progress == null ? t.novel.detail.startReading : t.novel.detail.continueReading(percent: progress.percent);
     final related = ref.watch(novelRelatedWorksProvider(_novel.id));
     return DownloadSourceScope(
       source: novelDownloadSource(_novel),

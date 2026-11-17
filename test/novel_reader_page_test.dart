@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/route_activity.dart';
+import 'package:freepiv/core/history/history_repository.dart';
+import 'package:freepiv/core/services/app_settings.dart';
 import 'package:freepiv/core/services/app_settings_providers.dart';
 import 'package:freepiv/dev/sample_data.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
@@ -14,6 +16,7 @@ import 'package:freepiv/src/rust/third_party/pixiv_rs/pixiv/responses.dart';
 import 'package:freepiv/ui/custom/reader/reader_text.dart';
 import 'package:frost_ui/frost_ui.dart';
 
+import 'support/memory_history.dart';
 import 'support/pilot_harness.dart';
 
 const _paragraph =
@@ -47,25 +50,40 @@ WebviewNovel _text(String body) {
   );
 }
 
+/// The browsing history, kept between the mounts of one test: where the
+/// reader stopped is stored in it.
+late HistoryRepository _history;
+
 Future<void> _mount(
   WidgetTester tester, {
   String? body,
-  Map<String, dynamic> settings = const {'readerFontSize': 18.0, 'readerLineHeight': 1.6, 'readerAutoScrollSpeed': 60.0},
+  Map<String, dynamic> settings = const {'readerFontSize': 18.0, 'readerLineSpacing': 'regular', 'readerAutoScrollSpeed': 60.0},
   Size size = desktopSize,
   double textScale = 1,
   String title = 'A novel',
-}) {
+}) async {
+  // The place of the last reading is written and read on real time.
+  await _storageIdle(tester);
   final novel = sampleNovels(count: 1, title: title).single;
-  return mountPilotPage(
+  await mountPilotPage(
     tester,
     NovelReaderContent(
       detail: NovelDetailData(novel: novel, webviewNovel: _text(body ?? _chapters())),
     ),
     size: size,
     textScale: textScale,
-    settings: settings,
+    settings: {...sampleSettings, ...settings},
     observers: [appRootRouteActivity],
+    history: _history,
   );
+  await _storageIdle(tester);
+  await settlePilot(tester);
+}
+
+Future<void> _storageIdle(WidgetTester tester) async {
+  await tester.pump();
+  await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+  await tester.pump();
 }
 
 NovelReaderContentState _reader(WidgetTester tester) => tester.state<NovelReaderContentState>(find.byType(NovelReaderContent));
@@ -75,11 +93,13 @@ String _chapterTitle(WidgetTester tester) => tester.widget<FrostTitleMenu>(find.
 ScrollPosition _position(WidgetTester tester) => tester.state<ScrollableState>(find.byType(Scrollable).first).position;
 
 void main() {
+  setUp(() => _history = useMemoryHistory());
+
   testWidgets('the text takes the size and spacing from the saved settings', (tester) async {
-    await _mount(tester, settings: const {'readerFontSize': 24.0, 'readerLineHeight': 2.0});
+    await _mount(tester, settings: const {'readerFontSize': 24.0, 'readerLineSpacing': 'relaxed'});
     final styles = tester.widgetList<ReaderParagraph>(find.byType(ReaderParagraph)).map((paragraph) => paragraph.typesetting.body);
     expect(styles, isNotEmpty);
-    expect(styles.map((style) => (style.fontSize, style.height)), everyElement((24.0, 2.0)));
+    expect(styles.map((style) => (style.fontSize, style.height)), everyElement((24.0, ReaderLineSpacing.relaxed.lineHeight)));
     final text = tester.widget<Text>(find.descendant(of: find.byType(ReaderParagraph).first, matching: find.byType(Text)));
     expect(text.style!.fontSize, 24);
     expect(text.style!.fontFamily, FrostTypography.of(tester.element(find.byType(ReaderParagraph).first)).style(FrostTextRole.body).fontFamily);
@@ -220,15 +240,15 @@ void main() {
   });
 
   testWidgets('reopening the novel takes the saved text size and spacing, not those it was last read with', (tester) async {
-    await _mount(tester, settings: const {'readerFontSize': 18.0, 'readerLineHeight': 1.6});
+    await _mount(tester, settings: const {'readerFontSize': 18.0, 'readerLineSpacing': 'compact'});
     _reader(tester).goToChapter(1);
     await settlePilot(tester);
     await tester.pumpWidget(const SizedBox());
     // Changed elsewhere (another novel, the settings page) in the meantime.
-    await _mount(tester, settings: const {'readerFontSize': 24.0, 'readerLineHeight': 2.0});
+    await _mount(tester, settings: const {'readerFontSize': 24.0, 'readerLineSpacing': 'relaxed'});
     final styles = tester.widgetList<ReaderParagraph>(find.byType(ReaderParagraph)).map((paragraph) => paragraph.typesetting.body);
     expect(styles, isNotEmpty);
-    expect(styles.map((style) => (style.fontSize, style.height)), everyElement((24.0, 2.0)));
+    expect(styles.map((style) => (style.fontSize, style.height)), everyElement((24.0, ReaderLineSpacing.relaxed.lineHeight)));
     expect(_reader(tester).currentChapter.index, 1, reason: 'the place is still restored');
   });
 

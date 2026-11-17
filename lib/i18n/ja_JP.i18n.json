@@ -750,7 +750,7 @@
       "series": "シリーズ",
       "content": "本文",
       "startReading": "読み始める",
-      "continueReading": "続きを読む",
+      "continueReading": "続きを読む · ${percent}%",
       "totalChars": "全 $count 文字",
       "paragraphCount": "$count 段落",
       "segmentCount": "$count ページ"
@@ -764,6 +764,9 @@
       "readingProgress": "読書進捗",
       "fontSize": "文字サイズ",
       "lineHeight": "行間",
+      "lineSpacingCompact": "狭め",
+      "lineSpacingRegular": "標準",
+      "lineSpacingRelaxed": "広め",
       "shortcutsHelp": "←/→ または A/D：前/次の章。↑/↓ または W/S：スクロール。Esc：選択を解除し、もう一度で閉じる。",
       "volumeKeys": "音量キーで読む",
       "volumeKeysHelp": "音量下で先へ、音量上で前へ読み進めます。",

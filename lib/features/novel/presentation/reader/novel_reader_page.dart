@@ -11,6 +11,7 @@ import 'package:freepiv/app/frost_config.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/app/router/route_activity.dart';
 import 'package:freepiv/core/core.dart';
+import 'package:freepiv/core/history/history_service.dart';
 import 'package:freepiv/core/media/logic.dart';
 import 'package:freepiv/core/platform/reader_volume_keys.dart';
 import 'package:freepiv/features/downloads/presentation/content_image_entries.dart';
@@ -19,9 +20,9 @@ import 'package:freepiv/features/novel/domain/novel_image_urls.dart';
 import 'package:freepiv/features/novel/domain/novel_text.dart';
 import 'package:freepiv/features/novel/domain/reader_model.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
+import 'package:freepiv/features/novel/logic/reading_progress.dart';
 import 'package:freepiv/features/novel/presentation/detail/widgets/novel_not_found_page.dart';
 import 'package:freepiv/features/novel/presentation/novel_download_source.dart';
-import 'package:freepiv/features/novel/presentation/reader/novel_reading_session.dart';
 import 'package:freepiv/features/novel/presentation/reader/reader_scroll_clock.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/features/novel/logic/novel_marker_logic.dart';
@@ -76,6 +77,14 @@ class NovelReaderPage extends ConsumerWidget {
   }
 }
 
+/// A place in the text: a block and how far into it.
+class _Place {
+  const _Place(this.block, this.fraction);
+
+  final int block;
+  final double fraction;
+}
+
 /// Keys of the reader's keyboard.
 final _previousChapterKeys = {LogicalKeyboardKey.arrowLeft, LogicalKeyboardKey.keyA};
 final _nextChapterKeys = {LogicalKeyboardKey.arrowRight, LogicalKeyboardKey.keyD};
@@ -90,7 +99,6 @@ const _turnOverlap = 120.0;
 
 /// Ranges of the reader settings.
 const readerFontSizes = (min: 15.0, max: 26.0);
-const readerLineHeights = (min: 1.45, max: 2.2);
 const readerScrollSpeeds = (min: 12.0, max: 96.0);
 
 class NovelReaderContent extends ConsumerStatefulWidget {
@@ -116,13 +124,14 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   late Map<String, String> _imageUrls;
 
   late double _fontSize;
-  late double _lineHeight;
+  late ReaderLineSpacing _lineSpacing;
   late double _speed;
   late bool _volumeEnabled;
   late final ReaderVolumeKeyLease _volumeLease;
   late final Ticker _ticker;
   final _clock = ReaderScrollClock();
   late final String? _sessionAccount;
+  late final ProviderContainer _container;
 
   bool _chromeVisible = true;
   bool _autoScrolling = false;
@@ -135,7 +144,12 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
 
   /// Where to put the text once it is laid out: on opening, and after a
   /// change of size, spacing or window.
-  NovelReadingPosition? _pending;
+  _Place? _pending;
+
+  /// Whether the saved place has been read; nothing is saved before, so it
+  /// is not overwritten by the start of the text.
+  bool _placeLoaded = false;
+  DateTime? _lastSaved;
 
   Novel get _novel => widget.detail.novel;
 
@@ -163,9 +177,10 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     super.initState();
     final saved = ref.read(readerSettingsProvider);
     _fontSize = saved.textSize;
-    _lineHeight = saved.lineHeight;
+    _lineSpacing = saved.lineSpacing;
     _speed = saved.autoScrollSpeed;
     _volumeEnabled = saved.volumeKeys;
+    _container = ProviderScope.containerOf(context, listen: false);
     _sessionAccount = pixivAccountNotifier.value?.user.id;
     _foreground = WidgetsBinding.instance.lifecycleState == null || WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
     _ticker = createTicker(_tick);
@@ -185,11 +200,24 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     _scroll.addListener(_scrolled);
     _imageUrls = novelEmbeddedImageUrls(widget.detail.webviewNovel);
     _model = _buildModel();
-    _pending = novelReadingPosition(context, _novel.id);
+    unawaited(_loadPlace());
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _keyboard.requestFocus();
-      _restore();
+      if (mounted) _keyboard.requestFocus();
+    });
+  }
+
+  Future<void> _loadPlace() async {
+    final saved = await loadReadingProgress(_novel.id);
+    if (!mounted) return;
+    _placeLoaded = true;
+    if (saved == null || _model.blocks.isEmpty) return;
+    final offset = saved.offset.clamp(0, _model.totalLength);
+    final block = _model.blockAt(offset);
+    final length = _model.blocks[block].length;
+    final fraction = length == 0 ? 0.0 : ((offset - _model.offsetOf(block)) / length).clamp(0.0, 1.0);
+    _pending = _Place(block, fraction);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _restore();
     });
   }
 
@@ -216,7 +244,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
 
   @override
   void dispose() {
-    _save();
+    _save(force: true);
     _ticker.dispose();
     _volumeLease.release();
     pixivAccountNotifier.removeListener(_accountChangedListener);
@@ -249,6 +277,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _foreground = state == AppLifecycleState.resumed;
+    if (!_foreground) _save(force: true);
     _activityChanged();
   }
 
@@ -298,19 +327,15 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     if (_pending == null) _save();
   }
 
-  NovelReadingPosition _position() {
+  _Place _position() {
     final box = _box(_block);
     final offset = box == null ? null : _offsetOf(box);
     final fraction = box == null || offset == null || box.size.height <= 0 ? 0.0 : ((_scroll.offset + _textTop - offset) / box.size.height).clamp(0.0, 1.0);
-    final characters = (_model.blocks.isEmpty ? 0 : _model.blocks[_block].length);
-    return NovelReadingPosition(
-      segmentIndex: currentChapter.index,
-      textOffset: _model.offsetOf(_block) + (characters * fraction).round(),
-      segmentFraction: progress,
-      blockIndex: _block,
-      blockFraction: fraction,
-    );
+    return _Place(_block, fraction);
   }
+
+  /// The character offset of [place] in the text.
+  int _characterOffset(_Place place) => _model.offsetOf(place.block) + (_model.blocks[place.block].length * place.fraction).round();
 
   /// How far through the text the reader is, 0 to 1, by the characters
   /// before the top of the screen; the end of the text is 1.
@@ -329,17 +354,27 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     return ((_model.offsetOf(_block) + characters * fraction) / _model.totalLength).clamp(0.0, 1.0);
   }
 
-  void _save() {
-    if (_model.blocks.isEmpty) return;
-    final position = _pending ?? _position();
-    novelReadingSessions.writeState(context, position, identifier: novelReadingSessionKey(_novel.id, accountId: _sessionAccount));
+  /// Keeps the place for the next opening, at most once a second unless
+  /// [force]d.
+  void _save({bool force = false}) {
+    if (!_placeLoaded || _model.blocks.isEmpty || _accountChanged) return;
+    final now = DateTime.now();
+    final last = _lastSaved;
+    if (!force && last != null && now.difference(last) < const Duration(seconds: 1)) return;
+    _lastSaved = now;
+    final place = _pending ?? _position();
+    unawaited(
+      saveReadingProgress(_novel.id, offset: _characterOffset(place), totalLength: _model.totalLength).then((_) {
+        // The detail page under the reader shows the progress.
+        if (force) _container.invalidate(novelReadingProgressProvider(_novel.id));
+      }),
+    );
   }
 
   void _restore() {
     final saved = _pending;
     if (saved == null) return;
-    final block = saved.blockIndex >= 0 && saved.blockIndex < _model.blocks.length ? saved.blockIndex : _model.blockAt(saved.textOffset);
-    _jumpToBlock(block, fraction: saved.blockFraction, then: () => _pending = null);
+    _jumpToBlock(saved.block, fraction: saved.fraction, then: () => _pending = null);
   }
 
   /// Puts [block] (and [fraction] of it) at the top of the text. A block not
@@ -508,14 +543,14 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
 
   /// A new size or spacing keeps the reader's place.
   void _applySettings(ReaderSettings next) {
-    final reflow = next.textSize != _fontSize || next.lineHeight != _lineHeight;
+    final reflow = next.textSize != _fontSize || next.lineSpacing != _lineSpacing;
     if (reflow) {
       _pause();
       _pending ??= _position();
     }
     setState(() {
       _fontSize = next.textSize.clamp(readerFontSizes.min, readerFontSizes.max);
-      _lineHeight = next.lineHeight.clamp(readerLineHeights.min, readerLineHeights.max);
+      _lineSpacing = next.lineSpacing;
       _speed = next.autoScrollSpeed;
       _volumeEnabled = next.volumeKeys;
     });
@@ -590,7 +625,7 @@ class NovelReaderContentState extends ConsumerState<NovelReaderContent> with Wid
     // Follow the route being covered by another page.
     ModalRoute.isCurrentOf(context);
     WidgetsBinding.instance.addPostFrameCallback((_) => _activityChanged());
-    final typesetting = ReaderTypesetting.of(context, size: _fontSize, spacing: _lineHeight);
+    final typesetting = ReaderTypesetting.of(context, size: _fontSize, spacing: _lineSpacing.lineHeight);
     final padding = MediaQuery.paddingOf(context);
     final enabled = !_accountChanged;
     final chapters = _model.chapters;
@@ -1009,14 +1044,16 @@ class _ReaderSettingsPanelState extends ConsumerState<_ReaderSettingsPanel> {
           text: (value) => '${value.round()}',
           onChanged: notifier.setTextSize,
         ),
-        slider(
-          key: const ValueKey('reader-line-height'),
+        FrostPicker<ReaderLineSpacing>.segmented(
+          key: const ValueKey('reader-line-spacing'),
           label: t.lineHeight,
-          value: settings.lineHeight,
-          range: readerLineHeights,
-          divisions: ((readerLineHeights.max - readerLineHeights.min) / .05).round(),
-          text: (value) => value.toStringAsFixed(2),
-          onChanged: notifier.setLineHeight,
+          value: settings.lineSpacing,
+          onChanged: notifier.setLineSpacing,
+          options: [
+            FrostPickerOption(value: ReaderLineSpacing.compact, label: t.lineSpacingCompact),
+            FrostPickerOption(value: ReaderLineSpacing.regular, label: t.lineSpacingRegular),
+            FrostPickerOption(value: ReaderLineSpacing.relaxed, label: t.lineSpacingRelaxed),
+          ],
         ),
         slider(
           key: const ValueKey('reader-scroll-speed'),

@@ -36,6 +36,30 @@ enum HistoryLimit {
   static HistoryLimit named(Object? name) => values.where((limit) => limit.name == name).firstOrNull ?? standard;
 }
 
+/// Where an account stopped reading a novel, as a character offset into the
+/// parsed text of that moment.
+@immutable
+class ReadingProgress {
+  const ReadingProgress({required this.offset, required this.totalLength, required this.updatedAt});
+
+  final int offset;
+  final int totalLength;
+  final DateTime updatedAt;
+
+  /// 0 to 1; 0 when the text is empty.
+  double get fraction => totalLength <= 0 ? 0 : (offset / totalLength).clamp(0.0, 1.0);
+
+  /// The whole percent read, rounded down.
+  int get percent => totalLength <= 0 ? 0 : (offset.clamp(0, totalLength) * 100) ~/ totalLength;
+
+  @override
+  int get hashCode => Object.hash(offset, totalLength, updatedAt);
+
+  @override
+  bool operator ==(Object other) =>
+      other is ReadingProgress && other.offset == offset && other.totalLength == totalLength && other.updatedAt == updatedAt;
+}
+
 /// A work as it was when it was last viewed: just what a card or a row of the
 /// history shows, so nothing is fetched to show it.
 @immutable

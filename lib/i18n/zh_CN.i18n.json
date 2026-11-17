@@ -750,7 +750,7 @@
       "series": "系列",
       "content": "正文",
       "startReading": "开始阅读",
-      "continueReading": "继续阅读",
+      "continueReading": "继续阅读 · ${percent}%",
       "totalChars": "共 $count 字",
       "paragraphCount": "$count 段",
       "segmentCount": "$count 页"
@@ -764,6 +764,9 @@
       "readingProgress": "阅读进度",
       "fontSize": "字号",
       "lineHeight": "行距",
+      "lineSpacingCompact": "紧凑",
+      "lineSpacingRegular": "标准",
+      "lineSpacingRelaxed": "宽松",
       "shortcutsHelp": "←/→ 或 A/D：上一章 / 下一章。↑/↓ 或 W/S：滚动。Esc：先清除选择，再退出。",
       "volumeKeys": "音量键翻读",
       "volumeKeysHelp": "音量减向后翻读，音量加向前翻读。",

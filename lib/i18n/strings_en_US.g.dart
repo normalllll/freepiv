@@ -1871,7 +1871,7 @@ class Translations$novel$detail$en_US {
 	String get series => 'Series';
 	String get content => 'Content';
 	String get startReading => 'Start reading';
-	String get continueReading => 'Continue reading';
+	String continueReading({required Object percent}) => 'Continue reading · ${percent}%';
 	String totalChars({required Object count}) => '${count} chars';
 	String paragraphCount({required Object count}) => '${count} paragraphs';
 	String segmentCount({required Object count}) => '${count} pages';
@@ -1892,6 +1892,9 @@ class Translations$novel$reader$en_US {
 	String get readingProgress => 'Reading progress';
 	String get fontSize => 'Font size';
 	String get lineHeight => 'Line height';
+	String get lineSpacingCompact => 'Compact';
+	String get lineSpacingRegular => 'Regular';
+	String get lineSpacingRelaxed => 'Relaxed';
 	String get shortcutsHelp => 'Left/Right or A/D: previous/next chapter. Up/Down or W/S: scroll. Esc: clear the selection, then close.';
 	String get volumeKeys => 'Use volume keys';
 	String get volumeKeysHelp => 'Volume down reads forward; volume up reads back.';
@@ -2550,7 +2553,7 @@ extension on Translations {
 			'novel.detail.series' => 'Series',
 			'novel.detail.content' => 'Content',
 			'novel.detail.startReading' => 'Start reading',
-			'novel.detail.continueReading' => 'Continue reading',
+			'novel.detail.continueReading' => ({required Object percent}) => 'Continue reading · ${percent}%',
 			'novel.detail.totalChars' => ({required Object count}) => '${count} chars',
 			'novel.detail.paragraphCount' => ({required Object count}) => '${count} paragraphs',
 			'novel.detail.segmentCount' => ({required Object count}) => '${count} pages',
@@ -2562,6 +2565,9 @@ extension on Translations {
 			'novel.reader.readingProgress' => 'Reading progress',
 			'novel.reader.fontSize' => 'Font size',
 			'novel.reader.lineHeight' => 'Line height',
+			'novel.reader.lineSpacingCompact' => 'Compact',
+			'novel.reader.lineSpacingRegular' => 'Regular',
+			'novel.reader.lineSpacingRelaxed' => 'Relaxed',
 			'novel.reader.shortcutsHelp' => 'Left/Right or A/D: previous/next chapter. Up/Down or W/S: scroll. Esc: clear the selection, then close.',
 			'novel.reader.volumeKeys' => 'Use volume keys',
 			'novel.reader.volumeKeysHelp' => 'Volume down reads forward; volume up reads back.',

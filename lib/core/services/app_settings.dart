@@ -17,6 +17,40 @@ enum ViewerImageQuality { large, original }
 
 enum DownloadSavePathMode { defaultPath, custom }
 
+enum ReaderLineSpacing {
+  compact(1.55),
+  regular(1.8),
+  relaxed(2.05);
+
+  const ReaderLineSpacing(this.lineHeight);
+
+  /// The line height as a multiple of the font size.
+  final double lineHeight;
+
+  /// The spacing closest to a stored free-form line height.
+  static ReaderLineSpacing nearest(double lineHeight) {
+    if (lineHeight < (compact.lineHeight + regular.lineHeight) / 2) return compact;
+    if (lineHeight < (regular.lineHeight + relaxed.lineHeight) / 2) return regular;
+    return relaxed;
+  }
+}
+
+enum ReaderMargins { narrow, regular, wide }
+
+/// [app] follows the app's own theme.
+enum ReaderTheme { app, white, paper, green, night, black }
+
+/// [serif] is Song or Mincho by language; [kai] is Kai.
+enum ReaderFont { sans, serif, kai }
+
+enum ReaderPageMode { scroll, paged }
+
+enum ReaderPageAnimation { slide, cover, none }
+
+/// [sides]: the left third goes back and the right third forward; [forward]:
+/// every tap goes forward.
+enum ReaderTapZones { sides, forward }
+
 enum AppProxyProtocol {
   http,
   socks;
@@ -124,7 +158,15 @@ class AppSettings {
   static const _sidebarExpandedKey = 'sidebarExpanded';
   static const _windowPlacementKey = 'windowPlacement';
   static const _readerFontSizeKey = 'readerFontSize';
-  static const _readerLineHeightKey = 'readerLineHeight';
+  static const _readerLineSpacingKey = 'readerLineSpacing';
+  static const _readerMarginsKey = 'readerMargins';
+  static const _readerThemeKey = 'readerTheme';
+  static const _readerFontKey = 'readerFont';
+  static const _readerIndentKey = 'readerIndent';
+  static const _readerPageModeKey = 'readerPageMode';
+  static const _readerPageAnimationKey = 'readerPageAnimation';
+  static const _readerTapZonesKey = 'readerTapZones';
+  static const _legacyReaderLineHeightKey = 'readerLineHeight';
   static const _readerAutoScrollSpeedKey = 'readerAutoScrollSpeed';
   static const _readerVolumeKeysKey = 'readerVolumeKeys';
   static const _downloadEntryPositionKey = 'downloadEntryPosition';
@@ -137,7 +179,7 @@ class AppSettings {
   static const backgroundIntensityStep = 5;
 
   /// Keys of settings that no longer exist; a stored value is dropped.
-  static const _retiredKeys = {_legacyReduceTransparencyKey, 'navigationPlacement'};
+  static const _retiredKeys = {_legacyReduceTransparencyKey, 'navigationPlacement', _legacyReaderLineHeightKey};
   static const _legacyReduceTransparencyKey = 'reduceTransparency';
 
   static const defaultLocaleCode = 'en-US';
@@ -146,7 +188,6 @@ class AppSettings {
   static const minConcurrentDownloads = 1;
   static const maxConcurrentDownloadsLimit = 6;
   static const readerFontSizeRange = (min: 15.0, max: 26.0, fallback: 18.0);
-  static const readerLineHeightRange = (min: 1.45, max: 2.2, fallback: 1.78);
   static const readerAutoScrollSpeedRange = (min: 12.0, max: 96.0, fallback: 36.0);
 
   static const _settingKeys = {
@@ -166,7 +207,14 @@ class AppSettings {
     _sidebarExpandedKey,
     _windowPlacementKey,
     _readerFontSizeKey,
-    _readerLineHeightKey,
+    _readerLineSpacingKey,
+    _readerMarginsKey,
+    _readerThemeKey,
+    _readerFontKey,
+    _readerIndentKey,
+    _readerPageModeKey,
+    _readerPageAnimationKey,
+    _readerTapZonesKey,
     _readerAutoScrollSpeedKey,
     _readerVolumeKeysKey,
     _downloadEntryPositionKey,
@@ -345,9 +393,38 @@ class AppSettings {
 
   static set readerFontSize(double value) => _write(_readerFontSizeKey, _clampRange(value, readerFontSizeRange));
 
-  static double get readerLineHeight => _rangeSetting(_readerLineHeightKey, readerLineHeightRange);
+  static ReaderLineSpacing get readerLineSpacing => _enumSetting(_readerLineSpacingKey, ReaderLineSpacing.values, ReaderLineSpacing.regular);
 
-  static set readerLineHeight(double value) => _write(_readerLineHeightKey, _clampRange(value, readerLineHeightRange));
+  static set readerLineSpacing(ReaderLineSpacing value) => _write(_readerLineSpacingKey, value.name);
+
+  static ReaderMargins get readerMargins => _enumSetting(_readerMarginsKey, ReaderMargins.values, ReaderMargins.regular);
+
+  static set readerMargins(ReaderMargins value) => _write(_readerMarginsKey, value.name);
+
+  static ReaderTheme get readerTheme => _enumSetting(_readerThemeKey, ReaderTheme.values, ReaderTheme.app);
+
+  static set readerTheme(ReaderTheme value) => _write(_readerThemeKey, value.name);
+
+  static ReaderFont get readerFont => _enumSetting(_readerFontKey, ReaderFont.values, ReaderFont.sans);
+
+  static set readerFont(ReaderFont value) => _write(_readerFontKey, value.name);
+
+  /// Whether paragraphs start with an indent; on until turned off.
+  static bool get readerIndent => _values[_readerIndentKey] != false;
+
+  static set readerIndent(bool value) => _write(_readerIndentKey, value);
+
+  static ReaderPageMode get readerPageMode => _enumSetting(_readerPageModeKey, ReaderPageMode.values, ReaderPageMode.scroll);
+
+  static set readerPageMode(ReaderPageMode value) => _write(_readerPageModeKey, value.name);
+
+  static ReaderPageAnimation get readerPageAnimation => _enumSetting(_readerPageAnimationKey, ReaderPageAnimation.values, ReaderPageAnimation.slide);
+
+  static set readerPageAnimation(ReaderPageAnimation value) => _write(_readerPageAnimationKey, value.name);
+
+  static ReaderTapZones get readerTapZones => _enumSetting(_readerTapZonesKey, ReaderTapZones.values, ReaderTapZones.sides);
+
+  static set readerTapZones(ReaderTapZones value) => _write(_readerTapZonesKey, value.name);
 
   static double get readerAutoScrollSpeed => _rangeSetting(_readerAutoScrollSpeedKey, readerAutoScrollSpeedRange);
 
@@ -434,6 +511,12 @@ class AppSettings {
       _values[_backgroundMaterialKey] = BackgroundMaterial.off.name;
       await _activeStore.write(_backgroundMaterialKey, BackgroundMaterial.off.name);
     }
+    final legacyLineHeight = stored[_legacyReaderLineHeightKey];
+    if (legacyLineHeight is num && !_values.containsKey(_readerLineSpacingKey)) {
+      final spacing = ReaderLineSpacing.nearest(legacyLineHeight.toDouble()).name;
+      _values[_readerLineSpacingKey] = spacing;
+      await _activeStore.write(_readerLineSpacingKey, spacing);
+    }
     for (final key in _retiredKeys) {
       if (stored.containsKey(key)) await _activeStore.write(key, null);
     }
@@ -483,7 +566,14 @@ class AppSettings {
       _blockListKey => BlockList.fromJson(value) != null,
       _windowPlacementKey => _windowPlacementFrom(value) != null,
       _readerFontSizeKey => _inRange(value, readerFontSizeRange),
-      _readerLineHeightKey => _inRange(value, readerLineHeightRange),
+      _readerLineSpacingKey => _isEnumSettingValue(value, ReaderLineSpacing.values),
+      _readerMarginsKey => _isEnumSettingValue(value, ReaderMargins.values),
+      _readerThemeKey => _isEnumSettingValue(value, ReaderTheme.values),
+      _readerFontKey => _isEnumSettingValue(value, ReaderFont.values),
+      _readerIndentKey => value is bool,
+      _readerPageModeKey => _isEnumSettingValue(value, ReaderPageMode.values),
+      _readerPageAnimationKey => _isEnumSettingValue(value, ReaderPageAnimation.values),
+      _readerTapZonesKey => _isEnumSettingValue(value, ReaderTapZones.values),
       _readerAutoScrollSpeedKey => _inRange(value, readerAutoScrollSpeedRange),
       _downloadEntryPositionKey => _downloadEntryPositionFrom(value) != null,
       _ => false,

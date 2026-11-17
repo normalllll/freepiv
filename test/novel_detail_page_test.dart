@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freepiv/core/history/history_models.dart';
+import 'package:freepiv/core/history/history_repository.dart';
 import 'package:freepiv/features/comments/presentation/comment_thread_item.dart';
 import 'package:freepiv/features/novel/logic/novel_detail_logic.dart';
 import 'package:freepiv/features/novel/presentation/detail/novel_detail_page.dart';
@@ -131,19 +133,45 @@ Novel _named(String text) => Novel(
   novelAiType: 0,
 );
 
-Future<void> _mount(WidgetTester tester, {Novel? novel, int? id, Map<Object, Override> overrides = const {}, Size size = desktopSize, double textScale = 1}) =>
-    mountPilotPage(
-      tester,
-      NovelDetailPage(novel: novel, novelId: id),
-      overrides: overrides,
-      size: size,
-      textScale: textScale,
-    );
+Future<void> _mount(
+  WidgetTester tester, {
+  Novel? novel,
+  int? id,
+  Map<Object, Override> overrides = const {},
+  Size size = desktopSize,
+  double textScale = 1,
+  Future<void> Function(HistoryRepository history)? seedHistory,
+}) => mountPilotPage(
+  tester,
+  NovelDetailPage(novel: novel, novelId: id),
+  overrides: overrides,
+  size: size,
+  textScale: textScale,
+  seedHistory: seedHistory,
+);
 
 FrostButton _read(WidgetTester tester) =>
     tester.widgetList<FrostButton>(find.byType(FrostButton)).firstWhere((button) => button.label == t.novel.detail.startReading);
 
 void main() {
+  testWidgets('the reading button offers the start of the text, or continuing from where the account stopped', (tester) async {
+    await _mount(tester, novel: _novel);
+    expect(_read(tester).label, t.novel.detail.startReading);
+    expect(find.text(t.novel.detail.continueReading(percent: 38)), findsNothing);
+
+    await _mount(
+      tester,
+      novel: _novel,
+      seedHistory: (history) =>
+          history.saveReadingProgress('1000', _novel.id, ReadingProgress(offset: 3800, totalLength: 10000, updatedAt: DateTime.utc(2026, 11, 1))),
+    );
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await settlePilot(tester);
+    final labels = tester.widgetList<FrostButton>(find.byType(FrostButton)).map((button) => button.label);
+    expect(labels, contains(t.novel.detail.continueReading(percent: 38)));
+    expect(labels, isNot(contains(t.novel.detail.startReading)));
+  });
+
   testWidgets('a failed text leaves the details on the page, with reading off and a retry', (tester) async {
     final text = _Text([Exception('text unavailable'), _text]);
     await _mount(tester, novel: _novel, overrides: {novelTextProvider: novelTextProvider.overrideWith2((_) => text)});
@@ -193,7 +221,11 @@ void main() {
     // Once the head scrolls away the header offers the same action, so look
     // for the button in the page body only.
     final body = find.byType(Scrollable).first;
-    await tester.scrollUntilVisible(find.descendant(of: body, matching: find.text(t.novel.detail.startReading)), 200, scrollable: body);
+    await tester.scrollUntilVisible(
+      find.descendant(of: body, matching: find.text(t.novel.detail.startReading)),
+      200,
+      scrollable: body,
+    );
     expectNoLayoutErrors(tester);
   });
 

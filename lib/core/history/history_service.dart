@@ -19,6 +19,34 @@ Future<void> recordIllustView(Illust illust) => _record((at) => HistoryEntry.ofI
 /// Notes that the current account viewed [novel], as [recordIllustView] does.
 Future<void> recordNovelView(Novel novel) => _record((at) => HistoryEntry.ofNovel(novel, at));
 
+/// Where the current account stopped reading [novelId]; null when nobody is
+/// signed in or it cannot be read.
+Future<ReadingProgress?> loadReadingProgress(int novelId) async {
+  final account = AppSettings.accounts.activeId;
+  if (account == null) return null;
+  try {
+    return await historyRepository.readingProgress(account, novelId);
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Keeps where the current account stopped reading [novelId], whether or not
+/// the history is being recorded. Signed out or unwritable, it does nothing.
+Future<void> saveReadingProgress(int novelId, {required int offset, required int totalLength}) async {
+  final account = AppSettings.accounts.activeId;
+  if (account == null) return;
+  try {
+    await historyRepository.saveReadingProgress(
+      account,
+      novelId,
+      ReadingProgress(offset: offset, totalLength: totalLength, updatedAt: DateTime.now()),
+    );
+  } catch (_) {
+    // Losing a reading position is not worth an error.
+  }
+}
+
 Future<void> _record(HistoryEntry Function(DateTime at) entry) async {
   final account = AppSettings.accounts.activeId;
   if (account == null || !AppSettings.recordHistory) return;

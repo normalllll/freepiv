@@ -16,6 +16,7 @@ import 'package:frost_ui/frost_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:freepiv/core/history/history_repository.dart';
+import 'package:freepiv/core/history/history_service.dart' show historyRepository;
 
 import 'memory_history.dart';
 
@@ -33,7 +34,8 @@ final openedExtras = <Object?>[];
 /// Mounts [page] alone (no shell) in the app's Frost config, at [size],
 /// [textScale] and [locale], with [overrides] (by provider) replacing the
 /// sample providers, and
-/// a signed-in sample account. [seedHistory] fills the empty browsing history
+/// a signed-in sample account. [history] keeps the browsing history of an earlier
+/// mount; otherwise it is an empty one. [seedHistory] fills the empty browsing history
 /// before the page mounts. Any other location shows its path.
 Future<void> mountPilotPage(
   WidgetTester tester,
@@ -48,6 +50,7 @@ Future<void> mountPilotPage(
   Map<String, dynamic>? settings,
   List<NavigatorObserver> observers = const [],
   Future<void> Function(HistoryRepository history)? seedHistory,
+  HistoryRepository? history,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -55,8 +58,9 @@ Future<void> mountPilotPage(
   addTearDown(tester.view.reset);
   addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
   await AppSettings.initialize(store: SampleSettingsStore(settings ?? sampleSettings));
-  final history = useMemoryHistory();
-  if (seedHistory != null) await tester.runAsync(() => seedHistory(history));
+  final browsing = history ?? useMemoryHistory();
+  historyRepository = browsing;
+  if (seedHistory != null) await tester.runAsync(() => seedHistory(browsing));
   await tester.runAsync(() => LocaleSettings.setLocale(locale));
   addTearDown(() => LocaleSettings.setLocaleSync(AppLocale.enUs));
   if (!signedIn) AppSettings.accounts = AppSettings.accounts.deactivated();

@@ -36,7 +36,6 @@ void main() {
     expect(AppSettings.sidebarExpanded, isFalse);
     expect(AppSettings.windowPlacement, isNull);
     expect(AppSettings.readerFontSize, 18);
-    expect(AppSettings.readerLineHeight, 1.78);
     expect(AppSettings.readerAutoScrollSpeed, 36);
     expect(AppSettings.readerVolumeKeys, isFalse);
     expect(AppSettings.downloadEntryPosition.edge, FrostFloatingEntryEdge.end);
@@ -47,14 +46,12 @@ void main() {
     await _reopen(directory, () async {
       AppSettings.sidebarExpanded = true;
       AppSettings.readerFontSize = 22;
-      AppSettings.readerLineHeight = 2;
       AppSettings.readerAutoScrollSpeed = 60;
       AppSettings.readerVolumeKeys = true;
       AppSettings.downloadEntryPosition = const FrostFloatingEntryPosition(edge: FrostFloatingEntryEdge.start, fraction: .25);
     });
     expect(AppSettings.sidebarExpanded, isTrue);
     expect(AppSettings.readerFontSize, 22);
-    expect(AppSettings.readerLineHeight, 2);
     expect(AppSettings.readerAutoScrollSpeed, 60);
     expect(AppSettings.readerVolumeKeys, isTrue);
     expect(AppSettings.downloadEntryPosition.edge, FrostFloatingEntryEdge.start);
@@ -79,11 +76,9 @@ void main() {
   test('reader values are clamped to the reader ranges', () async {
     await _reopen(directory, () async {
       AppSettings.readerFontSize = 40;
-      AppSettings.readerLineHeight = 1;
       AppSettings.readerAutoScrollSpeed = 500;
     });
     expect(AppSettings.readerFontSize, 26);
-    expect(AppSettings.readerLineHeight, 1.45);
     expect(AppSettings.readerAutoScrollSpeed, 96);
   });
 
