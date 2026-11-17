@@ -107,6 +107,13 @@ class _PixivisionArticlePageState extends ConsumerState<PixivisionArticlePage> {
       child: FrostPageHeader(
         title: _headGone ? FrostText(title) : null,
         actions: [
+          // Beside "open original", so the category and date row never changes as translations arrive.
+          if (article != null && article.translations.isNotEmpty)
+            FrostToolbarItem.menu(
+              label: t.pixivision.translations,
+              entries: [for (final item in article.translations) FrostMenuAction(item.title, onSelected: () => _open(article, item.url))],
+              priority: FrostToolbarPriority.low,
+            ),
           FrostToolbarItem.action(
             icon: PivIcons.externalLink,
             label: t.pixivision.openOriginal,
@@ -118,21 +125,19 @@ class _PixivisionArticlePageState extends ConsumerState<PixivisionArticlePage> {
       ),
     );
     final body = article == null
-        ? [
-            KeyedSubtree(key: _headKey, child: _Head(summary: widget.summary)),
-            const _BodySkeleton(),
-          ]
+        ? [KeyedSubtree(key: _headKey, child: _Head(summary: widget.summary))]
         : [
             KeyedSubtree(
               key: _headKey,
-              child: _Head(article: article, onLink: (value) => _open(article, value)),
+              child: _Head(article: article, summary: widget.summary, onLink: (value) => _open(article, value)),
             ),
             for (final (index, block) in article.blocks.indexed)
-              if (pixivisionBlockHasContent(block))
+              if (pixivisionBlockHasContent(block, headBanner: article.thumbnail))
                 KeyedSubtree(
                   key: _blocks.putIfAbsent(index, GlobalKey.new),
                   child: PixivisionBlock(
                     block: block,
+                    headBanner: article.thumbnail,
                     imageRatios: document!.imageRatios,
                     base: Uri.parse(article.url),
                     onLink: (value) => _open(article, value),
@@ -212,37 +217,46 @@ class _PixivisionArticlePageState extends ConsumerState<PixivisionArticlePage> {
         ),
       ),
     );
-    if (article == null) return page;
-    return DownloadSourceScope(
-      source: PixivisionSource(articleId: article.id, url: article.url, title: article.title, thumbnailUrl: article.thumbnail),
-      child: page,
-    );
+    // The banner's menu and viewer need a download source from the first frame, so a summary stands in until the article arrives.
+    final summary = widget.summary;
+    final source = switch ((article, summary)) {
+      (final article?, _) => PixivisionSource(articleId: article.id, url: article.url, title: article.title, thumbnailUrl: article.thumbnail),
+      (_, final summary?) => PixivisionSource(articleId: summary.id, url: summary.url, title: summary.title, thumbnailUrl: summary.thumbnail),
+      _ => null,
+    };
+    if (source == null) return page;
+    return DownloadSourceScope(source: source, child: page);
   }
 
   /// Related article cards share a row at this width.
   static const _relatedWidth = 220.0;
 }
 
-/// The title, the category, date and translations, the banner and the
-/// opening; while loading, what the opening card knew.
-class _Head extends ConsumerWidget {
+/// The title, the category and date, the banner and the opening. Whatever the
+/// opening card knew is drawn in its final place from the first frame, so the
+/// banner frame and the rows above the body keep their size when the article
+/// arrives. Without a card the same layout stands as bones.
+class _Head extends StatelessWidget {
   const _Head({this.article, this.summary, this.onLink});
 
   final Article? article;
   final ArticleSummary? summary;
   final ValueChanged<String>? onLink;
 
+  static const _placeholderTitle = 'An article title on a single line';
+  static const _placeholderCategory = ArticleLink(title: 'Illustration', url: '');
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final t = context.t;
+  Widget build(BuildContext context) {
     final loaded = article;
+    final known = loaded != null || summary != null;
     final category = loaded?.category ?? summary?.category;
     final date = loaded?.publishDate ?? summary?.publishDate;
-    final banner = loaded == null ? summary?.thumbnail : pixivisionHeaderThumbnail(loaded);
     final opening = loaded == null ? null : pixivisionHeaderDescription(loaded);
-    final translations = loaded?.translations ?? const <ArticleLink>[];
-    final title = pixivisionArticleTitle(loaded?.title ?? summary?.title ?? '');
-    return Column(
+    final title = pixivisionArticleTitle(loaded?.title ?? summary?.title ?? _placeholderTitle);
+    final cover = summary?.thumbnail;
+    final banner = loaded?.thumbnail;
+    final column = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: FrostGap.related,
       children: [
@@ -252,67 +266,63 @@ class _Head extends ConsumerWidget {
           runSpacing: FrostGap.inline,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            if (category != null) FrostTag(label: category.title, onPressed: onLink == null ? null : () => onLink!(category.url)),
-            if (date != null && date.isNotEmpty) FrostText(pixivisionDate(date), role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
-            if (translations.isNotEmpty)
-              FrostToolbarMenuButton(
-                label: t.pixivision.translations,
-                entries: [for (final item in translations) FrostMenuAction(item.title, onSelected: () => onLink?.call(item.url))],
-              ),
+            if (!known || category != null)
+              FrostTag(label: (category ?? _placeholderCategory).title, onPressed: onLink == null || category == null ? null : () => onLink!(category.url)),
+            if (!known || (date != null && date.isNotEmpty))
+              FrostText(pixivisionDate(date ?? '2026-01-01'), role: FrostTextRole.footnote, tone: FrostTextTone.secondary),
           ],
         ),
-        if (banner != null)
-          loaded == null
-              ? AppPixivImage(url: banner, aspectRatio: pixivisionBannerRatio, fit: BoxFit.contain, headers: pixivisionImageHeaders, decodeAtLayoutSize: true)
-              : _ArticleImage(url: banner, title: title, ratio: pixivisionBannerRatio),
-        if (opening != null) FrostText(opening, content: true),
+        if (!known)
+          FrostMediaFrame.skeleton(aspectRatio: pixivisionBannerRatio)
+        else if (cover != null)
+          // The card's own picture, cropped the way the card crops it, stays the banner once loaded.
+          _ArticleImage(url: cover, title: title, ratio: pixivisionBannerRatio, fit: BoxFit.cover)
+        else if (banner != null)
+          _ArticleImage(url: banner, title: title, ratio: pixivisionBannerRatio)
+        else if (loaded == null)
+          const FrostMediaFrame(aspectRatio: pixivisionBannerRatio, child: SizedBox.expand()),
+        if (opening != null)
+          FrostText(opening, content: true)
+        else if (loaded == null)
+          const _OpeningSkeleton(),
       ],
     );
+    return known ? column : column.frostSkeleton(true);
   }
 }
 
-/// Placeholders in the order of a typical article: the opening, then each
-/// work's title, author and image.
-class _BodySkeleton extends StatelessWidget {
-  const _BodySkeleton();
+/// Bones for the opening paragraph: lines as wide as the reading column.
+class _OpeningSkeleton extends StatelessWidget {
+  const _OpeningSkeleton();
+
+  static const _text =
+      'An opening paragraph that runs over several lines of the reading column before the first block of the article begins, '
+      'saying what the article is about, who made the works it brings together and why they are worth a look, in a few '
+      'sentences that fill the width of the column from one edge to the other and carry on for as long as the usual ones do, '
+      'so that the placeholder always has more lines than it may show on any width.';
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    spacing: FrostGap.group,
-    children: [
-      for (var work = 0; work < 2; work++) ...[
-        const FrostText('An opening paragraph that runs over a few lines of the reading column before the first work.', maxLines: 3),
-        const FrostText('A featured work', role: FrostTextRole.headline),
-        const FrostMediaFrame(aspectRatio: 16 / 9, child: SizedBox.expand()),
-      ],
-    ],
-  ).frostSkeleton(true);
+  Widget build(BuildContext context) => const FrostText(_text, maxLines: 5).frostSkeleton(true);
 }
 
 /// Pixivision article banners are typically 1200×630 share images.
 const pixivisionBannerRatio = 1200 / 630;
 
-/// The header's banner, unless the body shows the same image.
-String? pixivisionHeaderThumbnail(Article article) {
-  final thumbnail = article.thumbnail;
-  if (thumbnail == null) return null;
-  final repeated = article.blocks.any(
-    (block) =>
-        block.images.any((image) => _sameImage(image.url, thumbnail)) ||
-        block.works.any((work) => work.preview != null && _sameImage(work.preview!, thumbnail)),
-  );
-  return repeated ? null : thumbnail;
-}
-
-/// The header's opening, unless a body paragraph says the same.
+/// The header's opening, unless a body paragraph says the same. A description
+/// cut off with an ellipsis is the same as the paragraph that starts with it.
 String? pixivisionHeaderDescription(Article article) {
   final raw = article.description;
   final description = raw == null ? null : cleanPixivisionDescription(raw);
   if (description == null || description.isEmpty) return null;
-  final repeated = article.blocks.any((block) => block.kind == BlockKind.paragraph && _normalizedText(block.text) == _normalizedText(description));
+  final head = _withoutSpaces(description).replaceFirst(RegExp(r'(…|\.\.\.)$'), '');
+  final repeated = article.blocks.any((block) => block.kind == BlockKind.paragraph && head.isNotEmpty && _withoutSpaces(block.text).startsWith(head));
   return repeated ? null : description;
 }
+
+/// The images of [block] that the body shows: not the picture the header's
+/// banner already is.
+List<ArticleImage> pixivisionBodyImages(ArticleBlock block, String? headBanner) =>
+    headBanner == null ? block.images : [for (final image in block.images) if (!_sameImage(image.url, headBanner)) image];
 
 bool _sameImage(String left, String right) {
   final first = Uri.tryParse(left);
@@ -321,16 +331,25 @@ bool _sameImage(String left, String right) {
   return first.replace(query: '', fragment: '') == second.replace(query: '', fragment: '');
 }
 
-String _normalizedText(String value) => value.replaceAll(RegExp(r'\s+'), ' ').trim();
+/// The text without any whitespace: the description and the paragraph break lines in different places.
+String _withoutSpaces(String value) => value.replaceAll(RegExp(r'\s+'), '');
 
-bool pixivisionBlockHasContent(ArticleBlock block) =>
-    block.text.trim().isNotEmpty ||
-    block.images.isNotEmpty ||
-    block.links.isNotEmpty ||
-    block.works.isNotEmpty ||
-    block.embeds.isNotEmpty ||
-    block.kind == BlockKind.divider ||
-    block.kind == BlockKind.unknown;
+/// Whether [block] is the article's share picture, the block pixivision puts
+/// first in the body. The header shows its picture (or the card's cover), so the
+/// body never does.
+bool pixivisionIsShareImageBlock(ArticleBlock block) => RegExp(r'class="[^"]*__article_thumbnail[\s"]').hasMatch(block.html);
+
+/// Whether [block] shows anything. The header already shows [headBanner], and
+/// the share picture block is not repeated in the body.
+bool pixivisionBlockHasContent(ArticleBlock block, {String? headBanner}) =>
+    !pixivisionIsShareImageBlock(block) &&
+    (block.text.trim().isNotEmpty ||
+        pixivisionBodyImages(block, headBanner).isNotEmpty ||
+        block.links.isNotEmpty ||
+        block.works.isNotEmpty ||
+        block.embeds.isNotEmpty ||
+        block.kind == BlockKind.divider ||
+        block.kind == BlockKind.unknown);
 
 /// [htmlSource] as the inline grammar of [FrostRichText]: links (resolved
 /// against [base]) as `[label](url)`, bold and italic marked, line breaks
@@ -400,7 +419,7 @@ String pixivisionRichText(String htmlSource, {required Uri base, String fallback
 
 /// One block of an article's body.
 class PixivisionBlock extends StatelessWidget {
-  const PixivisionBlock({required this.block, required this.imageRatios, required this.onLink, this.base, super.key});
+  const PixivisionBlock({required this.block, required this.imageRatios, required this.onLink, this.base, this.headBanner, super.key});
 
   final ArticleBlock block;
   final Map<String, double> imageRatios;
@@ -408,6 +427,9 @@ class PixivisionBlock extends StatelessWidget {
 
   /// The article's address, for links relative to it.
   final Uri? base;
+
+  /// The picture the header shows as the banner; the body does not repeat it.
+  final String? headBanner;
 
   @override
   Widget build(BuildContext context) {
@@ -427,8 +449,8 @@ class PixivisionBlock extends StatelessWidget {
         _ => const SizedBox.shrink(),
       },
       if (block.kind != BlockKind.pixivWork)
-        for (final image in block.images) _ArticleImage(url: image.url, title: image.alt, ratio: imageRatios[image.url]),
-      for (final work in block.works) _FeaturedWork(work: work, block: block, imageRatios: imageRatios, onLink: onLink),
+        for (final image in pixivisionBodyImages(block, headBanner)) _ArticleImage(url: image.url, title: image.alt, ratio: imageRatios[image.url]),
+      for (final work in block.works) _FeaturedWork(work: work, block: block, imageRatios: imageRatios, headBanner: headBanner, onLink: onLink),
       for (final embed in block.embeds)
         FrostLinkCard(
           title: embed.title ?? Uri.parse(embed.url).host,
@@ -490,11 +512,12 @@ class _ArticleTable extends StatelessWidget {
 
 /// A featured work: its title and author, which open them, and its image.
 class _FeaturedWork extends ConsumerWidget {
-  const _FeaturedWork({required this.work, required this.block, required this.imageRatios, required this.onLink});
+  const _FeaturedWork({required this.work, required this.block, required this.imageRatios, required this.headBanner, required this.onLink});
 
   final FeaturedWork work;
   final ArticleBlock block;
   final Map<String, double> imageRatios;
+  final String? headBanner;
   final ValueChanged<String> onLink;
 
   @override
@@ -519,7 +542,7 @@ class _FeaturedWork extends ConsumerWidget {
             accessory: FrostRowAccessory.chevron,
             onPressed: () => onLink('https://www.pixiv.net/users/${work.userId}'),
           ),
-        if (work.preview case final preview?)
+        if (work.preview case final preview? when headBanner == null || !_sameImage(preview, headBanner!))
           Padding(
             padding: const EdgeInsets.only(top: FrostGap.related),
             child: _ArticleImage(url: preview, title: work.title, ratio: imageRatios[preview], onPressed: () => onLink(work.url)),
@@ -554,12 +577,14 @@ class _FeaturedWork extends ConsumerWidget {
 /// frame until it has loaded and its shape is read once. Its menu downloads
 /// or copies it; a tap opens it in the image viewer, or runs [onPressed].
 class _ArticleImage extends ConsumerStatefulWidget {
-  const _ArticleImage({required this.url, required this.title, this.ratio, this.onPressed});
+  const _ArticleImage({required this.url, required this.title, this.ratio, this.onPressed, this.fit = BoxFit.contain});
 
   final String url;
   final String title;
   final double? ratio;
   final VoidCallback? onPressed;
+
+  final BoxFit fit;
 
   @override
   ConsumerState<_ArticleImage> createState() => _ArticleImageState();
@@ -609,7 +634,15 @@ class _ArticleImageState extends ConsumerState<_ArticleImage> {
         child: FrostClickSurface(
           shape: FrostClickShape.rounded(BorderRadius.circular(FrostRadius.lg)),
           onTap: widget.onPressed ?? _view,
-          child: AppPixivImage(url: widget.url, aspectRatio: ratio, fit: BoxFit.contain, headers: pixivisionImageHeaders, semanticLabel: widget.title),
+          child: AppPixivImage(
+            url: widget.url,
+            aspectRatio: ratio,
+            fit: widget.fit,
+            headers: pixivisionImageHeaders,
+            semanticLabel: widget.title,
+            // The card decoded the cover at its layout size; the same request is reused.
+            decodeAtLayoutSize: widget.fit == BoxFit.cover,
+          ),
         ),
       ),
     );

@@ -5,11 +5,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freepiv/app/router/app_route.dart';
 import 'package:freepiv/dev/sample_data.dart';
+import 'package:freepiv/dev/sample_images.dart';
 import 'package:freepiv/features/pixivision/article_card.dart';
 import 'package:freepiv/features/pixivision/article_page.dart';
 import 'package:freepiv/features/pixivision/logic.dart';
 import 'package:freepiv/i18n/strings.g.dart';
 import 'package:freepiv/src/rust/third_party/pixiv_rs/pixivision.dart';
+import 'package:freepiv/ui/compositions/pixiv_image.dart';
 import 'package:frost_ui/frost_ui.dart';
 
 import 'support/pilot_harness.dart';
@@ -145,6 +147,171 @@ void main() {
     expectNoLayoutErrors(tester, where: 'head');
     await _scrollTo(tester, find.text('#$longText'));
     expectNoLayoutErrors(tester, where: 'body');
+  });
+
+  group('the loading page is the loaded page', () {
+    const wide = Size(1200, 800);
+    final bannerFrame = find.byWidgetPredicate((widget) => widget is AspectRatio && widget.aspectRatio == pixivisionBannerRatio);
+    // The list's cover is square; the article's own banner is wide.
+    final summary = ArticleSummary(
+      id: 9000,
+      title: samplePixivisionArticle(_url).title,
+      url: _url,
+      thumbnail: sampleImageUrl(150, width: 600, height: 600),
+      publishDate: '2026-11-01',
+      category: const ArticleLink(title: 'Illustration', url: 'https://www.pixivision.net/en/c/illustration'),
+      tags: const [],
+    );
+    final meta = find.ancestor(of: find.text('Illustration'), matching: find.byType(Wrap)).first;
+    String bannerUrl(WidgetTester tester) => tester.widget<AppPixivImage>(find.byType(AppPixivImage).first).url;
+    final opening = find.byWidgetPredicate((widget) => widget is FrostText && widget.maxLines == 5);
+
+    Future<void> load(WidgetTester tester, Completer<PixivisionDocument> document) async {
+      document.complete(samplePixivisionDocument(_url));
+      await settlePilot(tester);
+    }
+
+    for (final size in [phoneSize, wide]) {
+      testWidgets('the banner frame keeps its rect when the article arrives at ${size.width.toInt()} px', (tester) async {
+        final document = Completer<PixivisionDocument>();
+        await _mount(tester, load: (_) => document.future, summary: summary, size: size);
+        expect(bannerFrame, findsOneWidget);
+        final loading = tester.getRect(bannerFrame);
+        final loadingMeta = tester.getRect(meta);
+        final loadingOpening = tester.getTopLeft(opening);
+        expect(loading.width / loading.height, closeTo(pixivisionBannerRatio, .01));
+        expect(bannerUrl(tester), summary.thumbnail, reason: 'the cover is drawn from the first frame');
+
+        await load(tester, document);
+        expect(bannerFrame, findsOneWidget);
+        expect(tester.getRect(bannerFrame), loading);
+        expect(bannerUrl(tester), summary.thumbnail, reason: 'the same picture stays the banner once loaded');
+        expect(tester.getRect(meta), loadingMeta, reason: 'the category and date row does not change');
+        expect(tester.getTopLeft(find.text(samplePixivisionArticle(_url).description!)), loadingOpening, reason: 'the opening starts where its bones did');
+        expectNoLayoutErrors(tester);
+      });
+    }
+
+    testWidgets('a banner repeated in the body stays in the header and leaves the body', (tester) async {
+      final sample = samplePixivisionArticle(_url);
+      await _mount(
+        tester,
+        load: (_) async => PixivisionDocument(
+          article: Article(
+            id: sample.id,
+            url: sample.url,
+            language: sample.language,
+            title: sample.title,
+            description: sample.description,
+            thumbnail: sample.thumbnail,
+            publishDate: sample.publishDate,
+            category: sample.category,
+            tags: const [],
+            translations: const [],
+            blocks: [
+              ArticleBlock(
+                kind: BlockKind.image,
+                html: '',
+                text: '',
+                images: [ArticleImage(url: sample.thumbnail!, alt: 'banner')],
+                links: const [],
+                works: const [],
+                embeds: const [],
+              ),
+
+            ],
+            related: const [],
+            monthlyRanking: const [],
+            recommended: const [],
+          ),
+          imageRatios: const {},
+        ),
+      );
+      expect(bannerFrame, findsOneWidget);
+      expect(find.byType(FrostMediaFrame), findsOneWidget, reason: 'the header banner only, no copy in the body');
+    });
+
+    for (final withCard in [true, false]) {
+      testWidgets('the share picture block stays out of the body ${withCard ? 'with' : 'without'} a card', (tester) async {
+        final sample = samplePixivisionArticle(_url);
+        await _mount(
+          tester,
+          summary: withCard ? summary : null,
+          load: (_) async => PixivisionDocument(
+            article: Article(
+              id: sample.id,
+              url: sample.url,
+              language: sample.language,
+              title: sample.title,
+              description: sample.description,
+              thumbnail: sample.thumbnail,
+              publishDate: sample.publishDate,
+              category: sample.category,
+              tags: const [],
+              translations: const [],
+              blocks: [
+                ArticleBlock(
+                  kind: BlockKind.image,
+                  html: '<div class="article-item _feature-article-body__article_thumbnail"><img src="${sample.thumbnail}" alt=""></div>',
+                  text: '',
+                  images: [ArticleImage(url: sample.thumbnail!, alt: '')],
+                  links: const [],
+                  works: const [],
+                  embeds: const [],
+                ),
+              ],
+              related: const [],
+              monthlyRanking: const [],
+              recommended: const [],
+            ),
+            imageRatios: const {},
+          ),
+        );
+        expect(find.byType(FrostMediaFrame), findsOneWidget, reason: 'the banner only');
+        expect(bannerUrl(tester), withCard ? summary.thumbnail : sample.thumbnail, reason: 'the card\'s picture, else the share picture');
+        final block = ArticleBlock(
+          kind: BlockKind.image,
+          html: '<div class="article-item _feature-article-body__article_thumbnail"><img src="https://example.test/other.jpg"></div>',
+          text: '',
+          images: const [ArticleImage(url: 'https://example.test/other.jpg', alt: '')],
+          links: const [],
+          works: const [],
+          embeds: const [],
+        );
+        expect(pixivisionBlockHasContent(block), isFalse);
+      });
+    }
+
+    testWidgets('the translations menu is a toolbar action, not part of the meta row', (tester) async {
+      await _mount(tester);
+      final menu = find.text(t.pixivision.translations);
+      expect(find.descendant(of: find.byType(FrostPageHeader), matching: menu), findsWidgets);
+      expect(find.descendant(of: find.byType(Wrap), matching: menu), findsNothing);
+    });
+
+    testWidgets('the title and the toolbar actions fit a phone', (tester) async {
+      await _mount(tester, size: phoneSize);
+      final title = find.text(samplePixivisionArticle(_url).title);
+      expect(tester.getRect(title).right, lessThanOrEqualTo(phoneSize.width));
+      for (final element in find.descendant(of: find.byType(FrostPageHeader), matching: find.byType(Text)).evaluate()) {
+        final rect = tester.getRect(find.byWidget(element.widget));
+        expect(rect.right, lessThanOrEqualTo(phoneSize.width), reason: 'the header does not run past the window');
+      }
+      expectNoLayoutErrors(tester);
+    });
+
+    testWidgets('without a card the skeleton lays out the banner frame where the loaded one is', (tester) async {
+      final document = Completer<PixivisionDocument>();
+      await _mount(tester, load: (_) => document.future, size: wide);
+      expect(bannerFrame, findsOneWidget);
+      final loading = tester.getRect(bannerFrame);
+      expect(find.byType(FrostTag), findsOneWidget, reason: 'the meta row is drawn as bones');
+
+      await load(tester, document);
+      expect(bannerFrame, findsOneWidget);
+      expect(tester.getRect(bannerFrame), loading);
+      expectNoLayoutErrors(tester);
+    });
   });
 
   group('a table in the article', () {

@@ -102,7 +102,7 @@ void main() {
         block(text: 'Opening sentence'),
       ],
     );
-    expect(pixivisionHeaderThumbnail(repeated), isNull);
+    expect(pixivisionBlockHasContent(repeated.blocks.first, headBanner: repeated.thumbnail), isFalse);
     expect(pixivisionHeaderDescription(repeated), isNull);
     expect(pixivisionKnownImageRatios(repeated)['https://example.test/cover.jpg?size=large'], closeTo(2 / 3, .001));
 
@@ -117,9 +117,27 @@ void main() {
         ),
       ],
     );
-    expect(pixivisionHeaderThumbnail(distinct), 'https://example.test/cover.jpg');
+    expect(pixivisionBlockHasContent(distinct.blocks.last, headBanner: distinct.thumbnail), isTrue);
     expect(pixivisionHeaderDescription(distinct), 'Opening sentence');
     expect(pixivisionKnownImageRatios(distinct), isEmpty);
+  });
+
+  test('a description cut off with an ellipsis is the paragraph that starts with it', () {
+    final truncated = article(
+      description: 'A character with crossed arms  might be a sign of…',
+      blocks: [block(text: 'A character with crossed arms might be a sign of confidence or deep thought.')],
+    );
+    expect(pixivisionHeaderDescription(truncated), isNull);
+    final other = article(description: 'A different opening...', blocks: [block(text: 'A character with crossed arms might be a sign.')]);
+    expect(pixivisionHeaderDescription(other), 'A different opening...');
+  });
+
+  test('a description is the paragraph that starts with it however the lines break', () {
+    final joined = article(
+      description: 'What is that… that… thing?If you are not a fan of illustrations that make you utter the abo...',
+      blocks: [block(text: 'What is that… that… thing?\nIf you are not a fan of illustrations that make you utter the above, now is your chance.')],
+    );
+    expect(pixivisionHeaderDescription(joined), isNull);
   });
 
   test('link-only article cards remain in the body', () {
