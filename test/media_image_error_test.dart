@@ -35,7 +35,12 @@ void main() {
           ),
         ),
       );
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+      // The retries back off in real time; a busy machine needs longer than an idle one.
+      final deadline = DateTime.now().add(const Duration(seconds: 10));
+      while (displayedError == null && DateTime.now().isBefore(deadline)) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        await tester.pump();
+      }
     });
     await tester.pump();
     expect(attempts, 3);
